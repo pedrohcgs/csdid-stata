@@ -36,7 +36,7 @@ for ( m in methods ) {
     }
 }
 
-dir.create(tmp)
+dir.create(tmp, showWarnings=F)
 for ( m in methods ) {
     res <- results[[m]]
     out <- cbind(res$att,  sqrt(diag(as.matrix(res$V_analytical)) /res$n))

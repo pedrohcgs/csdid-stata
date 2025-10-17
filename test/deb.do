@@ -1,5 +1,10 @@
-* stata18-mp -b do test/deb.do && mv deb.log test/log/deb.after.log
+* stata14-mp -b do test/deb.do && mv deb.log test/log/deb.before.log
+* stata14-mp -b do test/deb.do && mv deb.log test/log/deb.after.log
 
+log close _all
+log using deb.log, replace
+
+version 14.2
 local root `c(pwd)'
 cd codes
 do `root'/test/common.do

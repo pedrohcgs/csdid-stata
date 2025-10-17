@@ -1,5 +1,10 @@
-* stata18-mp -b do test/base.do && mv base.log test/log/base.after.log
+* stata14-mp -b do test/base.do && mv base.log test/log/base.before.log
+* stata14-mp -b do test/base.do && mv base.log test/log/base.after.log
 
+log close _all
+log using base.log, replace
+
+version 14.2
 local root `c(pwd)'
 cd codes
 do `root'/test/common.do

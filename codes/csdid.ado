@@ -776,7 +776,7 @@ program csdid_r, sortpreserve eclass
 					if "`rvl'"!="_blank_" {
 											
 						qui:gen double w`i'_`j'=0
-						qui:replace w`i'_`j'=1 if (`rvl'!=.) & (`gvar'==`i') 
+						qui:replace w`i'_`j'=1 if (`gvar'==`i')
 						local lvl_gvar `lvl_gvar' w`i'_`j'
 					
 					}

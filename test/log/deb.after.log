@@ -1,0 +1,159 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      Stata 18.0
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: 5-user 12-core network perpetual
+Serial number: 501806356410
+  Licensed to: Population Studies and Training Center
+               Brown University
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+
+Running /home/mauricio/ado/personal/sysprofile.do ...
+
+
+Running /home/mauricio/ado/profile.do ...
+
+. do test/deb.do 
+
+. * ssc install flexdid
+. 
+. local root `c(pwd)'
+
+. cd codes
+/home/mauricio/Documents/projects/ra/santanna/csdid-stata/codes
+
+. do `root'/test/common.do
+
+. cap mata mata drop _loadmat()
+
+. mata:
+------------------------------------------------- mata (type end to exit) -----
+: real matrix function _loadmat(string scalar fname) {
+>     real vector mat
+>     real scalar fh, nr, nc
+>     colvector C
+>     fh  = fopen(fname, "r")
+>     C   = bufio()
+>     nr  = fbufget(C, fh, "%4bu", 1)
+>     nc  = fbufget(C, fh, "%4bu", 1)
+>     mat = fbufget(C, fh, "%8z", nr * nc)
+>     fclose(fh)
+>     return(rowshape(mat, nc)')
+> }
+
+: end
+-------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. 
+. local methods drimp dripw reg stdipw ipw rc1
+
+. local aggtyps simple group calendar dynamic
+
+. use `root'/../reply_to_DNWZ/data/Deb_etal_20251006_Stata.dta, clear
+
+.     * csdid y, gvar(c) time(t) long2 reg vce(cluster g)
+. 
+.     foreach m of local methods {
+  2.         tempfile `m'
+  3.     }
+
+.     foreach m of local methods {
+  2.         disp "`m'"
+  3.         qui csdid y, gvar(c) time(t) method(`m') vce(cluster g)
+  4.         qui estimates save "``m''.ster", replace
+  5.     }
+drimp
+dripw
+reg
+stdipw
+ipw
+rc1
+Method rc1 not allowed
+
+. 
+.     foreach m of local methods {
+  2.         mata: `m' = _loadmat("`root'/tmp/tmpout_`m'")
+  3.         foreach typ of local aggtyps {
+  4.             mata: `m'`typ' = _loadmat("`root'/tmp/tmpout_`m'_`typ'")
+  5.         }
+  6.     }
+
+. 
+.     foreach m of local methods {
+  2.         estimates use "``m''.ster"
+  3.         qui csdid
+  4.         mata out    = st_matrix("r(table)")[1::2,1..rows(`m')]'
+  5.         mata errors = colmax(abs(reldif(`m', out)))
+  6.         mata printf("\n%17s: %9.6g\t%9.6g\n", "`m'", errors[1], errors[2])
+  7.         foreach typ of local aggtyps {
+  8.             if "`typ'" == "dynamic" {
+  9.                 qui csdid_estat event
+ 10.                 mata row = st_matrix("r(table)")[1::2,.]'
+ 11.                 mata row = row[2::rows(row),.]
+ 12.             }
+ 13.             else {
+ 14.                 qui csdid_estat `typ'
+ 15.                 mata row = st_matrix("r(table)")[1::2,.]'
+ 16.             }
+ 17.             mata errors = colmax(abs(reldif(`m'`typ', row)))
+ 18.             mata printf("%17s: %9.6g\t%9.6g\n", "`typ' `m'", errors[1], er
+> rors[2])
+ 19.         }
+ 20.     }
+
+            drimp:  6.89e-16     5.54e-16
+     simple drimp:  2.15e-16            0
+      group drimp:  1.77e-16     .0007381
+   calendar drimp:  2.54e-16     1.30e-17
+    dynamic drimp:  5.87e-16     2.52e-17
+
+            dripw:  1.14e-15     5.41e-16
+     simple dripw:  2.15e-16            0
+      group dripw:  1.77e-16     .0007381
+   calendar dripw:  2.57e-16     1.30e-17
+    dynamic dripw:  1.13e-15     1.32e-17
+
+              reg:  1.32e-14     5.54e-16
+       simple reg:  2.15e-16            0
+        group reg:  7.71e-15     .0007381
+     calendar reg:  3.15e-15     1.31e-17
+      dynamic reg:  3.86e-15     1.98e-17
+
+           stdipw:  8.20e-16     5.54e-16
+    simple stdipw:         0            0
+     group stdipw:  1.20e-16     .0007381
+  calendar stdipw:  3.97e-16     1.31e-17
+   dynamic stdipw:  5.62e-16     2.52e-17
+
+              ipw:  1.21e-15      .316521
+       simple ipw:  1.07e-16      .107453
+        group ipw:  1.94e-16      .152435
+     calendar ipw:  6.80e-16       .19755
+      dynamic ipw:  9.81e-16      .316521
+
+              rc1:  7.84e-16     5.54e-16
+       simple rc1:  2.15e-16            0
+        group rc1:  1.77e-16     .0007381
+     calendar rc1:  1.29e-16     1.30e-17
+      dynamic rc1:  6.35e-16     2.52e-17
+
+. 
+end of do-file

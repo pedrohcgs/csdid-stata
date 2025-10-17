@@ -1,7 +1,7 @@
 running
   '/usr/lib/R/bin/R --no-echo --no-restore --no-save --no-restore --file=test/base.R'
 
-here() starts at /home/mauricio/Documents/projects/ra/santanna/csdid-stata
+here() starts at /home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata
 [1] "drimp"
 [1] "dripw"
 [1] "reg"
@@ -32,6 +32,3 @@ here() starts at /home/mauricio/Documents/projects/ra/santanna/csdid-stata
 [1] "rc1"   "group"
 [1] "rc1"      "calendar"
 [1] "rc1"     "dynamic"
-Warning message:
-In dir.create(tmp) :
-  '/home/mauricio/Documents/projects/ra/santanna/csdid-stata/tmp' already exists

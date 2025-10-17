@@ -3,7 +3,7 @@
        log:  /home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata/
 > base.log
   log type:  text
- opened on:  17 Oct 2025, 11:49:52
+ opened on:  17 Oct 2025, 18:15:40
 
 . 
 . version 14.2
@@ -39,7 +39,7 @@
 end of do-file
 
 . 
-. local methods drimp dripw reg stdipw ipw rc1
+. local methods drimp dripw reg stdipw
 
 . local aggtyps simple group calendar dynamic
 
@@ -59,9 +59,6 @@ drimp
 dripw
 reg
 stdipw
-ipw
-rc1
-Method rc1 not allowed
 
 . 
 .     foreach m of local methods {
@@ -117,18 +114,6 @@ Method rc1 not allowed
      group stdipw:   .002472      .116297
   calendar stdipw:  .0012419     .0776941
    dynamic stdipw:  .0044097     .0726368
-
-              ipw:   .000391      .119255
-       simple ipw:  .0000184     .0559202
-        group ipw:  .0002212      .119255
-     calendar ipw:  .0000628     .0855367
-      dynamic ipw:   .000391      .090893
-
-              rc1:  .0000205     .0001211
-       simple rc1:  2.23e-06     .0000197
-        group rc1:  8.46e-06     .0001014
-     calendar rc1:  3.50e-06     .0000361
-      dynamic rc1:  .0000126     .0001211
 
 . 
 end of do-file

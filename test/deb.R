@@ -11,7 +11,7 @@ tmp    <- file.path(here(), "tmp")
 deb    <- read_dta(file.path(here(), "../reply_to_DNWZ/data/Deb_etal_20251006_Stata.dta"))
 deb$id <- 1:nrow(deb)
 
-methods <- c("drimp", "dripw", "reg", "stdipw", "ipw", "rc1")
+methods <- c("drimp", "dripw", "reg", "stdipw")
 aggtyps <- c("simple", "group", "calendar", "dynamic")
 kwargs  <- list(data        = deb,
                 yname       = "y",

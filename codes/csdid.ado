@@ -423,7 +423,12 @@ program csdid_r, sortpreserve eclass
 	}
 	else if !inlist("`method'","drimp","dripw","reg","ipw","stdipw") {
 		display as error "Method `method' not allowed"
+		exit 10
 	}
+	if ( "`method'" == "ipw" ) {
+		display in red "{bf:Deprecation Warning:} method(ipw) is deprecated; falling back on method(stdipw)"
+        local method stdipw
+    }
 	** Default. If no controls, use reg
 		
 	if "`seed'"!="" set seed `seed'

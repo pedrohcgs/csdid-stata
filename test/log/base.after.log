@@ -1,41 +1,17 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata/
+> base.log
+  log type:  text
+ opened on:  17 Oct 2025, 11:49:52
 
-  ___  ____  ____  ____  ____ ®
- /__    /   ____/   /   ____/      Stata 18.0
-___/   /   /___/   /   /___/       MP—Parallel Edition
-
- Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
-                                   StataCorp
-                                   4905 Lakeway Drive
-                                   College Station, Texas 77845 USA
-                                   800-782-8272        https://www.stata.com
-                                   979-696-4600        service@stata.com
-
-Stata license: 5-user 12-core network perpetual
-Serial number: 501806356410
-  Licensed to: Population Studies and Training Center
-               Brown University
-
-Notes:
-      1. Stata is running in batch mode.
-      2. Unicode is supported; see help unicode_advice.
-      3. More than 2 billion observations are allowed; see help obs_advice.
-      4. Maximum number of variables is set to 5,000 but can be increased;
-          see help set_maxvar.
-
-
-Running /home/mauricio/ado/personal/sysprofile.do ...
-
-
-Running /home/mauricio/ado/profile.do ...
-
-. do test/base.do 
-
-. * ssc install flexdid
 . 
+. version 14.2
+
 . local root `c(pwd)'
 
 . cd codes
-/home/mauricio/Documents/projects/ra/santanna/csdid-stata/codes
+/home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata/codes
 
 . do `root'/test/common.do
 
@@ -124,17 +100,17 @@ Method rc1 not allowed
    calendar drimp:  3.50e-06     .0000167
     dynamic drimp:  .0000126     .0000559
 
-            dripw:  9.68e-16     1.50e-11
+            dripw:  1.03e-15     1.50e-11
      simple dripw:         0     6.48e-12
-      group dripw:  3.49e-16     2.34e-08
-   calendar dripw:  1.15e-16     1.48e-11
-    dynamic dripw:  5.43e-16     1.50e-11
+      group dripw:  4.65e-16     2.34e-08
+   calendar dripw:  3.25e-16     1.48e-11
+    dynamic dripw:  7.25e-16     1.50e-11
 
-              reg:  3.32e-15     1.46e-16
+              reg:  3.30e-15     1.46e-16
        simple reg:  5.61e-17            0
-        group reg:  2.85e-15     1.57e-08
-     calendar reg:  2.29e-15     1.25e-17
-      dynamic reg:  2.68e-15     2.50e-17
+        group reg:  2.91e-15     1.57e-08
+     calendar reg:  2.29e-15     1.29e-17
+      dynamic reg:  2.66e-15     2.50e-17
 
            stdipw:  .0044097      .116297
     simple stdipw:  .0004803     .0444609

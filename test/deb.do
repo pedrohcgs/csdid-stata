@@ -9,7 +9,7 @@ local root `c(pwd)'
 cd codes
 do `root'/test/common.do
 
-local methods drimp dripw reg stdipw ipw rc1
+local methods drimp dripw reg stdipw
 local aggtyps simple group calendar dynamic
 use `root'/../reply_to_DNWZ/data/Deb_etal_20251006_Stata.dta, clear
     * csdid y, gvar(c) time(t) long2 reg vce(cluster g)

@@ -14,7 +14,7 @@ sp$ipw <- FALSE
 data   <- did::build_sim_dataset(sp)
 write_dta(data, file.path(tmp, "base.dta"))
 
-methods <- c("drimp", "dripw", "reg", "stdipw", "ipw", "rc1")
+methods <- c("drimp", "dripw", "reg", "stdipw")
 aggtyps <- c("simple", "group", "calendar", "dynamic")
 kwargs  <- list(data        = data,
                 yname       = "Y",

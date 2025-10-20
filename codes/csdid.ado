@@ -1,11 +1,12 @@
  
 * Next step Integrate all into csdid.mata <- so Do not need to play with many files
+*! v1.82  by Mauricio Caceres-Bravo and Pedro Sant'Anna. Fixing RCS bugs
 *! v1.81  by pedro Sant'Anna. Compatibility checks
 *! v1.8  by FRA. Trim
 * v1.72  by FRA. Drops always treated
 * v1.71  by FRA. adds weights back
 * v1.7  by FRA. Changes on Datacheks. This should avoid time gaps problems.
-* Adds asinr for pretreatmetn
+* Adds asinr for pretreatment
 * adds version
 * Need to add Checks for Covariates and variables.
 * v1.6  by FRA. Changes how agg looks
@@ -13,7 +14,7 @@
 * v1.58  by FRA. adding base info
 * v1.57  by FRA. change default to dripw from drimp. More stable
 * Also corrects agg(event)
-* Does not create Unecessary RIFS
+* Does not create unnecessary RIFS
 * v1.57  by FRA. Takes Pretrend from AGG NOT ALLOWED
 * v1.56  by FRA. bug for NOT YET, 2021 ref
 * v1.55  by FRA. Allows for more periods
@@ -145,8 +146,8 @@ program csdid, sortpreserve eclass
 		syntax [anything(everything)] [iw aw pw], [* version]
 
 		if  "`version'"!="" {
-			display "version: 1.81"
-			addr scalar version = 1.81
+			display "version: 1.82"
+			addr scalar version = 1.82
 			exit
 		}
 		

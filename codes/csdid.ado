@@ -426,7 +426,7 @@ program csdid_r, sortpreserve eclass
 		exit 10
 	}
 	if ( "`method'" == "ipw" ) {
-		display in red "{bf:Deprecation Warning:} method(ipw) is deprecated; falling back on method(stdipw)"
+		display in red "{bf:Deprecation Warning:} We now ensure weights always sum up to one; falling back on method(stdipw)"
         local method stdipw
     }
 	** Default. If no controls, use reg

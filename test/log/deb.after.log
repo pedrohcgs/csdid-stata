@@ -1,0 +1,120 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata/
+> deb.log
+  log type:  text
+ opened on:  17 Oct 2025, 18:17:17
+
+. 
+. version 14.2
+
+. local root `c(pwd)'
+
+. cd codes
+/home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata/codes
+
+. do `root'/test/common.do
+
+. cap mata mata drop _loadmat()
+
+. mata:
+------------------------------------------------- mata (type end to exit) -----
+: real matrix function _loadmat(string scalar fname) {
+>     real vector mat
+>     real scalar fh, nr, nc
+>     colvector C
+>     fh  = fopen(fname, "r")
+>     C   = bufio()
+>     nr  = fbufget(C, fh, "%4bu", 1)
+>     nc  = fbufget(C, fh, "%4bu", 1)
+>     mat = fbufget(C, fh, "%8z", nr * nc)
+>     fclose(fh)
+>     return(rowshape(mat, nc)')
+> }
+
+: end
+-------------------------------------------------------------------------------
+
+. 
+end of do-file
+
+. 
+. local methods drimp dripw reg stdipw
+
+. local aggtyps simple group calendar dynamic
+
+. use `root'/../reply_to_DNWZ/data/Deb_etal_20251006_Stata.dta, clear
+
+.     * csdid y, gvar(c) time(t) long2 reg vce(cluster g)
+. 
+.     foreach m of local methods {
+  2.         tempfile `m'
+  3.     }
+
+.     foreach m of local methods {
+  2.         disp "`m'"
+  3.         qui csdid y, gvar(c) time(t) method(`m') vce(cluster g)
+  4.         qui estimates save "``m''.ster", replace
+  5.     }
+drimp
+dripw
+reg
+stdipw
+
+. 
+.     foreach m of local methods {
+  2.         mata: `m' = _loadmat("`root'/tmp/tmpout_`m'")
+  3.         foreach typ of local aggtyps {
+  4.             mata: `m'`typ' = _loadmat("`root'/tmp/tmpout_`m'_`typ'")
+  5.         }
+  6.     }
+
+. 
+.     foreach m of local methods {
+  2.         estimates use "``m''.ster"
+  3.         qui csdid
+  4.         mata out    = st_matrix("r(table)")[1::2,1..rows(`m')]'
+  5.         mata errors = colmax(abs(reldif(`m', out)))
+  6.         mata printf("\n%17s: %9.6g\t%9.6g\n", "`m'", errors[1], errors[2])
+  7.         foreach typ of local aggtyps {
+  8.             if "`typ'" == "dynamic" {
+  9.                 qui csdid_estat event
+ 10.                 mata row = st_matrix("r(table)")[1::2,.]'
+ 11.                 mata row = row[2::rows(row),.]
+ 12.             }
+ 13.             else {
+ 14.                 qui csdid_estat `typ'
+ 15.                 mata row = st_matrix("r(table)")[1::2,.]'
+ 16.             }
+ 17.             mata errors = colmax(abs(reldif(`m'`typ', row)))
+ 18.             mata printf("%17s: %9.6g\t%9.6g\n", "`typ' `m'", errors[1], er
+> rors[2])
+ 19.         }
+ 20.     }
+
+            drimp:  7.20e-16     5.54e-16
+     simple drimp:         0            0
+      group drimp:  1.77e-16     .0007381
+   calendar drimp:  2.54e-16     1.30e-17
+    dynamic drimp:  6.01e-16     2.52e-17
+
+            dripw:  1.13e-15     5.41e-16
+     simple dripw:  2.15e-16            0
+      group dripw:  1.77e-16     .0007381
+   calendar dripw:  2.57e-16     1.30e-17
+    dynamic dripw:  1.13e-15     1.98e-17
+
+              reg:  1.31e-14     5.66e-16
+       simple reg:  2.15e-16            0
+        group reg:  7.71e-15     .0007381
+     calendar reg:  3.15e-15     1.31e-17
+      dynamic reg:  3.86e-15     2.52e-17
+
+           stdipw:  8.40e-16     5.66e-16
+    simple stdipw:         0            0
+     group stdipw:  1.20e-16     .0007381
+  calendar stdipw:  2.97e-16     1.31e-17
+   dynamic stdipw:  4.97e-16     3.78e-17
+
+. 
+end of do-file

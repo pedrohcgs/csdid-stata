@@ -1,0 +1,33 @@
+running
+  '/usr/lib/R/bin/R --no-echo --no-restore --no-save --no-restore --file=test/deb.R'
+
+here() starts at /home/mauricio/Documents/projects/dev/collab/santanna/csdid-stata
+[1] "drimp"
+[1] "dripw"
+[1] "reg"
+[1] "stdipw"
+Warning messages:
+1: In (function (yname, tname, idname = NULL, gname, xformla = NULL,  :
+  clustering the standard errors requires using the bootstrap, resulting standard errors are NOT accounting for clustering
+2: In (function (yname, tname, idname = NULL, gname, xformla = NULL,  :
+  clustering the standard errors requires using the bootstrap, resulting standard errors are NOT accounting for clustering
+3: In (function (yname, tname, idname = NULL, gname, xformla = NULL,  :
+  clustering the standard errors requires using the bootstrap, resulting standard errors are NOT accounting for clustering
+4: In (function (yname, tname, idname = NULL, gname, xformla = NULL,  :
+  clustering the standard errors requires using the bootstrap, resulting standard errors are NOT accounting for clustering
+[1] "drimp"  "simple"
+[1] "drimp" "group"
+[1] "drimp"    "calendar"
+[1] "drimp"   "dynamic"
+[1] "dripw"  "simple"
+[1] "dripw" "group"
+[1] "dripw"    "calendar"
+[1] "dripw"   "dynamic"
+[1] "reg"    "simple"
+[1] "reg"   "group"
+[1] "reg"      "calendar"
+[1] "reg"     "dynamic"
+[1] "stdipw" "simple"
+[1] "stdipw" "group" 
+[1] "stdipw"   "calendar"
+[1] "stdipw"  "dynamic"

@@ -423,7 +423,12 @@ program csdid_r, sortpreserve eclass
 	}
 	else if !inlist("`method'","drimp","dripw","reg","ipw","stdipw") {
 		display as error "Method `method' not allowed"
+		exit 10
 	}
+	if ( "`method'" == "ipw" ) {
+		display in red "{bf:Deprecation Warning:} We now ensure weights always sum up to one; falling back on method(stdipw)"
+        local method stdipw
+    }
 	** Default. If no controls, use reg
 		
 	if "`seed'"!="" set seed `seed'
@@ -776,7 +781,7 @@ program csdid_r, sortpreserve eclass
 					if "`rvl'"!="_blank_" {
 											
 						qui:gen double w`i'_`j'=0
-						qui:replace w`i'_`j'=1 if (`rvl'!=.) & (`gvar'==`i') 
+						qui:replace w`i'_`j'=1 if (`gvar'==`i')
 						local lvl_gvar `lvl_gvar' w`i'_`j'
 					
 					}

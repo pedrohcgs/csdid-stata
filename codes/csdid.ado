@@ -175,9 +175,7 @@ program csdid, sortpreserve eclass
                 }
                 exit
         }
-		if runiform()<.001 {
-				easter_egg
-		}
+
 		
 		
 		csdid_r `0'
@@ -953,15 +951,6 @@ end
 /// This can be used for aggregation. Creates the matrixes we need.
 //
 //
-// program define easter_egg
-//                 display "{p}This is just for fun. Its my attempt to an Easter Egg within my program. {p_end}" _n /// 
-//                 "{p} Also, if you are reading this, it means you are lucky," ///
-//                 "only 0.1% of people using this program will see this message. {p_end}" _n ///
-//                 "{p} This program was inspired by challenge post by Scott Cunningham. " ///
-//                 "It is the second part of Pedro, Brantly and Juns's contribution to the DID world{p_end} " _n  ///
-//                 "{p} Remember One Difference is good, and 2x2 DiD is twice as good!. " ///
-// 				" Just dont confuse it with DnD (Dungeons and Dragons){p_end} "
-// end
 //
 
 mata:

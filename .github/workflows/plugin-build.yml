@@ -1,0 +1,40 @@
+name: Bootstrap plugin builds
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux-and-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install compilers
+        run: sudo apt-get update && sudo apt-get install -y gcc mingw-w64
+      - name: Build Linux plugin
+        run: bash tools/plugin/build-bootstrap-plugin.sh linux
+      - name: Build Windows plugin
+        run: bash tools/plugin/build-bootstrap-plugin.sh windows
+      - name: Record checksums
+        run: shasum -a 256 build/csdid_bootstrap_unix.plugin build/csdid_bootstrap_windows.plugin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: csdid-bootstrap-linux-windows
+          path: |
+            build/csdid_bootstrap_unix.plugin
+            build/csdid_bootstrap_windows.plugin
+
+  macos-universal:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build universal macOS plugin
+        run: bash tools/plugin/build-bootstrap-plugin.sh macos
+      - name: Verify architectures and checksum
+        run: |
+          lipo -archs build/csdid_bootstrap_macosx.plugin
+          shasum -a 256 build/csdid_bootstrap_macosx.plugin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: csdid-bootstrap-macos-universal
+          path: build/csdid_bootstrap_macosx.plugin

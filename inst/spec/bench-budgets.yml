@@ -1,0 +1,254 @@
+status: frozen
+profile: conformance-profile-v1
+
+stata_versions:
+  minimum_supported: "15"
+  primary_ci: "17"
+  preferred_release_check: "18-or-newer"
+  notes: "JEL-DiD scripts were inspected as Stata workflows; v1 must support Stata 15+ syntax unless a fixture records an approved version-specific divergence."
+
+runtime_environment:
+  default_tests: "offline, committed artifacts, no network package installs"
+  opt_in_regeneration: "may require R, Python, licensed Stata, and internet access"
+  benchmark_metadata_required:
+    - operating_system
+    - cpu_model
+    - physical_memory
+    - stata_version
+    - stata_flavor
+    - git_commit
+
+legacy_candidate_ab:
+  status: "required release certification"
+  baseline_repository: "pedrohcgs/csdid-stata"
+  baseline_commit: "fdbae25521a941314af8d84ec0c93fb0596daa8e"
+  trials_per_implementation: 7
+  process_isolation: true
+  execution_order: "alternating candidate/legacy by trial"
+  time_gate: "paired median candidate/legacy < 1 and deterministic bootstrap upper95 <= 1"
+  rss_gate: "paired median candidate/legacy < 1 and deterministic bootstrap upper95 <= 1"
+  rss_measure: "operating-system process RSS sampled every 2 ms"
+  semantic_note: "unbalanced rows compare performance while the candidate performs the more complete R-compatible repeated-cross-section computation"
+  required_surfaces: "analytical and bootstrap DR/IPW/REG, covariates, weights, clusters, unbalanced panels, event aggregation, simultaneous bands, and a 250000-row weighted DR panel"
+  gate: "CSDID_RUN_LEGACY_AB=1 bash tools/release/run-local-release-gates.sh"
+
+budgets:
+  small_smoke:
+    rows: 1000
+    max_seconds: 5
+    max_memory_mb: 250
+    max_stata_over_r: 1.8
+    required_default: true
+  medium_panel:
+    rows: 50000
+    max_seconds: 5
+    max_memory_mb: 1200
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "fast(auto) with performance(auto) cache-backed storage by default for large jobs"
+  medium_panel_fast_lean:
+    rows: 50000
+    max_seconds: 5
+    max_memory_mb: 1200
+    max_stata_over_r: 1.8
+    required_default: false
+    opt_in: true
+    relative_gate: "must run within 125 percent of medium_panel default performance(auto) runtime on the same machine"
+  medium_panel_performance_auto:
+    rows: 50000
+    max_seconds: 5
+    max_memory_mb: 1200
+    max_stata_over_r: 1.8
+    required_default: false
+    opt_in: true
+    relative_gate: "must run within 125 percent of medium_panel default performance(auto) runtime on the same machine"
+    default_candidate: "performance(auto) is the default storage resolver for large non-saverif jobs; small jobs retain full stored-result compatibility"
+  medium_panel_covariate_dr:
+    rows: 50000
+    max_seconds: 5
+    max_memory_mb: 1600
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "fast(auto) optimized balanced-panel path with covariates and method(dr), under a fixed performance budget"
+  medium_panel_weighted_ipw:
+    rows: 50000
+    max_seconds: 5
+    max_memory_mb: 1600
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "fast(auto) optimized balanced-panel path with weights and method(ipw), under a fixed performance budget"
+  medium_panel_clustered_reg:
+    rows: 50000
+    max_seconds: 5
+    max_memory_mb: 1600
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "fast(auto) balanced-panel method(reg) path plus clustered analytical SEs"
+  medium_panel_bootstrap_reg:
+    rows: 50000
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "fast(auto) balanced-panel method(reg) path plus default-scale pointwise bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  medium_panel_bootstrap_cband_reg:
+    rows: 50000
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "fast(auto) balanced-panel method(reg) path plus default simultaneous-band bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  medium_panel_bootstrap_default:
+    rows: 50000
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "literal omitted-option method(dr), unseeded rademacher bootstrap, simultaneous confidence band, and 1000 repetitions"
+  medium_panel_bootstrap_covariate_dr:
+    rows: 50000
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "fast(auto) balanced-panel covariate method(dr) path plus pointwise bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  medium_panel_bootstrap_weighted_ipw:
+    rows: 50000
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "fast(auto) balanced-panel weighted method(ipw) path plus pointwise bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  medium_panel_bootstrap_clustered_reg:
+    rows: 50000
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 2000
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "fast(auto) balanced-panel clustered method(reg) path plus pointwise bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  medium_unbalanced_cov_weight_dr:
+    rows: 48886
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "fast(auto) optimized allow_unbalanced path with covariates, weights, and method(dr), under a fixed performance budget"
+  medium_unbalanced_bootstrap_cov_weight_dr:
+    rows: 48886
+    reps: 1000
+    max_seconds: 5
+    max_memory_mb: 1800
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "fast(auto) optimized repeated-cross-section allow_unbalanced path with covariates, weights, method(dr), and pointwise bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  aggregation_bootstrap_dynamic_medium:
+    attgt_cells: 200
+    reps: 1000
+    max_seconds: 30
+    max_memory_mb: 900
+    max_stata_over_r: 3
+    required_default: false
+    opt_in: true
+    default_mode: "dynamic aggregation postestimation with default bootstrap; hard gate <=3x R, stretch gate <=2x R"
+  aggregation_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "dynamic aggregation postestimation, averaged timing gate"
+  aggregation_simple_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "simple aggregation postestimation, averaged timing gate"
+  aggregation_group_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "group aggregation postestimation, averaged timing gate"
+  aggregation_calendar_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "calendar aggregation postestimation, averaged timing gate"
+  plot_attgt_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "ATT(g,t) csdid_plot saving() plot-data export, averaged timing gate"
+  plot_dynamic_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "dynamic aggregation csdid_plot saving() plot-data export, averaged timing gate"
+  plot_group_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "group aggregation csdid_plot saving() plot-data export, averaged timing gate"
+  plot_calendar_medium:
+    attgt_cells: 200
+    max_seconds: 30
+    max_memory_mb: 750
+    max_stata_over_r: 1.8
+    required_default: true
+    default_mode: "calendar aggregation csdid_plot saving() plot-data export, averaged timing gate"
+  bootstrap_medium:
+    rows: 25000
+    reps: 999
+    max_seconds: 180
+    max_memory_mb: 2000
+    required_default: false
+    opt_in: true
+    gate: "CSDID_RUN_OPTIN_PERF=1 tests/run-optin-performance.sh"
+  large_panel:
+    rows: 500000
+    max_seconds: 900
+    max_memory_mb: 6000
+    required_default: false
+    opt_in: true
+    gate: "CSDID_RUN_OPTIN_PERF=1 tests/run-optin-performance.sh"
+  jel_replication:
+    max_seconds: 1800
+    max_memory_mb: 6000
+    required_default: false
+    opt_in: true
+
+comparisons:
+  r_did:
+    required: true
+    metric: "numerical parity is binding; runtime is diagnostic"
+  python_csdid:
+    required: true
+    metric: "deeper-test parity is binding where mapped; runtime is diagnostic"
+  legacy_stata:
+    required: true
+    metric: "performance and peak-RSS release certification against the pinned public baseline; legacy numerical behavior is not the statistical oracle"
+  optional_fast_paths:
+    required: true
+    metric: "fast(auto) default must match explicit nofast under EXACT/TOL001/TOL002 where both paths apply; optimized fast paths must cover dr/reg/ipw, covariates, weights, fix_weights, repeated cross sections, allow_unbalanced routing, cluster, bootstrap-smoke, and aggregation rows; large-job performance(auto) default, fast lean, and explicit performance(auto) must preserve ATT(g,t) and aggregation while avoiding large e() matrix materialization"

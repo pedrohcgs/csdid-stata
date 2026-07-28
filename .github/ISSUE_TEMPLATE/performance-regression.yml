@@ -1,0 +1,54 @@
+name: Performance regression
+description: Report a slow path relative to a previous csdid build or R did.
+title: "[performance]: "
+labels: ["performance", "needs-reprex"]
+body:
+  - type: input
+    id: csdid-version
+    attributes:
+      label: csdid version
+    validations:
+      required: true
+  - type: input
+    id: stata-version
+    attributes:
+      label: Stata version and edition
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware and operating system
+      description: CPU, RAM, OS, and whether Stata MP/SE/BE was used.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Slow command
+      render: stata
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Data dimensions and design
+      description: Rows, groups, periods, covariates, weights, clusters, bootstrap reps, and aggregation/plotting commands.
+    validations:
+      required: true
+  - type: textarea
+    id: timing
+    attributes:
+      label: Timing evidence
+      description: Include Stata timer output and any R did comparison.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Bootstrap and memory diagnostics
+      description: For bootstrap, include e(bootstrap_accelerator), e(bootstrap_accelerator_status), e(bootstrap_accelerator_file), and e(bootstrap_accelerator_rc). For memory, report measured process RSS rather than c(memory).
+      render: text
+    validations:
+      required: false

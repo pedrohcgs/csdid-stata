@@ -1,0 +1,86 @@
+{
+  "matrix_id": "PY002",
+  "fixture_family": "python-analytical-cluster-se",
+  "normative_source": "Python csdid csdid/test_csdid/test_analytical_cluster_se.py subordinate to R did 2.5.1 clustered inference behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D013"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "TOL003",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/clustered-data.csv",
+      "rows": 200,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py002/generate.py",
+      "path": "tools/parity/generators/py002/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 42,
+    "kind": "numpy.random.seed",
+    "bootstrap_draw_parity": false
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "analytical-cluster-se-scenario"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata analytical clustered SE finite-positive checks",
+      "expected": "mapped Python run assertion",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "source_test"
+      ]
+    },
+    {
+      "actual": "Stata clustered bootstrap-vs-analytical SE agreement",
+      "expected": "mapped Python bootstrap comparison",
+      "tolerance_id": "TOL003",
+      "key_columns": [
+        "scenario"
+      ]
+    },
+    {
+      "actual": "Stata simple aggregation clustered SE",
+      "expected": "mapped Python aggte assertion",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY002 maps all three Python analytical clustered-SE assertions: clustered analytical ATT(g,t) SEs run and are positive, clustered bootstrap SEs broadly agree with analytical clustered SEs under the recorded stochastic tolerance, and simple aggregation returns a positive analytical clustered SE."
+}

@@ -1,0 +1,81 @@
+{
+  "matrix_id": "RT014",
+  "fixture_family": "r-glance-output",
+  "normative_source": "R did 2.5.1 tests/testthat/test-glance.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/sim-glance.csv",
+      "rows": 16040,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt014/generate.R",
+      "path": "tools/parity/generators/rt014/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20260401
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/r/glance-metadata.csv",
+      "schema": "glance-metadata"
+    },
+    {
+      "path": "expected/r/glance-relations.csv",
+      "schema": "glance-relations"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_estat glance metadata",
+      "expected": "expected/r/glance-metadata.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "object"
+    },
+    {
+      "actual": "Stata glance metadata relations",
+      "expected": "expected/r/glance-relations.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "relation"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "R object-slot mutation and arbitrary estimator callback tests do not map to the public Stata command surface."
+  },
+  "scope_note": "RT014 maps the public glance.MP and glance.AGGTEobj metadata tests from R did test-glance.R to Stata csdid_estat glance exports for standard, fast-request, and simple/dynamic/group/calendar aggregation results. Approved divergence covers R-only DIDparams slot mutation tests and arbitrary custom estimator callback tests, which have no public Stata command analogue."
+}

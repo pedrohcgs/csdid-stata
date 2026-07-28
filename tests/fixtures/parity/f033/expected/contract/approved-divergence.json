@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "F033-DIV001",
+    "surface": "raw-drdid-api-internals",
+    "reason": "The Stata port exposes csdid command behavior, not a raw DRDID function API. The fixture verifies the R did 2.5.1 target DRDID functions and diagnostic alternatives for the public ATT(g,t) boundary; broader raw DRDID failure-propagation and bootstrap internals are covered through command-level validation/bootstrap gates rather than a separate public Stata callback surface.",
+    "accepted_behavior": "Stata must match the R did target 2x2 functions for weighted/unweighted panel and repeated-cross-section dr/reg/ipw cells, pscoretrim(.7), and must not silently switch to improved DRDID, RC1, or unnormalized-IPW alternatives."
+  }
+]

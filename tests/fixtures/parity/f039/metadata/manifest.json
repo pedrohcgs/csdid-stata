@@ -1,0 +1,75 @@
+{
+  "matrix_id": "F039",
+  "fixture_family": "python-inference-inheritance",
+  "normative_source": "Python csdid test_inference.py deeper inference checks, anchored to R did 2.5.1 expected values",
+  "source_commit": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+  "decision_refs": ["D001", "D004", "D014"],
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 720,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f039/generate.R",
+      "path": "tools/parity/generators/f039/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 9142024
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/scenarios.csv",
+      "schema": "inference-scenarios"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte"
+    },
+    {
+      "path": "expected/r/inference-dimensions.csv",
+      "schema": "inference-dimensions"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/aggte.csv",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "agg_type", "seq"]
+    },
+    {
+      "actual": "expected/new-stata/inference-dimensions.csv",
+      "expected": "expected/r/inference-dimensions.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Partial F039/Python test_inference.py inheritance for analytical panel and true repeated-cross-section inference across dr/reg/ipw with one numeric covariate. It checks finite positive ATT(g,t) SEs, influence-function dimensions, and simple/dynamic/group/calendar aggregation SE parity against R did 2.5.1. PY012 covers unclustered bootstrap-vs-analytical rough agreement, and PY002/PY004/PY005/PY015/F014/F035 cover inherited Python clustered inference smoke."
+}

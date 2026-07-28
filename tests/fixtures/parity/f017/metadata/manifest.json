@@ -1,0 +1,55 @@
+{
+  "matrix_id": "F017",
+  "fixture_family": "legacy-balance-compatibility",
+  "normative_source": "D003/D008 conformance contract; legacy Stata 1.82 behavior is rejected for v1 defaults",
+  "source_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
+  "decision_refs": ["D003", "D008"],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 57,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f017/generate.R",
+      "path": "tools/parity/generators/f017/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/r/events.csv",
+      "schema": "error-warning-events-csv"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata captured legacy balance/default events",
+      "expected": "expected/r/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {
+    "status": "soft-deprecated-alias",
+    "reason": "Old pair-balanced/full-balanced unbalanced-panel behavior is not retained in v1; bal()/balance() are accepted only as warning aliases for the R-compatible allow_unbalanced default."
+  },
+  "scope_note": "F017 accepts legacy bal()/balance() unbalanced-panel modes with a soft-deprecation warning, verifies that they match the default allowunbalanced ATT(g,t) path, keeps long/long2 as strongly deprecated aliases that use baseperiod(universal) when baseperiod() is omitted, and verifies asinr as a no-op warning."
+}

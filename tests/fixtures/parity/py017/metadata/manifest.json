@@ -1,0 +1,82 @@
+{
+  "matrix_id": "PY017",
+  "fixture_family": "python-parametric-combinations",
+  "normative_source": "Python csdid csdid/test_csdid/test_parametric_combinations.py subordinate to R did 2.5.1 public behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "TOL003",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/panel-data.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/dynamic-data.csv",
+      "rows": 8000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/anticipation-data.csv",
+      "rows": 6000,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py017/generate.py",
+      "path": "tools/parity/generators/py017/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "numpy.random.default_rng",
+    "seeds": [
+      9142024,
+      10,
+      42
+    ]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "source-scenario-map"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public command checks for mapped parametric combination scenarios",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT/TOL002/TOL003",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY017 maps all 120 test_parametric_combinations.py parameterized assertions to Stata public command behavior: method/control/base-period grids, panel and repeated-cross-section paths, anticipation 0/1/2, bootstrap and non-bootstrap finite SE/ATT checks, full simple-aggregation integration, all aggregation types by method, and repeated-cross-section dynamic-effect checks."
+}

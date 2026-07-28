@@ -1,0 +1,3 @@
+role,artifact_type,relative_path,exists,bytes,sha256,text_sha256,pdf_header
+r,figure,figures/figure1_R.pdf,1,5977,21cdd0655a83faaf227dc6fe4ee4329c8c0f839588045df3a8563ff210dddbd3,,%PDF-
+stata,figure,figures/figure1_stata.pdf,1,68411,47ab722361807044bd89304101807eea07a06ae236a944a36db79e81e919e964,,%PDF-

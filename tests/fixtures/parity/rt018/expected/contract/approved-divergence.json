@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT018-DIV001",
+    "source_tests": "mboot on an all-degenerate influence function returns NA crit.val and all-NA se; mboot pmax-fold critical value equals the old row-wise apply reference",
+    "reason": "R test-mboot-postprocess.R directly calls the internal mboot() helper with synthetic influence-function matrices and DIDparams-like lists. The Stata port has no public mboot helper command or object API.",
+    "accepted_behavior": "Public Stata multiplier-bootstrap behavior is verified through csdid, csdid_stats, clustered bootstrap, simultaneous-band, and inference rows; exact R helper internals remain outside the frozen public command surface."
+  }
+]

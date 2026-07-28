@@ -1,0 +1,72 @@
+{
+  "matrix_id": "RT002",
+  "fixture_family": "r-aggte-comprehensive",
+  "normative_source": "R did 2.5.1 tests/testthat/test-aggte-comprehensive.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "99cf542b7b8dc91ca403cdd5b12028256631d48f4095997012dcf2b4211741ae",
+  "decision_refs": "D004",
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/aggte-data.csv",
+      "rows": 2620,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt002/generate.R",
+      "path": "tools/parity/generators/rt002/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R set.seed",
+    "seed": 20260401
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "aggregation-public-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_stats public aggregation behavior",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "TOL002/EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT002 maps 30 public R aggregation assertions to Stata csdid_stats behavior and records two approved divergences for R AGGTEobj aggregation influence-function slots and aggregation-level bootstrap cband critical values."
+}

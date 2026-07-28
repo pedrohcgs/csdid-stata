@@ -1,0 +1,64 @@
+v 3
+d csdid: Callaway-Sant'Anna group-time average treatment effects
+d
+d A Mata implementation of group-time average treatment effects, with doubly
+d robust, regression and IPW estimators and multiplier-bootstrap inference.
+d
+d csdid estimates group-time average treatment effects ATT(g,t) for
+d difference-in-differences designs with staggered treatment timing, following
+d Callaway and Sant'Anna (2021, Journal of Econometrics), with doubly robust,
+d outcome-regression and inverse-probability-weighted estimators from
+d Sant'Anna and Zhao (2020, Journal of Econometrics).
+d
+d Aggregation (simple, dynamic/event study, group and calendar), analytical and
+d multiplier-bootstrap inference with simultaneous confidence bands, and
+d postestimation export and plotting are provided by csdid_stats, csdid_estat
+d and csdid_plot.
+d
+d Unlike the SSC csdid, this implementation does not require drdid: the
+d doubly robust, outcome-regression and IPW estimators are implemented
+d internally, so the package has no dependencies.
+d
+d KW: difference in differences
+d KW: DID
+d KW: difference-in-differences
+d KW: event studies
+d KW: staggered treatment adoption
+d KW: treatment effects
+d KW: causal inference
+d
+d License: MIT
+d
+d Requires: Stata version 14
+d
+d Author: Fernando Rios-Avila, Levy Economics Institute of Bard College
+d Support: email f.rios.a@@gmail.com
+d
+d Author: Pedro H.C. Sant'Anna, Emory University
+d Support: email pedro.santanna@@emory.edu
+d
+d Author: Brantly Callaway, University of Georgia
+d Support: email brantly.callaway@@uga.edu
+d
+d Distribution-Date: 20260726
+d
+f pkg/csdid.ado
+f pkg/_csdid_post.ado
+f pkg/csdid_estat.ado
+f pkg/csdid_stats.ado
+f pkg/csdid_plot.ado
+f pkg/csdid_p.ado
+f pkg/csgvar.ado
+f pkg/_gcsgvar.ado
+f pkg/csdid_rif.ado
+f pkg/csdid_table.ado
+f pkg/dipt.ado
+f pkg/tsvmat.ado
+f pkg/csdid.mata
+f pkg/lcsdid.mlib
+f pkg/csdid.sthlp
+f pkg/csdid_postestimation.sthlp
+f pkg/csdid_estat.sthlp
+f pkg/csdid_stats.sthlp
+f pkg/csdid_plot.sthlp
+f pkg/csdid_legacy.sthlp

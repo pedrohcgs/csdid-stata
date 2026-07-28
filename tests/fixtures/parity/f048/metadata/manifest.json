@@ -1,0 +1,64 @@
+{
+  "matrix_id": "F048",
+  "fixture_family": "monte-carlo-sanity",
+  "normative_source": "R did 2.5.1 and known two-period randomized DGP",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D001",
+  "tolerance_ids": ["TOL008", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/sim-input.csv",
+      "rows": 96000,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f048/generate.R",
+      "path": "tools/parity/generators/f048/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 48048,
+    "kind": "Mersenne-Twister",
+    "draws": 200,
+    "distribution": "normal unit effects and shocks"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/per-rep.csv",
+      "schema": "monte-carlo-per-rep"
+    },
+    {
+      "path": "expected/r/summary.csv",
+      "schema": "monte-carlo-summary"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/per-rep.csv",
+      "expected": "expected/r/per-rep.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "sim"
+    },
+    {
+      "actual": "expected/new-stata/summary.csv",
+      "expected": "expected/r/summary.csv",
+      "tolerance_id": "TOL008",
+      "key_columns": "nsim"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Known-DGP Monte Carlo sanity gate for a two-period balanced panel with one treated cohort, nevertreated controls, method(reg), analytical SEs, and a true ATT of 1.0. Stata must match R did 2.5.1 per-rep ATT/SE under TOL002 and satisfy TOL008: absolute mean bias <= 0.02 and empirical 95% coverage within 0.03. This is a release sanity gate, not exhaustive stochastic inference coverage."
+}

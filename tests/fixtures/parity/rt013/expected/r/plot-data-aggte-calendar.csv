@@ -1,0 +1,4 @@
+"plot_type","series","x","x_label","estimate","ci_low","ci_high","group","time","event_time","significant"
+"aggte_calendar","Post",2,"2",1.38267356503478,0.877872077200286,1.88747505286928,,2,,1
+"aggte_calendar","Post",3,"3",1.0326440294789,0.683910156951822,1.38137790200597,,3,,1
+"aggte_calendar","Post",4,"4",1.1669447627219,0.795913161656857,1.53797636378695,,4,,1

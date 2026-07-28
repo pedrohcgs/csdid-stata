@@ -1,0 +1,67 @@
+{
+  "matrix_id": "RT016",
+  "fixture_family": "r-jel-test-inheritance",
+  "normative_source": "R did 2.5.1 JEL replication tests and Python csdid JEL inheritance map, with JEL-DiD empirical smoke gates as executable evidence",
+  "source_commit": {
+    "r_did": "9aba07d054a798558ac9b551887f5cb592d8db10",
+    "python_csdid": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+    "jel_did": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466"
+  },
+  "decision_refs": ["D001", "D004", "D006", "D013", "D014", "D015"],
+  "tolerance_ids": ["TOL002", "TOL004", "TOL005"],
+  "inputs": [
+    {
+      "path": "expected/contract/scenario-coverage.csv",
+      "rows": 6,
+      "columns": 12
+    },
+    {
+      "path": "expected/contract/source-audit.csv",
+      "rows": 2,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f040/generate.R",
+      "path": "tools/parity/generators/f040/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/scenario-coverage.csv",
+      "schema": "test-inheritance-coverage"
+    },
+    {
+      "path": "expected/contract/source-audit.csv",
+      "schema": "reference-source-audit"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata-confirmed scenario coverage",
+      "expected": "expected/contract/scenario-coverage.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "scenario_id"
+    },
+    {
+      "actual": "Stata JEL fast-request optimized equality",
+      "expected": "live nofast matrices",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "This fixture maps the R/Python JEL inheritance surface to executable Stata smoke gates. It does not replace F044/JEL001-JEL018 all-artifact replication. The local Python checkout observed by the generator lacks the frozen PY014 source path, so Python-specific JEL inheritance remains an approved source-availability divergence until that path is available."
+}

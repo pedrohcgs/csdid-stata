@@ -1,0 +1,118 @@
+{
+  "matrix_id": "RT007",
+  "fixture_family": "r-cluster-analytic",
+  "normative_source": "R did 2.5.1 tests/testthat/test-cluster-analytic.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D013", "D014"],
+  "tolerance_ids": ["TOL002", "TOL003", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/clustered-shocks-404.csv",
+      "rows": 828,
+      "columns": 7
+    },
+    {
+      "path": "inputs/clustered-shocks-505.csv",
+      "rows": 828,
+      "columns": 7
+    },
+    {
+      "path": "inputs/panel-between-11.csv",
+      "rows": 1020,
+      "columns": 7
+    },
+    {
+      "path": "inputs/panel-within-11.csv",
+      "rows": 1020,
+      "columns": 7
+    },
+    {
+      "path": "inputs/rcs-909.csv",
+      "rows": 1440,
+      "columns": 4
+    },
+    {
+      "path": "inputs/rcs-909-id.csv",
+      "rows": 1440,
+      "columns": 5
+    },
+    {
+      "path": "inputs/rcs-910.csv",
+      "rows": 1440,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt007/generate.R",
+      "path": "tools/parity/generators/rt007/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "data_seeds": [404, 505, 11, 909, 910],
+    "exact_draw_parity": false
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/bootstrap-scenarios.csv",
+      "schema": "cluster-analytic-bootstrap-scenarios"
+    },
+    {
+      "path": "expected/r/analytical-targets.csv",
+      "schema": "cluster-analytic-attgt-targets"
+    },
+    {
+      "path": "expected/r/cluster-iid-contrast.csv",
+      "schema": "cluster-iid-contrast"
+    },
+    {
+      "path": "expected/r/aggte-overall.csv",
+      "schema": "aggte-overall-cluster-targets"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata analytical clustered ATT(g,t) targets",
+      "expected": "expected/r/analytical-targets.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Stata clustered bootstrap IQR/raw draw scales",
+      "expected": "expected/contract/bootstrap-scenarios.csv",
+      "tolerance_id": "TOL003",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Stata clustered aggregation overall SEs",
+      "expected": "expected/r/aggte-overall.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "type"
+    }
+  ],
+  "approved_divergence": {
+    "scope": "clustered_bootstrap_scale_fixture",
+    "reason": "RT007 verifies cluster-analytic targets and bootstrap-scale relationships, while F035 guards the exact seeded BMisc/R rademacher multiplier stream.",
+    "accepted_behavior": "Stata exposes e(boot_draws) and verifies the same IQR and raw-draw SD scale relationships against analytical cluster-sum SEs."
+  },
+  "scope_note": "RT007 maps R did tests/testthat/test-cluster-analytic.R: analytical ATT(g,t) clustered SEs equal cluster-sum targets in regular/requested-fast panel and repeated-cross-section modes, clustered SEs differ from iid SEs when clusters share shocks, clustered bootstrap IQR/raw-draw SD scales agree with analytical SEs for panel DGPs, repeated-cross-section clustered bootstrap agrees with analytical SEs, and clustered analytical SEs propagate through simple/group/dynamic aggregation."
+}

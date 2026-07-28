@@ -1,0 +1,2 @@
+scenario,input,n_clusters,bootstrap_biters,bootstrap_seed,bootstrap_rtol
+analytical_clustered_se,clustered-data.csv,10,1499,20250202,0.3

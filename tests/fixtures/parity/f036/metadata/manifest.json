@@ -1,0 +1,77 @@
+{
+  "matrix_id": "F036",
+  "fixture_family": "legacy-option-inventory",
+  "normative_source": "Legacy Stata option inventory with R did 2.5.1 as behavioral oracle",
+  "source_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
+  "decision_refs": ["D008", "D009"],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f036/generate.R",
+      "path": "tools/parity/generators/f036/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/new-stata/option-inventory.csv",
+      "schema": "option-inventory-csv"
+    },
+    {
+      "path": "expected/new-stata/option-inventory.json",
+      "schema": "option-inventory"
+    },
+    {
+      "path": "expected/new-stata/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/new-stata/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata accepted/rejected option behavior",
+      "expected": "expected/new-stata/option-inventory.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["surface", "option"]
+    },
+    {
+      "actual": "Stata captured validation events",
+      "expected": "expected/new-stata/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Approved-divergence F036 executable inventory for the current csdid/csdid_stats/csdid_estat/csdid_plot option surface. Accepted core options, pscoretrim(), soft-deprecated aliases, Stata-style id()/vce()/control/bootstrap aliases, the agg(event) compatibility wrapper, postestimation aggregation aliases, and explicit diagnostics for unsupported legacy/convenience/styling options are checked. F036-DIV001 records legacy Stata option surfaces that are classified rather than silently reimplemented."
+}

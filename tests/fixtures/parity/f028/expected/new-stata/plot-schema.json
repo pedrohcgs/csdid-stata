@@ -1,0 +1,6 @@
+{
+  "matrix_id": "F028",
+  "fixture_family": "plot-data",
+  "plot_data_columns": ["plot_type", "series", "x", "x_label", "estimate", "ci_low", "ci_high", "group", "time", "event_time", "significant"],
+  "scope_note": "Partial plot-data fixture for ATT(g,t), ATT(g,t) group filtering, and dynamic/group/calendar aggregation plot data. Rendering, graph styling, inherited R/Python plotting tests, and JEL figures remain incomplete."
+}

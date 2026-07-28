@@ -1,0 +1,2 @@
+source_file,source_sha256,source_test,mapped_scenario,assertion_family,coverage_status,divergence_id
+tests/testthat/test_sim_data_2_groups.R,a3c85221aa5bd66d45cead18641a9ed6385882bbeb10175410a0237a6ee68a18,att_gt works with 2 groups,nt_varying / nt_universal / nyt_varying / nyt_universal,attgt-att-se-vs-r + upstream invariance,mapped,

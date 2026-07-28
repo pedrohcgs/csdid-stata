@@ -1,0 +1,118 @@
+{
+  "matrix_id": "PY019",
+  "fixture_family": "python-r-parity",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "c37d39d",
+  "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+  "decision_refs": [
+    "D004"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "TOL004"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/mpdta.csv",
+      "rows": 2500,
+      "columns": 6
+    },
+    {
+      "path": "inputs/sim_data.csv",
+      "rows": 15916,
+      "columns": 7
+    },
+    {
+      "path": "inputs/mpdta_tvw.csv",
+      "rows": 2500,
+      "columns": 7
+    },
+    {
+      "path": "inputs/factor_cov.csv",
+      "rows": 8000,
+      "columns": 7
+    },
+    {
+      "path": "inputs/mpdta_extra.csv",
+      "rows": 2500,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/py019/generate.R",
+      "path": "tools/parity/generators/py019/generate.R",
+      "note": "produces the five expected/r references; must run before generate.py"
+    },
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py019/generate.py",
+      "path": "tools/parity/generators/py019/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/ref_attgt.csv",
+      "schema": "r-reference"
+    },
+    {
+      "path": "expected/r/ref_aggte.csv",
+      "schema": "r-reference"
+    },
+    {
+      "path": "expected/r/ref_pretest.csv",
+      "schema": "r-reference"
+    },
+    {
+      "path": "expected/r/ref_fixweights.csv",
+      "schema": "r-reference"
+    },
+    {
+      "path": "expected/r/sim/ref_factor.csv",
+      "schema": "r-reference"
+    },
+    {
+      "path": "expected/r/sim/ref_gaps.csv",
+      "schema": "r-reference"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "source-scenario-map"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid ATT(g,t), analytical SEs, and aggregation output",
+      "expected": "expected/r/*.csv",
+      "tolerance_id": "TOL002/TOL004",
+      "key_columns": [
+        "scenario",
+        "group",
+        "t",
+        "type",
+        "egt"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY019 maps all 36 public parameterizations in Python test_r_parity.py: ATT(g,t), overall and event-level aggregations, time-varying fix_weights modes, factor-covariate parity, and repeated-cross-section/universal-base/anticipation/weighted/clustered gap scenarios."
+}

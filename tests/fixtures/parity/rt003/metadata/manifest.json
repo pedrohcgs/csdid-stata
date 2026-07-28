@@ -1,0 +1,72 @@
+{
+  "matrix_id": "RT003",
+  "fixture_family": "r-aggte-edge-coverage",
+  "normative_source": "R did 2.5.1 tests/testthat/test-aggte-edge-coverage.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "774a712a6c3c035c4330658a3078b57b6e0031676c034331a6852cb197cb8065",
+  "decision_refs": ["D003", "D009"],
+  "tolerance_ids": ["TOL001", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/single-treated.csv",
+      "rows": 7988,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dynamic-window.csv",
+      "rows": 20900,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt003/generate.R",
+      "path": "tools/parity/generators/rt003/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R default",
+    "seeds": [5, 6]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte-edge-coverage"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_stats aggregation matrices",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "type", "seq"]
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT003 maps both public aggte edge-coverage tests from R did: single-treated-group aggregation for simple/group/dynamic/calendar and dynamic min_e/max_e event-window consistency."
+}

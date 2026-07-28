@@ -1,0 +1,92 @@
+[
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "Invariant A holds under P1 (always-treated cohort, no never-treated)",
+    "mapped_scenario": "p1_notyet_full_vs_drop_always",
+    "assertion_family": "ATT(g,t) common-cell missingness and finite values are invariant after dropping literal always-treated units across dr/reg/ipw and requested-fast modes",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "Invariant A holds under P2 (anticipation>=1 promotes earliest cohort)",
+    "mapped_scenario": "p2_anticipation_full_vs_drop_effectively_always",
+    "assertion_family": "ATT(g,t) common-cell missingness and finite values are invariant after dropping anticipation-promoted always-treated units",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "Invariant A holds under P3 (anticipation un-coerces a late cohort)",
+    "mapped_scenario": "p3_anticipation_late_cohort_full_vs_drop_effectively_always",
+    "assertion_family": "ATT(g,t) common-cell missingness and finite values are invariant after dropping anticipation-promoted always-treated units when a late cohort remains treated",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "always-treated outcomes are never read (scaling oracle)",
+    "mapped_scenario": "p1_notyet_scaled_always_outcomes",
+    "assertion_family": "ATT(g,t) values are invariant when outcomes for always-treated units are rescaled",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "fast and slow paths agree in the no-never + always-treated regime",
+    "mapped_scenario": "fastslow_notyet_fast_vs_baseline",
+    "assertion_family": "Requested-fast and baseline paths agree in the no-never plus always-treated regime",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "latest cohort is retained as a control, not deleted, when always-treated present",
+    "mapped_scenario": "structural_latest_cohort_retained_as_control",
+    "assertion_family": "Latest cohort remains in comparison data but is excluded from estimated ATT groups; always-treated cohort is dropped",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-always-treated-invariance.R",
+    "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+    "source_test": "control_group='nevertreated' is invariant to always-treated presence",
+    "mapped_scenario": "nevertreated_fallback_full_vs_drop_always",
+    "assertion_family": "Default nevertreated branch/fallback is invariant to literal always-treated units",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ported_from_R_always_treated_invariance.py",
+    "source_sha256": "52a387f8bc107bfa4ba89e52b217da371e535c6f89d6fbeca0334e9c66d283a5",
+    "source_test": "test_nevertreated_invariant_to_always_treated_presence",
+    "mapped_scenario": "structural_dr / structural_reg / structural_ipw",
+    "assertion_family": "attgt-invariance-and-structure",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ported_from_R_always_treated_invariance.py",
+    "source_sha256": "52a387f8bc107bfa4ba89e52b217da371e535c6f89d6fbeca0334e9c66d283a5",
+    "source_test": "test_scaling_oracle_always_treated_outcomes_never_read_nevertreated",
+    "mapped_scenario": "structural_dr",
+    "assertion_family": "attgt-invariance-and-structure",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ported_from_R_always_treated_invariance.py",
+    "source_sha256": "52a387f8bc107bfa4ba89e52b217da371e535c6f89d6fbeca0334e9c66d283a5",
+    "source_test": "test_latest_cohort_kept_as_control_always_treated_dropped",
+    "mapped_scenario": "structural_notyet_dr",
+    "assertion_family": "attgt-invariance-and-structure",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

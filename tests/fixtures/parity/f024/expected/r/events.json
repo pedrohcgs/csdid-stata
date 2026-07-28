@@ -1,0 +1,10 @@
+{
+  "events": [
+    {
+      "event_type": "error",
+      "event_key": "duplicate_id_time",
+      "offending_option": "ivar/time",
+      "message_normalized": "The value of idname must be unique (by tname). Some units are observed more than once in a period."
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+overall_att_stata,overall_se_stata,scenario,method_stata,covariates_stata,min_e_stata,max_e_stata,n_effects_stata
+-2.246998298815693,4.000675706869753,figure9_cov_dr,dr,numeric,0,5,6
+.0867675804578767,1.890569483825084,figure6_no_cov_dr,dr,none,0,5,6

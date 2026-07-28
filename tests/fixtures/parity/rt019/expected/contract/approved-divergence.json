@@ -1,0 +1,38 @@
+[
+  {
+    "divergence_id": "RT019-DIV001",
+    "source_tests": "global design slice is bit-identical to per-subset model.matrix for numeric formulae",
+    "reason": "The source test compares R model.matrix output constructed globally against per-subset model.matrix output. Stata csdid does not expose R model.matrix objects or per-cell design-matrix helper output.",
+    "accepted_behavior": "RT019 verifies public covariate ATT(g,t), SE, factor/dummy equivalence, and sparse-factor warning behavior through Stata command gates."
+  },
+  {
+    "divergence_id": "RT019-DIV002",
+    "source_tests": "unbalanced panel (positional global slice) matches faster_mode for factor / transform formulae; RC-path matches faster_mode for factor / data-dependent-basis formulae; transform / factor formulae match faster_mode under universal base, notyettreated, anticipation",
+    "reason": "The source tests compare R faster_mode against R slow-path formula slicing for unbalanced, repeated-cross-section, data-dependent basis, universal-base, not-yet-treated, and anticipation combinations. Stata exposes a public csdid command and records fast/nofast optimized equivalence separately; it does not expose R faster_mode internals.",
+    "accepted_behavior": "Public covariate behavior is verified through panel and repeated-cross-section ATT(g,t)/SE gates; fast-path policy and nofast equivalence are covered by F032/RT025-style gates."
+  },
+  {
+    "divergence_id": "RT019-DIV003",
+    "source_tests": "global basis is reparameterization-invariant: ~poly(X, 2) equals ~X + I(X^2)",
+    "reason": "R poly() is a data-dependent R formula basis. Stata users represent the same public covariate span through explicit variables or factor-variable operators such as c.x#c.x; raw squared-covariate public parity is verified.",
+    "accepted_behavior": "RT019 verifies explicit squared-covariate public results against R; users needing higher-order bases must materialize those covariates before invoking Stata csdid."
+  },
+  {
+    "divergence_id": "RT019-DIV004",
+    "source_tests": "transform formulae that evaluate to NaN drop those rows instead of crashing",
+    "reason": "R can evaluate log() inside xformla and then drop non-finite formula rows. Stata csdid accepts varlists/factor-variable terms, so users precompute transformed covariates and Stata missingness rules apply before estimation.",
+    "accepted_behavior": "Missing and subset construction are covered by F019 and public covariate gates; Stata expression transforms are intentionally not a separate formula surface."
+  },
+  {
+    "divergence_id": "RT019-DIV005",
+    "source_tests": "matrix-valued transformed formula terms drop non-finite rows row-wise",
+    "reason": "R matrix-valued formula terms such as I(cbind(...)) have no direct Stata csdid varlist analogue.",
+    "accepted_behavior": "The public Stata contract supports scalar covariate variables and factor-variable terms, not matrix-valued formula expansion."
+  },
+  {
+    "divergence_id": "RT019-DIV006",
+    "source_tests": "a globally-empty factor level is dropped instead of NA-failing every cell",
+    "reason": "R factors can retain declared-but-empty levels after subsetting. Stata factor-variable expansion is based on observed levels, so the exact empty-level object state is not a separate public command surface.",
+    "accepted_behavior": "RT019 verifies dense observed factor levels and sparse absent-in-cell factor levels; globally empty retained R levels are treated as an R object-model divergence."
+  }
+]

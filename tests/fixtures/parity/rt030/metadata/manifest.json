@@ -1,0 +1,82 @@
+{
+  "matrix_id": "RT030",
+  "fixture_family": "r-att-gt-point-estimate-rmd",
+  "normative_source": "R did 2.5.1 tests/testthat/att_gt_point_estimate_tests.Rmd",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+  "decision_refs": "D004",
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "rows": 2592,
+      "columns": 7
+    },
+    {
+      "path": "inputs/repeated-cross-section.csv",
+      "rows": 643,
+      "columns": 7
+    },
+    {
+      "path": "inputs/two-period.csv",
+      "rows": 1108,
+      "columns": 7
+    },
+    {
+      "path": "inputs/unbalanced.csv",
+      "rows": 2591,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt030/generate.R",
+      "path": "tools/parity/generators/rt030/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "inherits RT029 generated inputs",
+    "seed": 9142024
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata point-estimate Rmd smoke",
+      "expected": "source public scenarios",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT030 maps public point-estimate scenarios from the legacy Rmd and records the non-testthat Rmd form as RT030-DIV001."
+}

@@ -1,0 +1,492 @@
+[
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on invalid est_method string",
+    "mapped_scenario": "invalid_method",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on invalid est_method string"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on non-character non-function est_method",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt errors on non-character non-function est_method"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on invalid fix_weights value",
+    "mapped_scenario": "invalid_fix_weights",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on invalid fix_weights value"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt rejects non-exact control_group and base_period values in both modes",
+    "mapped_scenario": "invalid_control_and_base",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt rejects non-exact control_group and base_period values in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt rejects negative or non-numeric anticipation in both modes",
+    "mapped_scenario": "invalid_anticipation",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt rejects negative or non-numeric anticipation in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt rejects invalid scalar logical controls before base R errors",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt rejects invalid scalar logical controls before base R errors"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt rejects invalid cores before parallel code sees it",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt rejects invalid cores before parallel code sees it"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt rejects argument-referenced internal variable names in both modes",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt rejects argument-referenced internal variable names in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt rejects invalid xformla before formula internals in both modes",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt rejects invalid xformla before formula internals in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "slow path rejects malformed column-name arguments before ambiguous indexing",
+    "mapped_scenario": "missing_or_malformed_column_names",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "slow path rejects malformed column-name arguments before ambiguous indexing"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt drops rows with missing gname and non-finite numeric inputs in both modes",
+    "mapped_scenario": "missing_or_nonfinite_inputs",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt drops rows with missing gname and non-finite numeric inputs in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on panel=TRUE without idname in both modes",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt errors on panel=TRUE without idname in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt still runs with panel=FALSE and no idname in both modes",
+    "mapped_scenario": "repeated_cross_section_no_ivar",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt still runs with panel=FALSE and no idname in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on invalid alp",
+    "mapped_scenario": "invalid_level",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on invalid alp"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on invalid biters when bootstrapping",
+    "mapped_scenario": "invalid_bootstrap_reps",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on invalid biters when bootstrapping"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "simulation helpers reject invalid scalar controls before raw R errors",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "simulation helpers reject invalid scalar controls before raw R errors"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "trimmer rejects malformed exported utility arguments",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "trimmer rejects malformed exported utility arguments"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "test.mboot rejects malformed bootstrap inputs before recycling",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "test.mboot rejects malformed bootstrap inputs before recycling"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "mboot rejects malformed direct helper inputs before raw errors",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "mboot rejects malformed direct helper inputs before raw errors"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "process_attgt rejects malformed group-time result lists",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "process_attgt rejects malformed group-time result lists"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "aggte rejects invalid scalar controls before base R errors",
+    "mapped_scenario": "invalid_aggregation_controls",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "aggte rejects invalid scalar controls before base R errors"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "plotting helpers reject invalid scalar controls before ggplot errors",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "plotting helpers reject invalid scalar controls before ggplot errors"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "mboot rejects invalid scalar controls before bootstrap internals",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "mboot rejects invalid scalar controls before bootstrap internals"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on fix_weights with panel=FALSE",
+    "mapped_scenario": "fix_weights_requires_panel",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on fix_weights with panel=FALSE"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt warns on extra args with built-in est_method",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV003",
+    "_row": "att_gt warns on extra args with built-in est_method"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt messages about anticipation",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV003",
+    "_row": "att_gt messages about anticipation"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt computes clustered SEs without the bootstrap (no 'requires bootstrap' warning)",
+    "mapped_scenario": "clustered_analytical_no_bootstrap_warning",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt computes clustered SEs without the bootstrap (no 'requires bootstrap' warning)"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on missing column name (slower mode)",
+    "mapped_scenario": "missing_column_standard",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on missing column name (slower mode)"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on missing column name (faster_mode)",
+    "mapped_scenario": "missing_column_fast_request",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on missing column name (faster_mode)"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on non-numeric tname",
+    "mapped_scenario": "nonnumeric_time",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on non-numeric tname"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on non-numeric gname",
+    "mapped_scenario": "nonnumeric_group",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on non-numeric gname"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on non-numeric outcome variable in both modes",
+    "mapped_scenario": "nonnumeric_outcome",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on non-numeric outcome variable in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt still accepts logical and integer outcomes in both modes",
+    "mapped_scenario": "integer_outcome",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt still accepts logical and integer outcomes in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt errors on treatment reversals (faster_mode)",
+    "mapped_scenario": "treatment_reversal",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt errors on treatment reversals (faster_mode)"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt warns on missing data dropped",
+    "mapped_scenario": "missing_data_dropped",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt warns on missing data dropped"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt warns on small groups",
+    "mapped_scenario": "small_group_warning",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt warns on small groups"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt handles data with .w column (slower mode)",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV001",
+    "_row": "att_gt handles data with .w column (slower mode)"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt messages on time-varying weights (panel)",
+    "mapped_scenario": "time_varying_weights_message",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt messages on time-varying weights (panel)"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "clustervars contract enforced in all faster_mode x bstrap combinations",
+    "mapped_scenario": "cluster_contract_validation",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "clustervars contract enforced in all faster_mode x bstrap combinations"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "one extra cluster variable still works in all faster_mode x bstrap combinations",
+    "mapped_scenario": "one_extra_cluster_works",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "one extra cluster variable still works in all faster_mode x bstrap combinations"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "aggte errors on invalid type",
+    "mapped_scenario": "invalid_aggregation_type",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "aggte errors on invalid type"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "aggte errors when ATTs contain NA and na.rm=FALSE",
+    "mapped_scenario": "aggte_na_rm_validation",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "aggte errors when ATTs contain NA and na.rm=FALSE"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt handles singular covariance for Wald test gracefully",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV002",
+    "_row": "att_gt handles singular covariance for Wald test gracefully"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt warns on overlap violations",
+    "mapped_scenario": "overlap_warning",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "att_gt warns on overlap violations"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "slow path warns once per failed cell, matching fast-path wording, with accurate Wald diagnosis",
+    "mapped_scenario": "overlap_warning_count_guard",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "slow path warns once per failed cell, matching fast-path wording, with accurate Wald diagnosis"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "att_gt warns when no pre-treatment periods for Wald test",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV003",
+    "_row": "att_gt warns when no pre-treatment periods for Wald test"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "empty-cell warning names the actually-empty base period under base_period='universal' in both modes",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV003",
+    "_row": "empty-cell warning names the actually-empty base period under base_period='universal' in both modes"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "'no never-treated group' warning is identical across modes and discloses the period filtering",
+    "mapped_scenario": "no_never_treated_fallback",
+    "assertion_family": "public Stata command-surface diagnostic or successful fallback check",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "_row": "'no never-treated group' warning is identical across modes and discloses the period filtering"
+  },
+  {
+    "source_file": "tests/testthat/test-error-handling.R",
+    "source_sha256": "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7",
+    "source_test": "balanced-panel coercion warning counts dropped units identically in both modes",
+    "mapped_scenario": "r-only-or-approved-divergence",
+    "assertion_family": "approved divergence: R-only helper, object, argument-shape, or messaging surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT011-DIV003",
+    "_row": "balanced-panel coercion warning counts dropped units identically in both modes"
+  }
+]

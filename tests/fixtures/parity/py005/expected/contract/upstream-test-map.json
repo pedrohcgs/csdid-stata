@@ -1,0 +1,47 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_clustered.py",
+    "source_sha256": "bb9b20f7acdfdd01a1dda9a13bbe4a33635ed5460053e1e3be88de8c6bf3b462",
+    "source_test": "test_clustered_bootstrap_runs",
+    "mapped_scenario": "clustered_bootstrap_runs",
+    "assertion_family": "clustered multiplier bootstrap runs and finite valid SEs are positive",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_clustered.py",
+    "source_sha256": "bb9b20f7acdfdd01a1dda9a13bbe4a33635ed5460053e1e3be88de8c6bf3b462",
+    "source_test": "test_clustered_se_differs_from_unclustered",
+    "mapped_scenario": "clustered_se_differs_from_unclustered",
+    "assertion_family": "clustered bootstrap SEs differ from unclustered bootstrap SEs",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_clustered.py",
+    "source_sha256": "bb9b20f7acdfdd01a1dda9a13bbe4a33635ed5460053e1e3be88de8c6bf3b462",
+    "source_test": "test_clustered_se_differs_in_magnitude",
+    "mapped_scenario": "clustered_se_differs_in_magnitude",
+    "assertion_family": "clustered bootstrap SEs are positive and not identical to unclustered SEs",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_clustered.py",
+    "source_sha256": "bb9b20f7acdfdd01a1dda9a13bbe4a33635ed5460053e1e3be88de8c6bf3b462",
+    "source_test": "test_unit_level_cluster_similar_to_no_cluster",
+    "mapped_scenario": "unit_level_cluster_similar_to_no_cluster",
+    "assertion_family": "unit-level clustering gives bootstrap SEs close to no-cluster bootstrap SEs",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_clustered.py",
+    "source_sha256": "bb9b20f7acdfdd01a1dda9a13bbe4a33635ed5460053e1e3be88de8c6bf3b462",
+    "source_test": "test_time_varying_cluster_rejected",
+    "mapped_scenario": "time_varying_cluster_rejected",
+    "assertion_family": "time-varying cluster variables are rejected",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

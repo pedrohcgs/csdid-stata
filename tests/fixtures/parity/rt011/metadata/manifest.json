@@ -1,0 +1,94 @@
+{
+  "matrix_id": "RT011",
+  "fixture_family": "r-error-handling",
+  "normative_source": "R did 2.5.1 tests/testthat/test-error-handling.R",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D003", "D004", "D010", "D014", "D015"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/sim-error-handling.csv",
+      "rows": 928,
+      "columns": 10
+    },
+    {
+      "path": "inputs/no-never-treated.csv",
+      "rows": 648,
+      "columns": 10
+    },
+    {
+      "path": "inputs/small-groups.csv",
+      "rows": 208,
+      "columns": 10
+    },
+    {
+      "path": "inputs/missing-inputs.csv",
+      "rows": 928,
+      "columns": 10
+    },
+    {
+      "path": "inputs/treatment-reversal.csv",
+      "rows": 928,
+      "columns": 10
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt011/generate.R",
+      "path": "tools/parity/generators/rt011/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20260401,
+    "compact_simulation": "did::reset.sim(time.periods = 4, n = 300)"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata captured diagnostics and success checks",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    },
+    {
+      "actual": "Approved R-only divergence registry",
+      "expected": "expected/contract/approved-divergence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "divergence_id"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "R test-error-handling.R mixes public diagnostics with R-only helper/object/argument-shape surfaces and owner-directed Stata divergences."
+  },
+  "scope_note": "RT011 maps R did test-error-handling.R public diagnostics through Stata csdid/csdid_stats/csdid_plot command checks for invalid options, missing or malformed variables, sample dropping, repeated cross-sections without ivar(), invalid levels/bootstrap reps, clustering, aggregation validation, overlap and no-never-treated warnings. Approved divergence records R-only helper APIs, mutable object internals, unrepresentable argument shapes, graph helper scalar controls, Wald-pretest messaging, extra-dot warning behavior, and owner-directed unbalanced-panel handling."
+}

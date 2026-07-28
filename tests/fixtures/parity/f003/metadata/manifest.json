@@ -1,0 +1,47 @@
+{
+  "matrix_id": "F003",
+  "fixture_family": "aggte-simple",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D001",
+  "tolerance_ids": ["TOL001", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 192,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f003/generate.R",
+      "path": "tools/parity/generators/f003/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte-simple"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/aggte.csv",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": "type"
+    }
+  ],
+  "approved_divergence": {}
+}

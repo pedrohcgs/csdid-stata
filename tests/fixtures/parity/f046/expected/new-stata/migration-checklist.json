@@ -1,0 +1,82 @@
+[
+  {
+    "gate": "retained_alias",
+    "surface": "method(dripw)",
+    "classification": "soft-deprecated-alias",
+    "canonical_behavior": "method=dr",
+    "evidence": "F010;F045;F046",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "retained_alias",
+    "surface": "method(stdipw)",
+    "classification": "soft-deprecated-alias",
+    "canonical_behavior": "method=ipw",
+    "evidence": "F010;F045;F046",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "retained_alias",
+    "surface": "asinr",
+    "classification": "accepted-no-op-warning",
+    "canonical_behavior": "no-op; notyet governs not-yet controls",
+    "evidence": "F017;F045;F046",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "retained_alias",
+    "surface": "wboot(wtype(rademacher))",
+    "classification": "soft-deprecated-alias",
+    "canonical_behavior": "boot_dist=rademacher;boot_dist_requested=rademacher",
+    "evidence": "F035;F046",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "unsupported_alias",
+    "surface": "wboot(wbtype(mammen))",
+    "classification": "unsupported-by-design",
+    "canonical_behavior": "exit 498; only rademacher multipliers are supported",
+    "evidence": "F035;F046",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "retained_alias",
+    "surface": "bal()/balance()",
+    "classification": "soft-deprecated-alias",
+    "canonical_behavior": "accept with warning; no-op mapped to D003 allow_unbalanced default",
+    "evidence": "F016;F017;F045",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "retained_alias",
+    "surface": "long/long2",
+    "classification": "deprecated-universal-base-event-alias",
+    "canonical_behavior": "accept with strong warning; use baseperiod(universal) when baseperiod() is omitted",
+    "evidence": "F017;F045;F036;JEL",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "unsupported_default",
+    "surface": "dryrun",
+    "classification": "unsupported-by-design",
+    "canonical_behavior": "reject internal legacy option",
+    "evidence": "F036;F045",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "default_contract",
+    "surface": "unbalanced ivar()",
+    "classification": "r-compatible-default",
+    "canonical_behavior": "use repeated-cross-section computation path with panel standard-error accounting",
+    "evidence": "D003;F016;F045",
+    "document": "docs/legacy-migration-guide.md"
+  },
+  {
+    "gate": "empirical_contract",
+    "surface": "JEL-DiD",
+    "classification": "release-blocking-replication",
+    "canonical_behavior": "replicate all frozen table and figure artifacts before release",
+    "evidence": "F040;F041;F042;F043;F044;JEL001-JEL018",
+    "document": "docs/legacy-migration-guide.md"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "source_file": "tests/testthat/test-pretest-vectorization.R",
+    "source_sha256": "7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8",
+    "source_test": "indicator() vectorization matches the row-wise definition exactly",
+    "mapped_scenario": "r-conditional-pretest-helper-only",
+    "assertion_family": "R indicator() helper has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT023-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-pretest-vectorization.R",
+    "source_sha256": "7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8",
+    "source_test": "test.mboot equals the explicit per-draw multiplier bootstrap (unclustered)",
+    "mapped_scenario": "r-conditional-pretest-helper-only",
+    "assertion_family": "R conditional-pretest test.mboot() helper has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT023-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-pretest-vectorization.R",
+    "source_sha256": "7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8",
+    "source_test": "test.mboot equals the explicit clustered multiplier bootstrap",
+    "mapped_scenario": "r-conditional-pretest-helper-only",
+    "assertion_family": "R conditional-pretest clustered test.mboot() helper has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT023-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-pretest-vectorization.R",
+    "source_sha256": "7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8",
+    "source_test": "test.mboot multi-chunk tiling accumulates across chunks correctly",
+    "mapped_scenario": "r-conditional-pretest-helper-only",
+    "assertion_family": "R skipped large transient-array helper stress has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT023-DIV001"
+  }
+]

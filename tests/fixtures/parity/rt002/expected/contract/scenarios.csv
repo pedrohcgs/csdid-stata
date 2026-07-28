@@ -1,0 +1,7 @@
+"scenario","expected_behavior"
+"simple","simple overall ATT and SE are finite and egt is absent"
+"dynamic","dynamic event times, windows, balance_e, overall ATT, and positive SEs are valid"
+"group","group aggregation rows, overall ATT, positive SEs, and max_e/na_rm exclusion are valid"
+"calendar","calendar aggregation rows are post-treatment with finite overall ATT and positive SEs"
+"na_rm","injected missing ATT is dropped by na_rm"
+"group_max_e","finite max_e excludes groups with no valid in-window cells"

@@ -1,0 +1,69 @@
+{
+  "matrix_id": "PY016",
+  "fixture_family": "python-notyettreated-no-never",
+  "normative_source": "Python csdid csdid/test_csdid/test_notyettreated.py subordinate to R did 2.5.1 no-never-treated behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D014"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/notyettreated.csv",
+      "rows": 450,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py016/generate.py",
+      "path": "tools/parity/generators/py016/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 123,
+    "kind": "numpy.random.seed",
+    "draws": "randn"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "notyettreated-scenario"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata notyettreated/no-never diagnostics and ATT metadata",
+      "expected": "source-test-map mapped scenarios",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY016 maps all tests in Python csdid test_notyettreated.py: notyettreated with no never-treated group does not crash, the latest cohort is retained as comparison data but excluded from estimated groups, ATT estimates are finite, nevertreated fallback warns/coerces, and post-treatment ATT averages remain positive."
+}

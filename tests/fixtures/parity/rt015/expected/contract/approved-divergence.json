@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT015-DIV001",
+    "source_tests": "historical did 2.1.2 install and exact object comparison",
+    "reason": "The R source installs did 2.1.2 into a temporary library and compares current R objects against that historical R package. The Stata port cannot and should not expose a public command surface for R package-version namespace regression.",
+    "accepted_behavior": "Stata verifies the corresponding current public inference surfaces: ATT(g,t) SEs, influence-function dimensions, clustered SE metadata, repeated-cross-section inference, and dynamic/group/calendar aggregation SEs."
+  }
+]

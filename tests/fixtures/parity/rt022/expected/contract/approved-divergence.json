@@ -1,0 +1,14 @@
+[
+  {
+    "divergence_id": "RT022-DIV001",
+    "source_tests": "intercept-only overlap short-circuit matches the real fit's decision, including the 0.999 knife edge; intercept-only rcond short-circuit matches the Gram-matrix test",
+    "reason": "The R source directly calls non-exported overlap/rcond guard helpers. The Stata package exposes those decisions only through estimation diagnostics and missing-cell behavior.",
+    "accepted_behavior": "Stata verifies overlap diagnostics through public csdid estimation on separated designs."
+  },
+  {
+    "divergence_id": "RT022-DIV002",
+    "source_tests": "guard cache returns bit-identical results to per-cell checks (fast and slow paths)",
+    "reason": "The R source toggles an internal did.disable_check_cache option. The Stata port has no public guard-cache switch.",
+    "accepted_behavior": "Stata verifies deterministic public results and warning counts, not internal cache toggles."
+  }
+]

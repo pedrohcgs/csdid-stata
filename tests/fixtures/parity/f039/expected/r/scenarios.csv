@@ -1,0 +1,7 @@
+"scenario","method","panel_mode","panel","control_group","base_period","xformla","bstrap","cband"
+"panel__dr","dr","panel",TRUE,"nevertreated","varying","~ X",FALSE,FALSE
+"panel__reg","reg","panel",TRUE,"nevertreated","varying","~ X",FALSE,FALSE
+"panel__ipw","ipw","panel",TRUE,"nevertreated","varying","~ X",FALSE,FALSE
+"repeated-cross-section__dr","dr","repeated-cross-section",FALSE,"nevertreated","varying","~ X",FALSE,FALSE
+"repeated-cross-section__reg","reg","repeated-cross-section",FALSE,"nevertreated","varying","~ X",FALSE,FALSE
+"repeated-cross-section__ipw","ipw","repeated-cross-section",FALSE,"nevertreated","varying","~ X",FALSE,FALSE

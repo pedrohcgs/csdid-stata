@@ -1,0 +1,47 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_integration.py",
+    "source_sha256": "dde98d8ba4d7084db5dcd2116f31855d558d8d042366ad22fbf69c40914ab4cb",
+    "source_test": "test_full_pipeline",
+    "mapped_scenario": "full_public_pipeline",
+    "assertion_family": "ATT rows finite, SE positive, and all public aggregations populated",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_integration.py",
+    "source_sha256": "dde98d8ba4d7084db5dcd2116f31855d558d8d042366ad22fbf69c40914ab4cb",
+    "source_test": "test_treatment_effect_detected",
+    "mapped_scenario": "simple_positive_effect",
+    "assertion_family": "simple aggregation overall ATT exceeds source threshold",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_integration.py",
+    "source_sha256": "dde98d8ba4d7084db5dcd2116f31855d558d8d042366ad22fbf69c40914ab4cb",
+    "source_test": "test_fast_mode_consistency",
+    "mapped_scenario": "compute_inffunc_internal_path",
+    "assertion_family": "Python internal compute_inffunc=False equality has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY013-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_integration.py",
+    "source_sha256": "dde98d8ba4d7084db5dcd2116f31855d558d8d042366ad22fbf69c40914ab4cb",
+    "source_test": "test_all_estimation_methods",
+    "mapped_scenario": "all_public_methods",
+    "assertion_family": "dr, ipw, and reg commands return finite ATT estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_integration.py",
+    "source_sha256": "dde98d8ba4d7084db5dcd2116f31855d558d8d042366ad22fbf69c40914ab4cb",
+    "source_test": "test_notyettreated_control",
+    "mapped_scenario": "notyettreated_public_control",
+    "assertion_family": "not-yet-treated control option returns finite ATT estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

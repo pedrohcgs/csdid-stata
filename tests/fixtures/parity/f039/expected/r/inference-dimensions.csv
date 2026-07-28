@@ -1,0 +1,7 @@
+"scenario","method","panel_mode","n_inffunc_rows","n_inffunc_cols","n_att","n_obs","positive_finite_se_count","finite_att_count","nonzero_if_count","all_finite_if"
+"panel__dr","dr","panel",180,6,6,720,6,6,720,1
+"panel__reg","reg","panel",180,6,6,720,6,6,720,1
+"panel__ipw","ipw","panel",180,6,6,720,6,6,720,1
+"repeated-cross-section__dr","dr","repeated-cross-section",720,6,6,720,6,6,1440,1
+"repeated-cross-section__reg","reg","repeated-cross-section",720,6,6,720,6,6,1440,1
+"repeated-cross-section__ipw","ipw","repeated-cross-section",720,6,6,720,6,6,1440,1

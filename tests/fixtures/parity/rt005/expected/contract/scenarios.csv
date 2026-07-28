@@ -1,0 +1,7 @@
+"scenario","input","expected_behavior"
+"core-attgt","sim-data.csv","Core dr/reg/ipw panel and repeated-cross-section ATT(g,t) results are finite and near the DGP target"
+"aggregation","dynamic.csv","Simple/group/dynamic/calendar aggregation, event windows, balance_e, and nonconsecutive time behavior are finite"
+"unbalanced-and-notyet","unbalanced.csv","Unbalanced ivar() data uses the R-compatible allow_unbalanced path; not-yet-treated/no-never behavior is finite and diagnostic"
+"weights-fixweights-if","fixweights.csv","Sampling weights, fix_weights modes, and influence-function summaries behave as frozen"
+"fast-mode","sim-data.csv","Requested fast path equals standard path for public supported inputs"
+"validation-and-names","sim-data.csv","Malformed inputs, first-period treatment, cband metadata, clustered SEs, and reserved column names are covered"

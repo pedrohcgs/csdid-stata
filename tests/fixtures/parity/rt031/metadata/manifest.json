@@ -1,0 +1,12 @@
+{
+  "matrix_id": "RT031",
+  "fixture_family": "r-test-map",
+  "normative_source": "R did 2.5.1 tests/testthat/test_sim_data_2_groups.R",
+  "decision_refs": ["D004"],
+  "tolerance_ids": ["TOL001"],
+  "generators": ["tools/parity/generators/rt031/generate.R"],
+  "inputs": ["inputs/two-groups.csv"],
+  "expected_outputs": ["expected/r/attgt.csv"],
+  "comparison_plan": "Stata ATT(g,t) and analytical SE for four control-group x base-period specifications compared against R at 1e-10, plus the upstream invariance that all four agree and the post cell recovers the true effect.",
+  "scope_note": "Two-group design: one treated cohort plus never-treated, four periods, n=5000, seed 20241017. Never-treated and not-yet-treated control sets coincide, so all four specifications must agree."
+}

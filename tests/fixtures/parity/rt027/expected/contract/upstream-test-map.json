@@ -1,0 +1,29 @@
+[
+  {
+    "source_file": "tests/testthat/test-unbalanced-faster-cluster-se.R",
+    "source_sha256": "fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e",
+    "source_test": "att_gt analytical clustered SE: faster_mode works (not i.i.d. fallback) on an unbalanced panel",
+    "mapped_scenario": "unbalanced_attgt_clustered_public_results_with_fast_unbalanced_rc",
+    "assertion_family": "cluster vector aligns with influence functions; clustered SEs match cluster-sum formula; clustered SEs differ from iid; fast request uses the optimized unbalanced-RC path",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-unbalanced-faster-cluster-se.R",
+    "source_sha256": "fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e",
+    "source_test": "aggte: faster_mode TRUE == FALSE on an unbalanced clustered panel (all aggregation types)",
+    "mapped_scenario": "unbalanced_aggte_clustered_and_iid_public_results_with_fast_unbalanced_rc",
+    "assertion_family": "simple/group/dynamic/calendar aggregation ATT and SE match R faster_mode TRUE/FALSE outputs; Stata fast request uses the optimized unbalanced-RC path",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-unbalanced-faster-cluster-se.R",
+    "source_sha256": "fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e",
+    "source_test": "no regression: balanced panel still has faster_mode TRUE == FALSE (att_gt + aggte, clustered)",
+    "mapped_scenario": "balanced_attgt_aggte_clustered_fast_path",
+    "assertion_family": "balanced clustered ATT(g,t) and aggregation fast path matches baseline and R did outputs",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "F034-DIV001",
+    "surface": "stata-saverif-artifact-extension",
+    "reason": "R did exposes MP objects and influence-function matrices in R memory, while Stata needs a durable saverif() dataset and csdid_stats using reload workflow. The saved-RIF file format is therefore a Stata extension rather than an R object surface.",
+    "accepted_behavior": "The saved RIF dataset must preserve R influence-function summaries, required Stata schema/characteristics, no-replace protection, and simple/group/calendar/dynamic csdid_stats reload parity for panel and repeated-cross-section command results."
+  }
+]

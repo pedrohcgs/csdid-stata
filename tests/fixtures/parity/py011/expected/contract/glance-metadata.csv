@@ -1,0 +1,10 @@
+object,method,nobs,ngroup,ntime,control_group,est_method
+MP,dr,1000,3,4,nevertreated,dr
+aggte_simple,dr,1000,3,4,nevertreated,dr
+aggte_dynamic,dr,1000,3,4,nevertreated,dr
+aggte_group,dr,1000,3,4,nevertreated,dr
+aggte_calendar,dr,1000,3,4,nevertreated,dr
+fast,dr,1000,3,4,nevertreated,dr
+method_dr,dr,1000,3,4,nevertreated,dr
+method_reg,reg,1000,3,4,nevertreated,reg
+method_ipw,ipw,1000,3,4,nevertreated,ipw

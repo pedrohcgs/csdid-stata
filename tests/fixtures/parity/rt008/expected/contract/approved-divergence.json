@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT008-DIV001",
+    "source_tests": "compute_inffunc = FALSE gives point estimates identical to a full run; compute_inffunc = FALSE forces bstrap/cband off and yields a valid MP object; aggte() errors clearly on a compute_inffunc = FALSE object; compute_inffunc must be a single logical; compute_inffunc = FALSE matches a full run with fix_weights = 'varying'; compute_inffunc = FALSE matches a full run with anticipation, universal base period, not-yet-treated controls, and clustering; compute_inffunc = FALSE matches a full run on an unbalanced panel; custom est_method receives inffunc = FALSE and may return a NULL influence function",
+    "reason": "R test-compute-inffunc.R directly exercises compute_inffunc=FALSE, a point-estimates-only MP object path that suppresses influence functions, SEs, bootstrap bands, and some postestimation. The Stata public command profile intentionally keeps influence functions available for SEs, saved RIF artifacts, and csdid_stats/csdid_estat postestimation, and exposes no compute_inffunc option.",
+    "accepted_behavior": "Stata verifies default IF-backed estimation, finite SEs, aggregation postestimation, and explicit rejection of compute_inffunc() as an unsupported public option. Python analogue PY006 records the same policy for the subordinate Python suite."
+  }
+]

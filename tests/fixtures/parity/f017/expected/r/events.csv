@@ -1,0 +1,7 @@
+"event_key","return_code","event_type","offending_option","message_normalized"
+"legacy_bal_full",0,"warning","bal(full)","csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+"legacy_balance_full",0,"warning","balance(full)","csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+"legacy_bal_unbal",0,"warning","bal(unbal)","csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+"legacy_long",0,"warning","long","warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+"legacy_long2",0,"warning","long2","warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+"legacy_asinr_noop",0,"warning","asinr","csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"

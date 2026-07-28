@@ -1,0 +1,9 @@
+object,input,method,expected_min_rows,nobs
+MP,mpdta.csv,reg,1,500
+aggte_simple,mpdta.csv,reg,1,500
+aggte_dynamic,mpdta.csv,reg,1,500
+aggte_group,mpdta.csv,reg,1,500
+aggte_calendar,mpdta.csv,reg,1,500
+method_dr,sim-tidy.csv,dr,1,1000
+method_reg,sim-tidy.csv,reg,1,1000
+method_ipw,sim-tidy.csv,ipw,1,1000

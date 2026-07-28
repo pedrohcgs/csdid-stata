@@ -1,0 +1,38 @@
+[
+  {
+    "source_file": "tests/testthat/test-aggte-clustervars-override.R",
+    "source_sha256": "6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6",
+    "source_test": "inherited clustering and same-variable override are honored without warning",
+    "mapped_scenario": "clustered_inherited;clustered_same_override",
+    "assertion_family": "no warning; same-variable override matches inherited clustered SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-aggte-clustervars-override.R",
+    "source_sha256": "6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6",
+    "source_test": "aggte warns and falls back to i.i.d. when att_gt was not clustered (analytic)",
+    "mapped_scenario": "unclustered_iid;unclustered_cluster_override",
+    "assertion_family": "Stata reports unclustered aggregation but rejects a new aggregation cluster after unclustered estimation",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT001-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-aggte-clustervars-override.R",
+    "source_sha256": "6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6",
+    "source_test": "aggte bootstrap override warns and falls back instead of erroring",
+    "mapped_scenario": "pending-bootstrap-aggregation",
+    "assertion_family": "R aggregation bootstrap override has no closed public Stata aggregation bootstrap surface",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT001-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-aggte-clustervars-override.R",
+    "source_sha256": "6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6",
+    "source_test": "aggte refuses to switch to a different cluster variable than att_gt used",
+    "mapped_scenario": "clustered_region_override",
+    "assertion_family": "mismatched cluster request exits nonzero with a clear diagnostic",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

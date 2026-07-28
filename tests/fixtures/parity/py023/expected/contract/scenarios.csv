@@ -1,0 +1,10 @@
+scenario,input,expected_behavior
+mpdta_t1_column,mpdta.csv,mpdta not-yet-treated regression runs before and after adding a harmless t1 column
+mpdta_missing_covariate,mpdta.csv,missing covariate row is handled by complete-case preprocessing and estimation succeeds
+fewer_periods_main,fewer_periods.csv,fewer observed periods than treatment groups gives expected ATT slice and nonmissing aggregations
+zero_pretreatment,zero_pretreat.csv,pre-treatment ATT for group 9 at time 7 is zero under universal and varying base periods
+missing_formula_variable,missing_var.csv,unknown covariate variable is rejected
+anticipation_window,anticipation.csv,anticipation controls whether late cohort is coerced to controls or remains treated
+fewer_periods_dr,fewer_periods.csv,fewer-periods design returns finite ATT and nonmissing dynamic overall ATT
+fewer_periods_reg,fewer_periods.csv,fewer-periods design returns finite ATT and nonmissing dynamic overall ATT
+fewer_periods_ipw,fewer_periods.csv,fewer-periods design returns finite ATT and nonmissing dynamic overall ATT

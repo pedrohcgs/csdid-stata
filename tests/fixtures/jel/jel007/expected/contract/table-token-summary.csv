@@ -1,0 +1,3 @@
+role,relative_path,numeric_token_count,numeric_token_sum,numeric_token_min,numeric_token_max
+r,tables/table5_R.tex,60,14102.15,-64,2014
+stata,tables/table5_stata.tex,24,13228.55,-2.56,2200

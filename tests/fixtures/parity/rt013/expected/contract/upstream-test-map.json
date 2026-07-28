@@ -1,0 +1,110 @@
+[
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.MP returns a ggplot object",
+    "mapped_scenario": "attgt_plot_data",
+    "assertion_family": "ggplot object creation mapped to Stata plot-data file creation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.MP accepts group parameter",
+    "mapped_scenario": "attgt_first_group_plot_data",
+    "assertion_family": "group argument mapped to Stata group() plot-data filter",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.MP warns for non-existent group values",
+    "mapped_scenario": "attgt_invalid_group_warning_all_groups",
+    "assertion_family": "R warning mapped to Stata informational diagnostic and all-group plot data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid works for type = dynamic",
+    "mapped_scenario": "aggte_dynamic_plot_data",
+    "assertion_family": "dynamic AGGTE plot object mapped to dynamic plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid works for type = group",
+    "mapped_scenario": "aggte_group_plot_data",
+    "assertion_family": "group AGGTE plot object mapped to group plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid works for type = calendar",
+    "mapped_scenario": "aggte_calendar_plot_data",
+    "assertion_family": "calendar AGGTE plot object mapped to calendar plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid errors for type = simple",
+    "mapped_scenario": "aggte_simple_rejected",
+    "assertion_family": "simple AGGTE plot error mapped to Stata simple aggregation rejection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "splot works for group-type and renders without deprecation warnings",
+    "mapped_scenario": "aggte_group_plot_data_no_error",
+    "assertion_family": "ggplot build/no-warning smoke mapped to successful group plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.MP accepts custom labels",
+    "mapped_scenario": "graph-styling-options",
+    "assertion_family": "R ggplot label/theme/ref_line options are rendered-graph styling controls outside Stata plot-data parity",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT013-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.AGGTEobj accepts custom labels and theme settings",
+    "mapped_scenario": "graph-styling-options",
+    "assertion_family": "R ggplot label/theme/ref_line options are rendered-graph styling controls outside Stata plot-data parity",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT013-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.AGGTEobj works with theming=FALSE",
+    "mapped_scenario": "graph-styling-options",
+    "assertion_family": "R ggplot label/theme/ref_line options are rendered-graph styling controls outside Stata plot-data parity",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT013-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-ggdid.R",
+    "source_sha256": "5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3",
+    "source_test": "ggdid.AGGTEobj works with ref_line=NULL",
+    "mapped_scenario": "graph-styling-options",
+    "assertion_family": "R ggplot label/theme/ref_line options are rendered-graph styling controls outside Stata plot-data parity",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT013-DIV001"
+  }
+]

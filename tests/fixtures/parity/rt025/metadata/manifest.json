@@ -1,0 +1,83 @@
+{
+  "matrix_id": "RT025",
+  "fixture_family": "r-slowpath-precompute",
+  "normative_source": "R did 2.5.1 tests/testthat/test-slowpath-precompute.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 360,
+      "columns": 6
+    },
+    {
+      "path": "inputs/input-shuffled.csv",
+      "rows": 360,
+      "columns": 6
+    },
+    {
+      "path": "inputs/input-unbalanced.csv",
+      "rows": 350,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt025/generate.R",
+      "path": "tools/parity/generators/rt025/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "slowpath-public-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata requested-fast optimized and row-order invariance checks",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT025 maps the public slowpath-precompute invariants to Stata requested-fast optimized equality against explicit nofast and row-order invariance. Six source blocks that compare R's hidden did.disable_precompute/get_wide_data legacy path to R's internal precompute implementation are approved divergences because the Stata port has no public analogue for that R-only escape hatch."
+}

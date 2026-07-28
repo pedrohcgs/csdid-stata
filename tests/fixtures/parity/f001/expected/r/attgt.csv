@@ -1,0 +1,2 @@
+"group","time","event_time","att","se","crit_val","ci_low","ci_high","control_group","base_period","est_method","panel_mode","sample_n","inffunc_col"
+2,2,0,1,,,,,"nevertreated","varying","reg","panel",40,1

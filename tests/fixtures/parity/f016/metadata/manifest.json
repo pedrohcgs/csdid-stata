@@ -1,0 +1,102 @@
+{
+  "matrix_id": "F016",
+  "fixture_family": "unbalanced-panel",
+  "normative_source": "R did 2.5.1 allow_unbalanced_panel path with owner-directed Stata default",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D003",
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 48,
+      "columns": 9
+    },
+    {
+      "path": "inputs/input-uniform-count.csv",
+      "rows": 90,
+      "columns": 5
+    },
+    {
+      "path": "inputs/rt027-unbalanced-cluster.csv",
+      "rows": 550,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f016/generate.R",
+      "path": "tools/parity/generators/f016/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/cluster-grid.csv",
+      "schema": "attgt-cluster-grid"
+    },
+    {
+      "path": "expected/r/uniform-count-attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rt027-cluster-attgt.csv",
+      "schema": "attgt-cluster-grid"
+    },
+    {
+      "path": "expected/r/rt027-cluster-aggte.csv",
+      "schema": "aggte-cluster-grid"
+    },
+    {
+      "path": "expected/r/events.json",
+      "schema": "events"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["est_method", "weight_var", "covariates", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/cluster-grid.csv",
+      "expected": "expected/r/cluster-grid.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["est_method", "weight_var", "covariates", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/uniform-count-attgt.csv",
+      "expected": "expected/r/uniform-count-attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/rt027-cluster-attgt.csv",
+      "expected": "expected/r/rt027-cluster-attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/rt027-cluster-aggte.csv",
+      "expected": "expected/r/rt027-cluster-aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["agg_type", "seq"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Unbalanced panel is routed through repeated-cross-section estimators by default. Fixture covers dr/reg/ipw with no covariates and x1+x2 covariates, each with and without iweights, matching clustered SEs for the same grid, time-varying cluster rejection, the inherited uniform-row-count-but-missing-periods balance-detection edge case, and a partial RT027-style shuffled unbalanced clustered universal-base aggregation stress slice. Soft-deprecated legacy balance aliases are covered by F017; broader inherited unbalanced stress tests remain covered by RT/PY rows."
+}

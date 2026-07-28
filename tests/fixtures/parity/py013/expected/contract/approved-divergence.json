@@ -1,0 +1,10 @@
+[
+  {
+    "divergence_id": "PY013-DIV001",
+    "source_file": "csdid/test_csdid/test_integration.py",
+    "source_test": "test_fast_mode_consistency",
+    "decision_ref": "D004",
+    "reason": "The Python test compares internal ATTgt compute_inffunc=True versus compute_inffunc=False construction paths. Stata exposes no public command option that disables required influence-function construction while retaining the same postestimation contract, so the public command-surface equivalent is intentionally out of scope.",
+    "replacement_coverage": "F032 and PY009 verify public fast/requested-fast equivalence. PY013 verifies the remaining public integration pipeline through ATT(g,t), aggregations, estimation methods, and not-yet-treated controls."
+  }
+]

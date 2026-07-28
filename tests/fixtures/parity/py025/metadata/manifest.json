@@ -1,0 +1,40 @@
+{
+  "fixture_family": "python-unit-test-inheritance",
+  "normative_source": "R did 2.5.1",
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py025/generate.py",
+      "path": "tools/parity/generators/py025/generate.py"
+    }
+  ],
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid behaviour asserted by the test named in mapped_scenario",
+      "expected": "the corresponding Python csdid unit test",
+      "key_columns": [
+        "source_file",
+        "source_test"
+      ]
+    }
+  ],
+  "scope_note": "PY025 classifies all 106 tests in the six Python csdid test_unit_* files. 98 are mapped to a Stata assertion, named per row in mapped_scenario; 8 are recorded as inapplicable under PY025-DIV001. These were initially excluded wholesale as 'Python internals with no Stata surface', which was wrong: most assert behaviour a csdid user can observe. The generator raises on any upstream unit test missing from its classification table, so the record cannot silently fall behind."
+}

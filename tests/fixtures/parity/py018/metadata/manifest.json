@@ -1,0 +1,115 @@
+{
+  "matrix_id": "PY018",
+  "fixture_family": "python-per-cell-failure",
+  "normative_source": "Python csdid test_percell_failure.py subordinate to R did 2.5.1 robustness guards",
+  "source_commit": "e15c0c8cde82b8d035fa285f344be7735b775e15d5b0b9fc4dd2159c5f05fe8e",
+  "decision_refs": "D004",
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/zero-weight-failure.csv",
+      "rows": 360,
+      "columns": 6
+    },
+    {
+      "path": "inputs/normal.csv",
+      "rows": 200,
+      "columns": 4
+    },
+    {
+      "path": "inputs/tiny-group.csv",
+      "rows": 244,
+      "columns": 4
+    },
+    {
+      "path": "inputs/collinear-covariates.csv",
+      "rows": 240,
+      "columns": 6
+    },
+    {
+      "path": "inputs/overlap-failure.csv",
+      "rows": 600,
+      "columns": 5
+    },
+    {
+      "path": "inputs/singular-control.csv",
+      "rows": 244,
+      "columns": 5
+    },
+    {
+      "path": "inputs/small-comparison-upstream.csv",
+      "rows": 11632,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/py018/generate.R",
+      "path": "tools/parity/generators/py018/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed_zero_weight_failure": 47,
+    "seed_normal": 42,
+    "seed_tiny_group": 42,
+    "seed_collinear_covariates": 42,
+    "seed_overlap_failure": 20260610,
+    "seed_singular_control": 123,
+    "seed_small_comparison_upstream": "09142024"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/r/failure-pattern.csv",
+      "schema": "attgt-missing-pattern"
+    },
+    {
+      "path": "expected/r/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/r/events.json",
+      "schema": "error-warning-events"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Mapped Python source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    },
+    {
+      "actual": "Stata ATT(g,t) missing-cell pattern and finite values",
+      "expected": "expected/r/failure-pattern.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Stata overlap warning count",
+      "expected": "expected/r/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "event_key"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "PY018 maps all four tests in DrSquare/csdid csdid/test_csdid/test_percell_failure.py at sha256 e15c0c8cde82b8d035fa285f344be7735b775e15d5b0b9fc4dd2159c5f05fe8e, anchored to R did 2.5.1 robustness-guard behavior. The gate covers no-crash collinear covariates, tiny-group no-crash and viable-group finite cells, failed-cell missingness checks, and normal-data no-regression checks. It also adds stricter R-backed zero-weight, overlap, singular-control, and small-comparison-group cases with exact missing-pattern and warning-count checks plus TOL002 finite ATT/SE parity."
+}

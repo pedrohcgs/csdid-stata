@@ -1,0 +1,70 @@
+{
+  "matrix_id": "F034",
+  "fixture_family": "saved-rif-artifacts",
+  "normative_source": "R did 2.5.1 influence functions plus retained Stata saverif() artifact contract",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f034/generate.R",
+      "path": "tools/parity/generators/f034/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/rif-summary.csv",
+      "schema": "inffunc-summary"
+    },
+    {
+      "path": "expected/new-stata/saverif-schema.json",
+      "schema": "saved-rif-artifact"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "saved Stata RIF summary",
+      "expected": "expected/r/rif-summary.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time", "inffunc_col"]
+    },
+    {
+      "actual": "saved Stata RIF dataset schema",
+      "expected": "expected/new-stata/saverif-schema.json",
+      "tolerance_id": "EXACT",
+      "key_columns": ["variable", "characteristic"]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Approved-divergence saverif() artifact schema, numeric RIF summary parity, and csdid_stats reload parity for panel and true repeated-cross-section no-covariate reg scenarios. F034-DIV001 records that persisted RIF datasets are a Stata extension that must preserve R influence-function content rather than byte-match an R object format."
+}

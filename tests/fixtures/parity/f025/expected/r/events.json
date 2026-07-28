@@ -1,0 +1,8 @@
+[
+  {
+    "scenario": "dynamic_missing_default",
+    "action": "aggte dynamic after injected missing ATT with na.rm FALSE",
+    "expected_error_key": "Missing values",
+    "expected_rc": null
+  }
+]

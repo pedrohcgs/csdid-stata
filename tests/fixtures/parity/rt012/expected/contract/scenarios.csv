@@ -1,0 +1,6 @@
+"scenario","input","expected_behavior"
+"balanced-covariate-optimized","input.csv","balanced panel covariate requested-fast path equals nofast and fast_used is 1"
+"rc-covariate-optimized","input.csv","repeated-cross-section covariate requested-fast path equals nofast and fast_used is 1"
+"unbalanced-covariate-optimized","input-unbalanced.csv","unbalanced panel covariate requested-fast path equals nofast and fast_used is 1"
+"real-fast-no-covariate-reg","input.csv","balanced panel no-covariate method(reg) requested-fast path uses fast engine and equals baseline"
+"aggregation-optimized","input.csv","simple/group/dynamic/calendar aggregation after requested-fast covariate run equals nofast aggregation"

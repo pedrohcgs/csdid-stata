@@ -1,0 +1,93 @@
+[
+  {
+    "scenario": "balanced_default",
+    "input": "balanced.csv",
+    "panel_mode": "panel",
+    "method_requested": "dr",
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "baseline"
+  },
+  {
+    "scenario": "balanced_explicit_r_defaults",
+    "input": "balanced.csv",
+    "panel_mode": "panel",
+    "method_requested": "dr",
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "same-as-balanced-default"
+  },
+  {
+    "scenario": "unbalanced_default",
+    "input": "unbalanced.csv",
+    "panel_mode": "allow_unbalanced",
+    "method_requested": "dr",
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "r-compatible-unbalanced-default"
+  },
+  {
+    "scenario": "rc_omitted_ivar_default",
+    "input": "balanced.csv",
+    "panel_mode": "repeated-cross-section",
+    "method_requested": "dr",
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "r-compatible-repeated-cross-section-default"
+  },
+  {
+    "scenario": "asinr_noop",
+    "input": "balanced.csv",
+    "panel_mode": "panel",
+    "method_requested": "dr",
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "same-as-balanced-default"
+  },
+  {
+    "scenario": "method_dripw_alias",
+    "input": "balanced.csv",
+    "panel_mode": "panel",
+    "method_requested": "dripw",
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "same-as-method-dr"
+  },
+  {
+    "scenario": "method_stdipw_alias",
+    "input": "balanced.csv",
+    "panel_mode": "panel",
+    "method_requested": "stdipw",
+    "method": "ipw",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "bootstrap": 1,
+    "cband": 1,
+    "level": 95,
+    "expected_relation": "same-as-method-ipw"
+  }
+]

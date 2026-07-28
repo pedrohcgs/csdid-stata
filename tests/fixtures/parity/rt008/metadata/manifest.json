@@ -1,0 +1,64 @@
+{
+  "matrix_id": "RT008",
+  "fixture_family": "r-compute-inffunc",
+  "normative_source": "R did 2.5.1 tests/testthat/test-compute-inffunc.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 216,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt008/generate.R",
+      "path": "tools/parity/generators/rt008/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata default public IF-backed command results and unsupported option rejection",
+      "expected": "expected/contract/approved-divergence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "divergence_id"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "The R source exercises compute_inffunc=FALSE, which is outside the frozen Stata public command profile."
+  },
+  "scope_note": "RT008 records all eight R did test-compute-inffunc.R blocks as approved divergences because they directly test compute_inffunc=FALSE point-estimates-only MP object behavior and custom-estimator callbacks. The Stata port keeps influence functions available for public SE, saved-RIF, and postestimation behavior and rejects compute_inffunc() as unsupported."
+}

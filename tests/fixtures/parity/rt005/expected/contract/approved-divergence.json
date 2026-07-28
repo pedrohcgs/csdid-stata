@@ -1,0 +1,14 @@
+[
+  {
+    "divergence_id": "RT005-DIV001",
+    "source_tests": "custom estimation method",
+    "reason": "The R source accepts function-valued est_method callbacks such as DRDID::drdid_imp_panel. The frozen Stata command profile exposes built-in dr/reg/ipw methods and does not accept arbitrary user callback functions.",
+    "accepted_behavior": "Stata verifies built-in dr/reg/ipw, method validation, DRDID boundary behavior, and fast/baseline equality through F010, F033, RT005, RT012, and PY003-style gates."
+  },
+  {
+    "divergence_id": "RT005-DIV002",
+    "source_tests": "fix_weights validation",
+    "reason": "Most fix_weights validation behavior is public and mapped, but the R source also validates custom estimator callback edge cases. Stata has no public custom-estimator callback surface.",
+    "accepted_behavior": "Stata verifies invalid fix_weights values, unsupported fixed modes for repeated cross-sections, balanced/unbalanced fixed-weight behavior, and fast/baseline equality for public command options."
+  }
+]

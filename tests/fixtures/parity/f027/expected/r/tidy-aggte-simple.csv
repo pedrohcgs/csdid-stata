@@ -1,0 +1,2 @@
+"type","term","estimate","std_error","statistic","p_value","conf_low","conf_high","point_conf_low","point_conf_high"
+"simple","ATT(simple average)",0.937837149764615,0.0157070228460953,59.7081419536968,0,0.90705195068192,0.96862234884731,0.90705195068192,0.96862234884731

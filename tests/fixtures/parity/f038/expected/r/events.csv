@@ -1,0 +1,2 @@
+"event_key","return_code","event_type","offending_option","message_normalized"
+"missing_formula_variable",111,"error","x variable not in dataset","variable x_missing not found"

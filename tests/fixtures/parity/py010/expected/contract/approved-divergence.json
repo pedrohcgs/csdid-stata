@@ -1,0 +1,14 @@
+[
+  {
+    "divergence_id": "PY010-DIV001",
+    "source_tests": "test_plot_attgt_with_custom_labels; test_plot_aggte_custom_labels; test_plot_aggte_no_theming; test_plot_aggte_no_ref_line; test_plot_aggte_all_types_theming[dynamic-True]; test_plot_aggte_all_types_theming[dynamic-False]; test_plot_aggte_all_types_theming[group-True]; test_plot_aggte_all_types_theming[group-False]; test_plot_aggte_all_types_theming[calendar-True]; test_plot_aggte_all_types_theming[calendar-False]",
+    "reason": "Python plotting tests exercise matplotlib label, theme, and reference-line controls. The Stata port currently freezes numerical plot-data export and rejects graph styling options.",
+    "accepted_behavior": "Stata csdid_plot saves ATT(g,t) and aggregation plot data; unsupported styling options fail with a diagnostic."
+  },
+  {
+    "divergence_id": "PY010-DIV002",
+    "source_tests": "test_plot_attgt_invalid_group_raises",
+    "reason": "Python raises for invalid plot groups, but R did test-ggdid.R treats invalid groups as a warning path. The Python package is subordinate to R for parity decisions.",
+    "accepted_behavior": "Stata follows the R-like behavior: it emits an informational diagnostic and reports all available groups."
+  }
+]

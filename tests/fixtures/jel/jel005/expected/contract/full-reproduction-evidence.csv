@@ -1,0 +1,2 @@
+artifact_id,artifact_type,status,full_gate,analysis_gate,report,comparison_csv,semantic_audit_csv
+JEL005,table,pass,CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh,CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh --analyze-existing,reports/jel-full-reproduction-result.md,build/jel-full-reproduction/outputs/artifact-comparison.csv,build/jel-full-reproduction/outputs/stata-figure-semantic-audit.csv

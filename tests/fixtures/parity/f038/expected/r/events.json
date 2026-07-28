@@ -1,0 +1,9 @@
+[
+  {
+    "event_key": "missing_formula_variable",
+    "return_code": 111,
+    "event_type": "error",
+    "offending_option": "x variable not in dataset",
+    "message_normalized": "variable x_missing not found"
+  }
+]

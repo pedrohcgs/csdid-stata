@@ -1,0 +1,27 @@
+{
+  "fixture_family": "jel-all-artifact-contract-rollup",
+  "generator": "python3 tools/parity/generators/jel/generate.py",
+  "matrix_ids": [
+    "JEL001",
+    "JEL002",
+    "JEL003",
+    "JEL004",
+    "JEL005",
+    "JEL006",
+    "JEL007",
+    "JEL008",
+    "JEL009",
+    "JEL010",
+    "JEL011",
+    "JEL012",
+    "JEL013",
+    "JEL014",
+    "JEL015",
+    "JEL016",
+    "JEL017",
+    "JEL018"
+  ],
+  "normative_source": "JEL-DiD committed scripts and artifacts",
+  "scope_note": "Rollup of JEL001-JEL018 artifact contracts. All rows are mapped to reports/jel-full-reproduction-result.md, which records the opt-in full R/Stata master reproduction evidence and current regenerated-R oracle pass status.",
+  "source_commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466"
+}

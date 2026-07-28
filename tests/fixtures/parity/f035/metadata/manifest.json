@@ -1,0 +1,76 @@
+{
+  "matrix_id": "F035",
+  "fixture_family": "bootstrap-option-surface",
+  "normative_source": "R did 2.5.1 multiplier bootstrap plus frozen legacy Stata option decisions",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D013"],
+  "tolerance_ids": ["EXACT", "TOL003"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f035/generate.R",
+      "path": "tools/parity/generators/f035/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "exact_draw_parity": false,
+    "reason": "F035 validates Stata option mapping, metadata, and the exact seeded BMisc/R rademacher multiplier-stream probe; F014 records unclustered bootstrap smoke coverage."
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/new-stata/bootstrap-options.json",
+      "schema": "bootstrap-option-contract"
+    },
+    {
+      "path": "expected/new-stata/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/new-stata/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata e() bootstrap option metadata",
+      "expected": "expected/new-stata/bootstrap-options.json",
+      "tolerance_id": "EXACT",
+      "key_columns": "option"
+    },
+    {
+      "actual": "Stata captured validation events",
+      "expected": "expected/new-stata/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Approved-divergence F035 option-surface evidence for wboot reps/biters, shorthand wboot reps()/seed()/rseed(), nested and top-level seeds, exact seeded BMisc/R rademacher multiplier-stream parity, pointwise metadata inherited from F014, accepted rademacher multiplier spelling, unsupported non-rademacher multiplier diagnostics, ATT(g,t) clustered bootstrap via cluster() and wboot(cluster()), and explicit errors for invalid reps/seeds/types and mismatched or multiple cluster declarations. F035-DIV001 records that raw exported draw matrices are outside this public fixture surface; F035-DIV002 records that aggregation bootstrap postprocessing is tracked by F014/RT018-style evidence rather than this option-surface row."
+}

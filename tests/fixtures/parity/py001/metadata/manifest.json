@@ -1,0 +1,68 @@
+{
+  "matrix_id": "PY001",
+  "fixture_family": "python-aggte-comprehensive",
+  "normative_source": "Python csdid csdid/test_csdid/test_aggte_comprehensive.py subordinate to R did 2.5.1 aggregation behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+  "decision_refs": [
+    "D004"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/aggte-data.csv",
+      "rows": 4000,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py001/generate.py",
+      "path": "tools/parity/generators/py001/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "numpy.random.default_rng",
+    "seed": 9142024
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "source-scenario-map"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_stats public aggregation behavior",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "TOL002/EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY001 maps all 46 public parameterizations in Python test_aggte_comprehensive.py to Stata csdid_stats behavior: simple/dynamic/group/calendar validity, windows, balance_e, na_rm, metadata, and dr/reg/ipw cross-method aggregation checks."
+}

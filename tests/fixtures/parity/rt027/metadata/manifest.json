@@ -1,0 +1,82 @@
+{
+  "matrix_id": "RT027",
+  "fixture_family": "r-unbalanced-faster-cluster-se",
+  "normative_source": "R did 2.5.1 tests/testthat/test-unbalanced-faster-cluster-se.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e",
+  "decision_refs": ["D003", "D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/unbalanced-clustered.csv",
+      "rows": 989,
+      "columns": 7
+    },
+    {
+      "path": "inputs/balanced-clustered.csv",
+      "rows": 1152,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt027/generate.R",
+      "path": "tools/parity/generators/rt027/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R default",
+    "seeds": [202, 55]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt-fast-cluster-grid"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte-fast-cluster-grid"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata ATT(g,t) baseline/fast-request grid",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Stata aggregation baseline/fast-request grid",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "agg_type", "seq"]
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT027 maps all three upstream source tests. Balanced clustered fast and unbalanced clustered/iid fast requests are parity-verified against R did 2.5.1; unbalanced panels now report e(fast_used)=1 with the fast-allow-unbalanced compute path instead of falling back to baseline."
+}

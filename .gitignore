@@ -1,1 +1,8 @@
-tmp
+build/
+tools/plugin/_deps/
+*.log
+.DS_Store
+# release bundles built by tools/release/build-handoff-bundle.sh
+dist/
+# python bytecode
+__pycache__/

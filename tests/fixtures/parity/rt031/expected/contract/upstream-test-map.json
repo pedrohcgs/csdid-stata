@@ -1,0 +1,11 @@
+[
+  {
+    "source_file": "tests/testthat/test_sim_data_2_groups.R",
+    "source_sha256": "a3c85221aa5bd66d45cead18641a9ed6385882bbeb10175410a0237a6ee68a18",
+    "source_test": "att_gt works with 2 groups",
+    "mapped_scenario": "nt_varying / nt_universal / nyt_varying / nyt_universal",
+    "assertion_family": "attgt-att-se-vs-r + upstream invariance",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+doc="docs/legacy-migration-guide.md"
+test -f "$doc"
+
+grep -qF 'R `did` 2.5.1' "$doc"
+grep -qF 'owner-directed D003' "$doc"
+grep -qF 'unbalanced-panel rule' "$doc"
+grep -qF '`method(dripw)`' "$doc"
+grep -qF '`method(stdipw)`' "$doc"
+grep -qF '`asinr`' "$doc"
+grep -qF '`wboot(wtype(rademacher))`' "$doc"
+grep -qF '`wboot(wbtype(mammen))`' "$doc"
+grep -qF '`wboot reps(#) seed(#)`, `wboot reps(#) rseed(#)`' "$doc"
+grep -qF '`id(idvar)`' "$doc"
+grep -qF '`notyettreated`, `nevertreated`' "$doc"
+grep -qF '`vce(cluster clustvar)`' "$doc"
+grep -qF '`csdid_stats event`, `csdid_stats, type(event)`' "$doc"
+grep -qF '`estat dynamic`, `estat simple`, `estat group`, `estat calendar`' "$doc"
+grep -qF '`bal(full)`, `balance(full)`, `bal(unbal)`' "$doc"
+grep -qF '`long`, `long2`' "$doc"
+grep -qF 'F045 compares old default divergences' "$doc"
+grep -qF 'F046 freezes retained legacy warning text' "$doc"
+grep -qF 'F051 proves release-facing Stata-style aliases' "$doc"

@@ -1,0 +1,98 @@
+[
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.MP returns expected columns",
+    "mapped_scenario": "tidy-attgt",
+    "assertion_family": "expected Stata-normalized tidy columns",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.MP statistic equals estimate / std.error",
+    "mapped_scenario": "tidy-attgt",
+    "assertion_family": "statistic formula",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.MP p.value matches normal approximation",
+    "mapped_scenario": "tidy-attgt",
+    "assertion_family": "normal p-value formula",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.MP p.value is between 0 and 1",
+    "mapped_scenario": "tidy-attgt",
+    "assertion_family": "p-value range",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.AGGTEobj (dynamic) returns expected columns",
+    "mapped_scenario": "tidy-aggte-dynamic",
+    "assertion_family": "expected Stata-normalized dynamic columns",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.AGGTEobj (group) returns expected columns",
+    "mapped_scenario": "tidy-aggte-group",
+    "assertion_family": "expected Stata-normalized group columns",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.AGGTEobj (calendar) returns expected columns",
+    "mapped_scenario": "tidy-aggte-calendar",
+    "assertion_family": "expected Stata-normalized calendar columns",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.AGGTEobj (simple) returns expected columns",
+    "mapped_scenario": "tidy-aggte-simple",
+    "assertion_family": "expected Stata-normalized simple columns",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "tidy.AGGTEobj statistic and p.value are consistent",
+    "mapped_scenario": "tidy-aggte-all",
+    "assertion_family": "statistic and p-value formulas for all aggregation types",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "nobs.MP returns number of unique units",
+    "mapped_scenario": "nobs",
+    "assertion_family": "unique-unit nobs equality",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "nobs.AGGTEobj returns number of unique units",
+    "mapped_scenario": "nobs",
+    "assertion_family": "unique-unit nobs equality",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-tidy.R",
+    "source_sha256": "534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3",
+    "source_test": "nobs.MP and nobs.AGGTEobj agree",
+    "mapped_scenario": "nobs",
+    "assertion_family": "unique-unit nobs equality",
+    "coverage_status": "mapped"
+  }
+]

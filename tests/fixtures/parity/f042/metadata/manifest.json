@@ -1,0 +1,79 @@
+{
+  "matrix_id": "F042",
+  "fixture_family": "jel-2xt-event-study-smoke",
+  "normative_source": "JEL-DiD 2xT empirical design plus R did 2.5.1 analytical oracle",
+  "source_commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466",
+  "decision_refs": ["D001", "D006", "D013", "D014", "D015"],
+  "tolerance_ids": ["TOL002", "TOL005"],
+  "inputs": [
+    {
+      "path": "inputs/event-study-input.csv",
+      "rows": 24200,
+      "columns": 12
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f042/generate.R",
+      "path": "tools/parity/generators/f042/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/trends.csv",
+      "schema": "jel-2xt-trends"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/dynamic.csv",
+      "schema": "jel-2xt-dynamic"
+    },
+    {
+      "path": "expected/r/post-window.csv",
+      "schema": "jel-2xt-post-window"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/trends.csv",
+      "expected": "expected/r/trends.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["expand", "year"]
+    },
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/dynamic.csv",
+      "expected": "expected/r/dynamic.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "seq"]
+    },
+    {
+      "actual": "expected/new-stata/post-window.csv",
+      "expected": "expected/r/post-window.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Partial F042 JEL 2xT smoke gate. It reconstructs the JEL 2xT sample from committed JEL data, verifies weighted trend data for Figure 2, and compares Stata csdid analytical dynamic aggregation against R did 2.5.1 for the weighted no-covariate regression event study and weighted covariate-adjusted reg/ipw/dr event studies. Full JEL Figure 3/4 replication still requires the 25,000-rep bootstrap confidence intervals, plotting wrapper, and rendered artifact comparison."
+}

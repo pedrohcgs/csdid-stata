@@ -1,0 +1,55 @@
+{
+  "matrix_id": "F051",
+  "fixture_family": "release-productization-defaults",
+  "csdid_defaults": {
+    "method": "dr",
+    "control_group": "nevertreated",
+    "base_period": "varying",
+    "panel_mode_with_ivar": "panel",
+    "anticipation": 0,
+    "level": 95,
+    "pscoretrim": 0.995,
+    "bstrap": true,
+    "cband": true,
+    "biters": 1000,
+    "fast_mode": "auto",
+    "performance_mode": "auto",
+    "store_all": false
+  },
+  "postestimation_defaults": {
+    "csdid_stats_type": "group",
+    "csdid_estat_event_aggregation": "dynamic",
+    "csdid_plot_requires_saving": true,
+    "csdid_plot_plot_data_surface": ["attgt", "aggte_dynamic", "aggte_group", "aggte_calendar"]
+  },
+  "stata_style_aliases": {
+    "csdid": {
+      "baseperiod": "base_period",
+      "universal": "base_period(universal)",
+      "varying": "base_period(varying)",
+      "id": "ivar",
+      "notyettreated": "notyet",
+      "nevertreated": "default control_group",
+      "vce(cluster clustvar)": "cluster(clustvar)",
+      "wboot reps(#) seed(#)": "wboot(reps(#) seed(#))",
+      "fixweights": "fix_weights",
+      "fixweights(base)": "fix_weights(base_period)",
+      "fixweights(first)": "fix_weights(first_period)",
+      "allowunbalanced": "allow_unbalanced",
+      "storeall": "store_all"
+    },
+    "postestimation": {
+      "estat_event": "csdid_estat event",
+      "estat_dynamic": "csdid_stats dynamic",
+      "estat simple/group/calendar": "csdid_stats simple/group/calendar",
+      "event": "dynamic",
+      "window": "min_e/max_e",
+      "balance": "balance_e",
+      "dropmissing": "na_rm"
+    }
+  },
+  "diagnostics": {
+    "csdid_plot_requires_saving": "csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace",
+    "unsupported_estat_subcommand": "supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, and glance"
+  }
+}

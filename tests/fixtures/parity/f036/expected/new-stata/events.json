@@ -1,0 +1,44 @@
+[
+  {
+    "event_key": "dryrun_rejected",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "dryrun",
+    "message_normalized": "dryrun is an internal legacy option and is unsupported"
+  },
+  {
+    "event_key": "agg_not_yet",
+    "return_code": 498,
+    "event_type": "error",
+    "offending_option": "agg(simple)",
+    "message_normalized": "agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation"
+  },
+  {
+    "event_key": "pscoretrim_invalid",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "pscoretrim(1)",
+    "message_normalized": "pscoretrim() must be between 0 and 1"
+  },
+  {
+    "event_key": "from_unsupported",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "from(-1)",
+    "message_normalized": "unsupported option(s): from(-1)"
+  },
+  {
+    "event_key": "estat_style_unsupported",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "csdid_estat tidy style(foo)",
+    "message_normalized": "unsupported option(s): style(foo)"
+  },
+  {
+    "event_key": "plot_style_unsupported",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "csdid_plot style(foo)",
+    "message_normalized": "unsupported option(s): style(foo)"
+  }
+]

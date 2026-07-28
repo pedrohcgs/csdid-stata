@@ -1,0 +1,194 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=nevertreated,est_method=dr,base_period=varying]",
+    "mapped_scenario": "panel_true__nevertreated__dr__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=nevertreated,est_method=dr,base_period=universal]",
+    "mapped_scenario": "panel_true__nevertreated__dr__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=nevertreated,est_method=reg,base_period=varying]",
+    "mapped_scenario": "panel_true__nevertreated__reg__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=nevertreated,est_method=reg,base_period=universal]",
+    "mapped_scenario": "panel_true__nevertreated__reg__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=nevertreated,est_method=ipw,base_period=varying]",
+    "mapped_scenario": "panel_true__nevertreated__ipw__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=nevertreated,est_method=ipw,base_period=universal]",
+    "mapped_scenario": "panel_true__nevertreated__ipw__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=notyettreated,est_method=dr,base_period=varying]",
+    "mapped_scenario": "panel_true__notyettreated__dr__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=notyettreated,est_method=dr,base_period=universal]",
+    "mapped_scenario": "panel_true__notyettreated__dr__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=notyettreated,est_method=reg,base_period=varying]",
+    "mapped_scenario": "panel_true__notyettreated__reg__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=notyettreated,est_method=reg,base_period=universal]",
+    "mapped_scenario": "panel_true__notyettreated__reg__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=notyettreated,est_method=ipw,base_period=varying]",
+    "mapped_scenario": "panel_true__notyettreated__ipw__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=True,control_group=notyettreated,est_method=ipw,base_period=universal]",
+    "mapped_scenario": "panel_true__notyettreated__ipw__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=nevertreated,est_method=dr,base_period=varying]",
+    "mapped_scenario": "panel_false__nevertreated__dr__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=nevertreated,est_method=dr,base_period=universal]",
+    "mapped_scenario": "panel_false__nevertreated__dr__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=nevertreated,est_method=reg,base_period=varying]",
+    "mapped_scenario": "panel_false__nevertreated__reg__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=nevertreated,est_method=reg,base_period=universal]",
+    "mapped_scenario": "panel_false__nevertreated__reg__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=nevertreated,est_method=ipw,base_period=varying]",
+    "mapped_scenario": "panel_false__nevertreated__ipw__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=nevertreated,est_method=ipw,base_period=universal]",
+    "mapped_scenario": "panel_false__nevertreated__ipw__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=notyettreated,est_method=dr,base_period=varying]",
+    "mapped_scenario": "panel_false__notyettreated__dr__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=notyettreated,est_method=dr,base_period=universal]",
+    "mapped_scenario": "panel_false__notyettreated__dr__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=notyettreated,est_method=reg,base_period=varying]",
+    "mapped_scenario": "panel_false__notyettreated__reg__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=notyettreated,est_method=reg,base_period=universal]",
+    "mapped_scenario": "panel_false__notyettreated__reg__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=notyettreated,est_method=ipw,base_period=varying]",
+    "mapped_scenario": "panel_false__notyettreated__ipw__varying",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_faster_mode_consistency.py",
+    "source_sha256": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+    "source_test": "test_faster_mode_equals_standard[panel=False,control_group=notyettreated,est_method=ipw,base_period=universal]",
+    "mapped_scenario": "panel_false__notyettreated__ipw__universal",
+    "assertion_family": "requested-fast ATT and finite SE equal standard path",
+    "coverage_status": "mapped"
+  }
+]

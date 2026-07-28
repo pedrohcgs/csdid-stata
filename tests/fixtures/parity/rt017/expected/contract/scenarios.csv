@@ -1,0 +1,4 @@
+"scenario","input","data_seed","stata_boot_seed","stata_biters","expected_behavior"
+"unbalanced_cluster_sum_target","clustered-unbalanced.csv",101,20261701,5000,"bootstrap_se_tracks_cluster_sum_not_mean"
+"balanced_cluster_sum_equals_mean","clustered-balanced.csv",202,20261702,5000,"bootstrap_se_tracks_common_sum_mean_target"
+"reject_multiple_non_id_cluster_variables","clustered-invalid.csv",303,20261703,99,"rejects_multiple_bootstrap_cluster_variables"

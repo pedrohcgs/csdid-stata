@@ -1,0 +1,17 @@
+{
+  "status": "frozen",
+  "source": "https://github.com/pedrohcgs/csdid-stata",
+  "observed_on": "2026-06-22",
+  "commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
+  "reported_version": "1.82",
+  "license_file": "none observed in top-level checkout",
+  "command_files": [
+    "codes/csdid.ado",
+    "codes/csdid_estat.ado",
+    "codes/csdid_stats.ado",
+    "codes/csdid_plot.ado",
+    "codes/csdid_rif.ado",
+    "codes/csdid_table.ado"
+  ],
+  "role": "legacy compatibility evidence only"
+}

@@ -1,0 +1,70 @@
+{
+  "matrix_id": "PY009",
+  "fixture_family": "python-faster-mode-consistency",
+  "normative_source": "Python csdid csdid/test_csdid/test_faster_mode_consistency.py subordinate to R did 2.5.1 fast/standard equivalence behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D014"
+  ],
+  "tolerance_ids": [
+    "TOL002"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/sim-fast.csv",
+      "rows": 4000,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py009/generate.py",
+      "path": "tools/parity/generators/py009/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 42,
+    "kind": "numpy.default_rng",
+    "draws": "standard_normal"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "faster-mode-scenario-grid"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata standard path and requested-fast path ATT(g,t)",
+      "expected": "live Stata equality",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "scenario",
+        "group",
+        "time"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY009 maps all 24 Python fast-mode consistency parameterizations. Stata verifies explicit nofast baseline equality against the requested-fast optimized path (fast_requested=1, fast_used=1) across covariate panel/repeated-cross-section, nevertreated/notyettreated, dr/reg/ipw, and varying/universal base-period surfaces."
+}

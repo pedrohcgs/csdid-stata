@@ -1,0 +1,143 @@
+{
+  "matrix_id": "F027",
+  "fixture_family": "exportable-tables",
+  "normative_source": "R did 2.5.1 tidy/glance formulas",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D014"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f027/generate.R",
+      "path": "tools/parity/generators/f027/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/tidy-attgt.csv",
+      "schema": "tidy-attgt"
+    },
+    {
+      "path": "expected/r/glance-attgt.csv",
+      "schema": "glance-attgt"
+    },
+    {
+      "path": "expected/r/tidy-aggte-simple.csv",
+      "schema": "tidy-aggte-simple"
+    },
+    {
+      "path": "expected/r/glance-aggte-simple.csv",
+      "schema": "glance-aggte-simple"
+    },
+    {
+      "path": "expected/r/tidy-aggte-group.csv",
+      "schema": "tidy-aggte-group"
+    },
+    {
+      "path": "expected/r/glance-aggte-group.csv",
+      "schema": "glance-aggte-group"
+    },
+    {
+      "path": "expected/r/tidy-aggte-calendar.csv",
+      "schema": "tidy-aggte-calendar"
+    },
+    {
+      "path": "expected/r/glance-aggte-calendar.csv",
+      "schema": "glance-aggte-calendar"
+    },
+    {
+      "path": "expected/r/tidy-aggte-dynamic.csv",
+      "schema": "tidy-aggte-dynamic"
+    },
+    {
+      "path": "expected/r/glance-aggte-dynamic.csv",
+      "schema": "glance-aggte-dynamic"
+    },
+    {
+      "path": "expected/new-stata/export-schema.json",
+      "schema": "exportable-table-schema"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_estat tidy ATT(g,t)",
+      "expected": "expected/r/tidy-attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["term", "group", "time"]
+    },
+    {
+      "actual": "Stata csdid_estat glance ATT(g,t)",
+      "expected": "expected/r/glance-attgt.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "row"
+    },
+    {
+      "actual": "Stata csdid_estat tidy simple aggte",
+      "expected": "expected/r/tidy-aggte-simple.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["type", "term"]
+    },
+    {
+      "actual": "Stata csdid_estat glance simple aggte",
+      "expected": "expected/r/glance-aggte-simple.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "type"
+    },
+    {
+      "actual": "Stata csdid_estat tidy group aggte",
+      "expected": "expected/r/tidy-aggte-group.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["type", "term", "group"]
+    },
+    {
+      "actual": "Stata csdid_estat glance group aggte",
+      "expected": "expected/r/glance-aggte-group.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "type"
+    },
+    {
+      "actual": "Stata csdid_estat tidy calendar aggte",
+      "expected": "expected/r/tidy-aggte-calendar.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["type", "term", "time"]
+    },
+    {
+      "actual": "Stata csdid_estat glance calendar aggte",
+      "expected": "expected/r/glance-aggte-calendar.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "type"
+    },
+    {
+      "actual": "Stata csdid_estat tidy dynamic aggte",
+      "expected": "expected/r/tidy-aggte-dynamic.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["type", "term", "event_time"]
+    },
+    {
+      "actual": "Stata csdid_estat glance dynamic aggte",
+      "expected": "expected/r/glance-aggte-dynamic.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "type"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Partial tidy/glance table export for ATT(g,t) and simple, group, calendar, and dynamic aggregation. Inherited R/Python tidy/glance tests and richer table exporters remain incomplete."
+}

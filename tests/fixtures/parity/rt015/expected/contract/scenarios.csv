@@ -1,0 +1,5 @@
+"scenario","input","expected_behavior"
+"panel","panel.csv","panel dr/reg/ipw ATT(g,t), IF, and aggregation SEs are finite"
+"panel-cluster","panel.csv","panel clustered dr/reg/ipw ATT(g,t) and aggregation SEs are finite with cluster metadata"
+"rc","repeated-cross-section.csv","repeated-cross-section dr/reg/ipw ATT(g,t), IF, and aggregation SEs are finite"
+"rc-cluster","repeated-cross-section.csv","repeated-cross-section clustered dr/reg/ipw ATT(g,t) and aggregation SEs are finite with cluster metadata"

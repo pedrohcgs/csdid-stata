@@ -1,0 +1,17 @@
+{
+  "status": "frozen",
+  "observed_on": "2026-06-22",
+  "role": "engineering references only",
+  "references": [
+    {"repository": "mcaceresb/stata-gtools", "commit": "f8e303d90be1ac7fb469b9ed7caf202957139b69"},
+    {"repository": "mcaceresb/stata-honestdid", "commit": "f56934c399d357fac9f3036fc15ce3adf8968597"},
+    {"repository": "gphk-metrics/stata-multe", "commit": "89656e373f83ef8d69292549ab4a8155129b83e4"},
+    {"repository": "mcaceresb/stata-staggered", "commit": "088605931fdb93e78ba1c6c578584ee263d23232"},
+    {"repository": "mcaceresb/stata-pretrends", "commit": "5dc09d0c6c55d157fe3babc5ab68cb9fbc46a0fb"},
+    {"repository": "sergiocorreia/reghdfe", "commit": "4c1744df2c3bc474d0ee7ee5efa1bb54760067e5"},
+    {"repository": "sergiocorreia/ftools", "commit": "7b3663e49ea5c5b81638c55be29edf416e68e8b7"},
+    {"repository": "sergiocorreia/ivreghdfe", "commit": "bfb5577a6dbdfb029ab4ab6a7e93f7257a827b42"},
+    {"repository": "sergiocorreia/ppmlhdfe", "commit": "b85665d8f674e93c1e07446a9a2b29be7f797910"},
+    {"repository": "sergiocorreia/stata-misc", "commit": "bb10fd8ccb1fafa03c58019dcb2f4dea17ef813c"}
+  ]
+}

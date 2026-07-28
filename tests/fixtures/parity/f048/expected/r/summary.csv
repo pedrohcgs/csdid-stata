@@ -1,0 +1,2 @@
+"nsim","n_treat","n_control","true_att","nominal","zcrit","mean_att","mean_bias","abs_bias","coverage","coverage_error","mcse_att"
+200,120,120,1,0.95,1.95996398454005,0.994931308351336,-0.00506869164866382,0.00506869164866382,0.96,0.01,0.0134966492082481

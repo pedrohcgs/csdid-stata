@@ -1,0 +1,16 @@
+{
+  "status": "frozen",
+  "source": "https://github.com/pedrohcgs/JEL-DiD",
+  "observed_on": "2026-06-22",
+  "commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466",
+  "r_version": "4.4.2",
+  "renv_did_version": "2.3.0",
+  "renv_did_remote_sha": "674a3981810eeacf2367e28d77fc71ca057aaa24",
+  "renv_drdid_version": "1.2.3",
+  "renv_drdid_remote_sha": "83a438c9cf8e6c98189291533e64d26ff2e8d178",
+  "stata_sscdate": "2025-11-29",
+  "stata_packages": ["csdid", "drdid", "honestdid", "regsave", "estout", "coefplot", "grc1leg2"],
+  "tables": 7,
+  "figures": 9,
+  "role": "empirical release acceptance suite"
+}

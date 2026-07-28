@@ -1,0 +1,9 @@
+"scenario","agg_type","request","warning_expected","overall_att","overall_se","finite_effect_se"
+"clustered_inherited","simple","inherited",0,0.72714716585192,0.316328073954587,1
+"clustered_same_override","simple","cluster",0,0.72714716585192,0.316328073954587,1
+"clustered_inherited","dynamic","inherited",0,0.626153066711234,0.348133727958938,1
+"clustered_same_override","dynamic","cluster",0,0.626153066711234,0.348133727958938,1
+"unclustered_iid","simple","none",0,0.72714716585192,0.299423286382406,1
+"unclustered_iid","dynamic","none",0,0.626153066711234,0.329319438310729,1
+"unclustered_iid","group","none",0,0.727249835939408,0.298311681281535,1
+"unclustered_iid","calendar","none",0,0.790814846040608,0.291076173392054,1

@@ -1,0 +1,114 @@
+{
+  "matrix_id": "RT013",
+  "fixture_family": "r-ggdid-plot-data",
+  "normative_source": "R did 2.5.1 tests/testthat/test-ggdid.R",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D004", "D015"],
+  "tolerance_ids": ["TOL005", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/sim-ggdid.csv",
+      "rows": 928,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt013/generate.R",
+      "path": "tools/parity/generators/rt013/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20260401,
+    "compact_simulation": "did::reset.sim(time.periods = 4, n = 300)"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/events.csv",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/contract/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/r/plot-data-attgt.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-attgt-first-group.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-aggte-dynamic.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-aggte-group.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-aggte-calendar.csv",
+      "schema": "plot-data"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_plot ATT(g,t)",
+      "expected": "expected/r/plot-data-attgt.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "group", "time"]
+    },
+    {
+      "actual": "Stata csdid_plot ATT(g,t) first group",
+      "expected": "expected/r/plot-data-attgt-first-group.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "group", "time"]
+    },
+    {
+      "actual": "Stata csdid_plot dynamic/group/calendar aggregation",
+      "expected": "expected/r/plot-data-aggte-*.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "x"]
+    },
+    {
+      "actual": "Stata diagnostics for invalid group/simple/style options",
+      "expected": "expected/contract/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "Rendered graph label/theme/ref_line controls are outside the frozen Stata plot-data contract."
+  },
+  "scope_note": "RT013 maps R did test-ggdid.R public plotting assertions to Stata csdid_plot plot-data exports for ATT(g,t), group filtering, invalid-group diagnostics, dynamic/group/calendar aggregation, and simple-aggregation rejection. Approved divergence covers R ggplot rendered-label/theme/ref_line controls because the Stata surface freezes numerical plot data and rejects unsupported graph styling options."
+}

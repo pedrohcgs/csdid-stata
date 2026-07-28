@@ -1,0 +1,2 @@
+role,artifact_type,relative_path,exists,bytes,sha256,text_sha256,pdf_header
+stata,stata-master-script,scripts/Stata/00_stata_master_did_jel.do,1,2016,21b5638fd535a51c3f831b8481d0fa248d528c1d0f08293a15c22dee0b7afaec,7bde560d21241b17500f67f141a41df21bfe835efe04a6b0f92c4f8bf342480d,

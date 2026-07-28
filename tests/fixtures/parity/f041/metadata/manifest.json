@@ -1,0 +1,59 @@
+{
+  "matrix_id": "F041",
+  "fixture_family": "jel-table7-smoke",
+  "normative_source": "JEL-DiD Table 7 empirical design plus R did 2.5.1 analytical oracle",
+  "source_commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466",
+  "decision_refs": ["D001", "D006", "D013"],
+  "tolerance_ids": ["TOL001", "TOL004"],
+  "inputs": [
+    {
+      "path": "inputs/table7-input.csv",
+      "rows": 4400,
+      "columns": 11
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f041/generate.R",
+      "path": "tools/parity/generators/f041/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/table7-analytical.csv",
+      "schema": "jel-table7-analytical"
+    },
+    {
+      "path": "expected/jel/table7-committed.csv",
+      "schema": "jel-table7-committed-artifacts"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/table7-analytical.csv",
+      "expected": "expected/r/table7-analytical.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["panel", "method"]
+    },
+    {
+      "actual": "committed JEL table context",
+      "expected": "expected/jel/table7-committed.csv",
+      "tolerance_id": "TOL004",
+      "key_columns": ["source", "panel", "method"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Partial F041 JEL Table 7 smoke gate. It reconstructs the JEL Table 7 two-period covariate-adjusted analysis sample from the committed JEL data and verifies Stata csdid analytical simple aggregation against R did 2.5.1 for reg/ipw/dr, weighted and unweighted. The committed R/Stata Table 7 display values are recorded as empirical artifact context. Full JEL replication still requires the 25,000-rep bootstrap/table-rendering wrapper and comparison against committed/generated JEL artifacts."
+}

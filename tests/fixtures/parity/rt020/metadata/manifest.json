@@ -1,0 +1,81 @@
+{
+  "matrix_id": "RT020",
+  "fixture_family": "r-mutation-safety",
+  "normative_source": "R did 2.5.1 tests/testthat/test-mutation-safety.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D016"],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "rows": 1600,
+      "columns": 7
+    },
+    {
+      "path": "inputs/repeated-cross-section.csv",
+      "rows": 409,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt020/generate.R",
+      "path": "tools/parity/generators/rt020/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20260619
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "mutation-safety-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata active dataset state after csdid",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["source_test", "mapped_scenario"]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT020 maps R test-mutation-safety.R to Stata active dataset mutation safety. Stata verifies variable names, values, and row order are unchanged for panel and repeated-cross-section inputs with and without requested fast mode. The R data.frame/data.table object-class split is recorded as an approved divergence because Stata has one active dataset/frame object model."
+}

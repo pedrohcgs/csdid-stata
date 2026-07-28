@@ -1,0 +1,3 @@
+{
+  "time_varying_cluster_error": "Time-varying cluster variables are not supported. Please provide a time-invariant cluster variable."
+}

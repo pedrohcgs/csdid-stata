@@ -1,0 +1,28 @@
+scenario,input,expected_behavior
+single_treated_dr,single_group.csv,"finite ATT(g,t) with a single treated group"
+single_treated_reg,single_group.csv,"finite ATT(g,t) with a single treated group"
+single_treated_ipw,single_group.csv,"finite ATT(g,t) with a single treated group"
+single_treated_agg_simple,single_group.csv,nonmissing aggregation overall ATT
+single_treated_agg_dynamic,single_group.csv,nonmissing aggregation overall ATT
+single_treated_agg_group,single_group.csv,nonmissing aggregation overall ATT
+single_treated_agg_calendar,single_group.csv,nonmissing aggregation overall ATT
+two_period_universal_dr,two_period.csv,"finite two-period universal-base ATT(g,t)"
+two_period_universal_reg,two_period.csv,"finite two-period universal-base ATT(g,t)"
+two_period_universal_ipw,two_period.csv,"finite two-period universal-base ATT(g,t)"
+no_never_notyet,no_never.csv,not-yet-treated run with no never-treated group succeeds
+no_never_default_warning,no_never.csv,"default nevertreated branch warns/coerces and returns finite ATT(g,t)"
+first_period_warning,first_period.csv,first-period-treated units warn and are dropped
+nonconsecutive_time_dr,nonconsecutive_time.csv,nonconsecutive time values run and dynamic aggregation exists
+nonconsecutive_time_reg,nonconsecutive_time.csv,nonconsecutive time values run and dynamic aggregation exists
+nonconsecutive_time_ipw,nonconsecutive_time.csv,nonconsecutive time values run and dynamic aggregation exists
+nonconsecutive_group_dr,nonconsecutive_group.csv,nonconsecutive group values estimate multiple groups
+nonconsecutive_group_reg,nonconsecutive_group.csv,nonconsecutive group values estimate multiple groups
+nonconsecutive_group_ipw,nonconsecutive_group.csv,nonconsecutive group values estimate multiple groups
+balanced_allow_default,sim_data.csv,"balanced panel public default returns finite ATT(g,t)"
+unbalanced_allow_default,unbalanced.csv,"unbalanced ivar public default routes to repeated cross sections and returns finite ATT(g,t)"
+single_post_dr,single_post.csv,"finite post-treatment ATT(g,t) with one post-treatment period"
+single_post_reg,single_post.csv,"finite post-treatment ATT(g,t) with one post-treatment period"
+single_post_ipw,single_post.csv,"finite post-treatment ATT(g,t) with one post-treatment period"
+unbalanced_rcs_dr,unbalanced.csv,"repeated-cross-section unbalanced data returns finite ATT(g,t)"
+unbalanced_rcs_reg,unbalanced.csv,"repeated-cross-section unbalanced data returns finite ATT(g,t)"
+unbalanced_rcs_ipw,unbalanced.csv,"repeated-cross-section unbalanced data returns finite ATT(g,t)"

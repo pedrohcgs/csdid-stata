@@ -1,0 +1,47 @@
+[
+  {
+    "source_file": "tests/testthat/test-output-methods-coverage.R",
+    "source_sha256": "bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd",
+    "source_test": "summary.AGGTEobj / print.AGGTEobj cover every aggregation type",
+    "mapped_scenario": "aggte_all_types_output",
+    "assertion_family": "Stata csdid_stats and csdid_estat output/tidy/glance run for simple/group/dynamic/calendar aggregations",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-output-methods-coverage.R",
+    "source_sha256": "bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd",
+    "source_test": "summary.AGGTEobj covers pointwise (non-cband) and not-yet-treated / est_method branches",
+    "mapped_scenario": "pointwise_notyet_method_output",
+    "assertion_family": "Stata dynamic aggregation output runs for pointwise analytical not-yet-treated dr/ipw/reg branches",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-output-methods-coverage.R",
+    "source_sha256": "bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd",
+    "source_test": "summary.MP.TEST prints the conditional pre-test results",
+    "mapped_scenario": "r-conditional-pretest-only",
+    "assertion_family": "R conditional_did_pretest()/summary.MP.TEST has no public Stata command analogue in this port",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT021-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-output-methods-coverage.R",
+    "source_sha256": "bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd",
+    "source_test": "trimmer() runs for both control-group definitions",
+    "mapped_scenario": "r-trimmer-only",
+    "assertion_family": "R trimmer() helper has no public Stata command analogue in this port",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT021-DIV002"
+  },
+  {
+    "source_file": "tests/testthat/test-output-methods-coverage.R",
+    "source_sha256": "bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd",
+    "source_test": "get_wide_data() guards reject non-data.table and non-2-period input",
+    "mapped_scenario": "r-wide-data-helper-only",
+    "assertion_family": "R get_wide_data() internal data.table guard has no public Stata command analogue in this port",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT021-DIV003"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT006-DIV002",
+    "source_tests": "parallel multiplier bootstrap is reproducible under a fixed seed; parallel bootstrap chunking never produces negative chunks (biters < cores)",
+    "reason": "The source tests call non-exported R helper did:::run_multiplier_bootstrap and inspect internal parallel chunking. The Stata port exposes bootstrap behavior only through public csdid wboot() options.",
+    "accepted_behavior": "Public bootstrap option parsing, seeded metadata, ATT(g,t) bootstrap, and cluster bootstrap remain covered by F014/F035/RT017/PY bootstrap gates; no Stata internal helper API is added."
+  }
+]

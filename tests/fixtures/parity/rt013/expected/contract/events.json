@@ -1,0 +1,17 @@
+[
+  {
+    "event_key": "invalid_group_warning",
+    "return_code": 0,
+    "message_normalized": "Some of the specified groups do not exist in the data. Reporting all available groups."
+  },
+  {
+    "event_key": "simple_aggregation_error",
+    "return_code": 498,
+    "message_normalized": "Plot method not available for this type of aggregation"
+  },
+  {
+    "event_key": "unsupported_graph_style_option",
+    "return_code": 198,
+    "message_normalized": "unsupported option(s)"
+  }
+]

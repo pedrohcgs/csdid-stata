@@ -1,0 +1,58 @@
+{
+  "matrix_id": "RT018",
+  "fixture_family": "r-mboot-postprocess",
+  "normative_source": "R did 2.5.1 tests/testthat/test-mboot-postprocess.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": "EXACT",
+  "inputs": [],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt018/generate.R",
+      "path": "tools/parity/generators/rt018/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Approved R-only mboot helper divergence registry",
+      "expected": "expected/contract/approved-divergence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "divergence_id"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "The R source exercises the internal mboot() helper directly, which is outside the frozen Stata public command profile."
+  },
+  "scope_note": "RT018 records both R did test-mboot-postprocess.R blocks as approved divergences because they directly test the internal mboot() helper on synthetic influence-function matrices and DIDparams-like lists. Public Stata multiplier-bootstrap behavior remains verified through csdid/csdid_stats bootstrap, simultaneous-band, cluster-bootstrap, and inference rows."
+}

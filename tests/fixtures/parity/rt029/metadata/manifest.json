@@ -1,0 +1,83 @@
+{
+  "matrix_id": "RT029",
+  "fixture_family": "r-att-gt-point-estimate-script",
+  "normative_source": "R did 2.5.1 tests/testthat/att_gt_point_estimate_tests.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "bec9c2962d1ca9a6c881d6acf445c60bba051c8d514570724c5a45062e4bf2f4",
+  "decision_refs": "D004",
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "rows": 2592,
+      "columns": 7
+    },
+    {
+      "path": "inputs/two-period.csv",
+      "rows": 1108,
+      "columns": 7
+    },
+    {
+      "path": "inputs/repeated-cross-section.csv",
+      "rows": 643,
+      "columns": 7
+    },
+    {
+      "path": "inputs/unbalanced.csv",
+      "rows": 2591,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt029/generate.R",
+      "path": "tools/parity/generators/rt029/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R set.seed",
+    "seed": 9142024
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata point-estimate smoke",
+      "expected": "source public scenarios",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT029 maps public point-estimate scenarios from the legacy R script and records the non-testthat script form as RT029-DIV001."
+}

@@ -1,0 +1,13 @@
+"source","panel","method","estimate_displayed","se_displayed"
+"R_committed","unweighted","reg",-1.62,4.68
+"R_committed","unweighted","ipw",-0.86,4.61
+"R_committed","unweighted","dr",-1.23,4.94
+"R_committed","weighted","reg",-3.46,2.39
+"R_committed","weighted","ipw",-3.84,3.39
+"R_committed","weighted","dr",-3.76,3.24
+"Stata_committed","unweighted","reg",-1.62,4.68
+"Stata_committed","unweighted","ipw",-0.86,4.58
+"Stata_committed","unweighted","dr",-1.23,4.92
+"Stata_committed","weighted","reg",-3.46,2.41
+"Stata_committed","weighted","ipw",-3.84,3.33
+"Stata_committed","weighted","dr",-3.76,3.18

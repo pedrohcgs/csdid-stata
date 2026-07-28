@@ -1,0 +1,98 @@
+{
+  "matrix_id": "RT028",
+  "fixture_family": "r-user-bug-fixes",
+  "normative_source": "R did 2.5.1 tests/testthat/test-user_bug_fixes.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+  "decision_refs": ["D003", "D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/mpdta.csv",
+      "rows": 2500,
+      "columns": 6
+    },
+    {
+      "path": "inputs/fewer-periods.csv",
+      "rows": 17048,
+      "columns": 7
+    },
+    {
+      "path": "inputs/zero-pre.csv",
+      "rows": 9425,
+      "columns": 7
+    },
+    {
+      "path": "inputs/missing-var.csv",
+      "rows": 11241,
+      "columns": 7
+    },
+    {
+      "path": "inputs/anticipation.csv",
+      "rows": 3000,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt028/generate.R",
+      "path": "tools/parity/generators/rt028/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R default",
+    "seeds": 20250228
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "user-bug-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public user-bug regression gates",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT028 maps six public user-bug-fix blocks to Stata public command behavior and records the skipped R-only custom DRDID::drdid_rc1 repeated-cross-section small-group branch as approved divergence."
+}

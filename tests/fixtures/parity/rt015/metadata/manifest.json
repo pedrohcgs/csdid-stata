@@ -1,0 +1,77 @@
+{
+  "matrix_id": "RT015",
+  "fixture_family": "r-inference",
+  "normative_source": "R did 2.5.1 tests/testthat/test-inference.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+  "decision_refs": "D004",
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "rows": 2592,
+      "columns": 7
+    },
+    {
+      "path": "inputs/repeated-cross-section.csv",
+      "rows": 644,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt015/generate.R",
+      "path": "tools/parity/generators/rt015/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R set.seed",
+    "seed": 1234
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "inference-public-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public inference smoke",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT015 maps the public current inference surfaces from R test-inference.R and records the R did 2.1.2 historical package-version comparison as RT015-DIV001."
+}

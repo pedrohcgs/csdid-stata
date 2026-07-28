@@ -1,0 +1,380 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_attgt_matches_r[mpdta_nev_dr]",
+    "mapped_scenario": "mpdta_nev_dr",
+    "assertion_family": "ATT(g,t) point estimates and analytical SEs match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_attgt_matches_r[mpdta_nyt_dr]",
+    "mapped_scenario": "mpdta_nyt_dr",
+    "assertion_family": "ATT(g,t) point estimates and analytical SEs match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_attgt_matches_r[mpdta_nev_reg_cov]",
+    "mapped_scenario": "mpdta_nev_reg_cov",
+    "assertion_family": "ATT(g,t) point estimates and analytical SEs match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_attgt_matches_r[mpdta_nev_ipw]",
+    "mapped_scenario": "mpdta_nev_ipw",
+    "assertion_family": "ATT(g,t) point estimates and analytical SEs match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_attgt_matches_r[sim_nev_dr]",
+    "mapped_scenario": "sim_nev_dr",
+    "assertion_family": "ATT(g,t) point estimates and analytical SEs match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_overall_matches_r[mpdta_nev_dr]",
+    "mapped_scenario": "mpdta_nev_dr",
+    "assertion_family": "simple/group/dynamic/calendar overall ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_overall_matches_r[mpdta_nyt_dr]",
+    "mapped_scenario": "mpdta_nyt_dr",
+    "assertion_family": "simple/group/dynamic/calendar overall ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_overall_matches_r[mpdta_nev_reg_cov]",
+    "mapped_scenario": "mpdta_nev_reg_cov",
+    "assertion_family": "simple/group/dynamic/calendar overall ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_overall_matches_r[mpdta_nev_ipw]",
+    "mapped_scenario": "mpdta_nev_ipw",
+    "assertion_family": "simple/group/dynamic/calendar overall ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_overall_matches_r[sim_nev_dr]",
+    "mapped_scenario": "sim_nev_dr",
+    "assertion_family": "simple/group/dynamic/calendar overall ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_dr-group]",
+    "mapped_scenario": "mpdta_nev_dr/group",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_dr-dynamic]",
+    "mapped_scenario": "mpdta_nev_dr/dynamic",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_dr-calendar]",
+    "mapped_scenario": "mpdta_nev_dr/calendar",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nyt_dr-group]",
+    "mapped_scenario": "mpdta_nyt_dr/group",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nyt_dr-dynamic]",
+    "mapped_scenario": "mpdta_nyt_dr/dynamic",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nyt_dr-calendar]",
+    "mapped_scenario": "mpdta_nyt_dr/calendar",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_reg_cov-group]",
+    "mapped_scenario": "mpdta_nev_reg_cov/group",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_reg_cov-dynamic]",
+    "mapped_scenario": "mpdta_nev_reg_cov/dynamic",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_reg_cov-calendar]",
+    "mapped_scenario": "mpdta_nev_reg_cov/calendar",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_ipw-group]",
+    "mapped_scenario": "mpdta_nev_ipw/group",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_ipw-dynamic]",
+    "mapped_scenario": "mpdta_nev_ipw/dynamic",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[mpdta_nev_ipw-calendar]",
+    "mapped_scenario": "mpdta_nev_ipw/calendar",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[sim_nev_dr-group]",
+    "mapped_scenario": "sim_nev_dr/group",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[sim_nev_dr-dynamic]",
+    "mapped_scenario": "sim_nev_dr/dynamic",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_aggte_egt_matches_r[sim_nev_dr-calendar]",
+    "mapped_scenario": "sim_nev_dr/calendar",
+    "assertion_family": "group/dynamic/calendar event-level ATT and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_fix_weights_matches_r[none]",
+    "mapped_scenario": "none",
+    "assertion_family": "time-varying weight ATT(g,t) matches R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_fix_weights_matches_r[base_period]",
+    "mapped_scenario": "base_period",
+    "assertion_family": "time-varying weight ATT(g,t) matches R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_fix_weights_matches_r[first_period]",
+    "mapped_scenario": "first_period",
+    "assertion_family": "time-varying weight ATT(g,t) matches R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_fix_weights_matches_r[varying]",
+    "mapped_scenario": "varying",
+    "assertion_family": "time-varying weight ATT(g,t) matches R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_factor_covariate_matches_r[standard]",
+    "mapped_scenario": "standard",
+    "assertion_family": "factor covariate ATT(g,t) and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_factor_covariate_matches_r[fast]",
+    "mapped_scenario": "fast",
+    "assertion_family": "factor covariate ATT(g,t) and SE match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_gap_scenarios_match_r[rc]",
+    "mapped_scenario": "rc",
+    "assertion_family": "repeated cross-section, universal base, anticipation, weighted, and clustered gaps match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_gap_scenarios_match_r[universal]",
+    "mapped_scenario": "universal",
+    "assertion_family": "repeated cross-section, universal base, anticipation, weighted, and clustered gaps match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_gap_scenarios_match_r[anticipation1]",
+    "mapped_scenario": "anticipation1",
+    "assertion_family": "repeated cross-section, universal base, anticipation, weighted, and clustered gaps match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_gap_scenarios_match_r[weighted]",
+    "mapped_scenario": "weighted",
+    "assertion_family": "repeated cross-section, universal base, anticipation, weighted, and clustered gaps match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_r_parity.py",
+    "source_sha256": "59eda1cbb9b794dc8bfdd3b15d3695ab2fa9d05e67174feee11e6b026f7f95bd",
+    "source_test": "test_gap_scenarios_match_r[clustered]",
+    "mapped_scenario": "clustered",
+    "assertion_family": "repeated cross-section, universal base, anticipation, weighted, and clustered gaps match R did references",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_pretest.py",
+    "source_sha256": "7631743afb620bbc00f4e8983792910f581391ce35d7fc30a0888a5ff94e0941",
+    "source_test": "test_pretest_matches_R",
+    "mapped_scenario": "5 scenarios vs expected/r/ref_pretest.csv",
+    "assertion_family": "wald-stat-and-pvalue-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_pretest.py",
+    "source_sha256": "7631743afb620bbc00f4e8983792910f581391ce35d7fc30a0888a5ff94e0941",
+    "source_test": "test_pretest_finite_when_pre_cells_exist",
+    "mapped_scenario": "mpdta_nev_dr",
+    "assertion_family": "wald-stat-and-pvalue-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_pretest.py",
+    "source_sha256": "7631743afb620bbc00f4e8983792910f581391ce35d7fc30a0888a5ff94e0941",
+    "source_test": "test_pretest_none_when_no_pre_cells",
+    "mapped_scenario": "no pre-treatment cells",
+    "assertion_family": "wald-absent",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_pretest.py",
+    "source_sha256": "7631743afb620bbc00f4e8983792910f581391ce35d7fc30a0888a5ff94e0941",
+    "source_test": "test_pretest_suppressed_under_clustered_bootstrap",
+    "mapped_scenario": "clustered bootstrap",
+    "assertion_family": "wald-absent",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_pretest.py",
+    "source_sha256": "7631743afb620bbc00f4e8983792910f581391ce35d7fc30a0888a5ff94e0941",
+    "source_test": "test_pretest_computed_under_clustered_analytic",
+    "mapped_scenario": "clustered analytical",
+    "assertion_family": "wald-stat-and-pvalue-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_pretest.py",
+    "source_sha256": "7631743afb620bbc00f4e8983792910f581391ce35d7fc30a0888a5ff94e0941",
+    "source_test": "test_pretest_absent_without_inffunc",
+    "mapped_scenario": "no influence function",
+    "assertion_family": "wald-absent",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

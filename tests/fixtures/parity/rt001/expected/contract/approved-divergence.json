@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT001-DIV001",
+    "source_tests": "aggte bootstrap override and unsafe analytical cluster override fallbacks",
+    "reason": "The R source exercises aggregation-level cluster override behavior through aggte(). For Stata public statistical safety, csdid_stats now accepts inherited clustering and same-cluster override, but errors on mismatched clusters or new cluster requests after an unclustered estimation rather than falling back to non-clustered SEs.",
+    "accepted_behavior": "Stata maps inherited clustering and same-cluster override. Mismatched or unavailable aggregation cluster requests must exit nonzero with a clear message. Bootstrap aggregation remains tracked by F035/RT018."
+  }
+]

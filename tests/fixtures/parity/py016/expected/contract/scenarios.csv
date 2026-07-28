@@ -1,0 +1,2 @@
+scenario,latest_cohort,expected_min_att_rows,positive_threshold
+notyettreated_no_never,2007,1,0.3

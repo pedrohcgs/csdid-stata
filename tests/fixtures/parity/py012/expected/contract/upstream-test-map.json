@@ -1,0 +1,346 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_se_positive_finite[em=dr]",
+    "mapped_scenario": "balanced__dr__attgt_se_positive",
+    "assertion_family": "balanced panel ATT(g,t) has positive finite SEs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_inffunc_shape[em=dr]",
+    "mapped_scenario": "balanced__dr__inffunc_shape",
+    "assertion_family": "balanced panel influence-function dimensions match ATT count and unit count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_aggte_simple_se_finite[em=dr]",
+    "mapped_scenario": "balanced__dr__simple_se_positive",
+    "assertion_family": "balanced panel simple aggregation SE is positive and finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_se_positive_finite[em=dr]",
+    "mapped_scenario": "rcs__dr__attgt_se_positive",
+    "assertion_family": "repeated cross-section ATT(g,t) has positive finite SEs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_inffunc_exists[em=dr]",
+    "mapped_scenario": "rcs__dr__inffunc_exists",
+    "assertion_family": "repeated cross-section influence-function matrix is present",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_aggte_simple_se_finite[em=dr]",
+    "mapped_scenario": "rcs__dr__simple_se_positive",
+    "assertion_family": "repeated cross-section simple aggregation SE is positive and finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestInffuncDimensions::test_inffunc_cols_match_att[em=dr]",
+    "mapped_scenario": "balanced__dr__inffunc_cols",
+    "assertion_family": "influence-function columns match ATT(g,t) count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestInffuncDimensions::test_inffunc_rows_match_units[em=dr]",
+    "mapped_scenario": "balanced__dr__inffunc_rows",
+    "assertion_family": "influence-function rows match unique units",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_overall_att_close_to_true[em=dr]",
+    "mapped_scenario": "balanced__dr__overall_att_true",
+    "assertion_family": "simple overall ATT is close to true effect 1",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBootstrapVsAnalytical::test_bootstrap_se_close_to_analytical[em=dr]",
+    "mapped_scenario": "balanced__dr__bootstrap_se_ratio",
+    "assertion_family": "bootstrap SE median ratio is in the same broad range as analytical SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBootstrapVsAnalytical::test_bootstrap_att_matches_analytical[em=dr]",
+    "mapped_scenario": "balanced__dr__bootstrap_att_equal",
+    "assertion_family": "bootstrap and analytical point estimates match",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=dr,typec=dynamic]",
+    "mapped_scenario": "balanced__dr__aggte_dynamic_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=dr,typec=group]",
+    "mapped_scenario": "balanced__dr__aggte_group_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=dr,typec=calendar]",
+    "mapped_scenario": "balanced__dr__aggte_calendar_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_se_positive_finite[em=reg]",
+    "mapped_scenario": "balanced__reg__attgt_se_positive",
+    "assertion_family": "balanced panel ATT(g,t) has positive finite SEs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_inffunc_shape[em=reg]",
+    "mapped_scenario": "balanced__reg__inffunc_shape",
+    "assertion_family": "balanced panel influence-function dimensions match ATT count and unit count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_aggte_simple_se_finite[em=reg]",
+    "mapped_scenario": "balanced__reg__simple_se_positive",
+    "assertion_family": "balanced panel simple aggregation SE is positive and finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_se_positive_finite[em=reg]",
+    "mapped_scenario": "rcs__reg__attgt_se_positive",
+    "assertion_family": "repeated cross-section ATT(g,t) has positive finite SEs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_inffunc_exists[em=reg]",
+    "mapped_scenario": "rcs__reg__inffunc_exists",
+    "assertion_family": "repeated cross-section influence-function matrix is present",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_aggte_simple_se_finite[em=reg]",
+    "mapped_scenario": "rcs__reg__simple_se_positive",
+    "assertion_family": "repeated cross-section simple aggregation SE is positive and finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestInffuncDimensions::test_inffunc_cols_match_att[em=reg]",
+    "mapped_scenario": "balanced__reg__inffunc_cols",
+    "assertion_family": "influence-function columns match ATT(g,t) count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestInffuncDimensions::test_inffunc_rows_match_units[em=reg]",
+    "mapped_scenario": "balanced__reg__inffunc_rows",
+    "assertion_family": "influence-function rows match unique units",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_overall_att_close_to_true[em=reg]",
+    "mapped_scenario": "balanced__reg__overall_att_true",
+    "assertion_family": "simple overall ATT is close to true effect 1",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBootstrapVsAnalytical::test_bootstrap_se_close_to_analytical[em=reg]",
+    "mapped_scenario": "balanced__reg__bootstrap_se_ratio",
+    "assertion_family": "bootstrap SE median ratio is in the same broad range as analytical SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBootstrapVsAnalytical::test_bootstrap_att_matches_analytical[em=reg]",
+    "mapped_scenario": "balanced__reg__bootstrap_att_equal",
+    "assertion_family": "bootstrap and analytical point estimates match",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=reg,typec=dynamic]",
+    "mapped_scenario": "balanced__reg__aggte_dynamic_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=reg,typec=group]",
+    "mapped_scenario": "balanced__reg__aggte_group_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=reg,typec=calendar]",
+    "mapped_scenario": "balanced__reg__aggte_calendar_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_se_positive_finite[em=ipw]",
+    "mapped_scenario": "balanced__ipw__attgt_se_positive",
+    "assertion_family": "balanced panel ATT(g,t) has positive finite SEs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_inffunc_shape[em=ipw]",
+    "mapped_scenario": "balanced__ipw__inffunc_shape",
+    "assertion_family": "balanced panel influence-function dimensions match ATT count and unit count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBalancedPanelInference::test_aggte_simple_se_finite[em=ipw]",
+    "mapped_scenario": "balanced__ipw__simple_se_positive",
+    "assertion_family": "balanced panel simple aggregation SE is positive and finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_se_positive_finite[em=ipw]",
+    "mapped_scenario": "rcs__ipw__attgt_se_positive",
+    "assertion_family": "repeated cross-section ATT(g,t) has positive finite SEs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_inffunc_exists[em=ipw]",
+    "mapped_scenario": "rcs__ipw__inffunc_exists",
+    "assertion_family": "repeated cross-section influence-function matrix is present",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestRCSInference::test_aggte_simple_se_finite[em=ipw]",
+    "mapped_scenario": "rcs__ipw__simple_se_positive",
+    "assertion_family": "repeated cross-section simple aggregation SE is positive and finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestInffuncDimensions::test_inffunc_cols_match_att[em=ipw]",
+    "mapped_scenario": "balanced__ipw__inffunc_cols",
+    "assertion_family": "influence-function columns match ATT(g,t) count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestInffuncDimensions::test_inffunc_rows_match_units[em=ipw]",
+    "mapped_scenario": "balanced__ipw__inffunc_rows",
+    "assertion_family": "influence-function rows match unique units",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_overall_att_close_to_true[em=ipw]",
+    "mapped_scenario": "balanced__ipw__overall_att_true",
+    "assertion_family": "simple overall ATT is close to true effect 1",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBootstrapVsAnalytical::test_bootstrap_se_close_to_analytical[em=ipw]",
+    "mapped_scenario": "balanced__ipw__bootstrap_se_ratio",
+    "assertion_family": "bootstrap SE median ratio is in the same broad range as analytical SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "TestBootstrapVsAnalytical::test_bootstrap_att_matches_analytical[em=ipw]",
+    "mapped_scenario": "balanced__ipw__bootstrap_att_equal",
+    "assertion_family": "bootstrap and analytical point estimates match",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=ipw,typec=dynamic]",
+    "mapped_scenario": "balanced__ipw__aggte_dynamic_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=ipw,typec=group]",
+    "mapped_scenario": "balanced__ipw__aggte_group_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_aggte_se_positive[em=ipw,typec=calendar]",
+    "mapped_scenario": "balanced__ipw__aggte_calendar_se_positive",
+    "assertion_family": "aggregation event/group/calendar SEs are positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_inference.py",
+    "source_sha256": "770ee9e9c76f03810c3a0dd2f9e1d78d957262696da38b806abbb538b357965f",
+    "source_test": "test_all_methods_agree_on_att",
+    "mapped_scenario": "balanced__all_methods_att_agreement",
+    "assertion_family": "DR and REG ATT(g,t) point estimates agree within source tolerance",
+    "coverage_status": "mapped"
+  }
+]

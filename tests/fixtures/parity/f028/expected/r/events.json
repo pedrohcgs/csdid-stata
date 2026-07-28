@@ -1,0 +1,9 @@
+[
+  {
+    "return_code": 498,
+    "event_type": "error",
+    "event_key": "plot_simple_aggte_unavailable",
+    "offending_option": "type(simple)",
+    "message_normalized": "Plot method not available for this type of aggregation"
+  }
+]

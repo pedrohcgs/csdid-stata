@@ -1,0 +1,3 @@
+role,relative_path,pdf_header,bytes,sha256
+r,figures/figure6_R.pdf,%PDF-,8859,96dbe3182f99a8b85854e23100c3baa611acd1a03ade2093e619a3e7187272b8
+stata,figures/figure6_stata.pdf,%PDF-,64115,38964694c2d91863e96bf6043e9300ed65f92d19010e20a8a554c643355af5bb

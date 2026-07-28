@@ -1,0 +1,3 @@
+"scenario","method","covariates","min_e","max_e","n_effects","overall_att","overall_se"
+"figure6_no_cov_dr","dr","none",0,5,6,0.0867675804578591,1.89056948382509
+"figure9_cov_dr","dr","numeric",0,5,6,-2.24699829881598,4.00067570686886

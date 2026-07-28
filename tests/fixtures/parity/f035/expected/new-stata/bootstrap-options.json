@@ -1,0 +1,21 @@
+{
+  "matrix_id": "F035",
+  "fixture_family": "bootstrap-option-surface",
+  "normative_source": "R did 2.5.1 multiplier bootstrap plus frozen legacy Stata option decisions",
+  "accepted": {
+    "reps": "reps(#), biters(#), wboot(reps(#)), or wboot(biters(#))",
+    "biters": "biters(#) or wboot(biters(#))",
+    "seed_nested": "rseed(#), seed(#), wboot(rseed(#)), and wboot(seed(#))",
+    "shorthand": "wboot reps(#) seed(#) and wboot reps(#) rseed(#)",
+    "seed_top_level": "rseed(#) or seed(#) with bootstrap inference",
+    "pointwise": "pointwise maps to cband = FALSE",
+    "cluster": "cluster() or wboot(cluster(varname)) requests clustered multiplier bootstrap",
+    "distribution_aliases": "rademacher"
+  },
+  "behavior": {
+    "multiplier_distribution": "R-compatible rademacher multipliers",
+    "legacy_rademacher_mammen": "non-rademacher multiplier names are unsupported and fail loudly",
+    "clustered_bootstrap": "cluster-summed influence-function multiplier bootstrap is supported for ATT(g,t)",
+    "aggregation_bootstrap": "covered by focused event-post bootstrap gates rather than this option-surface fixture"
+  }
+}

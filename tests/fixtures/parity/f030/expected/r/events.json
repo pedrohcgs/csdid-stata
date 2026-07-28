@@ -1,0 +1,44 @@
+[
+  {
+    "event_key": "string_outcome",
+    "return_code": 109,
+    "event_type": "error",
+    "offending_option": "outcome_y",
+    "message_normalized": "outcome variable must be numeric"
+  },
+  {
+    "event_key": "string_covariate",
+    "return_code": 109,
+    "event_type": "error",
+    "offending_option": "control_alpha",
+    "message_normalized": "covariates must be numeric Stata variables; encode string covariates before using factor-variable notation"
+  },
+  {
+    "event_key": "string_ivar",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "ivar(sid)",
+    "message_normalized": "ivar() must be numeric; R did requires numeric id variables"
+  },
+  {
+    "event_key": "string_time",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "time(tstr)",
+    "message_normalized": "time() must be numeric"
+  },
+  {
+    "event_key": "string_gvar",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "gvar(gstr)",
+    "message_normalized": "gvar() must be numeric"
+  },
+  {
+    "event_key": "string_cluster",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "cluster(clstr)",
+    "message_normalized": "cluster() must be numeric"
+  }
+]

@@ -1,0 +1,8 @@
+"scenario","input","expected_behavior"
+"mpdta_t1_column","mpdta.csv","mpdta not-yet-treated regression runs before and after adding a harmless t1 column"
+"mpdta_missing_covariate","mpdta.csv","missing covariate warning/run behavior maps to Stata complete-case preprocessing and successful estimation"
+"r_custom_rc1_small_group_skipped","","R source uses a custom DRDID::drdid_rc1 callback on a skipped known-bug branch; no public Stata custom-estimator callback exists"
+"fewer_periods_than_groups","fewer-periods.csv","fewer observed periods than treatment groups gives expected ATT slice and nonmissing dynamic/group/calendar aggregations"
+"zero_pretreatment_outcomes","zero-pre.csv","pre-treatment ATT for group 9 at time 7 is zero under universal and varying base periods"
+"missing_formula_variable","missing-var.csv","unknown covariate variable is rejected"
+"anticipation_window_coercion","anticipation.csv","anticipation controls whether late cohort is coerced to controls or remains treated; fast-requested path agrees with baseline"

@@ -1,0 +1,20 @@
+{
+  "matrix_id": "F031",
+  "fixture_family": "mutation-temp-safety",
+  "normative_source": "R did 2.5.1 output semantics mapped to Stata state hygiene",
+  "checks": {
+    "data_values_and_order_unchanged": true,
+    "variable_order_unchanged": true,
+    "variable_labels_unchanged": true,
+    "dataset_characteristics_unchanged": true,
+    "user_matrix_unchanged": true,
+    "package_global_macro_writes_absent": true,
+    "frame_context_unchanged_when_frames_available": true,
+    "auxiliary_frame_preserved_when_frames_available": true,
+    "supported_postestimation_surface_does_not_mutate_data": true,
+    "saverif_estimation_restores_active_data": true,
+    "saved_rif_postestimation_does_not_mutate_active_data": true,
+    "rejected_options_do_not_replace_prior_estimates": true
+  },
+  "scope_note": "F031 state-hygiene gate covers supported estimation, saved-RIF estimation, saved-RIF postestimation, current-frame preservation when frames are available, auxiliary-frame preservation when frames are available, absence of package global macro writes in source files, csdid_estat display/tidy/glance, csdid_stats simple/group/calendar/dynamic, csdid_plot supported plot-data exports, invalid-option rejection, and preservation of data values, order, variable order, labels, characteristics, and user matrices."
+}

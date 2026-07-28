@@ -1,0 +1,3 @@
+"scenario","input","expected_behavior"
+"aggte_all_types_output","output-methods.csv","simple/group/dynamic/calendar aggregation output and export surfaces run"
+"pointwise_notyet_method_output","output-methods.csv","dynamic aggregation output runs for pointwise notyet dr/ipw/reg"

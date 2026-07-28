@@ -1,0 +1,20 @@
+[
+  {
+    "divergence_id": "RT024-DIV001",
+    "source_assertion": "overlap_logit_fit matches fastglm::fastglm exactly",
+    "reason": "The assertion targets a non-exported R helper and fastglm implementation identity, not a Stata public command surface.",
+    "accepted_behavior": "Public overlap/separation behavior remains covered by RT022, PY018, and the mapped RT024 overlap-adjacent cases."
+  },
+  {
+    "divergence_id": "RT024-DIV002",
+    "source_assertion": "never-treated units coded as gname = Inf are not dropped",
+    "reason": "Stata has no numeric Inf value for treatment timing; the frozen Stata public contract uses gvar == 0 for never-treated units and missing gvar rows are dropped.",
+    "accepted_behavior": "Stata accepts gvar == 0 as never-treated and keeps missing treatment timing out of the estimation sample."
+  },
+  {
+    "divergence_id": "RT024-DIV003",
+    "source_assertion": "complete_finite_cases finite_exclude helper behavior",
+    "reason": "The assertion targets a non-exported R preprocessing helper; Stata maps the public missing/non-finite behavior through transformed covariate rows.",
+    "accepted_behavior": "Stata drops missing transformed covariate rows before estimation and emits the frozen non-finite-data warning."
+  }
+]

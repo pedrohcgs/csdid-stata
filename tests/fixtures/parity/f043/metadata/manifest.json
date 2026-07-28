@@ -1,0 +1,84 @@
+{
+  "matrix_id": "F043",
+  "fixture_family": "jel-gxt-smoke",
+  "normative_source": "JEL-DiD GxT empirical design plus R did 2.5.1 analytical oracle",
+  "source_commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466",
+  "decision_refs": ["D001", "D006", "D013", "D014", "D015"],
+  "tolerance_ids": ["TOL004", "TOL005"],
+  "inputs": [
+    {
+      "path": "inputs/gxt-input.csv",
+      "rows": 28644,
+      "columns": 11
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f043/generate.R",
+      "path": "tools/parity/generators/f043/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/trends.csv",
+      "schema": "jel-gxt-trends"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "jel-gxt-attgt"
+    },
+    {
+      "path": "expected/r/dynamic.csv",
+      "schema": "jel-gxt-dynamic"
+    },
+    {
+      "path": "expected/r/post-window.csv",
+      "schema": "jel-gxt-post-window"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/trends.csv",
+      "expected": "expected/r/trends.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["treat_year", "year"]
+    },
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL004",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/dynamic.csv",
+      "expected": "expected/r/dynamic.csv",
+      "tolerance_id": "TOL004",
+      "key_columns": ["scenario", "seq"]
+    },
+    {
+      "actual": "expected/new-stata/post-window.csv",
+      "expected": "expected/r/post-window.csv",
+      "tolerance_id": "TOL004",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {
+    "type": "numerical-tolerance-exception",
+    "threshold": "absolute 1e-8 plus relative 2e-6 for F043 analytical ATT/SE vector comparisons",
+    "reason": "The actual JEL GxT covariate-adjusted DR design shows cross-runtime solver-level drift in raw ATT(g,t) cells, while point estimates, SEs, dynamic aggregates, and post-window summaries remain numerically aligned at published empirical precision.",
+    "evidence": ["tests/stata/test-f043.do", "tests/fixtures/parity/f043/expected/new-stata/attgt.csv", "test-f043.log"]
+  },
+  "scope_note": "Partial F043 JEL GxT smoke gate. It reconstructs the JEL staggered-adoption sample from committed JEL data, verifies weighted timing-group trends for Figure 5, and compares Stata csdid analytical ATT(g,t) plus dynamic aggregation against R did 2.5.1 for weighted no-covariate and covariate-adjusted DR event-study designs with not-yet-treated controls and universal base periods. Raw ATT/SE vector comparisons use a recorded JEL-scale numerical tolerance exception for cross-runtime solver drift. Full JEL Figure 5-9 replication still requires 25,000-rep bootstrap confidence intervals, plotting wrappers, rendered artifact comparison, and runtime hardening."
+}

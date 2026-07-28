@@ -1,0 +1,82 @@
+{
+  "matrix_id": "PY006",
+  "fixture_family": "python-compute-inffunc",
+  "normative_source": "Python csdid csdid/test_csdid/test_compute_inffunc.py subordinate to R did 2.5.1 public command behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D014"
+  ],
+  "tolerance_ids": [
+    "EXACT",
+    "TOL002"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/sample-data.csv",
+      "rows": 200,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py006/generate.py",
+      "path": "tools/parity/generators/py006/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 42,
+    "kind": "numpy.random.seed",
+    "draws": "randn"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata default public IF-backed command results",
+      "expected": "mapped default-is-true scenario",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": {
+    "id": "PY006-DIV001",
+    "source_tests": [
+      "test_point_estimates_match",
+      "test_se_is_nan_without_inffunc",
+      "test_aggte_blocked_without_inffunc",
+      "test_faster_without_inffunc"
+    ],
+    "reason": "Python-only compute_inffunc=False point-estimates-only object path has no public Stata command analogue."
+  },
+  "scope_note": "PY006 maps the default compute_inffunc=True assertion to Stata's public IF-backed command contract and records approved divergence for Python's internal compute_inffunc=False path. Stata keeps influence functions available for SEs, saved RIF artifacts, and public postestimation."
+}

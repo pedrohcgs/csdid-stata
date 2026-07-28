@@ -1,0 +1,121 @@
+scenario,family,expected_behavior
+combo_a__dr__nevertreated__varying,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__dr__nevertreated__varying,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__dr__nevertreated__varying,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__dr__nevertreated__universal,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__dr__nevertreated__universal,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__dr__nevertreated__universal,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__dr__notyettreated__varying,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__dr__notyettreated__varying,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__dr__notyettreated__varying,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__dr__notyettreated__universal,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__dr__notyettreated__universal,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__dr__notyettreated__universal,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__reg__nevertreated__varying,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__reg__nevertreated__varying,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__reg__nevertreated__varying,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__reg__nevertreated__universal,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__reg__nevertreated__universal,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__reg__nevertreated__universal,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__reg__notyettreated__varying,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__reg__notyettreated__varying,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__reg__notyettreated__varying,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__reg__notyettreated__universal,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__reg__notyettreated__universal,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__reg__notyettreated__universal,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__ipw__nevertreated__varying,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__ipw__nevertreated__varying,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__ipw__nevertreated__varying,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__ipw__nevertreated__universal,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__ipw__nevertreated__universal,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__ipw__nevertreated__universal,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__ipw__notyettreated__varying,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__ipw__notyettreated__varying,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__ipw__notyettreated__varying,combo_a,simple aggregation has nonmissing overall ATT
+combo_a__ipw__notyettreated__universal,combo_a,"ATT(g,t) has at least one nonmissing estimate"
+combo_a__ipw__notyettreated__universal,combo_a,"at least one positive finite ATT(g,t) standard error"
+combo_a__ipw__notyettreated__universal,combo_a,simple aggregation has nonmissing overall ATT
+combo_b__dr__panel_true,combo_b,"panel flag variant has at least one nonmissing ATT(g,t)"
+combo_b__dr__panel_true,combo_b,dynamic aggregation has nonmissing overall ATT
+combo_b__dr__panel_false,combo_b,"panel flag variant has at least one nonmissing ATT(g,t)"
+combo_b__dr__panel_false,combo_b,dynamic aggregation has nonmissing overall ATT
+combo_b__reg__panel_true,combo_b,"panel flag variant has at least one nonmissing ATT(g,t)"
+combo_b__reg__panel_true,combo_b,dynamic aggregation has nonmissing overall ATT
+combo_b__reg__panel_false,combo_b,"panel flag variant has at least one nonmissing ATT(g,t)"
+combo_b__reg__panel_false,combo_b,dynamic aggregation has nonmissing overall ATT
+combo_b__ipw__panel_true,combo_b,"panel flag variant has at least one nonmissing ATT(g,t)"
+combo_b__ipw__panel_true,combo_b,dynamic aggregation has nonmissing overall ATT
+combo_b__ipw__panel_false,combo_b,"panel flag variant has at least one nonmissing ATT(g,t)"
+combo_b__ipw__panel_false,combo_b,dynamic aggregation has nonmissing overall ATT
+combo_c__ant0__dr,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant0__dr,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant0__reg,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant0__reg,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant0__ipw,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant0__ipw,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant1__dr,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant1__dr,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant1__reg,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant1__reg,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant1__ipw,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant1__ipw,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant2__dr,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant2__dr,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant2__reg,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant2__reg,combo_c,anticipation variant has at least one positive finite SE
+combo_c__ant2__ipw,combo_c,"anticipation variant has at least one nonmissing ATT(g,t)"
+combo_c__ant2__ipw,combo_c,anticipation variant has at least one positive finite SE
+combo_d__bstrap_true__dr,combo_d,bootstrap flag variant has at least one positive finite SE
+combo_d__bstrap_true__dr,combo_d,"bootstrap flag variant has finite nonmissing ATT(g,t)"
+combo_d__bstrap_true__reg,combo_d,bootstrap flag variant has at least one positive finite SE
+combo_d__bstrap_true__reg,combo_d,"bootstrap flag variant has finite nonmissing ATT(g,t)"
+combo_d__bstrap_true__ipw,combo_d,bootstrap flag variant has at least one positive finite SE
+combo_d__bstrap_true__ipw,combo_d,"bootstrap flag variant has finite nonmissing ATT(g,t)"
+combo_d__bstrap_false__dr,combo_d,bootstrap flag variant has at least one positive finite SE
+combo_d__bstrap_false__dr,combo_d,"bootstrap flag variant has finite nonmissing ATT(g,t)"
+combo_d__bstrap_false__reg,combo_d,bootstrap flag variant has at least one positive finite SE
+combo_d__bstrap_false__reg,combo_d,"bootstrap flag variant has finite nonmissing ATT(g,t)"
+combo_d__bstrap_false__ipw,combo_d,bootstrap flag variant has at least one positive finite SE
+combo_d__bstrap_false__ipw,combo_d,"bootstrap flag variant has finite nonmissing ATT(g,t)"
+combo_e__dr__nevertreated__varying__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__nevertreated__varying__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__nevertreated__universal__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__nevertreated__universal__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__notyettreated__varying__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__notyettreated__varying__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__notyettreated__universal__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__dr__notyettreated__universal__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__nevertreated__varying__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__nevertreated__varying__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__nevertreated__universal__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__nevertreated__universal__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__notyettreated__varying__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__notyettreated__varying__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__notyettreated__universal__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__reg__notyettreated__universal__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__nevertreated__varying__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__nevertreated__varying__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__nevertreated__universal__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__nevertreated__universal__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__notyettreated__varying__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__notyettreated__varying__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__notyettreated__universal__panel_true,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_e__ipw__notyettreated__universal__panel_false,combo_e,fit plus simple aggregation has nonmissing overall ATT
+combo_f__simple__dr,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__simple__reg,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__simple__ipw,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__dynamic__dr,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__dynamic__reg,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__dynamic__ipw,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__group__dr,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__group__reg,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__group__ipw,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__calendar__dr,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__calendar__reg,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_f__calendar__ipw,combo_f,aggregation type by method has nonmissing overall ATT and positive SE
+combo_g__dynamic_rc__dr,combo_g,repeated-cross-section dynamic post-treatment effects include a positive effect
+combo_g__rc_vs_panel__dr,combo_g,"panel and repeated-cross-section variants both have nonmissing ATT(g,t)"
+combo_g__dynamic_rc__reg,combo_g,repeated-cross-section dynamic post-treatment effects include a positive effect
+combo_g__rc_vs_panel__reg,combo_g,"panel and repeated-cross-section variants both have nonmissing ATT(g,t)"
+combo_g__dynamic_rc__ipw,combo_g,repeated-cross-section dynamic post-treatment effects include a positive effect
+combo_g__rc_vs_panel__ipw,combo_g,"panel and repeated-cross-section variants both have nonmissing ATT(g,t)"

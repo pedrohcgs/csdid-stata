@@ -1,0 +1,4 @@
+"method","group","time","event_time","att","se","control_group","base_period"
+"dr",2,2,0,0.9125,0.0227073776557312,"nevertreated","varying"
+"reg",2,2,0,0.9125,0.0227073776557312,"nevertreated","varying"
+"ipw",2,2,0,0.9125,0.0227073776557312,"nevertreated","varying"

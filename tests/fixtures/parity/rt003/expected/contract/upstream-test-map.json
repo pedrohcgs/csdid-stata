@@ -1,0 +1,20 @@
+[
+  {
+    "source_file": "tests/testthat/test-aggte-edge-coverage.R",
+    "source_sha256": "774a712a6c3c035c4330658a3078b57b6e0031676c034331a6852cb197cb8065",
+    "source_test": "aggte handles a single treated group for every aggregation type",
+    "mapped_scenario": "single_treated_all_types",
+    "assertion_family": "simple/group/dynamic/calendar aggregations return finite overall ATT and SE for one treated group plus never-treated controls",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-aggte-edge-coverage.R",
+    "source_sha256": "774a712a6c3c035c4330658a3078b57b6e0031676c034331a6852cb197cb8065",
+    "source_test": "aggte dynamic with min_e / max_e windows returns a consistent event-time set",
+    "mapped_scenario": "dynamic_min_max_window",
+    "assertion_family": "dynamic aggregation with min_e=-1 and max_e=1 returns only event times in the closed window and aligned ATT/event-time vectors",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,108 @@
+{
+  "matrix_id": "F032",
+  "fixture_family": "optimized-path-equivalence",
+  "normative_source": "R did 2.5.1 plus Stata baseline/fast equivalence",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D009"],
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 300,
+      "columns": 8
+    },
+    {
+      "path": "inputs/input-shuffled.csv",
+      "rows": 300,
+      "columns": 8
+    },
+    {
+      "path": "inputs/input-unbalanced.csv",
+      "rows": 290,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f032/generate.R",
+      "path": "tools/parity/generators/f032/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte-all-types"
+    },
+    {
+      "path": "expected/r/fast-option-grid.csv",
+      "schema": "attgt-fast-option-grid"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/baseline-attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/fast-attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/fast-shuffled-attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/fast-clustered-vs-baseline.csv",
+      "expected": "live clustered baseline",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/fast-all-surface-grid.csv",
+      "expected": "live nofast comparison grid",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/fast-vs-baseline-if-summary.csv",
+      "expected": "live baseline summaries",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time", "inffunc_col"]
+    },
+    {
+      "actual": "expected/new-stata/fast-vs-baseline-aggte.csv",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["type", "egt"]
+    },
+    {
+      "actual": "expected/new-stata/fast-option-grid.csv",
+      "expected": "expected/r/fast-option-grid.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["control_group", "base_period", "group", "time"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "F032 optimized-path equivalence fixture covers fast/nofast equivalence across balanced panels, repeated cross sections, allow_unbalanced routing, dr/reg/ipw, covariates, weights, fix_weights, clustered analytical SEs, bootstrap smoke, influence-function summaries, Gram matrix, row-order invariance, simple/group/calendar/dynamic aggregations, and nevertreated/notyettreated by varying/universal base-period option grids. Default fast(auto) and explicit fast now report fast_used=1 for every supported public surface; explicit nofast is the baseline/debug path. Broader inherited R faster_mode and Python fast-path grids remain tracked by RT012, RT025, RT027, and PY009 rows."
+}

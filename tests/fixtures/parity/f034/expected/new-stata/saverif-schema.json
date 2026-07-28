@@ -1,0 +1,11 @@
+{
+  "matrix_id": "F034",
+  "fixture_family": "saved-rif-artifacts",
+  "wide_rif_dataset": {
+    "required_variables": ["rif_row", "id", "group", "rif1", "rif2", "rif3", "rif4", "rif5", "rif6"],
+    "required_characteristics": ["csdid_artifact", "csdid_cmdline", "csdid_panel_mode", "csdid_control_group", "csdid_base_period", "csdid_method", "csdid_N", "csdid_N_units", "csdid_N_attgt", "csdid_N_groups", "csdid_N_time", "csdid_anticipation", "csdid_level"],
+    "required_rif_characteristics": "csdid_attgt",
+    "rif_column_labels": "RIF group=<group> time=<time> event_time=<event_time>"
+  },
+  "scope_note": "Partial saverif() artifact schema, numeric RIF summary parity, and csdid_stats reload parity for panel and true repeated-cross-section no-covariate reg scenarios. Full postestimation artifact workflows remain incomplete."
+}

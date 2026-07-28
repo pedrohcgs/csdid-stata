@@ -1,0 +1,76 @@
+{
+  "matrix_id": "RT021",
+  "fixture_family": "r-output-methods-coverage",
+  "normative_source": "R did 2.5.1 tests/testthat/test-output-methods-coverage.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D016"],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/output-methods.csv",
+      "rows": 976,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt021/generate.R",
+      "path": "tools/parity/generators/rt021/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20260609
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "output-method-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata postestimation output surfaces",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT021 maps R output-method coverage to Stata csdid_stats/csdid_estat public output surfaces for all aggregation types and pointwise not-yet-treated method branches. R-only conditional_did_pretest, trimmer, and get_wide_data helper tests are approved divergences because those helper APIs have no public Stata command analogue."
+}

@@ -1,0 +1,59 @@
+{
+  "matrix_id": "F051",
+  "fixture_family": "release-productization-defaults",
+  "normative_source": "R did 2.5.1 point-estimate defaults plus frozen Stata release UX contract",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D003", "D008", "D009", "D016"],
+  "tolerance_ids": ["TOL001", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/default-panel.csv",
+      "rows": 300,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f051/generate.R",
+      "path": "tools/parity/generators/f051/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/default-attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/contract/default-surface.json",
+      "schema": "release-default-surface"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata omitted-option ATT(g,t)",
+      "expected": "expected/r/default-attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "Stata stored-result defaults and diagnostics",
+      "expected": "expected/contract/default-surface.json",
+      "tolerance_id": "EXACT",
+      "key_columns": "setting"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Release-productization fixture binding omitted-option defaults, explicit default-equivalent calls, Stata-style aliases including bare universal/varying base-period aliases, id(), notyettreated/nevertreated, vce(cluster), bootstrap shorthand, optimized default computation/storage metadata, storeall full-storage compatibility, csdid_stats default/event aggregation aliases, estat/csdid_estat event and aggregation replay, csdid_plot saving() plot-data handoff, and user-facing diagnostics. Omitted inference follows R did 2.5.1 bootstrap/cband/1000 defaults; the fixture uses set.seed(20260707) only to make bootstrap SE evidence deterministic. Numerical point estimates remain R did 2.5.1-oracle; storage and Stata UX details are governed by the frozen Stata release contract."
+}

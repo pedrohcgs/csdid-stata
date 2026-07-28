@@ -1,0 +1,8 @@
+scenario,expected_rc,min_rows
+attgt_plot_data,0,1
+attgt_single_group_plot_data,0,1
+attgt_invalid_group_r_like_warning,0,1
+aggte_dynamic_plot_data,0,1
+aggte_group_plot_data,0,1
+aggte_calendar_plot_data,0,1
+unsupported_style_option,198,0

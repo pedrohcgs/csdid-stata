@@ -1,0 +1,110 @@
+{
+  "matrix_id": "RT019",
+  "fixture_family": "r-modelmatrix-hoist",
+  "normative_source": "R did 2.5.1 tests/testthat/test-modelmatrix-hoist.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+  "decision_refs": ["D001", "D003", "D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 9
+    },
+    {
+      "path": "inputs/sparse-factor.csv",
+      "rows": 240,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt019/generate.R",
+      "path": "tools/parity/generators/rt019/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "inherited_f011_seed_sparse_factor": 11
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/covariate-grid.csv",
+      "schema": "attgt-covariate-grid"
+    },
+    {
+      "path": "expected/r/dense-factor-dummy-grid.csv",
+      "schema": "attgt-dense-factor-dummy-grid"
+    },
+    {
+      "path": "expected/r/sparse-factor-grid.csv",
+      "schema": "attgt-sparse-factor-grid"
+    },
+    {
+      "path": "expected/r/sparse-factor-events.csv",
+      "schema": "warning-event-counts"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "modelmatrix-hoist-public-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata covariate formula-family ATT(g,t)/SE checks",
+      "expected": "expected/r/covariate-grid.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "est_method", "group", "time"]
+    },
+    {
+      "actual": "Stata dense factor/manual-dummy ATT(g,t)/SE checks",
+      "expected": "expected/r/dense-factor-dummy-grid.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["panel_mode", "covariate_spec", "method", "group", "time"]
+    },
+    {
+      "actual": "Stata sparse factor/manual-dummy ATT(g,t)/SE and warning checks",
+      "expected": "expected/r/sparse-factor-grid.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["panel_mode", "covariate_spec", "group", "time"]
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT019 maps public covariate behavior from R did's modelmatrix-hoist tests to Stata command gates for numeric, interaction, squared, dense-factor, and sparse-factor specifications. R-only model.matrix, faster_mode, poly(), formula-time non-finite transform, matrix-valued formula, and retained-empty-factor-level internals are recorded as approved divergences."
+}

@@ -1,0 +1,138 @@
+[
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP returns a one-row data.frame",
+    "mapped_scenario": "MP_slow",
+    "assertion_family": "one-row data.frame mapped to one-row Stata glance export",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP has expected columns",
+    "mapped_scenario": "MP_slow",
+    "assertion_family": "expected glance columns mapped to Stata-normalized names",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP values are reasonable",
+    "mapped_scenario": "MP_slow",
+    "assertion_family": "positive counts and expected control/method metadata",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP nobs matches nobs.MP",
+    "mapped_scenario": "MP_slow",
+    "assertion_family": "nobs equals unique units",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP works with faster_mode = TRUE",
+    "mapped_scenario": "MP_fast",
+    "assertion_family": "fast request returns positive metadata",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP agrees between faster_mode settings",
+    "mapped_scenario": "MP_fast_vs_slow",
+    "assertion_family": "fast and slow metadata agree",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj returns a one-row data.frame for all 4 types",
+    "mapped_scenario": "aggte_all",
+    "assertion_family": "one-row data.frame for simple/dynamic/group/calendar",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj has expected columns",
+    "mapped_scenario": "aggte_dynamic_slow",
+    "assertion_family": "expected aggregation glance columns mapped to Stata-normalized names",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj type column matches requested type",
+    "mapped_scenario": "aggte_all",
+    "assertion_family": "aggregation type column matches requested type",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj values are not NULL or NA",
+    "mapped_scenario": "aggte_all",
+    "assertion_family": "no missing aggregation glance metadata",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj works with faster_mode = TRUE",
+    "mapped_scenario": "aggte_fast_all",
+    "assertion_family": "fast request returns aggregation metadata",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP and glance.AGGTEobj agree on nobs",
+    "mapped_scenario": "aggte_all_vs_MP",
+    "assertion_family": "aggregation nobs equals MP nobs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP works when DIDparams lacks faster_mode",
+    "mapped_scenario": "r-object-model-only",
+    "assertion_family": "R saved-object DIDparams slot mutation has no public Stata command analogue",
+    "coverage_status": "approved-divergence"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj works when DIDparams lacks faster_mode",
+    "mapped_scenario": "r-object-model-only",
+    "assertion_family": "R saved-object DIDparams slot mutation has no public Stata command analogue",
+    "coverage_status": "approved-divergence"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "nobs.AGGTEobj works when DIDparams lacks faster_mode",
+    "mapped_scenario": "r-object-model-only",
+    "assertion_family": "R saved-object DIDparams slot mutation has no public Stata command analogue",
+    "coverage_status": "approved-divergence"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.MP works with a custom est_method function",
+    "mapped_scenario": "r-object-model-only",
+    "assertion_family": "R user-supplied estimator callback has no public Stata command analogue",
+    "coverage_status": "approved-divergence"
+  },
+  {
+    "source_file": "tests/testthat/test-glance.R",
+    "source_sha256": "eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3",
+    "source_test": "glance.AGGTEobj works with a custom est_method function",
+    "mapped_scenario": "r-object-model-only",
+    "assertion_family": "R user-supplied estimator callback has no public Stata command analogue",
+    "coverage_status": "approved-divergence"
+  }
+]

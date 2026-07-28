@@ -1,0 +1,107 @@
+{
+  "matrix_id": "RT010",
+  "fixture_family": "r-edge-cases",
+  "normative_source": "R did 2.5.1 tests/testthat/test-edge-cases.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+  "decision_refs": ["D003", "D004"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/single_treated.csv",
+      "rows": 1000,
+      "columns": 4
+    },
+    {
+      "path": "inputs/two_period.csv",
+      "rows": 400,
+      "columns": 4
+    },
+    {
+      "path": "inputs/no_never.csv",
+      "rows": 1200,
+      "columns": 4
+    },
+    {
+      "path": "inputs/first_period.csv",
+      "rows": 19936,
+      "columns": 7
+    },
+    {
+      "path": "inputs/nonconsecutive_time.csv",
+      "rows": 800,
+      "columns": 4
+    },
+    {
+      "path": "inputs/nonconsecutive_group.csv",
+      "rows": 1000,
+      "columns": 4
+    },
+    {
+      "path": "inputs/balanced_allow.csv",
+      "rows": 16040,
+      "columns": 7
+    },
+    {
+      "path": "inputs/unbalanced_allow.csv",
+      "rows": 16037,
+      "columns": 7
+    },
+    {
+      "path": "inputs/single_post.csv",
+      "rows": 600,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt010/generate.R",
+      "path": "tools/parity/generators/rt010/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R default",
+    "seed": 20260401
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "edge-case-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public edge-case gates",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT010 maps all eleven public edge-case tests from R did to Stata public command behavior, including single treated group estimation, all aggregation types, two-period universal base, no-never not-yet/default warning behavior, first-period-treated dropping, nonconsecutive time and group values, balanced and unbalanced public defaults, and a single post-treatment period."
+}

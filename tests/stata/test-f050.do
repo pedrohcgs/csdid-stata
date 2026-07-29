@@ -33,7 +33,7 @@ which csdid_plot
 which csdid.mata
 
 import delimited using "`root'/tests/fixtures/parity/f050/inputs/input.csv", clear asdouble
-csdid y, time(time) gvar(g) method(reg) analytical
+csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 assert rowsof(A) == 1
 assert abs(A[1,4] - 2) < 1e-12
@@ -46,7 +46,7 @@ assert abs(G[1,2] - 2) < 1e-12
 
 import delimited using "`root'/tests/fixtures/parity/f050/inputs/input.csv", clear asdouble
 tempfile rif
-csdid y, time(time) gvar(g) method(reg) saverif("`rif'") replace analytical
+csdid y, time(time) gvar(g) method(reg) saverif("`rif'") replace analytical nevertreated base_period(varying) bal(none)
 confirm file "`rif'"
 use "`rif'", clear
 unab vars : _all

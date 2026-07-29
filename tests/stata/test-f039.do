@@ -46,7 +46,7 @@ program define f039_run_scenario
     local panelopt ""
     if "`panelmode'" == "panel" local panelopt "ivar(id)"
 
-    quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(panel_mode)'" == "`panelmode'"
     assert "`e(method)'" == "`method'"
 

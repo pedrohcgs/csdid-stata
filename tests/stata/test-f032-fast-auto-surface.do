@@ -62,7 +62,8 @@ local first_f010 1
 foreach panel_mode in panel repeated-cross-section {
     foreach covariates in none numeric {
         foreach control_group in nevertreated notyettreated {
-            local cgopt ""
+            * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+            local cgopt "nevertreated"
             if "`control_group'" == "notyettreated" local cgopt "notyet"
             foreach method in dr reg ipw {
                 local xspec "y"
@@ -73,7 +74,7 @@ foreach panel_mode in panel repeated-cross-section {
                 if "`panel_mode'" == "panel" local expected_path "fast-balanced-panel"
 
                 import delimited using "`root'/tests/fixtures/parity/f010/inputs/input-staggered.csv", clear asdouble
-                quietly csdid `xspec', `panelopt' time(time) gvar(g) method(`method') `cgopt' nofast analytical
+                quietly csdid `xspec', `panelopt' time(time) gvar(g) method(`method') `cgopt' nofast analytical base_period(varying) bal(none)
                 assert "`e(panel_mode)'" == "`panel_mode'"
                 assert "`e(control_group)'" == "`control_group'"
                 assert "`e(method)'" == "`method'"
@@ -82,7 +83,7 @@ foreach panel_mode in panel repeated-cross-section {
                 matrix `N' = e(attgt)
 
                 import delimited using "`root'/tests/fixtures/parity/f010/inputs/input-staggered.csv", clear asdouble
-                quietly csdid `xspec', `panelopt' time(time) gvar(g) method(`method') `cgopt' analytical
+                quietly csdid `xspec', `panelopt' time(time) gvar(g) method(`method') `cgopt' analytical base_period(varying) bal(none)
                 assert "`e(panel_mode)'" == "`panel_mode'"
                 assert "`e(control_group)'" == "`control_group'"
                 assert "`e(method)'" == "`method'"
@@ -144,7 +145,7 @@ foreach panel_mode in panel repeated-cross-section {
                     if "`panel_mode'" == "panel" local expected_path "fast-balanced-panel"
 
                     import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
-                    quietly csdid `xspec' [iw=`weight_var'], `panelopt' time(time) gvar(g) method(`method') `fixopt' nofast analytical
+                    quietly csdid `xspec' [iw=`weight_var'], `panelopt' time(time) gvar(g) method(`method') `fixopt' nofast analytical nevertreated base_period(varying) bal(none)
                     assert "`e(panel_mode)'" == "`panel_mode'"
                     assert "`e(fix_weights)'" == "`expected_fix'"
                     f032_surface_assert_nofast
@@ -152,7 +153,7 @@ foreach panel_mode in panel repeated-cross-section {
                     matrix `N' = e(attgt)
 
                     import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
-                    quietly csdid `xspec' [iw=`weight_var'], `panelopt' time(time) gvar(g) method(`method') `fixopt' analytical
+                    quietly csdid `xspec' [iw=`weight_var'], `panelopt' time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                     assert "`e(panel_mode)'" == "`panel_mode'"
                     assert "`e(fix_weights)'" == "`expected_fix'"
                     f032_surface_assert_auto, path("`expected_path'")
@@ -205,7 +206,7 @@ foreach cluster_mode in iid cluster {
                 if "`cluster_mode'" == "cluster" local clopt "cluster(cl)"
 
                 import delimited using "`root'/tests/fixtures/parity/f016/inputs/input.csv", clear asdouble
-                quietly csdid `xspec' `wopt', ivar(id) time(time) gvar(g) method(`method') `clopt' nofast analytical
+                quietly csdid `xspec' `wopt', ivar(id) time(time) gvar(g) method(`method') `clopt' nofast analytical nevertreated base_period(varying) bal(none)
                 assert "`e(panel_mode)'" == "allow_unbalanced"
                 if "`cluster_mode'" == "cluster" assert "`e(clustervar)'" == "cl"
                 f032_surface_assert_nofast
@@ -213,7 +214,7 @@ foreach cluster_mode in iid cluster {
                 matrix `N' = e(attgt)
 
                 import delimited using "`root'/tests/fixtures/parity/f016/inputs/input.csv", clear asdouble
-                quietly csdid `xspec' `wopt', ivar(id) time(time) gvar(g) method(`method') `clopt' analytical
+                quietly csdid `xspec' `wopt', ivar(id) time(time) gvar(g) method(`method') `clopt' analytical nevertreated base_period(varying) bal(none)
                 assert "`e(panel_mode)'" == "allow_unbalanced"
                 if "`cluster_mode'" == "cluster" assert "`e(clustervar)'" == "cl"
                 f032_surface_assert_auto, path("fast-allow-unbalanced")
@@ -272,15 +273,15 @@ local first_f015 1
 local first_f015_agg 1
 foreach scenario in panel_reg_cluster panel_cov_dr_cluster rc_reg_cluster {
     if "`scenario'" == "panel_reg_cluster" {
-        local basecmd "csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical" 
+        local basecmd "csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)" 
         local expected_path "fast-balanced-panel"
     }
     else if "`scenario'" == "panel_cov_dr_cluster" {
-        local basecmd "csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) cluster(cl) analytical" 
+        local basecmd "csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) cluster(cl) analytical nevertreated base_period(varying) bal(none)" 
         local expected_path "fast-balanced-panel"
     }
     else {
-        local basecmd "csdid y, time(time) gvar(g) method(reg) cluster(cl) analytical" 
+        local basecmd "csdid y, time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)" 
         local expected_path "fast-repeated-cross-section"
     }
 
@@ -362,14 +363,14 @@ assert n_clusters == n_clusters_stata
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') nofast wboot(reps(31) rseed(4321)) pointwise
+    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') nofast wboot(reps(31) rseed(4321)) pointwise nevertreated base_period(varying) bal(none)
     f032_surface_assert_nofast
     tempname N NB A AB
     matrix `N' = e(attgt)
     matrix `NB' = e(boot_attgt)
 
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') wboot(reps(31) rseed(4321)) pointwise
+    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') wboot(reps(31) rseed(4321)) pointwise nevertreated base_period(varying) bal(none)
     f032_surface_assert_auto, path("fast-balanced-panel")
     matrix `A' = e(attgt)
     matrix `AB' = e(boot_attgt)
@@ -378,7 +379,7 @@ foreach method in dr reg ipw {
 }
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) nofast wboot(reps(31) rseed(20250622)) pointwise
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) nofast wboot(reps(31) rseed(20250622)) pointwise nevertreated base_period(varying) bal(none)
 f032_surface_assert_nofast
 tempname N NB ND A AB AD
 matrix `N' = e(attgt)
@@ -386,7 +387,7 @@ matrix `NB' = e(boot_attgt)
 matrix `ND' = e(boot_draws)
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(20250622)) pointwise
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(20250622)) pointwise nevertreated base_period(varying) bal(none)
 f032_surface_assert_auto, path("fast-balanced-panel")
 matrix `A' = e(attgt)
 matrix `AB' = e(boot_attgt)

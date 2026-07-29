@@ -41,8 +41,8 @@ them into the summary you want.
 
 Three choices matter:
 
-- **the comparison group** — never-treated units (the default), or
-  not-yet-treated units with `notyet`
+- **the comparison group** — not-yet-treated units (the default), or only
+  never-treated units with `nevertreated`
 - **the 2×2 estimator** — doubly robust `method(dr)` (the default),
   outcome regression `method(reg)`, or inverse probability weighting
   `method(ipw)`
@@ -152,6 +152,34 @@ twoway (rcap ci_high ci_low x) (scatter estimate x), ///
     yline(0) xtitle("Years since expansion") ytitle("Effect on mortality rate")
 restore
 ```
+
+## Speed
+
+Measured against **csdid Version 1.82** — the version SSC distributes today — on the
+same machine, same data, seven trials per workload with the first discarded.
+Full method and per-trial numbers in
+`reports/legacy-candidate-performance-certification.md`.
+
+| Workload | Version 1.82 | 2.0.0 | |
+| --- | ---: | ---: | ---: |
+| ATT(g,t), outcome regression, analytical | 7.27s | 0.27s | **27x** |
+| ATT(g,t), doubly robust with covariates | 8.30s | 0.42s | **20x** |
+| ATT(g,t), IPW with weights | 7.72s | 0.31s | **25x** |
+| ATT(g,t), clustered | 6.81s | 0.25s | **28x** |
+| Bootstrap, outcome regression | 9.40s | 0.42s | **22x** |
+| Bootstrap, doubly robust with covariates | 10.76s | 0.61s | **18x** |
+| Bootstrap, clustered | 11.94s | 0.42s | **28x** |
+| Unbalanced panel, weighted DR | 9.41s | 1.44s | **6.5x** |
+| Unbalanced panel, bootstrap | 13.42s | 1.60s | **8.4x** |
+| Event study, analytical | 7.95s | 1.54s | **5.2x** |
+| Event study, bootstrap | 13.89s | 2.63s | **5.3x** |
+| Event study, simultaneous bands | 14.08s | 2.80s | **5.0x** |
+| Event study, clustered + bands | 12.64s | 2.57s | **4.9x** |
+| Large panel, weighted DR | 28.88s | 2.07s | **13.9x** |
+
+Between **5x and 28x**, and never slower. Peak memory is lower on every
+workload. The engine is Mata throughout and ships precompiled, so there is no
+per-session compilation cost either.
 
 ## Unbalanced panels
 

@@ -153,7 +153,7 @@ local first_att 1
 local first_agg 1
 
 import delimited using "`root'/tests/fixtures/parity/rt027/inputs/unbalanced-clustered.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) nofast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) nofast analytical nevertreated bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert "`e(base_period)'" == "universal"
 assert "`e(clustervar)'" == "cluster"
@@ -181,7 +181,7 @@ foreach agg_type in simple group dynamic calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt027/inputs/unbalanced-clustered.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) fast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) fast analytical nevertreated bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
@@ -195,7 +195,7 @@ foreach agg_type in simple group dynamic calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt027/inputs/unbalanced-clustered.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) nofast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) nofast analytical nevertreated bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -210,7 +210,7 @@ foreach agg_type in simple group dynamic calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt027/inputs/unbalanced-clustered.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) fast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) fast analytical nevertreated bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
@@ -224,7 +224,7 @@ foreach agg_type in simple group dynamic calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt027/inputs/balanced-clustered.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) nofast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) nofast analytical nevertreated bal(none)
 assert "`e(panel_mode)'" == "panel"
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
@@ -238,7 +238,7 @@ foreach agg_type in simple group dynamic calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt027/inputs/balanced-clustered.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) fast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) base_period(universal) cluster(cluster) fast analytical nevertreated bal(none)
 assert "`e(panel_mode)'" == "panel"
 assert e(fast_requested) == 1
 assert e(fast_used) == 1

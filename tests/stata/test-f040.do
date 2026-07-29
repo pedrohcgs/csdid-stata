@@ -43,7 +43,7 @@ assert r(N) == 1
 
 import delimited using "`root'/tests/fixtures/parity/f041/inputs/table7-input.csv", clear asdouble
 quietly csdid crude_rate_20_64 perc_female perc_white perc_hispanic unemp_rate poverty_rate median_income [iw=set_wt], analytical ///
-    ivar(county_code) time(year) gvar(treat_year) method(dr) base_period(universal) nofast
+    ivar(county_code) time(year) gvar(treat_year) method(dr) base_period(universal) nofast bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -53,7 +53,7 @@ quietly csdid_stats, type(simple) na_rm
 matrix S0 = e(aggte)
 
 quietly csdid crude_rate_20_64 perc_female perc_white perc_hispanic unemp_rate poverty_rate median_income [iw=set_wt], analytical ///
-    ivar(county_code) time(year) gvar(treat_year) method(dr) base_period(universal) fast
+    ivar(county_code) time(year) gvar(treat_year) method(dr) base_period(universal) fast bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 if "`e(panel_mode)'" == "panel" {

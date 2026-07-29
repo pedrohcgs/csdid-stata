@@ -51,7 +51,7 @@ program define rt012_collect_aggs
     local first 1
     foreach agg_type in simple dynamic group calendar {
         import delimited using "`c(pwd)'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-        quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) `fastopt' analytical
+        quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) `fastopt' analytical nevertreated base_period(varying) bal(none)
         rt012_save_agg, type(`agg_type') saving("`part'")
         if `first' {
             use "`part'", clear
@@ -87,13 +87,13 @@ assert _N == 1
 assert divergence_id[1] == "RT012-DIV001"
 
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) notyet base_period(universal) nofast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) notyet base_period(universal) nofast analytical bal(none)
 matrix BasePanel = e(attgt)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) notyet base_period(universal) fast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) notyet base_period(universal) fast analytical bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -101,10 +101,10 @@ matrix FastPanel = e(attgt)
 rt012_assert_matrix_equal BasePanel FastPanel 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, time(period) gvar(g) method(ipw) base_period(varying) nofast analytical
+quietly csdid y x, time(period) gvar(g) method(ipw) base_period(varying) nofast analytical nevertreated bal(none)
 matrix BaseRC = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, time(period) gvar(g) method(ipw) base_period(varying) fast analytical
+quietly csdid y x, time(period) gvar(g) method(ipw) base_period(varying) fast analytical nevertreated bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-repeated-cross-section"
@@ -112,10 +112,10 @@ matrix FastRC = e(attgt)
 rt012_assert_matrix_equal BaseRC FastRC 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input-unbalanced.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet nofast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet nofast analytical base_period(varying) bal(none)
 matrix BaseUB = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input-unbalanced.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet fast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet fast analytical base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
@@ -123,10 +123,10 @@ matrix FastUB = e(attgt)
 rt012_assert_matrix_equal BaseUB FastUB 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) nofast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none)
 matrix BaseNoCov = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) fast analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 matrix FastNoCov = e(attgt)
@@ -189,19 +189,19 @@ program define rt012_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt012_grab "dr_panel" "`rt012_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) notyet base_period(universal) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) notyet base_period(universal) analytical bal(none)
 rt012_grab "dr_notyet_universal" "`rt012_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y x, time(period) gvar(g) method(ipw) base_period(varying) analytical
+quietly csdid y x, time(period) gvar(g) method(ipw) base_period(varying) analytical nevertreated bal(none)
 rt012_grab "ipw_rcs_varying" "`rt012_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input-unbalanced.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
 rt012_grab "reg_unbal_notyet" "`rt012_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt012/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 rt012_grab "reg_nox" "`rt012_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt012/expected/r/attgt.csv", clear asdouble varnames(1)

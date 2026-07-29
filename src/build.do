@@ -31,7 +31,7 @@ copy src/ado/csdid_plot.ado build/csdid_plot.ado, replace
 copy src/ado/csdid_p.ado build/csdid_p.ado, replace
 
 * ---------------------------------------------------------------------------
-* Utility and legacy commands carried over from csdid 1.82.
+* Utility and legacy commands carried over from csdid Version 1.82.
 *
 * csgvar/_gcsgvar build the gvar cohort variable from a treatment indicator and
 * are SUPPORTED: self-contained, no dependency on csdid internals.

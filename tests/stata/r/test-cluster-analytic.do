@@ -63,7 +63,7 @@ program define rt007_assert_analytical
 
     tempfile actual
     import delimited using "`input'", clear asdouble
-    csdid y, `ivaropt' time(t) gvar(g) method(dr) cluster(cl) base_period(varying) `fastopt' analytical
+    csdid y, `ivaropt' time(t) gvar(g) method(dr) cluster(cl) base_period(varying) `fastopt' analytical nevertreated bal(none)
     assert "`e(clustervar)'" == "cl"
     assert e(N_clusters) > 0
     assert e(fast_requested) == ("`fast'" != "")
@@ -87,7 +87,7 @@ program define rt007_assert_iid_contrast
 
     tempfile iid cl
     import delimited using "`input'", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(dr) base_period(varying) analytical
+    csdid y, ivar(id) time(t) gvar(g) method(dr) base_period(varying) analytical nevertreated bal(none)
     matrix A = e(attgt)
     preserve
     clear
@@ -99,7 +99,7 @@ program define rt007_assert_iid_contrast
     restore
 
     import delimited using "`input'", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(dr) cluster(cl) base_period(varying) analytical
+    csdid y, ivar(id) time(t) gvar(g) method(dr) cluster(cl) base_period(varying) analytical nevertreated bal(none)
     matrix C = e(attgt)
     preserve
     clear
@@ -132,7 +132,7 @@ program define rt007_assert_bootstrap
 
     import delimited using "`input'", clear asdouble
     csdid y, `ivaropt' time(t) gvar(g) method(dr) cluster(cl) base_period(varying) ///
-        wboot(reps(`biters') rseed(`seed')) pointwise `fastopt'
+        wboot(reps(`biters') rseed(`seed')) pointwise `fastopt' bal(none)
     assert e(bstrap) == 1
     assert e(biters) == `biters'
     assert e(cband) == 0
@@ -173,7 +173,7 @@ program define rt007_assert_aggte
 
     tempfile cl iid actual
     import delimited using "`input'", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(dr) cluster(cl) base_period(varying) analytical
+    csdid y, ivar(id) time(t) gvar(g) method(dr) cluster(cl) base_period(varying) analytical nevertreated bal(none)
     foreach type in simple group dynamic {
         csdid_stats, type(`type')
         matrix G = e(aggte)
@@ -195,7 +195,7 @@ program define rt007_assert_aggte
     }
 
     import delimited using "`input'", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(dr) base_period(varying) analytical
+    csdid y, ivar(id) time(t) gvar(g) method(dr) base_period(varying) analytical nevertreated bal(none)
     foreach type in simple group dynamic {
         csdid_stats, type(`type')
         matrix G = e(aggte)

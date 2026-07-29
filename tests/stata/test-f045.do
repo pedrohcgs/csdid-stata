@@ -29,6 +29,29 @@ program define f045_assert_log_contains
     assert `found'
 end
 
+program define f045_assert_log_omits
+    version 15
+    syntax using/, MESSAGE(string)
+
+    tempname fh
+    local body ""
+    file open `fh' using `"`using'"', read text
+    file read `fh' line
+    while r(eof) == 0 {
+        local clean = strtrim(`"`line'"')
+        if substr(`"`clean'"', 1, 2) == "> " {
+            local clean = strtrim(substr(`"`clean'"', 3, .))
+        }
+        local body `"`body' `clean'"'
+        file read `fh' line
+    }
+    file close `fh'
+    local compact_body = subinstr(`"`body'"', " ", "", .)
+    local compact_message = subinstr(`"`message'"', " ", "", .)
+    local found = strpos(`"`body'"', `"`message'"') > 0 | strpos(`"`compact_body'"', `"`compact_message'"') > 0
+    assert !`found'
+end
+
 program define f045_append_defaults
     version 15
     syntax , SCENARIO(string) OUTFILE(string) [APPEND]
@@ -66,30 +89,30 @@ confirm file "`root'/tests/fixtures/parity/f045/metadata/manifest.json"
 tempfile actual_defaults evlog
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) rseed(20260707)
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) rseed(20260707) nevertreated base_period(varying) bal(none)
 matrix BalancedDefault = e(attgt)
 f045_append_defaults, scenario(balanced_default) outfile("`actual_defaults'")
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dr) base_period(varying) rseed(20260707)
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dr) base_period(varying) rseed(20260707) nevertreated bal(none)
 matrix ExplicitRDefault = e(attgt)
 assert mreldif(BalancedDefault, ExplicitRDefault) < 1e-14
 f045_append_defaults, scenario(balanced_explicit_r_defaults) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/unbalanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g)
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 f045_append_defaults, scenario(unbalanced_default) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], time(time) gvar(g)
+quietly csdid y x1 x2 [iw=w], time(time) gvar(g) nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "repeated-cross-section"
 f045_append_defaults, scenario(rc_omitted_ivar_default) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
 capture log close f045event
 log using "`evlog'", text replace name(f045event)
-capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) asinr rseed(20260707)
+capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) asinr rseed(20260707) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f045event
 assert `actual_rc' == 0
@@ -101,7 +124,7 @@ f045_append_defaults, scenario(asinr_noop) outfile("`actual_defaults'") append
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
 capture log close f045event
 log using "`evlog'", text replace name(f045event)
-capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dripw) rseed(20260707)
+capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dripw) rseed(20260707) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f045event
 assert `actual_rc' == 0
@@ -111,13 +134,13 @@ f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: m
 f045_append_defaults, scenario(method_dripw_alias) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(ipw) rseed(20260707)
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(ipw) rseed(20260707) nevertreated base_period(varying) bal(none)
 matrix ExplicitIPW = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
 capture log close f045event
 log using "`evlog'", text replace name(f045event)
-capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(stdipw) rseed(20260707)
+capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(stdipw) rseed(20260707) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f045event
 assert `actual_rc' == 0
@@ -139,36 +162,40 @@ assert level == level_stata
 
 import delimited using "`root'/tests/fixtures/parity/f045/expected/new-stata/events.csv", clear varnames(1)
 assert _N == 7
-foreach key in legacy_balance_alias legacy_long_alias legacy_long2_alias ///
+foreach key in balance_full_is_default legacy_long_alias legacy_long2_alias ///
     legacy_dryrun_rejected asinr_noop_warning method_dripw_warning method_stdipw_warning {
     quietly count if event_key == "`key'"
     assert r(N) == 1
 }
 
-local balance_msg "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
 local long_msg "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
 local dryrun_msg "dryrun is an internal legacy option and is unsupported"
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) base_period(universal) rseed(20260707)
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) base_period(universal) rseed(20260707) nevertreated bal(none)
 matrix BalancedUniversal = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
 capture log close f045event
 log using "`evlog'", text replace name(f045event)
-capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) balance(full) rseed(20260707)
+capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) balance(full) rseed(20260707) nevertreated base_period(varying)
 local actual_rc = _rc
 log close f045event
 assert `actual_rc' == 0
 assert "`e(panel_mode)'" == "panel"
 matrix BalanceAlias = e(attgt)
 assert mreldif(BalanceAlias, BalancedDefault) < 1e-14
-f045_assert_log_contains using "`evlog'", message("`balance_msg'")
+* balance(full) is the same option as bal(full), which is the default, so it
+* is not deprecated and prints no note. This fixture is a balanced panel, so
+* the mode also has nothing to drop -- and a balancing report on a panel where
+* nothing was dropped would be a false alarm. Assert the silence.
+f045_assert_log_omits using "`evlog'", message("is being balanced by dropping")
+f045_assert_log_omits using "`evlog'", message("is deprecated")
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
 capture log close f045event
 log using "`evlog'", text replace name(f045event)
-capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) dryrun
+capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) dryrun nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f045event
 assert `actual_rc' == 198
@@ -178,7 +205,10 @@ foreach option in long long2 {
     import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
     capture log close f045event
     log using "`evlog'", text replace name(f045event)
-    capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) `option' rseed(20260707)
+    * No base_period() pin: long/long2 exist to imply base_period(universal)
+    * when it is not otherwise given, so stating it would make the assertion
+    * below unfalsifiable.
+    capture noisily csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) `option' rseed(20260707) nevertreated bal(none)
     local actual_rc = _rc
     log close f045event
     assert `actual_rc' == 0
@@ -233,19 +263,19 @@ program define f045_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) analytical
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) analytical nevertreated base_period(varying) bal(none)
 f045_grab "default_dr_balanced" "`f045_actual'"
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dr) base_period(varying) analytical
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dr) base_period(varying) analytical nevertreated bal(none)
 f045_grab "explicit_dr_varying" "`f045_actual'"
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], time(time) gvar(g) analytical
+quietly csdid y x1 x2 [iw=w], time(time) gvar(g) analytical nevertreated base_period(varying) bal(none)
 f045_grab "rcs_default" "`f045_actual'"
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(ipw) analytical
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(ipw) analytical nevertreated base_period(varying) bal(none)
 f045_grab "ipw_balanced" "`f045_actual'"
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/unbalanced.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) analytical
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) analytical nevertreated base_period(varying) bal(none)
 f045_grab "unbalanced_default" "`f045_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/f045/expected/r/attgt.csv", clear asdouble varnames(1)

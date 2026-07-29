@@ -72,36 +72,36 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/rt030/inputs/panel.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(panel_mode)'" == "panel"
     rt030_capture "panel_x_`method'" "`actual'"
 
     import delimited using "`root'/tests/fixtures/parity/rt030/inputs/panel.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     rt030_capture "panel_nox_`method'" "`actual'"
 
     import delimited using "`root'/tests/fixtures/parity/rt030/inputs/repeated-cross-section.csv", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(panel_mode)'" == "repeated-cross-section"
     rt030_capture "rcs_x_`method'" "`actual'"
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt030/inputs/two-period.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 rt030_capture "twoperiod_reg" "`actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt030/inputs/unbalanced.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 rt030_capture "unbalanced_dr" "`actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt030/inputs/panel.csv", clear asdouble
-quietly csdid y x, time(period) gvar(g) method(dr) notyet analytical
+quietly csdid y x, time(period) gvar(g) method(dr) notyet analytical base_period(varying) bal(none)
 rt030_capture "panel_notyet_rcs_dr" "`actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt030/inputs/panel.csv", clear asdouble
 keep if g > 0
-quietly csdid y x, time(period) gvar(g) method(dr) notyet analytical
+quietly csdid y x, time(period) gvar(g) method(dr) notyet analytical base_period(varying) bal(none)
 rt030_capture "panel_treatedonly_notyet_dr" "`actual'"
 
 * ---- compare against R ------------------------------------------------------

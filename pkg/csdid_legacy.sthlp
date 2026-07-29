@@ -13,7 +13,7 @@
 
 {phang}
 {bf:csdid_legacy} {hline 2} Utility and deprecated commands carried over from
-csdid 1.82
+csdid Version 1.82
 
 
 {marker supported}{...}
@@ -57,7 +57,7 @@ standard.
 {synopthdr:Command}
 {synoptline}
 {synopt :{cmd:csdid_rif}}builds tables from saved RIF variables{p_end}
-{synopt :{cmd:csdid_table}}formats a results table; an internal helper of csdid 1.82{p_end}
+{synopt :{cmd:csdid_table}}formats a results table; an internal helper of csdid Version 1.82{p_end}
 {synopt :{cmd:dipt}}undocumented utility{p_end}
 {synopt :{cmd:tsvmat}}creates temporary variables from a matrix{p_end}
 {synoptline}
@@ -78,15 +78,15 @@ the same estimation path {cmd:csdid} itself reports:
 {p_end}
 
 {phang2}{cmd:. csdid y, ivar(id) time(t) gvar(g)}{p_end}
-{phang2}{cmd:. estat tidy, saving(results) replace}{p_end}
+{phang2}{cmd:. estat attgt, saving(results) replace}{p_end}
 {phang2}{cmd:. use results, clear}{p_end}
 
 {pstd}
-{cmd:estat tidy} returns one row per estimate with the estimate, its standard
-error, the test statistic, the p-value and the confidence bounds.
-{cmd:estat glance} gives the one-line summary. For aggregations, run
-{cmd:estat event}, {cmd:estat group}, {cmd:estat calendar} or
-{cmd:estat simple} first.
+{cmd:estat attgt, saving()} returns one row per estimate with the estimate, its
+standard error, the test statistic, the p-value and the confidence bounds. Every
+aggregation exports itself the same way: {cmd:estat event, saving()},
+{cmd:estat group, saving()}, {cmd:estat calendar, saving()} or
+{cmd:estat simple, saving()}.
 {p_end}
 
 {pstd}

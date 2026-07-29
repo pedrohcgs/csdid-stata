@@ -26,16 +26,16 @@ foreach method in dr reg ipw {
         foreach covariates in none x1_x2 {
             use "`input'", clear
             if "`weight_var'" == "none" & "`covariates'" == "none" {
-                csdid y, ivar(id) time(time) gvar(g) method(`method') analytical
+                csdid y, ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
             }
             else if "`weight_var'" == "wt" & "`covariates'" == "none" {
-                csdid y [iw=wt], ivar(id) time(time) gvar(g) method(`method') analytical
+                csdid y [iw=wt], ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
             }
             else if "`weight_var'" == "none" & "`covariates'" == "x1_x2" {
-                csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') analytical
+                csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
             }
             else {
-                csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(`method') analytical
+                csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
             }
             assert "`e(panel_mode)'" == "allow_unbalanced"
             matrix A = e(attgt)
@@ -79,16 +79,16 @@ foreach method in dr reg ipw {
         foreach covariates in none x1_x2 {
             use "`input'", clear
             if "`weight_var'" == "none" & "`covariates'" == "none" {
-                csdid y, ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical
+                csdid y, ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
             }
             else if "`weight_var'" == "wt" & "`covariates'" == "none" {
-                csdid y [iw=wt], ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical
+                csdid y [iw=wt], ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
             }
             else if "`weight_var'" == "none" & "`covariates'" == "x1_x2" {
-                csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical
+                csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
             }
             else {
-                csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical
+                csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
             }
             assert "`e(panel_mode)'" == "allow_unbalanced"
             assert "`e(clustervar)'" == "cl"
@@ -138,7 +138,7 @@ quietly count if ttag
 local uniform_times = r(N)
 assert `uniform_sample' != `uniform_units' * `uniform_times'
 
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 matrix A = e(attgt)
 clear
@@ -155,7 +155,7 @@ assert abs(se - se_stata) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 
 tempfile actual_rt027 actual_rt027_agg
 import delimited using "`root'/tests/fixtures/parity/f016/inputs/rt027-unbalanced-cluster.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) base_period(universal) cluster(cluster) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) base_period(universal) cluster(cluster) analytical nevertreated bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert "`e(base_period)'" == "universal"
 assert "`e(clustervar)'" == "cluster"
@@ -225,5 +225,5 @@ assert abs(overall_se - overall_se_stata) <= 1e-8 + 1e-8 * abs(overall_se) if !m
 assert n_clusters == n_clusters_stata
 
 use "`input'", clear
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_bad) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_bad) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 459

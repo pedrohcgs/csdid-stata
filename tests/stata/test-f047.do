@@ -6,6 +6,18 @@ local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
+* These export lines write a RUN ARTEFACT, not an expectation. They used to
+* write into tests/fixtures/.../expected/new-stata/, where nothing ever read
+* them back -- the real comparison is against expected/r/, the R oracle. Sitting
+* under a directory called expected/ they looked like reviewed expectations,
+* they were committed, they dirtied the tree on every run, and they fed the
+* preflight digest. A garbage copy left behind by a failing run was later read
+* as evidence that a gate had passed while recording nonsense; it had not, it
+* had failed. Artefacts belong in build/.
+capture mkdir "`root'/build"
+capture mkdir "`root'/build/test-artefacts"
+capture mkdir "`root'/build/test-artefacts/f047"
+
 program define f047_run_scenario
     version 15
     syntax , SCENARIO(string) INPUTFILE(string) METHOD(string) CONTROL(string) BASE(string) STATAIVAR(integer) EXPECTEDPANEL(string) COVARIATES(string) WEIGHTED(integer) ATTFILE(string) AGGFILE(string) [APPEND]
@@ -18,10 +30,11 @@ program define f047_run_scenario
     if `weighted' local weightopt "[iw=w]"
     local ivaropt ""
     if `stataivar' local ivaropt "ivar(id)"
-    local controlopt ""
+    * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+    local controlopt "nevertreated"
     if "`control'" == "notyettreated" local controlopt "notyet"
 
-    quietly csdid y `xvars' `weightopt', `ivaropt' time(time) gvar(g) method(`method') `controlopt' base_period(`base') analytical
+    quietly csdid y `xvars' `weightopt', `ivaropt' time(time) gvar(g) method(`method') `controlopt' base_period(`base') analytical bal(none)
     assert "`e(method)'" == "`method'"
     assert "`e(control_group)'" == "`control'"
     assert "`e(base_period)'" == "`base'"
@@ -118,11 +131,11 @@ capture mkdir "`root'/tests/fixtures/parity/f047/expected/new-stata"
 
 use "`actual_att'", clear
 sort scenario group time
-export delimited using "`root'/tests/fixtures/parity/f047/expected/new-stata/attgt.csv", replace
+export delimited using "`root\'/build/test-artefacts/f047/attgt.csv", replace
 
 use "`actual_agg'", clear
 sort scenario agg_type seq
-export delimited using "`root'/tests/fixtures/parity/f047/expected/new-stata/aggte.csv", replace
+export delimited using "`root\'/build/test-artefacts/f047/aggte.csv", replace
 
 import delimited using "`root'/tests/fixtures/parity/f047/expected/r/attgt.csv", clear asdouble
 merge 1:1 scenario group time using "`actual_att'", nogen assert(match)

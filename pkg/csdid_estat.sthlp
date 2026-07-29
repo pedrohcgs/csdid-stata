@@ -84,8 +84,11 @@ used by {cmd:csdid}{p_end}
 {p2colreset}{...}
 
 {p 4 6 2}
-{cmd:estat attgt} takes no options, and says so with return code 198 rather
-than accepting one and ignoring it. {cmd:window()} must be spelled in full.
+Every subcommand accepts {cmd:saving(}{it:filename}{cmd:)} and {cmd:replace},
+which write the result just computed to {it:filename} as a dataset instead of
+only printing it. {cmd:estat attgt} accepts nothing else, and says so with
+return code 198 rather than accepting an option and ignoring it.
+{cmd:window()} must be spelled in full.
 {cmd:dropmissing} is accepted only on {cmd:event} and on the four
 {it:aggregation} subcommands, which are the subcommands that aggregate.
 {cmd:estat} may be used only after {cmd:csdid}; the aggregation itself is
@@ -482,7 +485,7 @@ Sant'Anna (2021). Loading it requires an internet connection.
 
 {pstd}{bf:Export results}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
-{phang2}{cmd:. estat tidy, saving(attgt_tidy) replace}{p_end}
+{phang2}{cmd:. estat attgt, saving(attgt_cells) replace}{p_end}
 {phang2}{cmd:. estat glance, saving(model_summary) replace}{p_end}
 {phang2}{cmd:. estat event}{p_end}
 {phang2}{cmd:. estat tidy, saving(event_tidy) replace}{p_end}

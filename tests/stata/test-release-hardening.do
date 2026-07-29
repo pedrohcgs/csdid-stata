@@ -66,7 +66,7 @@ drop if mod(id, 17) == 0 & inlist(year, 2, 5)
 drop if mod(id, 19) == 0 & year == 4
 save "`unbalanced'", replace
 
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) performance(lean)
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
 assert e(mata_cache) == 1
@@ -91,7 +91,7 @@ preserve
     assert abs(ci_high[1] - expected_high) <= 1e-9 + 1e-9 * abs(expected_high)
 restore
 
-capture noisily csdid y x1, id(id) time(year) gvar(first_treat) method(not_a_method)
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) method(not_a_method) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 quietly csdid_stats simple
 assert "`e(agg_type)'" == "simple"
@@ -105,7 +105,7 @@ release_assert_matrix_equal PreEventV PostEventV 1e-12
 assert "`e(agg_type)'" == "dynamic"
 
 use "`unbalanced'", clear
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) saverif("`weighted_rif'") replace analytical
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) saverif("`weighted_rif'") replace analytical nevertreated base_period(varying) bal(none)
 quietly csdid_stats group
 matrix ActiveRIF = e(aggte)
 ereturn clear
@@ -114,12 +114,12 @@ matrix ReloadRIF = e(aggte)
 release_assert_matrix_equal ActiveRIF ReloadRIF 1e-8
 
 use "`unbalanced'", clear
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) storeall
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) storeall nevertreated base_period(varying) bal(none)
 capture noisily csdid_stats group, cluster(year)
 assert _rc == 498
 
 use "`unbalanced'", clear
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) nofast analytical
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) nofast analytical nevertreated base_period(varying) bal(none)
 assert "`e(compute_path)'" == "baseline"
 matrix Slow = e(attgt)
 
@@ -127,21 +127,21 @@ use "`unbalanced'", clear
 generate double shuffle_key = mod(id * 37 + year * 19, 101)
 sort shuffle_key id year
 save "`shuffled'", replace
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) fast analytical
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) fast analytical nevertreated base_period(varying) bal(none)
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
 matrix Fast = e(attgt)
 release_assert_matrix_equal Slow Fast 1e-7
 
 mata: mata clear
 use "`unbalanced'", clear
-quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean)
+quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
 assert e(mata_cache) == 1
 quietly csdid_stats group
 assert "`e(agg_type)'" == "group"
 
 use "`unbalanced'", clear
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) store_all
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) store_all nevertreated base_period(varying) bal(none)
 matrix FullV = e(V)
 release_assert_offdiag_nonzero FullV 1e-12
 quietly csdid_stats dynamic, window(-2 3) dropmissing
@@ -150,16 +150,16 @@ matrix EventV = e(V)
 release_assert_offdiag_nonzero EventV 1e-12
 
 use "`unbalanced'", clear
-quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean)
+quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
 estimates store LeanOne
 release_make_panel, obs(360)
-quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) performance(lean)
+quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) performance(lean) nevertreated base_period(varying) bal(none)
 estimates restore LeanOne
 capture noisily csdid_stats group
 assert _rc == 498
 
 use "`unbalanced'", clear
-quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean)
+quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
 mata: mata clear
 capture noisily csdid_stats group
 assert _rc == 498
@@ -172,7 +172,7 @@ save "`second'", replace
 
 foreach m in dr ipw reg {
     use "`second'", clear
-    quietly csdid y x1 xnear [iw=w], id(id) time(year) gvar(first_treat) method(`m') cluster(state) fast
+    quietly csdid y x1 xnear [iw=w], id(id) time(year) gvar(first_treat) method(`m') cluster(state) fast nevertreated base_period(varying) bal(none)
     assert e(N_attgt) > 0
     assert e(fast_used) == 1
     matrix T_`m' = e(attgt)

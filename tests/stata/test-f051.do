@@ -87,7 +87,7 @@ confirm file "`root'/tests/fixtures/parity/f051/metadata/manifest.json"
 tempfile actual_default explicit_default plotdata evlog
 
 import delimited using "`root'/tests/fixtures/parity/f051/inputs/default-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) rseed(20260707) nevertreated base_period(varying) bal(none)
 f051_assert_default_metadata
 matrix D = e(attgt)
 preserve
@@ -107,74 +107,74 @@ assert abs(att - att_stata) <= 1e-10 + 1e-10 * abs(att) if !missing(att)
 assert abs(se - se_stata) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 
 import delimited using "`root'/tests/fixtures/parity/f051/inputs/default-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) base_period(varying) anticipation(0) level(95) pscoretrim(.995) performance(auto) rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) base_period(varying) anticipation(0) level(95) pscoretrim(.995) performance(auto) rseed(20260707) nevertreated bal(none)
 f051_assert_default_metadata
 matrix E = e(attgt)
 f051_assert_matrix_equal D E 1e-10
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) baseperiod(varying) allowunbalanced rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) baseperiod(varying) allowunbalanced rseed(20260707) nevertreated
 assert "`e(base_period)'" == "varying"
 matrix S1 = e(attgt)
 f051_assert_matrix_equal D S1 1e-10
 
-quietly csdid y, id(id) time(time) gvar(g) method(dr) rseed(20260707)
+quietly csdid y, id(id) time(time) gvar(g) method(dr) rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "panel"
 matrix ID1 = e(attgt)
 f051_assert_matrix_equal D ID1 1e-10
 
-capture noisily csdid y, ivar(id) id(time) time(time) gvar(g) method(dr)
+capture noisily csdid y, ivar(id) id(time) time(time) gvar(g) method(dr) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) nevertreated rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) nevertreated rseed(20260707) base_period(varying) bal(none)
 assert "`e(control_group)'" == "nevertreated"
 matrix NT0 = e(attgt)
 f051_assert_matrix_equal D NT0 1e-10
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) notyet rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) notyet rseed(20260707) base_period(varying) bal(none)
 assert "`e(control_group)'" == "notyettreated"
 matrix NY1 = e(attgt)
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) notyettreated rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) notyettreated rseed(20260707) base_period(varying) bal(none)
 assert "`e(control_group)'" == "notyettreated"
 matrix NY2 = e(attgt)
 f051_assert_matrix_equal NY1 NY2 1e-10
 
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(dr) nevertreated notyettreated
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(dr) nevertreated notyettreated base_period(varying) bal(none)
 assert _rc == 198
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) varying rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) varying rseed(20260707) nevertreated bal(none)
 assert "`e(base_period)'" == "varying"
 matrix S1V = e(attgt)
 f051_assert_matrix_equal D S1V 1e-10
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) base_period(universal) rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) base_period(universal) rseed(20260707) nevertreated bal(none)
 assert "`e(base_period)'" == "universal"
 matrix U1 = e(attgt)
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(dr) universal rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(dr) universal rseed(20260707) nevertreated bal(none)
 assert "`e(base_period)'" == "universal"
 matrix U2 = e(attgt)
 f051_assert_matrix_equal U1 U2 1e-10
 
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(dr) universal varying
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(dr) universal varying nevertreated bal(none)
 assert _rc == 198
 
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(dr) base_period(Universal) universal
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(dr) base_period(Universal) universal nevertreated bal(none)
 assert _rc == 198
 
 generate double cl_f051 = 1 + mod(id, 4)
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_f051) rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_f051) rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(clustervar)'" == "cl_f051"
 matrix CL1 = e(attgt)
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) vce(cluster cl_f051) rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) vce(cluster cl_f051) rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(clustervar)'" == "cl_f051"
 matrix CL2 = e(attgt)
 f051_assert_matrix_equal CL1 CL2 1e-10
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_f051) vce(cluster id)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_f051) vce(cluster id) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 drop cl_f051
 
-quietly csdid y, ivar(id) time(time) gvar(g) storeall rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) storeall rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(performance_mode)'" == "full"
 assert "`e(performance_resolved)'" == "full"
 assert e(store_all) == 1
@@ -182,21 +182,21 @@ matrix S2 = e(attgt)
 f051_assert_matrix_equal D S2 1e-10
 
 generate double wt_f051 = 1
-quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fix_weights(first_period) rseed(20260707)
+quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fix_weights(first_period) rseed(20260707) nevertreated base_period(varying) bal(none)
 matrix FW1 = e(attgt)
-quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fixweights(first_period) rseed(20260707)
+quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fixweights(first_period) rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(fix_weights)'" == "first_period"
 matrix FW2 = e(attgt)
 f051_assert_matrix_equal FW1 FW2 1e-10
-quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fixweights(first) rseed(20260707)
+quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fixweights(first) rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(fix_weights)'" == "first_period"
 matrix FW3 = e(attgt)
 f051_assert_matrix_equal FW1 FW3 1e-10
-quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fixweights(base)
+quietly csdid y [iw=wt_f051], ivar(id) time(time) gvar(g) method(reg) fixweights(base) nevertreated base_period(varying) bal(none)
 assert "`e(fix_weights)'" == "base_period"
 drop wt_f051
 
-quietly csdid y, ivar(id) time(time) gvar(g) store_all rseed(20260707)
+quietly csdid y, ivar(id) time(time) gvar(g) store_all rseed(20260707) nevertreated base_period(varying) bal(none)
 assert "`e(performance_mode)'" == "full"
 assert "`e(performance_resolved)'" == "full"
 assert e(store_all) == 1
@@ -205,7 +205,7 @@ f051_assert_matrix_equal D F 1e-10
 
 capture log close f051event
 log using "`evlog'", text replace name(f051event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) performance(full) rseed(20260707)
+capture noisily csdid y, ivar(id) time(time) gvar(g) performance(full) rseed(20260707) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f051event
 assert `actual_rc' == 0
@@ -218,7 +218,7 @@ f051_assert_log_contains using "`evlog'", message("csdid legacy compatibility: p
 
 capture log close f051event
 log using "`evlog'", text replace name(f051event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) performance(materialized) rseed(20260707)
+capture noisily csdid y, ivar(id) time(time) gvar(g) performance(materialized) rseed(20260707) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f051event
 assert `actual_rc' == 0
@@ -231,20 +231,20 @@ f051_assert_log_contains using "`evlog'", message("csdid legacy compatibility: p
 
 capture log close f051event
 log using "`evlog'", text replace name(f051event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) store_all lean
+capture noisily csdid y, ivar(id) time(time) gvar(g) store_all lean nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f051event
 assert `actual_rc' == 198
 f051_assert_log_contains using "`evlog'", message("storeall cannot be combined with lean storage; omit lean or performance(lean)")
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert e(cband) == 0
 assert "`e(boot_seed)'" == "24680"
 matrix WB1 = e(boot_attgt)
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot reps(31) seed(24680) pointwise
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot reps(31) seed(24680) pointwise nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert e(cband) == 0
@@ -252,7 +252,7 @@ assert "`e(boot_seed)'" == "24680"
 matrix WB2 = e(boot_attgt)
 f051_assert_matrix_equal WB1 WB2 1e-10
 
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical reps(31)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical reps(31) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 
 quietly csdid_stats
@@ -283,7 +283,7 @@ assert plot_type == "aggte_group"
 assert !missing(estimate)
 
 import delimited using "`root'/tests/fixtures/parity/f051/inputs/default-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g)
+quietly csdid y, ivar(id) time(time) gvar(g) nevertreated base_period(varying) bal(none)
 quietly csdid_plot, saving("`plotdata'") replace
 use "`plotdata'", clear
 assert _N == rowsof(D)
@@ -291,7 +291,7 @@ assert plot_type == "attgt"
 assert !missing(estimate)
 
 import delimited using "`root'/tests/fixtures/parity/f051/inputs/default-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g)
+quietly csdid y, ivar(id) time(time) gvar(g) nevertreated base_period(varying) bal(none)
 quietly estat event
 assert "`e(agg_type)'" == "dynamic"
 matrix EV = e(aggte)

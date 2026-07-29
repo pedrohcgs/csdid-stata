@@ -66,7 +66,7 @@ program define csdid, eclass sortpreserve
           REPS(string) BITERS(string) SEED(string) ///
           PSCORETRIM(real 0.995) RSEED(string) ///
           SAVERIF(string) REPLACE FAST NOFAST LEAN PERFormance(string) ///
-          ASINR NEVER LONG LONG2 BALance(string) DRYRUN FROM(string) ///
+          ASINR NEVER LONG LONG2 BALance(string) RCS DRYRUN FROM(string) ///
           ANALYTical * ]
 
     local allow_unbalanced ""
@@ -90,16 +90,35 @@ program define csdid, eclass sortpreserve
         local options_clean ""
         foreach opt of local options {
             local opt_l = lower(`"`opt'"')
-            if inlist(`"`opt_l'"', "allow_unbalanced", "allowunbalanced") {
+            if `"`opt_l'"' == "balance_all" | (strlen(`"`opt_l'"') >= 8 & ///
+                    `"`opt_l'"' == substr("balanceall", 1, strlen(`"`opt_l'"'))) {
+                local balanceall "balanceall"
+            }
+            else if `"`opt_l'"' == "balance_pair" | (strlen(`"`opt_l'"') >= 8 & ///
+                    `"`opt_l'"' == substr("balancepair", 1, strlen(`"`opt_l'"'))) {
+                local balancepair "balancepair"
+            }
+            else if `"`opt_l'"' == "allow_unbalanced" | (strlen(`"`opt_l'"') >= 5 & ///
+                    `"`opt_l'"' == substr("allowunbalanced", 1, strlen(`"`opt_l'"'))) {
                 local allow_unbalanced "allow_unbalanced"
             }
             else if `"`opt_l'"' == "wboot" {
                 local wboot_flag 1
             }
-            else if `"`opt_l'"' == "notyettreated" {
+            * Stata abbreviates options: CLuster() accepts cl. These arrive
+            * through the catch-all, where an exact match meant nevertreat and
+            * notyettreat were errors while nevertreated and never happened to
+            * work -- the latter only because it was separately defined. Accept
+            * any prefix from the documented minimum, as syntax would.
+            *   NEVERtreated   min never    NOTYETtreated  min notyet
+            *   ALLOWunbalanced min allow   STOREall       min store
+            *   BALANCEAll min balancea     BALANCEPair    min balancep
+            else if strlen(`"`opt_l'"') >= 6 & ///
+                    `"`opt_l'"' == substr("notyettreated", 1, strlen(`"`opt_l'"')) {
                 local notyet "notyet"
             }
-            else if `"`opt_l'"' == "nevertreated" {
+            else if strlen(`"`opt_l'"') >= 5 & ///
+                    `"`opt_l'"' == substr("nevertreated", 1, strlen(`"`opt_l'"')) {
                 local nevertreated_alias 1
             }
             else if inlist(`"`opt_l'"', "store_all", "storeall") {
@@ -107,7 +126,7 @@ program define csdid, eclass sortpreserve
             }
             else if inlist(`"`opt_l'"', "universal", "varying") {
                 if `"`base_period_alias'"' != "" & `"`base_period_alias'"' != `"`opt_l'"' {
-                    display as error "baseperiod() aliases universal and varying cannot be combined"
+                    display as error "baseperiod() was given as `base_period_alias' and also as `opt_l'. Specify only one."
                     exit 198
                 }
                 local base_period_alias `"`opt_l'"'
@@ -149,7 +168,7 @@ program define csdid, eclass sortpreserve
     }
     if "`id'" != "" {
         if "`ivar'" != "" & "`ivar'" != "`id'" {
-            display as error "id() cannot be combined with a different ivar()"
+            display as error "id(`id') and ivar(`ivar') name different variables. Specify only one, or give both the same variable."
             exit 198
         }
         local ivar "`id'"
@@ -188,7 +207,7 @@ program define csdid, eclass sortpreserve
     }
     if `nofast_raw' local nofast "nofast"
     if "`fast'" != "" & "`nofast'" != "" {
-        display as error "fast and nofast cannot be combined"
+        display as error "fast and nofast ask for opposite things; specify only one. Omitting both lets csdid choose."
         exit 198
     }
     local fast_mode "auto"
@@ -229,27 +248,113 @@ program define csdid, eclass sortpreserve
         exit 198
     }
     local lean_requested = ("`performance_mode'" == "lean")
+    * ---------------------------------------------------------------------
+    * bal() selects what happens to an unbalanced ivar() panel.
+    *
+    *   bal(full)  drop units not observed in every period. The DEFAULT, and
+    *              what R did does by default.
+    *   bal(pair)  balance each 2x2 separately, keeping units observed in both
+    *              of its periods. This was csdid Version 1.82's silent default.
+    *   bal(none)  keep every unit and use the repeated-cross-section
+    *              computation with the matching standard-error accounting.
+    *
+    * Whenever a mode discards observations it says so and reports how many.
+    * Changing the estimand is acceptable; changing it silently is not.
+    * ---------------------------------------------------------------------
+    local balance_mode ""
     if "`balance'" != "" {
         local balance_mode = lower(strtrim(`"`balance'"'))
-        if !inlist("`balance_mode'", "full", "unbal", "unbalanced", "allow_unbalanced") {
-            display as error "balance() is soft-deprecated; accepted compatibility values are full and unbal, both mapped to allowunbalanced"
+        if inlist("`balance_mode'", "unbal", "unbalanced", "allow_unbalanced") {
+            display as text "csdid: bal(`balance_mode') is deprecated; use bal(none)"
+            local balance_mode "none"
+        }
+        else if "`balance_mode'" == "all" {
+            display as text "csdid: bal(all) is deprecated; use bal(full)"
+            local balance_mode "full"
+        }
+        if !inlist("`balance_mode'", "full", "pair", "none") {
+            display as error "bal() must be full, pair, or none"
             exit 198
         }
-        display as text "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+    }
+    local balance_alias ""
+    local balance_alias_name ""
+    if "`balanceall'" != "" {
+        local balance_alias "full"
+        local balance_alias_name "balanceall"
+    }
+    if "`balancepair'" != "" {
+        local balance_alias "pair"
+        local balance_alias_name "balancepair"
     }
     if "`allow_unbalanced'" != "" {
-        display as text "csdid note: allowunbalanced is the default for unbalanced panels; R-compatible repeated-cross-section calculations are used when ivar() data are not balanced"
+        local balance_alias "none"
+        local balance_alias_name "allowunbalanced"
     }
+    if "`balance_alias'" != "" {
+        if "`balance_mode'" != "" & "`balance_mode'" != "`balance_alias'" {
+            display as error "bal(`balance_mode') conflicts with the `balance_alias_name' option, which means bal(`balance_alias'). Specify only one of them."
+            exit 198
+        }
+        * Every deprecated spelling announces itself and names its
+        * replacement. A deprecation nobody is told about is not a
+        * deprecation, and the option-by-option migration guide is only
+        * useful to someone who has been told which option to look up.
+        display as text "csdid: `balance_alias_name' is deprecated; use bal(`balance_alias')"
+        local balance_mode "`balance_alias'"
+    }
+    * DEFAULT: full, matching R did. An unbalanced panel is balanced by
+    * dropping units not observed in every period, and says so.
+    local balance_explicit = ("`balance_mode'" != "")
+    if "`balance_mode'" == "" local balance_mode "full"
+
+
+    * ---------------------------------------------------------------------
+    * rcs -- declare the data to be repeated cross sections.
+    *
+    * This is the counterpart of R did's panel = FALSE. Without it, csdid
+    * infers the structure from ivar(): supplied means panel, omitted means
+    * repeated cross sections. That inference forces a false choice on anyone
+    * whose repeated cross sections happen to carry an identifier -- a survey
+    * respondent id, a county code -- because the only way to declare the data
+    * as cross sections was to withhold a variable that genuinely exists.
+    *
+    * With rcs the declaration is explicit and ivar() may be supplied
+    * alongside it. The identifier is then validated and used to mark the
+    * estimation sample, exactly as R validates idname and drops rows missing
+    * it, but it does not enter estimation: each observation is its own unit.
+    * R does the same, overwriting idname with a row sequence.
+    * ---------------------------------------------------------------------
+    if "`rcs'" != "" {
+        if `balance_explicit' & "`balance_mode'" != "none" {
+            display as error "rcs declares the data to be repeated cross sections, but bal(`balance_mode') balances a panel; the two describe different data. Specify only one. Repeated cross sections have nothing to balance, so rcs implies bal(none)."
+            exit 198
+        }
+        local balance_mode "none"
+    }
+
     if `nevertreated_alias' & "`notyet'" != "" {
-        display as error "nevertreated and notyettreated cannot be combined"
+        display as error "nevertreated and notyettreated select different comparison groups; specify only one. Omitting both uses not-yet-treated, the default."
         exit 198
     }
     if "`never'" != "" & "`notyet'" != "" {
-        display as error "nevertreated and notyettreated cannot be combined"
+        display as error "never (the legacy spelling of nevertreated) and notyettreated select different comparison groups; specify only one. Omitting both uses not-yet-treated, the default."
         exit 198
     }
+    * DEFAULT: not-yet-treated. Units not yet treated at t serve as controls,
+    * which uses more of the data and does not depend on a never-treated group
+    * existing or being large enough to trust. nevertreated (or the legacy
+    * never) selects never-treated controls instead.
+    *
+    * This is a deliberate divergence from R did, which defaults to
+    * never-treated. It also means the small-never-treated-group refusal below
+    * no longer fires by default -- correctly, since notyet is the remedy that
+    * refusal recommends.
+    if `nevertreated_alias' == 0 & "`never'" == "" & "`notyet'" == "" {
+        local notyet "notyet"
+    }
     if "`never'" != "" {
-        display as text "csdid legacy compatibility: never is accepted as a no-op; never-treated controls are the default unless notyet is specified"
+        display as text "csdid legacy compatibility: never is accepted as a request for never-treated controls, which are no longer the default"
     }
     if "`long'`long2'" != "" {
         display as text "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
@@ -296,7 +401,7 @@ program define csdid, eclass sortpreserve
         else if "`vce_type'" == "cluster" & `vce_words' == 2 {
             local vce_cluster : word 2 of `vce_clean'
             if "`cluster'" != "" & "`cluster'" != "`vce_cluster'" {
-                display as error "vce(cluster clustvar) cannot be combined with a different cluster()"
+                display as error "vce(cluster `vce_cluster') and cluster(`cluster') name different variables. Specify only one, or give both the same variable."
                 exit 198
             }
             local cluster "`vce_cluster'"
@@ -315,7 +420,7 @@ program define csdid, eclass sortpreserve
     }
     local bstrap = ("`analytical'" == "")
     if "`analytical'" != "" & (`"`wboot'"' != "" | `wboot_flag') {
-        display as error "analytical inference cannot be combined with wboot"
+        display as error "analytical asks for analytical standard errors and wboot asks for bootstrapped ones; specify only one. Omitting both uses the bootstrap, the default."
         exit 198
     }
     if `lean_requested' & `"`saverif'"' != "" {
@@ -566,8 +671,15 @@ program define csdid, eclass sortpreserve
     local base_period = strtrim(`"`base_period'"')
     local fix_weights = strtrim(`"`fix_weights'"')
     if "`base_period'" == "" {
-        if "`long'`long2'" != "" local base_period "universal"
-        else local base_period "varying"
+        * DEFAULT: universal. Every cell is measured against g-1, which is the
+        * layout an event-study plot assumes and the one nearly everyone
+        * presents. Post-treatment effects are identical either way; only the
+        * pre-treatment cells differ, and universal additionally reports the
+        * g-1 normalisation row. base_period(varying) is the better choice when
+        * PRE-TESTING, because each pre-treatment cell is then its own
+        * one-period comparison rather than a cumulative one; see help csdid.
+        * This is a deliberate divergence from R did, which defaults to varying.
+        local base_period "universal"
     }
     if !inlist("`base_period'", "varying", "universal") {
         display as error "baseperiod() must be varying or universal"
@@ -580,10 +692,15 @@ program define csdid, eclass sortpreserve
             display as error "fixweights() must be one of varying, base, or first"
             exit 198
         }
-        if inlist("`fix_weights'", "base_period", "first_period") & "`ivar'" == "" {
+        if inlist("`fix_weights'", "base_period", "first_period") & ///
+           ("`ivar'" == "" | "`rcs'" != "") {
             local fix_weights_label "`fix_weights'"
             if "`fix_weights'" == "base_period" local fix_weights_label "base"
             if "`fix_weights'" == "first_period" local fix_weights_label "first"
+            if "`rcs'" != "" {
+                display as error "fixweights(`fix_weights_label') holds each unit's weight fixed across periods, which requires following the same unit over time. rcs declares the data to be repeated cross sections, where each observation is a different unit. Use fixweights(varying), or drop rcs if these data are a panel."
+                exit 198
+            }
             display as error "fixweights(`fix_weights_label') requires ivar(); repeated cross-section fixed-weight modes are unsupported"
             exit 198
         }
@@ -623,6 +740,24 @@ program define csdid, eclass sortpreserve
     if "`ivar'" != "" local markvars "`markvars' `ivar'"
     if "`cluster'" != "" local markvars "`markvars' `cluster'"
     quietly markout `touse' `markvars'
+    * -----------------------------------------------------------------------
+    * Under rcs the identifier has now done the whole of its job: it was
+    * confirmed to exist and to be numeric, and rows missing it have been
+    * excluded, which is what R's validate_column_name() plus complete-case
+    * filtering achieve. From here on it must not be visible, because every
+    * downstream branch reads a non-empty ivar as "this is a panel" -- the
+    * covariate listwise deletion immediately below drops a whole unit when any
+    * period is missing, which is right for a panel and wrong for cross
+    * sections. Clearing it here routes the run down the identical path an
+    * ivar()-less repeated cross section already takes, so rcs inherits that
+    * path's verification rather than opening a second one.
+    * -----------------------------------------------------------------------
+    local ivar_declared ""
+    if "`rcs'" != "" & "`ivar'" != "" {
+        local ivar_declared "`ivar'"
+        local ivar ""
+        display as text "csdid: rcs declares repeated cross sections, so ivar(`ivar_declared') identifies the estimation sample but is not used as a panel identifier; each observation is treated as its own unit. To cluster standard errors on it, add cluster(`ivar_declared')."
+    }
     if `"`xvars'"' != "" {
         capture quietly fvrevar `xvars' if `touse'
         if _rc {
@@ -758,6 +893,46 @@ program define csdid, eclass sortpreserve
         exit 2000
     }
     local sample_N = r(N)
+
+    * -----------------------------------------------------------------------
+    * bal(full): balance the panel by dropping units not observed in every
+    * period, which is what R did does by default.
+    *
+    * The drop is announced. Reducing the sample changes the estimand, and a
+    * user who is not told has no way to know why their N moved. bal(none)
+    * keeps every unit and uses the repeated-cross-section computation.
+    * -----------------------------------------------------------------------
+    local balance_dropped_units = 0
+    if "`ivar'" != "" & "`balance_mode'" == "full" {
+        tempvar bal_nobs bal_first
+        quietly levelsof `time' if `touse', local(bal_periods)
+        local bal_T : word count `bal_periods'
+        quietly bysort `touse' `ivar': generate long `bal_nobs' = _N if `touse'
+        quietly bysort `touse' `ivar': generate byte `bal_first' = (_n == 1) if `touse'
+        quietly count if `touse' & `bal_first' == 1 & `bal_nobs' < `bal_T'
+        local balance_dropped_units = r(N)
+        if `balance_dropped_units' > 0 {
+            quietly count if `touse' & `bal_nobs' < `bal_T'
+            local balance_dropped_obs = r(N)
+            * "as error" is a DISPLAY STYLE here, not an error: it is the only
+            * channel Stata does not suppress under `quietly csdid ...'.
+            * Verified: `noisily display' inside a program does NOT survive a
+            * caller's quietly, but error-styled output does. This warning has
+            * to survive, because the sample just changed and the estimand with
+            * it -- a scripted run that silently drops units leaves no trace of
+            * why N moved. csdid Version 1.82 used the same channel
+            * ("display in red \"Panel is not balanced\"").
+            display as error "warning: `balance_dropped_units' unit(s) are not observed in all `bal_T' periods; the panel is being balanced by dropping them (`balance_dropped_obs' observation(s)). Use the options allowunbalanced to keep every unit, or balancepair to balance each 2×2 separately."
+            quietly replace `touse' = 0 if `bal_nobs' < `bal_T'
+            quietly count if `touse'
+            if r(N) == 0 {
+                display as error "balancing the panel left no observations: no unit is observed in all `bal_T' periods. Specify bal(none) to keep every unit. Consider also whether these are really an unbalanced panel or a repeated cross section -- for repeated cross sections omit ivar(), since each observation is its own unit."
+                exit 2000
+            }
+            local sample_N = r(N)
+        }
+    }
+
     * -----------------------------------------------------------------------
     * The engine is loaded HERE, before the first call to any csdid Mata
     * function. It used to load further down, after the structural checks
@@ -1016,7 +1191,7 @@ program define csdid, eclass sortpreserve
     }
 
     tempname attgt inffunc group_prob unit_group cluster_vec nclusters fast_used panel_balanced panel_ntime cache_token profile bootstrap_profile bootstrap_kernel_profile
-    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`fix_weights'", `anticipation', `pscoretrim', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'")
+    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'")
     local csdid_rc = _rc
     if `csdid_rc' {
         ereturn clear
@@ -1409,7 +1584,12 @@ program define csdid, eclass sortpreserve
     local n_attgt = rowsof(`attgt')
     local n_groups = rowsof(`group_prob')
     local n_time = scalar(`panel_ntime')
-    local panel_mode = cond("`ivar'" == "", "repeated-cross-section", cond(scalar(`panel_balanced') != 0, "panel", "allow_unbalanced"))
+    * bal(pair) is neither of the other two: the panel is not balanced, and
+    * the run does not use the repeated-cross-section computation either.
+    * Reporting it as allow_unbalanced would describe a different estimator.
+    local panel_mode = cond("`ivar'" == "", "repeated-cross-section", ///
+        cond("`balance_mode'" == "pair", "pair-balanced", ///
+        cond(scalar(`panel_balanced') != 0, "panel", "allow_unbalanced")))
     local allow_unbalanced_resolved = ("`panel_mode'" == "allow_unbalanced")
     tempname post_b post_V
     local post_names ""
@@ -1576,6 +1756,9 @@ program define csdid, eclass sortpreserve
         }
         else if "`panel_mode'" == "allow_unbalanced" {
             local compute_path "fast-allow-unbalanced"
+        }
+        else if "`panel_mode'" == "pair-balanced" {
+            local compute_path "pair-balanced"
         }
         else {
             local compute_path "fast-repeated-cross-section"

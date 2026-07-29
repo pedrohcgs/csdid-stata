@@ -85,7 +85,7 @@ local first 1
 local fallback_msg "does not match the estimation cluster"
 
 import delimited using "`root'/tests/fixtures/parity/rt001/inputs/two-cluster.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) cluster(cluster) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) cluster(cluster) analytical nevertreated base_period(varying) bal(none)
 foreach agg_type in simple dynamic {
     capture log close rt001warn
     log using "`warnlog'", text replace name(rt001warn)
@@ -124,7 +124,7 @@ rt001_count_log_contains using "`warnlog'", message("`fallback_msg'")
 assert r(count) == 1
 
 import delimited using "`root'/tests/fixtures/parity/rt001/inputs/two-cluster.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 foreach agg_type in simple dynamic group calendar {
     capture log close rt001warn
     log using "`warnlog'", text replace name(rt001warn)

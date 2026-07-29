@@ -110,7 +110,7 @@ assert r(N) == 1
 tempfile evlog
 
 import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(12345))
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(12345)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert e(cband) == 1
@@ -120,7 +120,7 @@ assert "`e(boot_dist_requested)'" == "rademacher"
 matrix B0 = e(boot_attgt)
 
 import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(biters(31) rseed(12345) wtype(rademacher))
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(biters(31) rseed(12345) wtype(rademacher)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert "`e(boot_seed)'" == "12345"
@@ -130,7 +130,7 @@ matrix B1 = e(boot_attgt)
 f035_assert_boot_equal B0 B1
 
 import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot reps(31) rseed(12345)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot reps(31) rseed(12345) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert "`e(boot_seed)'" == "12345"
@@ -140,7 +140,7 @@ matrix BSH1 = e(boot_attgt)
 f035_assert_boot_equal B0 BSH1
 
 import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot reps(31) seed(12345)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot reps(31) seed(12345) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert "`e(boot_seed)'" == "12345"
@@ -153,7 +153,7 @@ foreach badtype in "wbtype(mammen)" "wbtype(gaussian)" "wtype(normal)" {
     capture log close f035event
     log using "`evlog'", text replace name(f035event)
     import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-    capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(1357) `badtype') pointwise
+    capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(1357) `badtype') pointwise nevertreated base_period(varying) bal(none)
     local actual_rc = _rc
     log close f035event
     assert `actual_rc' == 498
@@ -162,7 +162,7 @@ foreach badtype in "wbtype(mammen)" "wbtype(gaussian)" "wtype(normal)" {
 
 capture log close f035event
 log using "`evlog'", text replace name(f035event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical rseed(123)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical rseed(123) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f035event
 assert `actual_rc' == 198
@@ -171,7 +171,7 @@ f035_assert_log_contains using "`evlog'", message("reps(), biters(), seed(), and
 foreach bad in "reps(-2)" "reps(1.5)" {
     capture log close f035event
     log using "`evlog'", text replace name(f035event)
-    capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(`bad')
+    capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(`bad') nevertreated base_period(varying) bal(none)
     local actual_rc = _rc
     log close f035event
     assert `actual_rc' == 198
@@ -180,7 +180,7 @@ foreach bad in "reps(-2)" "reps(1.5)" {
 
 capture log close f035event
 log using "`evlog'", text replace name(f035event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(0))
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(0)) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f035event
 assert `actual_rc' == 198
@@ -188,7 +188,7 @@ f035_assert_log_contains using "`evlog'", message("wboot() rseed() must be a pos
 
 capture log close f035event
 log using "`evlog'", text replace name(f035event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) wtype(foo))
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) wtype(foo)) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f035event
 assert `actual_rc' == 498
@@ -196,7 +196,7 @@ f035_assert_log_contains using "`evlog'", message("wboot() currently supports on
 
 capture log close f035event
 log using "`evlog'", text replace name(f035event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) wboot(reps(31) cluster(cl2))
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) wboot(reps(31) cluster(cl2)) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f035event
 assert `actual_rc' == 198
@@ -204,14 +204,14 @@ f035_assert_log_contains using "`evlog'", message("wboot(cluster()) must match c
 
 capture log close f035event
 log using "`evlog'", text replace name(f035event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) cluster(cl cl2))
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) cluster(cl cl2)) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f035event
 assert `actual_rc' == 198
 f035_assert_log_contains using "`evlog'", message("wboot(cluster()) accepts one numeric cluster variable")
 
 import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) cluster(cl) rseed(97531))
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) cluster(cl) rseed(97531)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert e(N_clusters) == 5
@@ -270,7 +270,7 @@ program define f035_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/f035/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(12345))
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) rseed(12345)) nevertreated base_period(varying) bal(none)
 f035_grab "wboot31_seed12345" "`f035_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/f035/expected/r/attgt.csv", clear asdouble varnames(1)

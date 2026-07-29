@@ -19,7 +19,7 @@ end
 program define rt002_fit
     version 15
     import delimited using "`c(pwd)'/tests/fixtures/parity/rt002/inputs/aggte-data.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 end
 
 program define rt002_assert_simple
@@ -296,7 +296,7 @@ program define rt002_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/rt002/inputs/aggte-data.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(simple) na_rm
 rt002_grab "simple" "`rt002_ov'" "`rt002_cell'"
 quietly csdid_stats, type(group) na_rm

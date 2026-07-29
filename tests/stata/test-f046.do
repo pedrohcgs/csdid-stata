@@ -71,7 +71,7 @@ local dripw_msg "csdid legacy compatibility: method(dripw) is soft-deprecated; u
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(dripw) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(dripw) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f046event
 assert `actual' == 0
@@ -83,7 +83,7 @@ local stdipw_msg "csdid legacy compatibility: method(stdipw) is soft-deprecated;
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(stdipw) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(stdipw) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f046event
 assert `actual' == 0
@@ -93,11 +93,11 @@ f046_assert_log_contains using "`evlog'", message("`stdipw_msg'")
 
 local asinr_msg "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix Default = e(attgt)
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) asinr analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) asinr analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f046event
 assert `actual' == 0
@@ -109,7 +109,7 @@ local rademacher_msg "csdid legacy compatibility: wboot(rademacher) uses R-compa
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) wtype(rademacher)) rseed(101)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) wtype(rademacher)) rseed(101) nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f046event
 assert `actual' == 0
@@ -122,7 +122,7 @@ local mammen_msg "wboot() currently supports only R-compatible rademacher multip
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) wbtype(mammen)) rseed(101)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) wbtype(mammen)) rseed(101) nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f046event
 assert `actual' == 498

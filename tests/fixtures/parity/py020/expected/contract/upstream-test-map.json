@@ -153,21 +153,21 @@
     "source_file": "csdid/test_csdid/test_review_fixes.py",
     "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
     "source_test": "TestUnbalancedPanel.test_allow_unbalanced_false_runs",
-    "mapped_scenario": "python-balance-drop-option-only",
-    "assertion_family": "Python allow_unbalanced_panel=False has no Stata command analogue",
-    "coverage_status": "approved-divergence",
-    "divergence_id": "PY020-DIV002",
-    "supporting_evidence": "F016/F017"
+    "mapped_scenario": "balance_full_runs",
+    "assertion_family": "bal(full) runs on an unbalanced panel",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "supporting_evidence": "F017"
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
     "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
     "source_test": "TestUnbalancedPanel.test_allow_unbalanced_false_balances",
-    "mapped_scenario": "python-balance-drop-option-only",
-    "assertion_family": "Python allow_unbalanced_panel=False balance-drop path has no Stata command analogue",
-    "coverage_status": "approved-divergence",
-    "divergence_id": "PY020-DIV002",
-    "supporting_evidence": "F016/F017"
+    "mapped_scenario": "balance_full_drops_units",
+    "assertion_family": "bal(full) drops units not observed in every period and reports how many",
+    "coverage_status": "mapped",
+    "divergence_id": "",
+    "supporting_evidence": "F017"
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",

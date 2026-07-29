@@ -15,7 +15,7 @@ program define f041_run_cell
     if "`panel'" == "weighted" local wopt "[iw=set_wt]"
 
     quietly csdid crude_rate_20_64 perc_female perc_white perc_hispanic unemp_rate poverty_rate median_income `wopt', analytical ///
-        ivar(county_code) time(year) gvar(treat_year) method(`method') base_period(universal)
+        ivar(county_code) time(year) gvar(treat_year) method(`method') base_period(universal) bal(none)
     assert "`e(panel_mode)'" == "panel"
     assert "`e(method)'" == "`method'"
     assert "`e(base_period)'" == "universal"

@@ -64,7 +64,7 @@ import delimited using "`root'/tests/fixtures/parity/f030/inputs/input.csv", cle
 recast int panel_id
 recast byte period_time first_treat cluster_num
 csdid outcome_y control_alpha control_beta, analytical ///
-    ivar(panel_id) time(period_time) gvar(first_treat) method(reg)
+    ivar(panel_id) time(period_time) gvar(first_treat) method(reg) nevertreated base_period(varying) bal(none)
 assert "`e(yname)'" == "outcome_y"
 assert "`e(idvar)'" == "panel_id"
 assert "`e(timevar)'" == "period_time"
@@ -93,7 +93,7 @@ tempfile collision_actual
 
 import delimited using "`root'/tests/fixtures/parity/f030/inputs/internal-names.csv", clear asdouble
 csdid outcome_y control_alpha control_beta, analytical ///
-    ivar(idname) time(tname) gvar(gname) method(reg)
+    ivar(idname) time(tname) gvar(gname) method(reg) nevertreated base_period(varying) bal(none)
 assert "`e(yname)'" == "outcome_y"
 assert "`e(idvar)'" == "idname"
 assert "`e(timevar)'" == "tname"
@@ -111,7 +111,7 @@ f030_append_collision_attgt, scenario("internal_names_with_t1") method("reg") sa
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f030/inputs/group-time-names.csv", clear asdouble
-    csdid outcome_y, ivar(unit) time(time) gvar(group) method(`method') analytical
+    csdid outcome_y, ivar(unit) time(time) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(yname)'" == "outcome_y"
     assert "`e(idvar)'" == "unit"
     assert "`e(timevar)'" == "time"
@@ -123,7 +123,7 @@ foreach method in dr reg ipw {
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f030/inputs/output-names.csv", clear asdouble
-    csdid outcome_y att se event_time overall_att, ivar(id) time(time) gvar(group) method(`method') analytical
+    csdid outcome_y att se event_time overall_att, ivar(id) time(time) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(yname)'" == "outcome_y"
     assert "`e(idvar)'" == "id"
     assert "`e(timevar)'" == "time"
@@ -155,7 +155,7 @@ drop outcome_y
 generate str8 outcome_y = "y" + string(panel_id, "%02.0f")
 capture log close f030event
 log using "`evlog'", text replace name(f030event)
-capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(first_treat) method(reg) analytical
+capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(first_treat) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 109
@@ -166,7 +166,7 @@ drop control_alpha
 generate str8 control_alpha = "x" + string(panel_id, "%02.0f")
 capture log close f030event
 log using "`evlog'", text replace name(f030event)
-capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(first_treat) method(reg) analytical
+capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(first_treat) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 109
@@ -176,7 +176,7 @@ import delimited using "`root'/tests/fixtures/parity/f030/inputs/input.csv", cle
 generate str8 sid = "u" + string(panel_id, "%02.0f")
 capture log close f030event
 log using "`evlog'", text replace name(f030event)
-capture noisily csdid outcome_y control_alpha control_beta, ivar(sid) time(period_time) gvar(first_treat) method(reg) analytical
+capture noisily csdid outcome_y control_alpha control_beta, ivar(sid) time(period_time) gvar(first_treat) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 198
@@ -186,7 +186,7 @@ import delimited using "`root'/tests/fixtures/parity/f030/inputs/input.csv", cle
 generate str8 tstr = string(period_time)
 capture log close f030event
 log using "`evlog'", text replace name(f030event)
-capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(tstr) gvar(first_treat) method(reg) analytical
+capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(tstr) gvar(first_treat) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 198
@@ -196,7 +196,7 @@ import delimited using "`root'/tests/fixtures/parity/f030/inputs/input.csv", cle
 generate str8 gstr = string(first_treat)
 capture log close f030event
 log using "`evlog'", text replace name(f030event)
-capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(gstr) method(reg) analytical
+capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(gstr) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 198
@@ -206,7 +206,7 @@ import delimited using "`root'/tests/fixtures/parity/f030/inputs/input.csv", cle
 generate str8 clstr = string(cluster_num)
 capture log close f030event
 log using "`evlog'", text replace name(f030event)
-capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(first_treat) method(reg) cluster(clstr) analytical
+capture noisily csdid outcome_y control_alpha control_beta, ivar(panel_id) time(period_time) gvar(first_treat) method(reg) cluster(clstr) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 198

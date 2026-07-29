@@ -1,0 +1,45 @@
+{
+  "matrix_id": "F054",
+  "fixture_family": "pair-balanced-2x2",
+  "normative_source": "Stata csdid Version 1.82 per-comparison balancing; oracle derived independently, not from did::att_gt",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D008",
+  "tolerance_ids": ["TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 154,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f054/generate.R",
+      "path": "tools/parity/generators/f054/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0"
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt-pair.csv",
+      "schema": "attgt-pair"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata bal(pair) ATT(g,t)",
+      "expected": "expected/r/attgt-pair.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["group", "time"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Per-cell unit sets: each 2x2 keeps only units observed in both of its periods. Oracle is an independent two-period DiD with the influence function built by hand, so the n_units/cell scaling is verified rather than assumed."
+}

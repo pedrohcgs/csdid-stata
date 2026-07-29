@@ -54,7 +54,7 @@ quietly count if divergence_id == "RT021-DIV003"
 assert r(N) == 1
 
 import delimited using "`root'/tests/fixtures/parity/rt021/inputs/output-methods.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) wboot(reps(25) rseed(20262101))
+csdid y x, ivar(id) time(period) gvar(g) method(dr) wboot(reps(25) rseed(20262101)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 foreach type in simple group dynamic calendar {
     rt021_assert_agg_output, type(`type')
@@ -62,7 +62,7 @@ foreach type in simple group dynamic calendar {
 
 foreach method in dr ipw reg {
     import delimited using "`root'/tests/fixtures/parity/rt021/inputs/output-methods.csv", clear asdouble
-    csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical
+    csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical base_period(varying) bal(none)
     assert "`e(control_group)'" == "notyettreated"
     csdid_stats, type(dynamic)
     matrix G = e(aggte)
@@ -118,7 +118,7 @@ end
 
 foreach method in dr ipw reg {
     import delimited using "`root'/tests/fixtures/parity/rt021/inputs/output-methods.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical base_period(varying) bal(none)
     rt021_grab "`method'" "`rt021_actual'"
 }
 

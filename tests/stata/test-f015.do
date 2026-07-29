@@ -14,13 +14,13 @@ local firstagg 1
 foreach scenario in panel_reg_cluster panel_cov_dr_cluster rc_reg_cluster {
     import delimited using "`root'/tests/fixtures/parity/f015/inputs/input.csv", clear asdouble
     if "`scenario'" == "panel_reg_cluster" {
-        csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical
+        csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
     }
     else if "`scenario'" == "panel_cov_dr_cluster" {
-        csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) cluster(cl) analytical
+        csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) cluster(cl) analytical nevertreated base_period(varying) bal(none)
     }
     else {
-        csdid y, time(time) gvar(g) method(reg) cluster(cl) analytical
+        csdid y, time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
     }
 
     assert "`e(clustervar)'" == "cl"
@@ -87,5 +87,5 @@ assert abs(overall_se - overall_se_stata) < 1e-8
 assert n_clusters == n_clusters_stata
 
 import delimited using "`root'/tests/fixtures/parity/f015/inputs/input.csv", clear asdouble
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_bad) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl_bad) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 459

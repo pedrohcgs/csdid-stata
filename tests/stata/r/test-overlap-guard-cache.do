@@ -58,7 +58,7 @@ tempfile overlaplog
 import delimited using "`root'/tests/fixtures/parity/rt022/inputs/overlap-cache.csv", clear asdouble
 capture log close rt022overlap
 log using "`overlaplog'", text replace name(rt022overlap)
-capture noisily csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical
+capture noisily csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 local rc = _rc
 log close rt022overlap
 assert `rc' == 0
@@ -79,7 +79,7 @@ assert r(count) == 0
 confirm file "`root'/tests/fixtures/parity/rt022/expected/r/attgt.csv"
 
 import delimited using "`root'/tests/fixtures/parity/rt022/inputs/overlap-cache.csv", clear asdouble
-quietly csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 tempname A
 matrix `A' = e(attgt)
 local nr = rowsof(`A')

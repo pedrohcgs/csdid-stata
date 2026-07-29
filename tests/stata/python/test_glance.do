@@ -44,7 +44,7 @@ assert r(N) == 19
 tempfile actual glancefile
 
 import delimited using "`root'/tests/fixtures/parity/py011/inputs/sim-glance.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Baseline = e(attgt)
 py011_append_metadata, object(MP) method(dr) outfile("`actual'")
 csdid_estat glance, saving("`glancefile'") replace
@@ -57,7 +57,7 @@ assert control_group == "nevertreated"
 assert est_method == "dr"
 
 import delimited using "`root'/tests/fixtures/parity/py011/inputs/sim-glance.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 foreach agg_type in simple dynamic group calendar {
     csdid_stats, type(`agg_type')
     py011_append_metadata, object(aggte_`agg_type') method(dr) outfile("`actual'") append
@@ -67,10 +67,10 @@ foreach agg_type in simple dynamic group calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/py011/inputs/sim-glance.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) nofast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) nofast analytical nevertreated base_period(varying) bal(none)
 matrix Standard = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/py011/inputs/sim-glance.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) fast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 matrix Fast = e(attgt)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
@@ -86,7 +86,7 @@ assert `finite_any' == 1
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py011/inputs/sim-glance.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(method)'" == "`method'"
     assert e(N_units) > 0
     assert e(N_groups) > 0

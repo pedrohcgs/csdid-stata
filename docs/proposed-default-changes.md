@@ -41,7 +41,7 @@ invocations stop testing what they claim to test.
 - It interacts with anticipation. Later-treated cohorts inside their own
   anticipation window are not clean controls, which is why `anticipation()`
   exists — but the default would now lean on those cohorts.
-- It changes results silently for anyone upgrading from 1.82 *and* for anyone
+- It changes results silently for anyone upgrading from Version 1.82 *and* for anyone
   cross-checking against R or the Python package. The README currently says
   results "are comparable across all three." That would no longer be true by
   default.
@@ -106,5 +106,5 @@ and `NEWS.md` to lead with it.
 
 Either way both changes are breaking, need approved-divergence rows in
 `inst/spec/feature-matrix.csv` with decision references, and belong at the top
-of `NEWS.md` as deviations from both R and 1.82 — which is exactly what you
+of `NEWS.md` as deviations from both R and Version 1.82 — which is exactly what you
 said.

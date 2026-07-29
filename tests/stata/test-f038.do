@@ -97,13 +97,13 @@ local first_att 1
 local first_agg 1
 
 import delimited using "`root'/tests/fixtures/parity/f038/inputs/t1.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(reg) notyet analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
 local appendopt ""
 f038_save_att, scenario("t1_column") saving("`actual_att'") `appendopt'
 local first_att 0
 
 import delimited using "`root'/tests/fixtures/parity/f038/inputs/missing-cov.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "panel"
 assert e(N) == 236
 assert e(N_units) == 59
@@ -111,7 +111,7 @@ f038_save_att, scenario("missing_covariate") saving("`actual_att'") append
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f038/inputs/fewer-periods.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     local scenario "fewer_periods__`method'"
     f038_save_att, scenario("`scenario'") saving("`actual_att'") append
     foreach type in dynamic group calendar {
@@ -124,13 +124,13 @@ foreach method in dr reg ipw {
 
 foreach base in universal varying {
     import delimited using "`root'/tests/fixtures/parity/f038/inputs/zero-pre.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(reg) notyet base_period(`base') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(reg) notyet base_period(`base') analytical bal(none)
     f038_save_att, scenario("zero_pre__`base'") saving("`actual_att'") append
 }
 
 foreach ant in 0 2 {
     import delimited using "`root'/tests/fixtures/parity/f038/inputs/anticipation.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(reg) anticipation(`ant') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(reg) anticipation(`ant') analytical nevertreated base_period(varying) bal(none)
     f038_save_att, scenario("anticipation__`ant'") saving("`actual_att'") append
     if `ant' == 0 {
         matrix A0 = e(attgt)
@@ -151,7 +151,7 @@ foreach ant in 0 2 {
 import delimited using "`root'/tests/fixtures/parity/f038/inputs/t1.csv", clear asdouble
 capture log close f038event
 log using "`evlog'", text replace name(f038event)
-capture noisily csdid y x_missing, ivar(id) time(period) gvar(g) method(dr) notyet analytical
+capture noisily csdid y x_missing, ivar(id) time(period) gvar(g) method(dr) notyet analytical base_period(varying) bal(none)
 local actual_rc = _rc
 log close f038event
 assert `actual_rc' == 111

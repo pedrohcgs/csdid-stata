@@ -57,7 +57,7 @@ confirm file "`root'/tests/fixtures/parity/f027/expected/new-stata/export-schema
 tempfile tidy_attgt glance_attgt tidy_agg glance_agg actual
 
 import delimited using "`root'/tests/fixtures/parity/f027/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 csdid_estat tidy, saving("`tidy_attgt'") replace
 csdid_estat glance, saving("`glance_attgt'") replace
 
@@ -73,7 +73,7 @@ compare_glance_export, ///
 
 foreach agg_type in simple group calendar dynamic {
     import delimited using "`root'/tests/fixtures/parity/f027/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
     csdid_stats, type(`agg_type')
     csdid_estat tidy, saving("`tidy_agg'") replace
     csdid_estat glance, saving("`glance_agg'") replace

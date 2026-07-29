@@ -8,7 +8,7 @@ adopath ++ "`root'/src/mata"
 
 import delimited using "`root'/tests/fixtures/parity/f018/inputs/input.csv", clear asdouble
 local sample_n = _N
-csdid y, time(time) gvar(g) method(reg) analytical
+csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert "`e(idvar)'" == ""
 assert "`e(panel_mode)'" == "repeated-cross-section"
 assert e(N_units) == `sample_n'

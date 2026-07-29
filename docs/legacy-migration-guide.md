@@ -2,7 +2,7 @@
 
 Status: migration contract for conformance profile v1.
 
-This guide covers migration from legacy Stata `csdid` 1.82 at commit
+This guide covers migration from legacy Stata `csdid` Version 1.82 at commit
 `fdbae25521a941314af8d84ec0c93fb0596daa8e` to the clean-room Stata port.
 Legacy Stata is compatibility evidence only. R `did` 2.5.1 at commit
 `9aba07d054a798558ac9b551887f5cb592d8db10` is the estimator oracle unless a
@@ -65,12 +65,32 @@ Note also that the refusal is raised whether or not output is suppressed.
 R's `stop()` is not conditional on verbosity, so `quietly csdid ...` refuses
 too rather than silently proceeding.
 
-Omitting `ivar()` is repeated cross sections, matching R `panel = FALSE`.
-The default control group is never-treated where available, the default base
-period is varying, the default method is `dr`, the default confidence level is
-95, and omitted inference follows R `did` 2.5.1: multiplier bootstrap with
-simultaneous confidence bands and 1000 iterations. Use `analytical` or
-`vce(analytical)` only when analytical standard errors are deliberately needed.
+Omitting `ivar()` is repeated cross sections, matching R `panel = FALSE`; the
+`rcs` option says the same thing explicitly and lets you keep `ivar()` when the
+data carry an identifier anyway.
+
+Two omitted-option defaults deliberately differ from both R `did` 2.5.1 and
+Stata `csdid` Version 1.82, and they are the only two that can move a number:
+
+| | csdid 2.0.0 | R `did` and Version 1.82 | To reproduce those |
+| --- | --- | --- | --- |
+| comparison group | not-yet-treated | never-treated | `nevertreated` |
+| base period | universal | varying | `base_period(varying)` |
+
+State either option explicitly and csdid and R agree to machine precision. Both
+are recorded as approved divergences F051-DIV001 and F051-DIV002.
+
+The remaining defaults follow R: the method is `dr`, the confidence level is 95,
+and omitted inference is the multiplier bootstrap with simultaneous confidence
+bands over 1000 iterations. Use `analytical` or `vce(analytical)` only when
+analytical standard errors are deliberately needed.
+
+An unbalanced `ivar()` panel is balanced by dropping the units not observed in
+every period -- `bal(full)`, matching R -- and csdid reports how many units and
+observations that removed. `bal(none)` keeps every unit and uses the
+repeated-cross-section computation. `bal(pair)` balances each 2x2 separately,
+which is what Version 1.82 did silently -- use it to reproduce a result from
+that version.
 
 ## Legacy Option Mapping
 

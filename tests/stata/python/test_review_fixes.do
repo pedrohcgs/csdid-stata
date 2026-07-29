@@ -71,22 +71,25 @@ confirm file "`root'/tests/fixtures/parity/py020/metadata/manifest.json"
 import delimited using "`root'/tests/fixtures/parity/py020/expected/contract/upstream-test-map.csv", clear varnames(1) stringcols(_all)
 assert _N == 31
 quietly count if coverage_status == "mapped"
-assert r(N) == 20
+assert r(N) == 22
 quietly count if coverage_status == "approved-divergence"
-assert r(N) == 11
+assert r(N) == 9
 
 import delimited using "`root'/tests/fixtures/parity/py020/expected/contract/approved-divergence.csv", clear varnames(1) stringcols(_all)
-assert _N == 5
-foreach div in PY020-DIV001 PY020-DIV002 PY020-DIV003 PY020-DIV004 PY020-DIV005 {
+* PY020-DIV002 was retired when bal(full) landed: it recorded that csdid had
+* no analogue for Python's allow_unbalanced_panel=False balance-dropping path,
+* and bal(full) is that path and is now the default.
+assert _N == 4
+foreach div in PY020-DIV001 PY020-DIV003 PY020-DIV004 PY020-DIV005 {
     quietly count if divergence_id == "`div'"
     assert r(N) == 1
 }
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) analytical
+quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "panel"
 matrix Factor = e(attgt)
-quietly csdid y, ivar(id) time(year) gvar(group) method(reg) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix Intercept = e(attgt)
 assert rowsof(Factor) == rowsof(Intercept)
 local c_att = colnumb(Factor, "att")
@@ -99,24 +102,24 @@ forvalues i = 1/`=rowsof(Factor)' {
 assert `any_diff' == 1
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) analytical
+quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix StdPanel = e(attgt)
-quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) fast analytical
+quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 matrix FastPanel = e(attgt)
 py020_assert_matrix_equal StdPanel FastPanel 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code, time(year) gvar(group) method(reg) analytical
+quietly csdid y i.cat_code, time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "repeated-cross-section"
 matrix StdRC = e(attgt)
-quietly csdid y i.cat_code, time(year) gvar(group) method(reg) fast analytical
+quietly csdid y i.cat_code, time(year) gvar(group) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 matrix FastRC = e(attgt)
 py020_assert_matrix_equal StdRC FastRC 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code z, ivar(id) time(year) gvar(group) method(dr) analytical
+quietly csdid y i.cat_code z, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Mixed = e(attgt)
 preserve
 clear
@@ -127,7 +130,7 @@ restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/clustered-panel.csv", clear asdouble
 quietly csdid y, ivar(id) time(year) gvar(group) method(reg) ///
-    wboot(reps(31) cluster(cluster) rseed(202620))
+    wboot(reps(31) cluster(cluster) rseed(202620)) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 31
 assert e(N_clusters) == 10
@@ -140,7 +143,7 @@ assert r(N) > 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/clustered-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(reg) cluster(cluster) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(reg) cluster(cluster) analytical nevertreated base_period(varying) bal(none)
 assert "`e(clustervar)'" == "cluster"
 matrix ClusterAnalytic = e(attgt)
 preserve
@@ -151,7 +154,7 @@ assert r(N) > 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/late-cohort.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) anticipation(0) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) anticipation(0) analytical nevertreated base_period(varying) bal(none)
 matrix UGLate0 = e(unit_group)
 preserve
 clear
@@ -161,11 +164,11 @@ assert r(N) == 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/late-cohort.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) anticipation(1) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) anticipation(1) analytical nevertreated base_period(varying) bal(none)
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/first-period-treated.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 matrix UGFirst = e(unit_group)
 preserve
 clear
@@ -175,23 +178,23 @@ assert r(N) == 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/boolean-outcome.csv", clear asdouble
-quietly csdid y_bool, ivar(id) time(year) gvar(group) analytical
+quietly csdid y_bool, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/id-validation.csv", clear asdouble
 py020_expect_failure, command("csdid y nonexistent_column, ivar(id) time(year) gvar(group) analytical") message("variable nonexistent_column not found")
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/id-validation.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 assert e(N_attgt) > 0
 assert "`e(panel_mode)'" == "panel"
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/id-validation.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "panel"
 
 drop in 2
-quietly csdid y, ivar(id) time(year) gvar(group) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/uniform-missing-periods.csv", clear asdouble
@@ -206,12 +209,12 @@ local uniform_ids = r(N)
 quietly count if ytag
 local uniform_times = r(N)
 assert `uniform_n' != `uniform_ids' * `uniform_times'
-quietly csdid y, ivar(id) time(year) gvar(group) method(reg) notyet analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(reg) notyet analytical base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/no-never.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 matrix UGNoNever = e(unit_group)
 preserve
 clear
@@ -223,7 +226,7 @@ assert r(N) == 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/universal-stochastic.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(ipw) base_period(universal) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(ipw) base_period(universal) analytical nevertreated bal(none)
 matrix Uni = e(attgt)
 preserve
 clear
@@ -237,7 +240,7 @@ assert r(N) == 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/universal-stochastic.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(ipw) base_period(varying) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(ipw) base_period(varying) analytical nevertreated bal(none)
 matrix Var = e(attgt)
 preserve
 clear
@@ -247,7 +250,7 @@ assert r(N) == 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/universal-base.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) method(ipw) base_period(universal) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) method(ipw) base_period(universal) analytical nevertreated bal(none)
 matrix Det = e(attgt)
 preserve
 clear
@@ -262,7 +265,7 @@ py020_expect_failure, command("csdid y, ivar(sid) time(year) gvar(group) analyti
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/id-validation.csv", clear asdouble
 recast long id
-quietly csdid y, ivar(id) time(year) gvar(group) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 assert e(N_attgt) > 0
 
 * ---------------------------------------------------------------------------
@@ -310,19 +313,19 @@ program define py020_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) analytical
+quietly csdid y i.cat_code, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 py020_grab "factor_reg_panel" "`py020_actual'"
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(reg) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 py020_grab "nox_reg_panel" "`py020_actual'"
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code, time(year) gvar(group) method(reg) analytical
+quietly csdid y i.cat_code, time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
 py020_grab "factor_reg_rcs" "`py020_actual'"
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/review-panel.csv", clear asdouble
-quietly csdid y i.cat_code z, ivar(id) time(year) gvar(group) method(dr) analytical
+quietly csdid y i.cat_code z, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 py020_grab "factor_z_dr_panel" "`py020_actual'"
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/clustered-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(reg) wboot(reps(31) cluster(cluster) rseed(202620))
+quietly csdid y, ivar(id) time(year) gvar(group) method(reg) wboot(reps(31) cluster(cluster) rseed(202620)) nevertreated base_period(varying) bal(none)
 py020_grab "clustered_boot31" "`py020_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py020/expected/r/attgt.csv", clear asdouble varnames(1)

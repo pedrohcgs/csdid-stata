@@ -17,10 +17,11 @@ not choose.
 
 ## The three choices
 
-**The comparison group.** Never-treated units (the default), or not-yet-treated
-units with `notyet`. Not-yet-treated gives you more comparisons when few units
-are never treated, at the cost of assuming those units' untreated paths are
-comparable.
+**The comparison group.** Not-yet-treated units (the default), or only
+never-treated units with `nevertreated`. Not-yet-treated gives you more
+comparisons and does not require a never-treated group to exist, at the cost of
+assuming later-treated cohorts' untreated paths are comparable over the periods
+they serve as controls.
 
 **The 2×2 estimator.** `method(dr)` (default) is doubly robust: consistent if
 *either* the outcome model or the propensity score is right. `method(reg)` is

@@ -44,10 +44,6 @@ cohort{p_end}
 period{p_end}
 {synopt :{helpb csdid_estat##syntax:estat dynamic}}average effect by event
 time{p_end}
-{synopt :{helpb csdid_estat##export:estat tidy}}export a dataset of estimates,
-standard errors, and intervals{p_end}
-{synopt :{helpb csdid_estat##export:estat glance}}export a one-row dataset of
-model metadata{p_end}
 {synopt :{helpb csdid_stats}}aggregation with the full option set, including
 {cmd:balance()} and saved influence functions{p_end}
 {synopt :{helpb csdid_plot}}export plot-ready data for user-controlled
@@ -252,17 +248,15 @@ nothing to work from. Each refuses by name.
 {title:Exporting results}
 
 {pstd}
-Three export routes write Stata datasets instead of printing:
+Two export routes write Stata datasets instead of printing:
 
 {phang}
-{helpb csdid_estat##export:estat tidy} writes one row per estimate --
-ATT(g,t) cells, or the active aggregation -- with the estimate, standard error,
-test statistic, p-value, and both the reported and the pointwise confidence
-limits, in tidy column order.
-
-{phang}
-{helpb csdid_estat##export:estat glance} writes one row of model metadata:
-number of units, cohorts, periods, control group, and estimation method.
+{cmd:saving(}{it:filename}{cmd:)} on any {cmd:estat} subcommand writes the
+result that subcommand computed. {cmd:estat attgt, saving()} writes one row per
+ATT(g,t) cell; {cmd:estat event, saving()} writes the event study; and so on for
+{cmd:dynamic}, {cmd:simple}, {cmd:group} and {cmd:calendar}. Each row carries
+the estimate, standard error, test statistic, p-value, and both the reported and
+the pointwise confidence limits. Add {cmd:replace} to overwrite.
 
 {phang}
 {helpb csdid_plot} writes plot-ready data -- {cmd:plot_type}, {cmd:series},
@@ -273,13 +267,11 @@ rendering stays under your control: the exported dataset is a normal Stata
 dataset that {helpb twoway} can draw directly.
 
 {pstd}
-{cmd:tidy} and {cmd:glance} describe the {it:active} result, so run them right
-after the estimation for ATT(g,t) output, or right after an aggregation for
-that aggregation's output. They export an aggregation rather than computing
-one, so their only options are {cmd:saving()} and {cmd:replace}: specify
-{cmd:window()}, {cmd:level()}, and {cmd:dropmissing} on the aggregation, then
-export. {cmd:dropmissing} on {cmd:tidy} or {cmd:glance} is refused with return
-code 198 and a message saying where to put it.
+{cmd:saving()} exports what the subcommand computed, so put {cmd:window()},
+{cmd:level()} and {cmd:dropmissing} on the subcommand itself and they are
+reflected in the file. {cmd:estat attgt} accepts only {cmd:saving()} and
+{cmd:replace}, because there is nothing about the stored ATT(g,t) table to
+window, re-level or aggregate.
 
 {pstd}
 The event-time coefficient vector includes the e = -1 reference period, and no
@@ -321,7 +313,7 @@ which after the {cmd:balance(1)} line above covers a shorter event window.
 
 {pstd}{bf:Export estimates, metadata, and plot data}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
-{phang2}{cmd:. estat tidy, saving(attgt_tidy) replace}{p_end}
+{phang2}{cmd:. estat attgt, saving(attgt_cells) replace}{p_end}
 {phang2}{cmd:. estat glance, saving(model_summary) replace}{p_end}
 {phang2}{cmd:. estat event}{p_end}
 {phang2}{cmd:. csdid_plot, saving(event_plotdata) replace}{p_end}

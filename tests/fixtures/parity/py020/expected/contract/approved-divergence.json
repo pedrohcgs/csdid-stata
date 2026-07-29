@@ -6,12 +6,6 @@
     "accepted_behavior": "Public Stata bootstrap reps, seed, clustered finite-SE behavior, and validation remain covered by F035 and PY015; PY020 adds a clustered bootstrap sanity check."
   },
   {
-    "divergence_id": "PY020-DIV002",
-    "source_tests": "TestUnbalancedPanel.test_allow_unbalanced_false_runs; TestUnbalancedPanel.test_allow_unbalanced_false_balances",
-    "reason": "The owner-directed Stata contract does not expose Python's allow_unbalanced_panel=False balance-dropping path. Stata defaults unbalanced ivar() data to repeated-cross-section computation and soft-deprecates legacy balance modes as no-op aliases.",
-    "accepted_behavior": "F016 verifies the R-compatible allow_unbalanced default; F017 records soft-deprecated legacy balance aliases."
-  },
-  {
     "divergence_id": "PY020-DIV003",
     "source_tests": "TestPostKeyAlias.test_both_post_keys_present_and_equal; TestPostKeyAlias.test_summ_attgt_robust_to_alias",
     "reason": "The Python tests exercise a Python results-dictionary alias ('post '), not a public Stata command surface or saved artifact.",

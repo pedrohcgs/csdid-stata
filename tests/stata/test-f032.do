@@ -83,7 +83,7 @@ program define f032_collect_aggs
     local first 1
     foreach type in simple group calendar dynamic {
         import delimited using "`data'", clear asdouble
-        csdid y, ivar(id) time(time) gvar(g) method(reg) `fastopt' analytical
+        csdid y, ivar(id) time(time) gvar(g) method(reg) `fastopt' analytical nevertreated base_period(varying) bal(none)
         f032_save_agg, type(`type') saving("`part'")
         if `first' {
             use "`part'", clear
@@ -104,7 +104,7 @@ tempfile base_att fast_att shuffle_att base_if fast_if shuffle_if
 tempfile base_gram fast_gram shuffle_gram base_agg fast_agg shuffle_agg actual_agg
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) nofast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -139,7 +139,7 @@ restore
 f032_collect_aggs, saving("`base_agg'") data("`root'/tests/fixtures/parity/f032/inputs/input.csv") nofast
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_allowed) == 1
 assert e(fast_used) == 1
@@ -174,7 +174,7 @@ restore
 f032_collect_aggs, saving("`fast_agg'") data("`root'/tests/fixtures/parity/f032/inputs/input.csv") fast
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_auto) == 1
 assert e(fast_allowed) == 1
@@ -186,7 +186,7 @@ mata: st_numscalar("f032_auto_fast_diff", f032__matrix_maxabsdiff("A1", "Aauto")
 assert scalar(f032_auto_fast_diff) <= 1e-12
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input-shuffled.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -286,11 +286,12 @@ foreach v in att se overall_att overall_se {
 tempfile option_actual option_base option_fast option_part
 local first_option 1
 foreach control_group in nevertreated notyettreated {
-    local cgopt ""
+    * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+    local cgopt "nevertreated"
     if "`control_group'" == "notyettreated" local cgopt "notyet"
     foreach base_period in varying universal {
         import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-        csdid y, ivar(id) time(time) gvar(g) method(reg) `cgopt' base_period(`base_period') nofast analytical
+        csdid y, ivar(id) time(time) gvar(g) method(reg) `cgopt' base_period(`base_period') nofast analytical bal(none)
         assert e(fast_requested) == 0
         assert e(fast_allowed) == 0
         assert e(fast_used) == 0
@@ -306,7 +307,7 @@ foreach control_group in nevertreated notyettreated {
         save "`option_base'", replace
 
         import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-        csdid y, ivar(id) time(time) gvar(g) method(reg) `cgopt' base_period(`base_period') fast analytical
+        csdid y, ivar(id) time(time) gvar(g) method(reg) `cgopt' base_period(`base_period') fast analytical bal(none)
         assert e(fast_requested) == 1
         assert e(fast_used) == 1
         assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -349,7 +350,7 @@ assert abs(se - se_base) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 assert abs(se - se_fast) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) nofast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) nofast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -357,7 +358,7 @@ assert "`e(fast_mode)'" == "off"
 assert "`e(compute_path)'" == "baseline"
 matrix B = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) fast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -367,7 +368,7 @@ assert scalar(f032_maxdiff) <= 1e-10
 
 foreach method in dr ipw {
     import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(`method') nofast analytical
+    csdid y, ivar(id) time(time) gvar(g) method(`method') nofast analytical nevertreated base_period(varying) bal(none)
     assert e(fast_requested) == 0
     assert e(fast_allowed) == 0
     assert e(fast_used) == 0
@@ -376,7 +377,7 @@ foreach method in dr ipw {
     matrix B = e(attgt)
 
     import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(`method') fast analytical
+    csdid y, ivar(id) time(time) gvar(g) method(`method') fast analytical nevertreated base_period(varying) bal(none)
     assert e(fast_requested) == 1
     assert e(fast_used) == 1
     assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -386,7 +387,7 @@ foreach method in dr ipw {
 }
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y x1 x2, ivar(id) time(time) gvar(g) method(reg) nofast analytical
+csdid y x1 x2, ivar(id) time(time) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -394,7 +395,7 @@ assert "`e(fast_mode)'" == "off"
 assert "`e(compute_path)'" == "baseline"
 matrix B = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y x1 x2, ivar(id) time(time) gvar(g) method(reg) fast analytical
+csdid y x1 x2, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -403,7 +404,7 @@ mata: st_numscalar("f032_maxdiff", f032__matrix_maxabsdiff("B", "F"))
 assert scalar(f032_maxdiff) <= 1e-10
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y [iw=w], ivar(id) time(time) gvar(g) method(reg) nofast analytical
+csdid y [iw=w], ivar(id) time(time) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -411,7 +412,7 @@ assert "`e(fast_mode)'" == "off"
 assert "`e(compute_path)'" == "baseline"
 matrix B = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y [iw=w], ivar(id) time(time) gvar(g) method(reg) fast analytical
+csdid y [iw=w], ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -420,7 +421,7 @@ mata: st_numscalar("f032_maxdiff", f032__matrix_maxabsdiff("B", "F"))
 assert scalar(f032_maxdiff) <= 1e-10
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input-unbalanced.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) nofast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -428,7 +429,7 @@ assert "`e(fast_mode)'" == "off"
 assert "`e(compute_path)'" == "baseline"
 matrix B = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input-unbalanced.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-allow-unbalanced"

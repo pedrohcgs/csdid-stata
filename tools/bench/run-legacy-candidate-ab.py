@@ -29,8 +29,8 @@ SCENARIOS = {
     "balanced_dr_covariates_bootstrap": {"inner": 2, "comparison": "like-for-like"},
     "balanced_weighted_ipw_bootstrap": {"inner": 2, "comparison": "like-for-like"},
     "balanced_cluster_reg_bootstrap": {"inner": 2, "comparison": "like-for-like"},
-    "unbalanced_dr_weighted_analytical": {"inner": 2, "comparison": "semantic-upgrade"},
-    "unbalanced_dr_weighted_bootstrap": {"inner": 2, "comparison": "semantic-upgrade"},
+    "unbalanced_dr_weighted_analytical": {"inner": 2, "comparison": "like-for-like"},
+    "unbalanced_dr_weighted_bootstrap": {"inner": 2, "comparison": "like-for-like"},
     "balanced_event_analytical": {"inner": 3, "comparison": "like-for-like"},
     "balanced_event_bootstrap": {"inner": 2, "comparison": "like-for-like"},
     "balanced_event_cband_bootstrap": {"inner": 2, "comparison": "like-for-like"},
@@ -154,6 +154,13 @@ def percentile(values, probability):
 
 
 RSS_TOLERANCE = 0.03
+# Owner-directed: 5% on time. The strict rule below required csdid to be
+# PROVABLY faster on every workload, with the upper bound of the paired ratio
+# under 1.0. That was safe while the two sides were 5-29x apart, but it is a
+# regression gate with no headroom, and two like-for-like runs of unchanged code
+# drift 3% at the median and 19% on the worst bootstrap workload. A gate with
+# less headroom than the measurement has noise fails on the weather.
+TIME_TOLERANCE = 0.05
 
 
 def bootstrap_upper_paired_ratio(candidate, legacy, seed, draws=20000):
@@ -200,9 +207,13 @@ def summarize(scenario, config, rows):
         "legacy_median_peak_rss_mb": f"{statistics.median(legacy_rss):.3f}",
         "median_paired_rss_ratio": f"{rss_ratio:.6f}",
         "rss_ratio_upper95": f"{rss_upper:.6f}",
-        # TIME keeps the strict rule: csdid wins by 2-20x and the bound sits
-        # nowhere near 1, so requiring provable superiority costs nothing.
-        "candidate_faster": str(int(time_ratio < 1.0 and time_upper <= 1.0)),
+        # TIME allows a 5% regression before failing. csdid wins by 6-29x, so
+        # the tolerance never engages on a healthy run -- the worst bound sits
+        # around 0.16, nowhere near 1.05. It exists so that a workload which
+        # genuinely reaches parity is not failed by measurement noise, and so a
+        # real regression has to be a REAL regression to trip the gate.
+        "candidate_faster": str(int(time_ratio <= 1.0 + TIME_TOLERANCE
+                                    and time_upper <= 1.0 + TIME_TOLERANCE)),
         # RSS is judged "not a regression" rather than "provably better".
         #
         # The strict rule encoded a claim never intended: that csdid must use

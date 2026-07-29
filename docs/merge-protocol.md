@@ -40,7 +40,7 @@ check — or record the gap under §5 and get it signed off. Never assume.
 | --- | --- | --- |
 | `spec` | `validate-contract.py` + `check-upstream-coverage.py` + all 13 `tests/meta/*.sh` | Catches the project misdescribing itself: a manifest naming untracked files, a ledger row claiming evidence it lacks, versions that disagree, an upstream `did` test no inheritance map claims |
 | `build` | `src/build.do` | The `.mlib` must build; a stale library silently shadows source edits |
-| `unit` | the whole Stata suite: 113 tests across `tests/stata/test-*.do`, `smoke-basic.do`, `tests/stata/r/` and `tests/stata/python/` | The tests of `csdid` itself, including every test inherited from the R and Python suites |
+| `unit` | the whole Stata suite: 117 tests across `tests/stata/test-*.do`, `smoke-basic.do`, `tests/stata/r/` and `tests/stata/python/` | The tests of `csdid` itself, including every test inherited from the R and Python suites |
 | `docs` | `check-doc-examples.py` — runs every Stata block in `README.md` and every website guide | A documented example that does not run is worse than no example: the reader assumes the failure is theirs |
 | `parity` | `check-r-oracles.sh` | The installed `did`/`DRDID` must match the pinned versions the frozen oracles were generated against |
 | `jel` | `run-jel-smoke.sh` | Empirical reproduction |

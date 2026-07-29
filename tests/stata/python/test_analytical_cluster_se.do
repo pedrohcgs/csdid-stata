@@ -31,7 +31,7 @@ local rtol = real(bootstrap_rtol[1])
 local nclusters = real(n_clusters[1])
 
 import delimited using "`root'/tests/fixtures/parity/py002/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) cluster(cluster) analytical
+csdid y, ivar(id) time(year) gvar(group) method(dr) cluster(cluster) analytical nevertreated base_period(varying) bal(none)
 assert e(N_clusters) == `nclusters'
 assert "`e(clustervar)'" == "cluster"
 matrix AN = e(attgt)
@@ -49,7 +49,7 @@ assert !missing(AG[1,5])
 assert AG[1,5] > 0
 
 import delimited using "`root'/tests/fixtures/parity/py002/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) cluster(cluster) wboot(reps(`biters') rseed(`seed'))
+csdid y, ivar(id) time(year) gvar(group) method(dr) cluster(cluster) wboot(reps(`biters') rseed(`seed')) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == `biters'
 assert e(N_clusters) == `nclusters'
@@ -113,10 +113,10 @@ program define py002_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/py002/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 py002_grab "iid_dr" "`py002_actual'"
 import delimited using "`root'/tests/fixtures/parity/py002/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) cluster(cluster) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) cluster(cluster) analytical nevertreated base_period(varying) bal(none)
 py002_grab "cluster_dr" "`py002_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py002/expected/r/attgt.csv", clear asdouble varnames(1)

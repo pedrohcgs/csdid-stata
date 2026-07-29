@@ -106,12 +106,12 @@ foreach scenario in numeric factor factor_dr factor_ipw interaction interaction_
     }
 
     if strpos("`scenario'", "rc_") == 1 {
-        csdid y `xspec', time(time) gvar(g) method(`method') analytical
+        csdid y `xspec', time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
         assert "`e(idvar)'" == ""
         assert "`e(panel_mode)'" == "repeated-cross-section"
     }
     else {
-        csdid y `xspec', ivar(id) time(time) gvar(g) method(`method') analytical
+        csdid y `xspec', ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
         assert e(idvar) == "id"
         assert "`e(panel_mode)'" == "panel"
     }
@@ -153,11 +153,11 @@ foreach panel_mode in panel repeated-cross-section {
             }
 
             if "`panel_mode'" == "panel" {
-                csdid y `xspec', ivar(id) time(time) gvar(g) method(`method') analytical
+                csdid y `xspec', ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
                 assert "`e(panel_mode)'" == "panel"
             }
             else {
-                csdid y `xspec', time(time) gvar(g) method(`method') analytical
+                csdid y `xspec', time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
                 assert "`e(panel_mode)'" == "repeated-cross-section"
             }
             assert "`e(method)'" == "`method'"
@@ -218,10 +218,10 @@ foreach panel_mode in panel repeated-cross-section {
         capture log close rt019sparse
         log using "`sparselog'", text replace name(rt019sparse)
         if "`panel_mode'" == "panel" {
-            capture noisily csdid y `xspec', ivar(id) time(period) gvar(g) method(reg) analytical
+            capture noisily csdid y `xspec', ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
         }
         else {
-            capture noisily csdid y `xspec', time(period) gvar(g) method(reg) analytical
+            capture noisily csdid y `xspec', time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
         }
         local actual_rc = _rc
         log close rt019sparse

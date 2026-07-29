@@ -72,98 +72,125 @@ capture program drop csdid_ab_estimate
 program define csdid_ab_estimate
     args implementation scenario
 
+    * ------------------------------------------------------------------
+    * Pin the candidate to the comparison the scenario table declares.
+    *
+    * Version 1.82's defaults are never-treated controls and a varying base
+    * period. csdid 2.0.0's are not-yet-treated and universal. Every command
+    * below used to be written without stating either, so once the defaults
+    * changed the two implementations stopped computing the same thing and
+    * the timings stopped being the like-for-like the table claims: the
+    * candidate gained work on balanced panels (universal adds a cell per
+    * cohort, not-yet-treated adds controls) and shed work on unbalanced ones
+    * (bal(full) drops incomplete units). That moved the reported speedups by
+    * up to 51% between runs, in opposite directions, which is what exposed it.
+    *
+    * The macro is empty for legacy, whose defaults already are these.
+    * ------------------------------------------------------------------
+    local cpin ""
+    if "`implementation'" == "candidate" {
+        local cpin "nevertreated base_period(varying)"
+        * Version 1.82 balances each 2x2 separately. bal(pair) is that mode,
+        * so the unbalanced workloads are now a true like-for-like comparison
+        * rather than an approximation: both implementations estimate on the
+        * same units in every cell.
+        if substr("`scenario'", 1, 10) == "unbalanced" {
+            local cpin "`cpin' bal(pair)"
+        }
+    }
+
     if "`scenario'" == "balanced_reg_analytical" {
         if "`implementation'" == "candidate" {
-            quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+            quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical `cpin'
         }
-        else quietly csdid y, ivar(id) time(time) gvar(g) method(reg)
+        else quietly csdid y, ivar(id) time(time) gvar(g) method(reg) `cpin'
     }
     else if "`scenario'" == "balanced_dr_covariates_analytical" {
         if "`implementation'" == "candidate" {
-            quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical
+            quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical `cpin'
         }
-        else quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw)
+        else quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) `cpin'
     }
     else if "`scenario'" == "balanced_weighted_ipw_analytical" {
         if "`implementation'" == "candidate" {
-            quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) analytical
+            quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) analytical `cpin'
         }
-        else quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(stdipw)
+        else quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(stdipw) `cpin'
     }
     else if "`scenario'" == "balanced_cluster_reg_analytical" {
         if "`implementation'" == "candidate" {
-            quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical
+            quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical `cpin'
         }
-        else quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl)
+        else quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) `cpin'
     }
     else if "`scenario'" == "balanced_reg_bootstrap" {
         quietly csdid y, ivar(id) time(time) gvar(g) method(reg) ///
-            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
     }
     else if "`scenario'" == "balanced_dr_covariates_bootstrap" {
         if "`implementation'" == "candidate" {
             quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) ///
-                wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+                wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
         }
         else quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) ///
-            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
     }
     else if "`scenario'" == "balanced_weighted_ipw_bootstrap" {
         if "`implementation'" == "candidate" {
             quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) ///
-                wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+                wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
         }
         else quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(stdipw) ///
-            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
     }
     else if "`scenario'" == "balanced_cluster_reg_bootstrap" {
         quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) ///
-            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
     }
     else if "`scenario'" == "unbalanced_dr_weighted_analytical" {
         if "`implementation'" == "candidate" {
             quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) ///
-                method(dr) analytical
+                method(dr) analytical `cpin'
         }
         else quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) ///
-            method(dripw)
+            method(dripw) `cpin'
     }
     else if "`scenario'" == "unbalanced_dr_weighted_bootstrap" {
         if "`implementation'" == "candidate" {
             quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) ///
                 method(dr) wboot(reps(999) wbtype(rademacher) rseed(20260709)) ///
-                pointwise
+                pointwise `cpin'
         }
         else quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) ///
             method(dripw) wboot(reps(999) wbtype(rademacher) rseed(20260709)) ///
-            pointwise
+            pointwise `cpin'
     }
     else if "`scenario'" == "balanced_event_analytical" {
         if "`implementation'" == "candidate" {
             quietly csdid y, ivar(id) time(time) gvar(g) method(reg) ///
-                analytical agg(event)
+                analytical agg(event) `cpin'
         }
-        else quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event)
+        else quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) `cpin'
     }
     else if "`scenario'" == "balanced_event_bootstrap" {
         quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) ///
-            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise
+            wboot(reps(999) wbtype(rademacher) rseed(20260709)) pointwise `cpin'
     }
     else if "`scenario'" == "balanced_event_cband_bootstrap" {
         quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) ///
-            wboot(reps(999) wbtype(rademacher) rseed(20260709))
+            wboot(reps(999) wbtype(rademacher) rseed(20260709)) `cpin'
     }
     else if "`scenario'" == "balanced_cluster_event_cband_bootstrap" {
         quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) ///
-            agg(event) wboot(reps(999) wbtype(rademacher) rseed(20260709))
+            agg(event) wboot(reps(999) wbtype(rademacher) rseed(20260709)) `cpin'
     }
     else if "`scenario'" == "large_balanced_dr_weighted_analytical" {
         if "`implementation'" == "candidate" {
             quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) ///
-                method(dr) analytical
+                method(dr) analytical `cpin'
         }
         else quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) ///
-            method(dripw)
+            method(dripw) `cpin'
     }
     else {
         display as error "unknown A/B scenario: `scenario'"

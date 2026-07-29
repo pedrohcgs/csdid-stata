@@ -169,25 +169,25 @@ tempfile actual_att actual_fixagg actual_normagg actual_cal
 local first_att 1
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/balanced-seed1.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(dr) analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Seed1Default = e(attgt)
 rt006_append_attgt, scenario("seed1_default") outfile("`actual_att'")
 local first_att 0
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/balanced-seed1.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) analytical nevertreated base_period(varying) bal(none)
 matrix Seed1Varying = e(attgt)
 rt006_append_attgt, scenario("seed1_varying") outfile("`actual_att'") append
 mata: st_numscalar("rt006_seed1_fix_diff", rt006_matrix_maxabsdiff("Seed1Default", "Seed1Varying"))
 assert scalar(rt006_seed1_fix_diff) <= 1e-8
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/balanced-seed2.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) nofast analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) nofast analytical nevertreated base_period(varying) bal(none)
 matrix Seed2Slow = e(attgt)
 rt006_append_attgt, scenario("seed2_varying_fast_false") outfile("`actual_att'") append
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/balanced-seed2.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) fast analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
@@ -205,12 +205,12 @@ assert abs(att - att_stata) <= 1e-8 + 1e-8 * abs(att) if !missing(att)
 assert abs(se - se_stata) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/balanced-seed3.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(dr) analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(simple) na_rm
 rt006_append_aggte, scenario("seed3_default_simple") type(simple) outfile("`actual_fixagg'")
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/balanced-seed3.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(dr) fix_weights(varying) analytical nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(simple) na_rm
 rt006_append_aggte, scenario("seed3_varying_simple") type(simple) outfile("`actual_fixagg'") append
 
@@ -222,7 +222,7 @@ foreach v in att se overall_att overall_se {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
 local first_norm 1
 foreach agg_type in simple dynamic group calendar {
     quietly csdid_stats, type(`agg_type') na_rm
@@ -243,7 +243,7 @@ foreach v in att se overall_att overall_se {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)
@@ -269,7 +269,7 @@ assert r(N) > 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
 rt006_expect_failure, command("csdid_stats, type(simple) max_e(-1)") message("no valid ATT(g,t)")
 rt006_expect_failure, command("csdid_stats, type(dynamic) max_e(-1)") message("no post-treatment event times")
 rt006_expect_failure, command("csdid_stats, type(dynamic) min_e(100)") message("no event times")
@@ -279,7 +279,7 @@ rt006_expect_failure, command("csdid y, ivar(id) time(t) gvar(g) analytical") me
 rt006_expect_failure, command("csdid y, ivar(id) time(t) gvar(g) fast analytical") message("gvar() negative values are not supported")
 
 import delimited using "`root'/tests/fixtures/parity/rt006/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
 tempfile callog callog0
 capture log close rt006cal
 log using "`callog'", text replace name(rt006cal)

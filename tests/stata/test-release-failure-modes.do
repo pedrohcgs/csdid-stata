@@ -24,59 +24,59 @@ end
 set seed 20260707
 make_failure_panel
 
-quietly csdid y x1 x2, id(id) time(year) gvar(first_treat) method(dr)
+quietly csdid y x1 x2, id(id) time(year) gvar(first_treat) method(dr) nevertreated base_period(varying) bal(none)
 assert "`e(cmd)'" == "csdid"
 matrix GoodATT = e(attgt)
 
-capture noisily csdid y x1, id(id) ivar(state) time(year) gvar(first_treat)
+capture noisily csdid y x1, id(id) ivar(state) time(year) gvar(first_treat) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 matrix AfterID = e(attgt)
 assert rowsof(GoodATT) == rowsof(AfterID)
 
-capture noisily csdid y x1, id(id) time(year) gvar(first_treat) method(not_a_method)
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) method(not_a_method) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 
-capture noisily csdid y x1, id(id) time(year) gvar(first_treat) notyettreated nevertreated
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) notyettreated nevertreated base_period(varying) bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 
-capture noisily csdid y x1, id(id) time(year) gvar(first_treat) universal varying
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) universal varying nevertreated bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 
-capture noisily csdid y x1, id(id) time(year) gvar(first_treat) storeall lean
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) storeall lean nevertreated base_period(varying) bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 
-capture noisily csdid y x1, id(id) time(year) gvar(first_treat) dryrun
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) dryrun nevertreated base_period(varying) bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 
-capture noisily csdid y_missing x1, id(id) time(year) gvar(first_treat)
+capture noisily csdid y_missing x1, id(id) time(year) gvar(first_treat) nevertreated base_period(varying) bal(none)
 assert _rc != 0
 assert "`e(cmd)'" == "csdid"
 
 generate double wbad = -1
-capture noisily csdid y x1 [iw=wbad], id(id) time(year) gvar(first_treat)
+capture noisily csdid y x1 [iw=wbad], id(id) time(year) gvar(first_treat) nevertreated base_period(varying) bal(none)
 assert _rc != 0
 assert "`e(cmd)'" == "csdid"
 
 preserve
     keep if year == 1 & first_treat > 0
-    capture noisily csdid y x1, id(id) time(year) gvar(first_treat)
+    capture noisily csdid y x1, id(id) time(year) gvar(first_treat) nevertreated base_period(varying) bal(none)
     assert _rc != 0
 restore
 assert "`e(cmd)'" == ""
 
-quietly csdid y x1 x2, id(id) time(year) gvar(first_treat) method(dr)
+quietly csdid y x1 x2, id(id) time(year) gvar(first_treat) method(dr) nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(simple) na_rm
 assert "`e(agg_type)'" == "simple"
 
 make_failure_panel
-quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) long
+quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) long nevertreated bal(none)
 assert "`e(cmd)'" == "csdid"
 
-quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) balance(full)
+quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) balance(full) nevertreated base_period(varying)
 assert "`e(cmd)'" == "csdid"

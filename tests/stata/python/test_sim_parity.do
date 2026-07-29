@@ -26,11 +26,12 @@ tempfile actual
 local first 1
 foreach dataset in tp2_const tp4_const tp4_dyn tp5_dyn tp8_dyn tp10_const {
     foreach control in nevertreated notyettreated {
-        local ctrlopt ""
+        * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+        local ctrlopt "nevertreated"
         if "`control'" == "notyettreated" local ctrlopt "notyet"
         foreach est in dr reg {
             import delimited using "`root'/tests/fixtures/parity/py021/inputs/`dataset'.csv", clear asdouble
-            quietly csdid y x, ivar(id) time(period) gvar(g) method(`est') `ctrlopt' analytical
+            quietly csdid y x, ivar(id) time(period) gvar(g) method(`est') `ctrlopt' analytical base_period(varying) bal(none)
             matrix A = e(attgt)
             preserve
             clear

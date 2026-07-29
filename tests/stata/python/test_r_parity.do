@@ -126,20 +126,22 @@ local first_agg 1
 foreach scenario in mpdta_nev_dr mpdta_nyt_dr mpdta_nev_reg_cov mpdta_nev_ipw sim_nev_dr {
     if "`scenario'" == "sim_nev_dr" {
         import delimited using "`root'/tests/fixtures/parity/py019/inputs/sim_data.csv", clear asdouble
-        quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+        quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
     }
     else {
         import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
         local cov ""
         local method "dr"
-        local control ""
+        * The mpdta_nev_* scenarios are never-treated by name; say so, because
+        * the omitted-option default is now not-yet-treated.
+        local control "nevertreated"
         if "`scenario'" == "mpdta_nyt_dr" local control "notyet"
         if "`scenario'" == "mpdta_nev_reg_cov" {
             local cov "lpop"
             local method "reg"
         }
         if "`scenario'" == "mpdta_nev_ipw" local method "ipw"
-        quietly csdid lemp `cov', ivar(countyreal) time(year) gvar(firsttreat) method(`method') `control' analytical
+        quietly csdid lemp `cov', ivar(countyreal) time(year) gvar(firsttreat) method(`method') `control' analytical base_period(varying) bal(none)
     }
 
     local appendopt ""
@@ -164,7 +166,7 @@ foreach tag in none base_period first_period varying {
     import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta_tvw.csv", clear asdouble
     local fixopt ""
     if "`tag'" != "none" local fixopt "fix_weights(`tag')"
-    quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) `fixopt' analytical
+    quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) `fixopt' analytical nevertreated base_period(varying) bal(none)
     matrix A = e(attgt)
     preserve
     clear
@@ -198,7 +200,7 @@ foreach mode in standard fast {
     encode cat, gen(cat_code)
     local fastopt ""
     if "`mode'" == "fast" local fastopt "fast"
-    quietly csdid y i.cat_code, ivar(id) time(period) gvar(g) method(reg) `fastopt' analytical
+    quietly csdid y i.cat_code, ivar(id) time(period) gvar(g) method(reg) `fastopt' analytical nevertreated base_period(varying) bal(none)
     matrix A = e(attgt)
     preserve
     clear
@@ -230,19 +232,19 @@ local first 1
 foreach scenario in rc universal anticipation1 weighted clustered {
     import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta_extra.csv", clear asdouble
     if "`scenario'" == "rc" {
-        quietly csdid lemp, time(year) gvar(firsttreat) method(reg) analytical
+        quietly csdid lemp, time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none)
     }
     else if "`scenario'" == "universal" {
-        quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) base_period(universal) analytical
+        quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) base_period(universal) analytical nevertreated bal(none)
     }
     else if "`scenario'" == "anticipation1" {
-        quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) anticipation(1) analytical
+        quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) anticipation(1) analytical nevertreated base_period(varying) bal(none)
     }
     else if "`scenario'" == "weighted" {
-        quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical
+        quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none)
     }
     else if "`scenario'" == "clustered" {
-        quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) cluster(clust) analytical
+        quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) cluster(clust) analytical nevertreated base_period(varying) bal(none)
     }
     matrix A = e(attgt)
     preserve
@@ -305,23 +307,23 @@ program define py019_pretest
 end
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
 py019_pretest "mpdta_nev_dr" "`actual_pre'"
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) notyet analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) notyet analytical base_period(varying) bal(none)
 py019_pretest "mpdta_nyt_dr" "`actual_pre'"
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical
+quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none)
 py019_pretest "mpdta_nev_reg_cov" "`actual_pre'"
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(ipw) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(ipw) analytical nevertreated base_period(varying) bal(none)
 py019_pretest "mpdta_nev_ipw" "`actual_pre'"
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/sim_data.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 py019_pretest "sim_nev_dr" "`actual_pre'"
 
 import delimited using "`root'/tests/fixtures/parity/py019/expected/r/ref_pretest.csv", clear asdouble varnames(1)

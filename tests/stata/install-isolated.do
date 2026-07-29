@@ -46,7 +46,7 @@ input id time g y
 10 2 0 1
 end
 
-csdid y, time(time) gvar(g) analytical
+csdid y, time(time) gvar(g) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 assert rowsof(A) == 1
 assert abs(A[1,4] - 2) < 1e-12

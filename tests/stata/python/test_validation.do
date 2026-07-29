@@ -117,7 +117,7 @@ import delimited using "`root'/tests/fixtures/parity/py024/inputs/negative-weigh
 py024_expect_failure, command("csdid y [iw=wt], ivar(id) time(year) gvar(group) analytical") message("iweights must be nonnegative")
 
 import delimited using "`root'/tests/fixtures/parity/py024/inputs/sample.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) analytical
+csdid y, ivar(id) time(year) gvar(group) analytical nevertreated base_period(varying) bal(none)
 assert e(N_units) == 50
 assert e(N_attgt) > 0
 confirm matrix e(attgt)

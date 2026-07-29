@@ -1,0 +1,16 @@
+[
+  {
+    "divergence_id": "F051-DIV001",
+    "source_tests": "R did 2.5.1 att_gt() default base_period = \"varying\"",
+    "reason": "csdid defaults to base_period(universal); R did and Stata csdid Version 1.82 both default to varying. Universal is the layout an event-study plot assumes, and event studies are how these results are almost always presented. Post-treatment ATT(g,t) are identical under either choice; the pre-treatment cells differ, and universal additionally reports the g-1 normalisation row. base_period(varying) reproduces R exactly.",
+    "accepted_behavior": "F051 pins e(base_period) == universal when the option is omitted and asserts that base_period(varying) matches the R oracle; the whole test suite pins the R-matching value explicitly wherever it compares against an R fixture.",
+    "divergence_kind": "behavioral-default"
+  },
+  {
+    "divergence_id": "F051-DIV002",
+    "source_tests": "R did 2.5.1 att_gt() default control_group = \"nevertreated\"",
+    "reason": "csdid defaults to not-yet-treated controls; R did and Stata csdid Version 1.82 both default to never-treated. Not-yet-treated uses more of the data, usually gives tighter standard errors, and does not require a never-treated group to exist or to be large enough to trust -- it is also the remedy R's own too-small-never-treated refusal recommends. nevertreated reproduces R exactly.",
+    "accepted_behavior": "F051 pins e(control_group) == notyettreated when the option is omitted and asserts that nevertreated matches the R oracle; F008 estimates both arms and compares each against its own R oracle.",
+    "divergence_kind": "behavioral-default"
+  }
+]

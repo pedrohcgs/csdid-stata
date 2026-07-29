@@ -1,38 +1,49 @@
 [
   {
-    "event_key": "legacy_bal_full",
-    "return_code": 0,
-    "event_type": "warning",
-    "offending_option": "bal(full)",
-    "message_normalized": "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
-  },
-  {
-    "event_key": "legacy_balance_full",
-    "return_code": 0,
-    "event_type": "warning",
-    "offending_option": "balance(full)",
-    "message_normalized": "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
-  },
-  {
     "event_key": "legacy_bal_unbal",
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "bal(unbal)",
-    "message_normalized": "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+    "message_normalized": "csdid: bal(unbal) is deprecated; use bal(none)",
+    "resolves_to": "none"
+  },
+  {
+    "event_key": "legacy_bal_all",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "bal(all)",
+    "message_normalized": "csdid: bal(all) is deprecated; use bal(full)",
+    "resolves_to": "full"
+  },
+  {
+    "event_key": "legacy_allowunbalanced",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "allowunbalanced",
+    "message_normalized": "csdid: allowunbalanced is deprecated; use bal(none)",
+    "resolves_to": "none"
+  },
+  {
+    "event_key": "legacy_balanceall",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "balanceall",
+    "message_normalized": "csdid: balanceall is deprecated; use bal(full)",
+    "resolves_to": "full"
   },
   {
     "event_key": "legacy_long",
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "long",
-    "message_normalized": "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+    "message_normalized": "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts."
   },
   {
     "event_key": "legacy_long2",
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "long2",
-    "message_normalized": "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+    "message_normalized": "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts."
   },
   {
     "event_key": "legacy_asinr_noop",

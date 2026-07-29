@@ -172,11 +172,16 @@ program define py003_run_fit
     if "`covariates'" != "" local xopt "x"
     local panelopt ""
     if `panel' local panelopt "ivar(id)"
-    local controlopt ""
+    * These pin the pre-2.0.0 defaults the expectations below were built on.
+    * They belong here rather than appended to the csdid call: this helper
+    * already builds base_period() from its own base() parameter, so a literal
+    * base_period(varying) on the call is a second copy of the same option
+    * whenever base() is given, which Stata rejects outright.
+    local controlopt "nevertreated"
     if "`notyet'" != "" local controlopt "notyet"
-    local baseopt ""
+    local baseopt "base_period(varying)"
     if "`base'" != "" local baseopt "base_period(`base')"
-    quietly csdid y `xopt', `panelopt' time(period) gvar(g) method(`method') `controlopt' `baseopt' anticipation(`anticipation') `fast' analytical
+    quietly csdid y `xopt', `panelopt' time(period) gvar(g) method(`method') `controlopt' `baseopt' anticipation(`anticipation') `fast' analytical bal(none)
     assert "`e(method)'" == "`method'"
 end
 
@@ -283,7 +288,7 @@ py003_assert_att_near, target(1) tol(.5)
 tempfile fallbacklog
 import delimited using "`nonever'", clear asdouble
 log using "`fallbacklog'", text replace name(py003_fallback)
-capture noisily csdid y, time(period) gvar(g) method(reg) analytical
+capture noisily csdid y, time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local fallback_rc = _rc
 log close py003_fallback
 assert `fallback_rc' == 0
@@ -308,7 +313,7 @@ tempfile firstlog
 import delimited using "`sim'", clear asdouble
 keep if period >= 2
 log using "`firstlog'", text replace name(py003_first)
-capture noisily csdid y x, time(period) gvar(g) method(reg) analytical
+capture noisily csdid y x, time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local first_rc = _rc
 log close py003_first
 assert `first_rc' == 0
@@ -332,19 +337,19 @@ py003_run_fit, input("`anticipation'") method(dr) panel(1) covariates anticipati
 py003_assert_event_near, event(2) target(3) tol(1)
 
 import delimited using "`sim'", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) level(95) wboot(reps(31) rseed(1234))
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) level(95) wboot(reps(31) rseed(1234)) nevertreated base_period(varying) bal(none)
 assert e(cband) == 1
 scalar py003_uniform = e(crit_val)
 scalar py003_point = e(point_crit_val)
 assert py003_uniform >= py003_point
 import delimited using "`sim'", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) level(95) wboot(reps(31) rseed(1234)) pointwise
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) level(95) wboot(reps(31) rseed(1234)) pointwise nevertreated base_period(varying) bal(none)
 assert e(cband) == 0
 assert abs(e(crit_val) - e(point_crit_val)) < 1e-12
 assert py003_uniform >= e(crit_val)
 
 import delimited using "`sim'", clear asdouble
-capture noisily csdid y x, ivar(brant) time(period) gvar(g) method(dr) analytical
+capture noisily csdid y x, ivar(brant) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 assert _rc != 0
 
 foreach base in varying universal {
@@ -356,7 +361,7 @@ foreach method in dr reg {
     tempfile smalllog
     import delimited using "`small'", clear asdouble
     log using "`smalllog'", text replace name(py003_small)
-    capture noisily csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    capture noisily csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     local small_rc = _rc
     log close py003_small
     assert `small_rc' == 0
@@ -366,10 +371,10 @@ foreach method in dr reg {
 
 import delimited using "`sim'", clear asdouble
 generate double wt = 1
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) notyet analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
 matrix Weighted = e(attgt)
 import delimited using "`sim'", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
 matrix Unweighted = e(attgt)
 py003_assert_matrix_equal Weighted Unweighted 1e-9
 
@@ -377,13 +382,13 @@ import delimited using "`sim'", clear asdouble
 rename g gname
 rename period tname
 rename id idname
-quietly csdid y x, ivar(idname) time(tname) gvar(gname) method(reg) analytical
+quietly csdid y x, ivar(idname) time(tname) gvar(gname) method(reg) analytical nevertreated base_period(varying) bal(none)
 py003_assert_any_finite_att
 py003_assert_agg_finite, type(simple)
 py003_assert_agg_finite, type(dynamic)
 
 import delimited using "`sim'", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) cluster(cluster) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) cluster(cluster) analytical nevertreated base_period(varying) bal(none)
 assert "`e(clustervar)'" == "cluster"
 assert e(N_clusters) == 10
 py003_assert_any_positive_se
@@ -412,43 +417,43 @@ foreach fw in none varying base_period first_period {
         local fixopt "fix_weights(`fw')"
         local expected_fix "`fw'"
     }
-    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) `fixopt' analytical
+    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) `fixopt' analytical nevertreated base_period(varying) bal(none)
     assert "`e(fix_weights)'" == "`expected_fix'"
     py003_assert_any_finite_att
 }
 
 import delimited using "`fixconst'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix FWDefault = e(attgt)
 foreach fw in varying base_period first_period {
     import delimited using "`fixconst'", clear asdouble
-    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(`fw') analytical
+    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(`fw') analytical nevertreated base_period(varying) bal(none)
     matrix FWAlt = e(attgt)
     py003_assert_matrix_equal FWDefault FWAlt 1e-7
 }
 
 import delimited using "`fix'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(base_period) analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(base_period) analytical nevertreated base_period(varying) bal(none)
 matrix FWBase = e(attgt)
 import delimited using "`fix'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(first_period) analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(first_period) analytical nevertreated base_period(varying) bal(none)
 matrix FWFirst = e(attgt)
 py003_assert_any_difference FWBase FWFirst 1e-8
 
 import delimited using "`fix'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(base_period) notyet analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(base_period) notyet analytical base_period(varying) bal(none)
 py003_assert_any_finite_att
 import delimited using "`fix'", clear asdouble
-quietly csdid y x [iw=wt], time(period) gvar(g) method(reg) fix_weights(varying) analytical
+quietly csdid y x [iw=wt], time(period) gvar(g) method(reg) fix_weights(varying) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "repeated-cross-section"
 py003_assert_any_finite_att
 import delimited using "`fix'", clear asdouble
-capture noisily csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(bogus) analytical
+capture noisily csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(bogus) analytical nevertreated base_period(varying) bal(none)
 assert _rc != 0
-capture noisily csdid y x [iw=wt], time(period) gvar(g) method(reg) fix_weights(base_period) analytical
+capture noisily csdid y x [iw=wt], time(period) gvar(g) method(reg) fix_weights(base_period) analytical nevertreated base_period(varying) bal(none)
 assert _rc != 0
 import delimited using "`fixunbal'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(first_period) analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(first_period) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 py003_assert_any_finite_att
 
@@ -468,7 +473,7 @@ foreach method in dr reg ipw {
     rename g group
     rename period time
     rename id unit
-    quietly csdid y, ivar(unit) time(time) gvar(group) method(`method') analytical
+    quietly csdid y, ivar(unit) time(time) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
     py003_assert_any_finite_att
 
     py003_run_fit, input("`two'") method(`method') panel(1) covariates
@@ -530,43 +535,43 @@ local py003_fc   "`root'/tests/fixtures/parity/py003/inputs/fixweights-constant.
 local py003_fu   "`root'/tests/fixtures/parity/py003/inputs/fixweights-unbalanced.csv"
 foreach method in dr reg ipw {
     import delimited using "`py003_sim'", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py003_grab "panel_x_`method'" "`py003_actual'"
     import delimited using "`py003_sim'", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py003_grab "panel_nox_`method'" "`py003_actual'"
     import delimited using "`py003_sim'", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py003_grab "rcs_x_`method'" "`py003_actual'"
     import delimited using "`py003_sim'", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical base_period(varying) bal(none)
     py003_grab "notyet_`method'" "`py003_actual'"
 }
 import delimited using "`py003_sim'", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) cluster(cluster) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) cluster(cluster) analytical nevertreated base_period(varying) bal(none)
 py003_grab "cluster_dr" "`py003_actual'"
 import delimited using "`py003_fw'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) notyet analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
 py003_grab "weighted_notyet_reg" "`py003_actual'"
 foreach fw in varying base_period first_period {
     import delimited using "`py003_fw'", clear asdouble
-    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(`fw') analytical
+    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(`fw') analytical nevertreated base_period(varying) bal(none)
     py003_grab "fixw_`fw'" "`py003_actual'"
     import delimited using "`py003_fc'", clear asdouble
-    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(`fw') analytical
+    quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(`fw') analytical nevertreated base_period(varying) bal(none)
     py003_grab "fixconst_`fw'" "`py003_actual'"
 }
 import delimited using "`py003_fw'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 py003_grab "fixw_unset" "`py003_actual'"
 import delimited using "`py003_fw'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(base_period) notyet analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(base_period) notyet analytical base_period(varying) bal(none)
 py003_grab "fixw_base_notyet" "`py003_actual'"
 import delimited using "`py003_fw'", clear asdouble
-quietly csdid y x [iw=wt], time(period) gvar(g) method(reg) fix_weights(varying) analytical
+quietly csdid y x [iw=wt], time(period) gvar(g) method(reg) fix_weights(varying) analytical nevertreated base_period(varying) bal(none)
 py003_grab "fixw_rcs_varying" "`py003_actual'"
 import delimited using "`py003_fu'", clear asdouble
-quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(first_period) analytical
+quietly csdid y x [iw=wt], ivar(id) time(period) gvar(g) method(reg) fix_weights(first_period) analytical nevertreated base_period(varying) bal(none)
 py003_grab "fixunbal_first" "`py003_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py003/expected/r/attgt.csv", clear asdouble varnames(1)

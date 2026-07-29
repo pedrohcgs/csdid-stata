@@ -1,2 +1,0 @@
-nsim,n_treat,n_control,true_att,nominal,zcrit,mean_att_stata,mean_bias_stata,abs_bias_stata,coverage_stata,coverage_error_stata,mcse_att_stata
-200,120,120,1,.95,1.959963984540054,.9949313083513363,-.0050686916486637,.0050686916486637,.96,.01,.0134966492082481

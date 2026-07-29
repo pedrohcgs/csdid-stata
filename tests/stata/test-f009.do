@@ -10,7 +10,7 @@ tempfile allactual
 local first 1
 foreach anticipation in 0 1 {
     import delimited using "`root'/tests/fixtures/parity/f009/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) anticipation(`anticipation') analytical
+    csdid y, ivar(id) time(time) gvar(g) method(reg) anticipation(`anticipation') analytical nevertreated base_period(varying) bal(none)
     matrix A = e(attgt)
     clear
     svmat double A, names(col)
@@ -35,5 +35,5 @@ assert abs(se - se_stata) < 1e-8 if !missing(se) & !missing(se_stata)
 assert abs(att - att_stata) < 1e-10 if anticipation == 1 & group == 3 & time == 3
 
 import delimited using "`root'/tests/fixtures/parity/f009/inputs/input.csv", clear asdouble
-capture noisily csdid y, ivar(id) time(time) gvar(g) anticipation(-1) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) anticipation(-1) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 198

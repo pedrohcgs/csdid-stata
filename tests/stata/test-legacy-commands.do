@@ -35,9 +35,9 @@ quietly count if missing(gvar_built)
 assert r(N) == 0
 
 * and the result must actually drive csdid to the same answer as the original
-quietly csdid lemp, ivar(countyreal) time(year) gvar(gvar_built) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(gvar_built) analytical nevertreated base_period(varying) bal(none)
 matrix B = e(attgt)
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 assert rowsof(A) == rowsof(B)
 mata: st_local("d", strofreal(max(abs(st_matrix("A")[.,4] - st_matrix("B")[.,4]))))
@@ -59,7 +59,7 @@ foreach c in csdid_rif csdid_table dipt tsvmat {
 
 * csdid_table prints its deprecation notice
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
 capture noisily csdid_table
 * whatever it does with the table, it must not abort the session
 assert inlist(_rc, 0, 198, 111, 301)

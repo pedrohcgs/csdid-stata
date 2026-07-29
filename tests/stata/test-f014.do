@@ -37,11 +37,11 @@ confirm file "`root'/tests/fixtures/parity/f014/expected/r/events.json"
 confirm file "`root'/tests/fixtures/parity/f014/metadata/manifest.json"
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) nevertreated base_period(varying) bal(none)
 matrix A0 = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(399) rseed(20250622))
+csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(399) rseed(20250622)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 399
 assert e(cband) == 1
@@ -85,25 +85,25 @@ assert conf_low[1] != point_conf_low[1]
 assert conf_high[1] != point_conf_high[1]
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(199) rseed(20250622)) pointwise
+csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(199) rseed(20250622)) pointwise nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(cband) == 0
 assert abs(e(crit_val) - e(point_crit_val)) < 1e-12
 
 capture log close f014event
 log using "`evlog'", text replace name(f014event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(0))
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(0)) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f014event
 assert `actual_rc' == 198
 f014_assert_log_contains using "`evlog'", message("wboot() reps() must be a positive integer")
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) nevertreated base_period(varying) bal(none)
 matrix C0 = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/f014/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) wboot(reps(199) rseed(20250623))
+csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) wboot(reps(199) rseed(20250623)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 199
 assert e(N_clusters) == 4

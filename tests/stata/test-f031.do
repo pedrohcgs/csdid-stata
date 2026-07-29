@@ -56,7 +56,7 @@ if _rc == 0 {
     frame change `frame_before'
 }
 
-csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 f031_assert_data_state using "`before'", vars("`f031_vars'") framename("`frame_before'")
 local good_cmdline `"`e(cmdline)'"'
 assert "`e(cmd)'" == "csdid"
@@ -98,7 +98,7 @@ foreach agg in group calendar dynamic {
     f031_assert_data_state using "`before'", vars("`f031_vars'") framename("`frame_before'")
 }
 
-csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(reg) saverif("`rif'") replace analytical
+csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(reg) saverif("`rif'") replace analytical nevertreated base_period(varying) bal(none)
 f031_assert_data_state using "`before'", vars("`f031_vars'") framename("`frame_before'")
 confirm file "`rif'"
 csdid_stats using "`rif'", type(simple)
@@ -107,7 +107,7 @@ assert "`e(cmd)'" == "csdid"
 assert "`e(agg_type)'" == "simple"
 local good_cmdline `"`e(cmdline)'"'
 
-capture noisily csdid y, time(time) gvar(g) method(bad) analytical
+capture noisily csdid y, time(time) gvar(g) method(bad) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 198
 f031_assert_data_state using "`before'", vars("`f031_vars'") framename("`frame_before'")
 assert "`e(cmd)'" == "csdid"

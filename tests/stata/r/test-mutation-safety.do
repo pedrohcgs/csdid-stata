@@ -18,7 +18,7 @@ program define rt020_assert_no_mutation
 
     local fastopt ""
     if "`fast'" != "" local fastopt "fast"
-    csdid y x, ivar(id) time(period) gvar(g) method(dr) `fastopt' analytical
+    csdid y x, ivar(id) time(period) gvar(g) method(dr) `fastopt' analytical nevertreated base_period(varying) bal(none)
     assert "`e(panel_mode)'" == "`panelmode'"
     assert e(fast_requested) == ("`fast'" != "")
 

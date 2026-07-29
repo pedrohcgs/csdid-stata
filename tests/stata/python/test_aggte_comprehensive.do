@@ -21,7 +21,7 @@ program define py001_fit
     syntax, METHOD(string)
 
     import delimited using "`c(pwd)'/tests/fixtures/parity/py001/inputs/aggte-data.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
 end
 
 program define py001_assert_simple
@@ -248,7 +248,7 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py001/inputs/aggte-data.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py001_grab "`method'" "`py001_actual'"
 }
 
@@ -291,7 +291,7 @@ program define py001_ovgrab
     restore
 end
 import delimited using "`root'/tests/fixtures/parity/py001/inputs/aggte-data.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(simple) na_rm
 py001_ovgrab "simple" "`py001_ov'"
 quietly csdid_stats, type(group) na_rm

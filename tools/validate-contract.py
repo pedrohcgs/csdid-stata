@@ -52,8 +52,12 @@ def main() -> None:
     ]
     if rows and list(rows[0].keys()) != expected_columns:
         fail("feature matrix columns do not match the frozen schema")
-    if len(rows) != 129:
-        fail(f"expected 129 feature-matrix rows, found {len(rows)}")
+    # 129 -> 132: F052 (rcs), F053 (saving() on every estat subcommand) and
+    # F054 (bal(pair)) were added deliberately. The count is frozen so rows
+    # cannot appear or vanish unnoticed; update it in the same commit that
+    # adds the row.
+    if len(rows) != 132:
+        fail(f"expected 132 feature-matrix rows, found {len(rows)}")
     for row in rows:
         allowed = set(row["allowed_terminal_statuses"].split("|"))
         allowed.add("contract-frozen")

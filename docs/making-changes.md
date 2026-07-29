@@ -78,6 +78,14 @@ arrive from search engines rather than from page one.
 A block that genuinely cannot run gets `<!-- norun -->` on the line before it.
 Use it sparingly: a skipped block is an unverified one.
 
+**Naming the legacy release.** Always write **Version 1.82**, never a bare `1.82`.
+Written bare it reads as a decimal number rather than a release, and set beside
+`2.0.0` it invites the reader to compare two things that are not on the same
+scale. `tools/docs/check-version-convention.py` enforces this in the `docs`
+tier. The one exception is a verbatim quotation of the shipped ado header, which
+must stay verbatim; add such a line to `ALLOWED_SUBSTRINGS` in that script
+rather than rewording the quotation.
+
 ### A new or changed gate
 
 **Qualify it**: seed the fault it targets, confirm it goes red, remove the

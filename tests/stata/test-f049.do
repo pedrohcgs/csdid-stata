@@ -76,12 +76,12 @@ local machine_type "`c(machine_type)'"
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/small-smoke.csv", clear asdouble
 local rows = _N
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -102,7 +102,7 @@ import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.cs
 local rows = _N
 timer clear 1
 timer on 1
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 timer off 1
 quietly timer list 1
 scalar f049_seconds = r(t1)
@@ -142,7 +142,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) fast lean analytical
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) fast lean analytical nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -184,7 +184,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) performance(auto) analytical
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) performance(auto) analytical nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -229,7 +229,7 @@ import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.cs
 local rows = _N
 timer clear 1
 timer on 1
-quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 timer off 1
 quietly timer list 1
 scalar f049_seconds = r(t1)
@@ -260,7 +260,7 @@ local f049_weight_reps 3
 timer clear 1
 timer on 1
 forvalues rr = 1/`f049_weight_reps' {
-    quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) analytical
+    quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) analytical nevertreated base_period(varying) bal(none)
 }
 timer off 1
 quietly timer list 1
@@ -288,7 +288,7 @@ import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.cs
 local rows = _N
 timer clear 1
 timer on 1
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
 timer off 1
 quietly timer list 1
 scalar f049_seconds = r(t1)
@@ -322,7 +322,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(1000) rseed(20260627)) pointwise
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(1000) rseed(20260627)) pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -374,7 +374,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) reps(1000) rseed(20260627)
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) reps(1000) rseed(20260627) nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -405,7 +405,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g)
+    quietly csdid y, ivar(id) time(time) gvar(g) nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -436,7 +436,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) wboot(reps(1000) rseed(20260627)) pointwise
+    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) wboot(reps(1000) rseed(20260627)) pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -465,7 +465,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) wboot(reps(1000) rseed(20260627)) pointwise
+    quietly csdid y [iw=wt], ivar(id) time(time) gvar(g) method(ipw) wboot(reps(1000) rseed(20260627)) pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -494,7 +494,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) wboot(reps(1000) rseed(20260627)) pointwise
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) wboot(reps(1000) rseed(20260627)) pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -523,7 +523,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) wboot(reps(1000) rseed(20260627)) pointwise
+    quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) wboot(reps(1000) rseed(20260627)) pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -553,7 +553,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) analytical
+    quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds {
@@ -576,7 +576,7 @@ post `benchpost' ("medium_unbalanced_cov_weight_dr") (`rows') (f049_cells) (f049
     ("`stata_version'") ("`stata_flavor'") ("`os'") ("`machine_type'") ("stata_c_memory_setting")
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) performance(auto) agg(event) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) performance(auto) agg(event) analytical nevertreated base_period(varying) bal(none)
 assert e(lean) == 1
 assert e(mata_cache) == 1
 assert e(large_store) == 0
@@ -590,7 +590,7 @@ assert _rc != 0
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/aggregation-medium.csv", clear asdouble
 local rows = _N
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(1000)) pointwise
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(1000)) pointwise nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 scalar f049_cells = rowsof(A)
 assert f049_cells >= 200
@@ -623,7 +623,7 @@ post `benchpost' ("aggregation_bootstrap_dynamic_medium") (`rows') (f049_cells) 
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/aggregation-medium.csv", clear asdouble
 local rows = _N
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_auto) == 1
 assert e(fast_used) == 1

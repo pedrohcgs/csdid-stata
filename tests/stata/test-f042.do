@@ -17,7 +17,7 @@ program define f042_run_dynamic
     }
 
     quietly csdid crude_rate_20_64 `covlist' [iw=set_wt], analytical ///
-        ivar(county_code) time(year) gvar(treat_year) method(`method') base_period(universal)
+        ivar(county_code) time(year) gvar(treat_year) method(`method') base_period(universal) bal(none)
     assert "`e(panel_mode)'" == "panel"
     assert "`e(method)'" == "`method'"
     assert "`e(base_period)'" == "universal"

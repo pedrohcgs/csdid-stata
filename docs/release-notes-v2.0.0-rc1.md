@@ -1,5 +1,11 @@
 # csdid 2.0.0-rc1 Release Notes
 
+> **Historical.** These are the release notes for the 2.0.0-rc1 collaborator
+> build. Two defaults changed after it -- the comparison group is now
+> not-yet-treated and the base period universal -- so the "aligned to R"
+> statement below describes rc1, not the shipping release. See `NEWS.md` and
+> `docs/legacy-migration-guide.md` for 2.0.0.
+
 Status: public release-candidate notes for collaborator testing.
 
 ## For R `did` Users

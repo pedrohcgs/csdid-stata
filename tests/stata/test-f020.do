@@ -45,9 +45,10 @@ tempfile allactual
 local first 1
 foreach control_group in nevertreated notyettreated {
     import delimited using "`root'/tests/fixtures/parity/f020/inputs/input.csv", clear asdouble
-    local notyetopt ""
+    * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+    local notyetopt "nevertreated"
     if "`control_group'" == "notyettreated" local notyetopt "notyet"
-    csdid y, ivar(id) time(time) gvar(g) method(reg) `notyetopt' analytical
+    csdid y, ivar(id) time(time) gvar(g) method(reg) `notyetopt' analytical base_period(varying) bal(none)
     matrix A = e(attgt)
     clear
     svmat double A, names(col)

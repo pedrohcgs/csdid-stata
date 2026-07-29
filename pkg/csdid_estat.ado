@@ -85,21 +85,27 @@ program define csdid_estat, eclass
         exit 198
     }
     if `"`subcmd'"' == `"attgt"' {
-        * attgt redisplays the stored ATT(g,t) table and has nothing to window,
-        * aggregate or re-level. These options were previously PARSED at the
-        * syntax line above and then silently discarded, so `estat attgt, post'
-        * returned rc 0 while doing nothing the user asked for - the same
-        * accepted-then-ignored failure this release fixed on the aggregation
-        * routes. Refuse explicitly instead.
+        * attgt redisplays the stored ATT(g,t) table, and with saving() writes
+        * that same table out as a dataset. saving() is how Stata spells "put
+        * this in a file" -- margins, simulate and graph all take it -- so it is
+        * an option on the thing being computed rather than a separate export
+        * command.
+        *
+        * The rest stay refused. They were PARSED at the syntax line above and
+        * then silently discarded, so `estat attgt, post' returned rc 0 while
+        * doing nothing the user asked for.
         local attgt_bad ""
         if "`post'" != "" local attgt_bad "`attgt_bad' post"
         if `"`window'"' != "" local attgt_bad "`attgt_bad' window()"
         if `level' != c(level) local attgt_bad "`attgt_bad' level()"
-        if `"`saving'"' != "" local attgt_bad "`attgt_bad' saving()"
         if "`dropmissing'" != "" local attgt_bad "`attgt_bad' dropmissing"
         if "`attgt_bad'" != "" {
-            display as error "estat attgt takes no options; not allowed:`attgt_bad'"
+            display as error "estat attgt accepts only saving() and replace; not allowed:`attgt_bad'"
             exit 198
+        }
+        if `"`saving'"' != "" {
+            _csdid_estat_tidy_attgt using `"`saving'"', `replace'
+            exit
         }
         matlist e(attgt), names(columns) format(%10.6g)
         exit
@@ -291,6 +297,13 @@ program define csdid_estat, eclass
             else {
                 matlist e(aggte), names(columns) format(%10.6g)
             }
+        }
+        * saving() was parsed at the syntax line and then ignored here, so
+        * `estat event, saving(f)' returned rc 0 and wrote no file. It now
+        * writes the aggregation that was just computed -- the same file
+        * `estat tidy, saving(f)' writes if run immediately afterwards.
+        if `"`saving'"' != "" {
+            _csdid_estat_tidy_aggte using `"`saving'"', `replace'
         }
         exit
     }

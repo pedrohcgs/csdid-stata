@@ -148,7 +148,7 @@ program define csdid_stats, eclass
         if regexm(`"`opt_l'"', "^min_e\((.*)\)$") {
             local min_e_val = strtrim(regexs(1))
             if `"`window'"' != "" {
-                display as error "min_e() cannot be combined with window()"
+                display as error "min_e() and window() both set the event-time window; specify only one. window(# #) sets the lower and upper bound together."
                 exit 198
             }
             if `min_e_specified' {
@@ -170,7 +170,7 @@ program define csdid_stats, eclass
         else if regexm(`"`opt_l'"', "^max_e\((.*)\)$") {
             local max_e_val = strtrim(regexs(1))
             if `"`window'"' != "" {
-                display as error "max_e() cannot be combined with window()"
+                display as error "max_e() and window() both set the event-time window; specify only one. window(# #) sets the lower and upper bound together."
                 exit 198
             }
             if `max_e_specified' {
@@ -192,7 +192,7 @@ program define csdid_stats, eclass
         else if regexm(`"`opt_l'"', "^balance_e\((.*)\)$") {
             local balance_e_val = strtrim(regexs(1))
             if `balance_given' {
-                display as error "balance_e() cannot be combined with balance()"
+                display as error "balance_e() and balance() are the same option under two names; specify only one."
                 exit 198
             }
             if `balance_e_specified' {

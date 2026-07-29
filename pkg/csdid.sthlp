@@ -69,6 +69,10 @@ periods and staggered treatment adoption (Callaway and Sant'Anna 2021){p_end}
 {synopt:{opth ivar(varname)}}panel unit identifier; omit for repeated cross
 sections{p_end}
 {synopt:{opth id(varname)}}synonym for {cmd:ivar()}{p_end}
+{synopt:{opt rcs}}declare the data to be repeated cross sections, even when
+{cmd:ivar()} is supplied{p_end}
+{synopt:{opt bal(mode)}}panel balancing: {cmd:full}, {cmd:pair}, or
+{cmd:none}; default is {cmd:bal(full)}{p_end}
 
 {syntab:Model {help csdid##opt_model:[+]}}
 {synopt:{opt method(string)}}2x2 estimator: {cmd:dr}, {cmd:reg}, or
@@ -79,14 +83,15 @@ sections{p_end}
 {cmd:varying}, {cmd:base}, or {cmd:first}; by default the option is not set{p_end}
 
 {syntab:Control group {help csdid##opt_control:[+]}}
-{synopt:{opt notyet}}use not-yet-treated units as the comparison group{p_end}
-{synopt:{opt notyettreated}}synonym for {cmd:notyet}{p_end}
-{synopt:{opt nevertreated}}state the default never-treated comparison group
+{synopt:{opt notyet}}state the default not-yet-treated comparison group
 explicitly{p_end}
+{synopt:{opt notyettreated}}synonym for {cmd:notyet}{p_end}
+{synopt:{opt nevertreated}}use only never-treated units as the comparison
+group{p_end}
 
 {syntab:Base period and anticipation {help csdid##opt_base:[+]}}
 {synopt:{opt base_p:eriod(rule)}}{cmd:varying} or {cmd:universal} base period;
-default is {cmd:base_period(varying)}{p_end}
+default is {cmd:base_period(universal)}{p_end}
 {synopt:{opt baseperiod(rule)}}synonym for {cmd:base_period()}{p_end}
 {synopt:{opt varying}}synonym for {cmd:base_period(varying)}{p_end}
 {synopt:{opt universal}}synonym for {cmd:base_period(universal)}{p_end}
@@ -128,15 +133,14 @@ dataset for later use by {helpb csdid_stats}{p_end}
 default is {cmd:performance(auto)}{p_end}
 {synopt:{opt fast}}force the optimized Mata kernels{p_end}
 {synopt:{opt nofast}}force the baseline Mata kernels{p_end}
-{synopt:{opt allowunbalanced}}state the automatic unbalanced-panel handling
-explicitly{p_end}
 
 {syntab:Legacy compatibility {help csdid##opt_legacy:[+]}}
 {synopt:{opt asinr}}accepted as a no-op{p_end}
 {synopt:{opt never}}accepted as a no-op{p_end}
 {synopt:{opt long}, {opt long2}}deprecated event-study layout aliases{p_end}
-{synopt:{opt bal:ance(mode)}}deprecated; mapped to the default
-unbalanced-panel handling{p_end}
+{synopt:{opt allowunbalanced}}deprecated name for {cmd:bal(none)}{p_end}
+{synopt:{opt balanceall}}deprecated name for {cmd:bal(full)}{p_end}
+{synopt:{opt balancepair}}deprecated name for {cmd:bal(pair)}{p_end}
 {synoptline}
 {p2colreset}{...}
 {p 4 6 2}
@@ -493,21 +497,72 @@ large matrices were kept.
 ran. Use these only to isolate a performance question or a suspected numerical
 issue.
 
+{marker opt_panel}{...}
+{dlgtab:Panel structure}
+
 {phang}
-{opt allowunbalanced} states explicitly that an unbalanced panel is to be
-handled by the repeated-cross-section computation. That is
-already what {cmd:csdid} does automatically whenever the {cmd:ivar()} data are
-unbalanced, so the option is a readability aid and prints a note.
-{cmd:allow_unbalanced} is an accepted synonym. The resolved layout is in
-{cmd:e(panel_mode)} and {cmd:e(allow_unbalanced)}.
+{opt bal(mode)} controls what happens when the {cmd:ivar()} panel is
+unbalanced, that is, when some units are not observed in every period. The
+accepted modes are:
+
+{p2colset 9 24 26 2}{...}
+{p2col:{cmd:bal(full)}}drop every unit not observed in all periods, so that a
+single balanced panel is used for all comparisons. This is the default.{p_end}
+{p2col:{cmd:bal(pair)}}balance each 2x2 comparison separately, keeping the
+units observed in both of that comparison's periods. Every unit stays in the
+sample; what varies is which units each individual comparison can use.{p_end}
+{p2col:{cmd:bal(none)}}keep every unit and use the repeated-cross-section
+computation with the matching standard-error accounting.{p_end}
+{p2colreset}{...}
+
+{phang2}
+Whenever a mode discards observations, {cmd:csdid} reports how many units and
+how many observations were dropped. Changing the estimand is acceptable;
+changing it silently is not. The resolved layout is in {cmd:e(panel_mode)}.
+
+{phang2}
+{cmd:bal(full)} is the default because it is what R's reference implementation
+does, and because it keeps one fixed sample behind every reported cell. If you
+would rather keep every observation, say {cmd:bal(none)}.
+{cmd:bal(pair)} reproduces the behaviour of Stata {cmd:csdid} Version 1.82,
+which balanced each comparison separately without saying so. Use it to
+reproduce a result computed with that version. {cmd:e(panel_mode)} reports
+{cmd:pair-balanced}.
+
+{phang}
+{opt rcs} declares that the data are repeated cross sections rather than a
+panel. It is the counterpart of the reference implementation's
+{cmd:panel = FALSE}.
+
+{phang2}
+Without it, {cmd:csdid} infers the structure from {cmd:ivar()}: supplied means
+panel, omitted means repeated cross sections. That inference is usually right,
+but it forces a false choice on anyone whose repeated cross sections carry an
+identifier anyway -- a survey respondent number, a county code -- because the
+only way to declare the data as cross sections was to withhold a variable that
+genuinely exists.
+
+{phang2}
+With {cmd:rcs} the declaration is explicit, and {cmd:ivar()} may be supplied
+alongside it. The identifier is then checked and used to exclude observations
+where it is missing, but it does not enter estimation: each observation is
+treated as its own unit. {cmd:e(idvar)} is therefore empty and
+{cmd:e(panel_mode)} is {cmd:repeated-cross-section}. To put the identifier back
+into the standard errors, use {cmd:cluster()}.
+
+{phang2}
+Repeated cross sections have nothing to balance, so {cmd:rcs} implies
+{cmd:bal(none)}. Combining it with {cmd:bal(full)} is an
+error, as is combining it with {cmd:fix_weights(base)} or
+{cmd:fix_weights(first)}, which require following the same unit over time.
 
 {marker opt_legacy}{...}
 {dlgtab:Legacy compatibility}
 
 {pstd}
-These options exist so that do-files written for Stata {cmd:csdid} 1.82 keep
+These options exist so that do-files written for Stata {cmd:csdid} Version 1.82 keep
 running. All of them announce themselves. None of them changes a default.
-See {it:{help csdid##remarks_legacy:Migrating from Stata csdid 1.82}}.
+See {it:{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}}.
 
 {phang}
 {opt asinr} and {opt never} are accepted as no-ops with a message.
@@ -522,11 +577,19 @@ layout. When {cmd:base_period()} is not otherwise given, they select
 {cmd:base_period(universal)}.
 
 {phang}
-{opt balance(mode)} and its abbreviation {cmd:bal()} are deprecated. The
-accepted values are {cmd:full} and {cmd:unbal}, and both are mapped to the
-default unbalanced-panel handling with a warning. They do {bf:not} restore the
-legacy pair-balanced dropping of units, which was found to change the
-estimand.
+{opt allowunbalanced} and {cmd:allow_unbalanced} are deprecated names for
+{cmd:bal(none)}; {opt balanceall} is a deprecated name for {cmd:bal(full)};
+{opt balancepair} is a deprecated name for {cmd:bal(pair)}, which is not
+implemented in this release and is refused. Each is accepted
+with a note naming its replacement. Giving one of them together with a
+{cmd:bal()} that means something different is an error rather than a silent
+resolution.
+
+{phang}
+Inside {cmd:bal()} itself, the values {cmd:unbal}, {cmd:unbalanced} and
+{cmd:allow_unbalanced} are deprecated spellings of {cmd:none}, and {cmd:all}
+is a deprecated spelling of {cmd:full}. See
+{it:{help csdid##opt_panel:Panel structure}} for the current vocabulary.
 
 {phang}
 {cmd:dryrun} was an internal option in the legacy package. It is rejected with
@@ -549,7 +612,7 @@ Remarks are presented under the following headings:
 {p2col:{help csdid##remarks_inference:Inference}}{p_end}
 {p2col:{help csdid##remarks_post:Postestimation}}{p_end}
 {p2col:{help csdid##remarks_behavior:Notes on specific behavior}}{p_end}
-{p2col:{help csdid##remarks_legacy:Migrating from Stata csdid 1.82}}{p_end}
+{p2col:{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}}{p_end}
 {p2colreset}{...}
 
 {marker remarks_setup}{...}
@@ -744,7 +807,7 @@ On a balanced panel this measure equals the number of distinct units. On an
 unbalanced panel it is strictly smaller, so the guard is stricter there.
 Earlier builds of this package counted distinct units and therefore estimated
 in some cases that are now refused; see
-{help csdid##remarks_legacy:Migrating from Stata csdid 1.82}.
+{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}.
 
 {marker remarks_base}{...}
 {title:Choosing the base period}
@@ -952,10 +1015,13 @@ A few choices are worth stating explicitly, because they are the places where
 that is defensible.
 
 {phang2}
-o {bf:Unbalanced panels.} An unbalanced {cmd:ivar()} panel is detected
-automatically and estimated with the repeated-cross-section computation and the
-standard-error accounting that goes with it. Units are never silently dropped
-to force a balanced panel, because dropping them changes the estimand.{p_end}
+o {bf:Unbalanced panels.} By default an unbalanced {cmd:ivar()} panel is
+balanced by dropping the units not observed in every period, and {cmd:csdid}
+reports how many units and observations that removed. Dropping them changes the
+estimand, so it is never done silently. {cmd:bal(none)} keeps every unit and
+estimates with the repeated-cross-section computation and the standard-error
+accounting that goes with it. See
+{it:{help csdid##opt_panel:Panel structure}}.{p_end}
 
 {phang2}
 o {bf:Multiplier distribution.} The bootstrap draws Rademacher multipliers.
@@ -996,7 +1062,7 @@ diagnostics. Neither changes the estimates.{p_end}
 
 
 {marker remarks_legacy}{...}
-{title:Migrating from Stata csdid 1.82}
+{title:Migrating from Stata csdid Version 1.82}
 
 {pstd}
 This is a rewrite, not a patch of the legacy package, and its defaults differ
@@ -1007,9 +1073,12 @@ o {bf:Inference is bootstrapped by default}, with simultaneous bands and 1,000
 iterations. Add {cmd:analytical} to get analytical standard errors.{p_end}
 
 {phang2}
-o {bf:Unbalanced panels are no longer silently balanced}; the
-repeated-cross-section computation is used instead. {cmd:bal()} and {cmd:balance()}
-warn and do not restore the old behavior.{p_end}
+o {bf:Unbalanced panels are balanced, and say so.} Version 1.82 dropped, without
+comment, the units missing from either period of each 2x2 comparison. The
+default is now {cmd:bal(full)}: units not observed in every period are dropped
+once, for all comparisons, and {cmd:csdid} reports how many. To keep every
+observation instead, use {cmd:bal(none)}; to reproduce Version 1.82's per-
+comparison balancing, use {cmd:bal(pair)}.{p_end}
 
 {pstd}
 One further change does not move any number, but can stop a do-file that
@@ -1026,7 +1095,8 @@ recommends. See
 {pstd}
 Legacy option spellings that still work, each with a message:
 {cmd:method(dripw)}, {cmd:method(stdipw)}, {cmd:asinr}, {cmd:never},
-{cmd:long}, {cmd:long2}, {cmd:bal()}, {cmd:balance()},
+{cmd:long}, {cmd:long2}, {cmd:allowunbalanced}, {cmd:balanceall},
+{cmd:balancepair},
 {cmd:performance(materialized)}, and the top-level bootstrap shorthand.
 {cmd:method(drimp)}, {cmd:method(aipw)}, and {cmd:dryrun} are rejected. Each is
 described under {help csdid##opt_legacy:Legacy compatibility} above; the
@@ -1467,7 +1537,7 @@ brought these estimators to Stata users first, defined the command surface
 that this rewrite preserves, and shaped what Stata users expect from a
 Callaway-Sant'Anna package. The present package is an independent
 reimplementation; see
-{help csdid##remarks_legacy:Migrating from Stata csdid 1.82} for what changed
+{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82} for what changed
 and why.{p_end}
 
 

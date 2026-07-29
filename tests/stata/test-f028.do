@@ -65,7 +65,7 @@ confirm file "`root'/tests/fixtures/parity/f028/expected/r/events.json"
 tempfile plotdata
 
 import delimited using "`root'/tests/fixtures/parity/f028/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 csdid_plot, saving("`plotdata'") replace
 compare_plot_data, ///
     actual("`plotdata'") ///
@@ -80,7 +80,7 @@ compare_plot_data, ///
 
 foreach agg_type in dynamic group calendar {
     import delimited using "`root'/tests/fixtures/parity/f028/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
     csdid_stats, type(`agg_type')
     csdid_plot, saving("`plotdata'") replace
     compare_plot_data, ///
@@ -90,7 +90,7 @@ foreach agg_type in dynamic group calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/f028/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 csdid_stats, type(simple)
 capture noisily csdid_plot, saving("`plotdata'") replace
 assert _rc == 498

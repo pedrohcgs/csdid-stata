@@ -34,37 +34,52 @@ d <- d[!(d$id == 14 & d$time == 4), ]
 
 write.csv(d, file.path(fixture, "inputs/input.csv"), row.names = FALSE, na = "")
 
-balance_message <- "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
-long_message <- "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+# The bal() vocabulary is full / pair / none. Everything below is a deprecated
+# spelling of one of those three, and each one announces itself and names its
+# replacement -- a deprecation nobody is told about is not a deprecation.
+# bal(pair) has no row here yet because the mode is not implemented; when it
+# lands, balancepair joins this table.
+dep_unbal      <- "csdid: bal(unbal) is deprecated; use bal(none)"
+dep_all        <- "csdid: bal(all) is deprecated; use bal(full)"
+dep_allowunbal <- "csdid: allowunbalanced is deprecated; use bal(none)"
+dep_balanceall <- "csdid: balanceall is deprecated; use bal(full)"
+long_message <- "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts."
 asinr_message <- "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
 
 events <- data.frame(
   event_key = c(
-    "legacy_bal_full",
-    "legacy_balance_full",
     "legacy_bal_unbal",
+    "legacy_bal_all",
+    "legacy_allowunbalanced",
+    "legacy_balanceall",
     "legacy_long",
     "legacy_long2",
     "legacy_asinr_noop"
   ),
-  return_code = c(0, 0, 0, 0, 0, 0),
-  event_type = c("warning", "warning", "warning", "warning", "warning", "warning"),
+  return_code = rep(0, 7),
+  event_type = rep("warning", 7),
   offending_option = c(
-    "bal(full)",
-    "balance(full)",
     "bal(unbal)",
+    "bal(all)",
+    "allowunbalanced",
+    "balanceall",
     "long",
     "long2",
     "asinr"
   ),
   message_normalized = c(
-    balance_message,
-    balance_message,
-    balance_message,
+    dep_unbal,
+    dep_all,
+    dep_allowunbal,
+    dep_balanceall,
     long_message,
     long_message,
     asinr_message
   ),
+  # Which bal() mode each spelling resolves to. none and full are not the same
+  # estimand on this deliberately unbalanced fixture, so the test can tell them
+  # apart rather than merely checking that nothing errored.
+  resolves_to = c("none", "full", "none", "full", NA, NA, NA),
   stringsAsFactors = FALSE
 )
 
@@ -73,8 +88,8 @@ writeLines(jsonlite::toJSON(events, dataframe = "rows", auto_unbox = TRUE, prett
 
 manifest <- list(
   matrix_id = "F017",
-  fixture_family = "legacy-balance-compatibility",
-  normative_source = "D003/D008 conformance contract; legacy Stata 1.82 behavior is rejected for v1 defaults",
+  fixture_family = "balance-vocabulary-and-legacy-spellings",
+  normative_source = "D003/D008 conformance contract; bal() vocabulary is full/pair/none with deprecated spellings mapped onto it",
   source_commit = "fdbae25521a941314af8d84ec0c93fb0596daa8e",
   decision_refs = c("D003", "D008"),
   tolerance_ids = c("EXACT"),

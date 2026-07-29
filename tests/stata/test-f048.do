@@ -6,13 +6,25 @@ local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
+* These export lines write a RUN ARTEFACT, not an expectation. They used to
+* write into tests/fixtures/.../expected/new-stata/, where nothing ever read
+* them back -- the real comparison is against expected/r/, the R oracle. Sitting
+* under a directory called expected/ they looked like reviewed expectations,
+* they were committed, they dirtied the tree on every run, and they fed the
+* preflight digest. A garbage copy left behind by a failing run was later read
+* as evidence that a gate had passed while recording nonsense; it had not, it
+* had failed. Artefacts belong in build/.
+capture mkdir "`root'/build"
+capture mkdir "`root'/build/test-artefacts"
+capture mkdir "`root'/build/test-artefacts/f048"
+
 program define f048_run_rep
     version 15
     syntax , SIM(integer) OUTFILE(string) [APPEND]
 
     import delimited using "`c(pwd)'/tests/fixtures/parity/f048/inputs/sim-input.csv", clear asdouble
     keep if sim == `sim'
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
     matrix A = e(attgt)
     scalar f048_att = A[1, 4]
     scalar f048_se = A[1, 5]
@@ -52,7 +64,7 @@ capture mkdir "`root'/tests/fixtures/parity/f048/expected/new-stata"
 
 use "`actual'", clear
 sort sim
-export delimited using "`root'/tests/fixtures/parity/f048/expected/new-stata/per-rep.csv", replace
+export delimited using "`root\'/build/test-artefacts/f048/per-rep.csv", replace
 
 summarize att_stata, meanonly
 scalar f048_mean_att = r(mean)
@@ -80,7 +92,7 @@ gen double abs_bias_stata = f048_abs_bias
 gen double coverage_stata = f048_coverage
 gen double coverage_error_stata = f048_coverage_error
 gen double mcse_att_stata = f048_mcse_att
-export delimited using "`root'/tests/fixtures/parity/f048/expected/new-stata/summary.csv", replace
+export delimited using "`root\'/build/test-artefacts/f048/summary.csv", replace
 tempfile actual_summary
 save "`actual_summary'", replace
 restore

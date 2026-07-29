@@ -4,16 +4,19 @@ title: Unbalanced panels
 
 # Unbalanced panels
 
-`csdid` detects an unbalanced `ivar()` panel and estimates it with the
-repeated-cross-section computation and the standard-error accounting that goes
-with it. **Units are never silently dropped to force balance**, because
-dropping them changes the estimand — and silently changing an estimand is worse
-than being slower.
+A panel is unbalanced when some units are not observed in every period. You have
+three choices about what to do, and `csdid` makes you aware of the one it took
+rather than picking silently:
 
-## A worked example
+| | |
+| --- | --- |
+| `bal(full)` | drop units not observed in every period, once, for all comparisons. **The default**, matching R `did`. |
+| `bal(none)` | keep every unit and use the repeated-cross-section computation, with the standard-error accounting that goes with it. |
+| `bal(pair)` | balance each 2×2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did silently. |
 
-The JEL panel is nearly balanced, so this creates the unbalancedness
-deliberately and reproducibly, from the balanced sample:
+Dropping units changes the estimand, so `bal(full)` reports how many units and
+how many observations it removed. Changing an estimand is a legitimate choice;
+changing one silently is not, and that is the whole reason the report exists.
 
 ## The data
 
@@ -33,40 +36,105 @@ generate int gvar = yaca
 replace gvar = 0 if missing(gvar) | gvar > 2016
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
+save "jel_unbal_base.dta", replace
 ```
 
+The JEL panel is balanced, so this creates the unbalancedness deliberately and
+reproducibly:
+
 ```stata
+use "jel_unbal_base.dta", clear
 set seed 424242
 generate double u = runiform()
 drop if u < 0.15 & year >= 2012      // delete ~15% of later county-years
+save "jel_unbalanced.dta", replace
+```
 
+## The default: drop the incomplete units, and say so
+
+```stata
+use "jel_unbalanced.dta", clear
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
 display "panel mode: " e(panel_mode)
 display "units: "      e(N_units)
 estat event
 ```
 
-`e(panel_mode)` reports `allow_unbalanced`. `e(N_units)` is the number of
-counties contributing — the cross-sectional unit count, which is what the
-influence function and the standard errors are scaled by. `e(N)` remains the
-observation count, as `e(N)` means everywhere in Stata.
+Read the message above the table: it names how many counties were not observed
+in all eleven years and how many observations went with them. `e(panel_mode)`
+reports `panel`, because after the drop the panel is balanced — which is the
+point of the mode.
 
-## What actually changes
+## Keeping every unit
 
-On a balanced panel each 2×2 cell is formed by differencing a unit over two
-periods. When the panel is unbalanced that is not available for every unit, so
-the estimator pools observations from both periods instead. Consequences worth
-knowing:
+```stata
+use "jel_unbalanced.dta", clear
+csdid mrate, ivar(county_code) time(year) gvar(gvar) bal(none) rseed(20250101)
+display "panel mode: " e(panel_mode)
+display "units: "      e(N_units)
+estat event
+```
+
+`e(panel_mode)` now reports `allow_unbalanced`, and `e(N_units)` is larger,
+because no county was removed. `e(N_units)` is the cross-sectional unit count,
+which is what the influence function and the standard errors are scaled by;
+`e(N)` remains the observation count, as it means everywhere in Stata.
+
+`allowunbalanced` and `allow_unbalanced` are accepted spellings of `bal(none)`
+and each prints a note naming the current one.
+
+## Which to use
+
+These are **different samples answering different questions**, so the choice is
+substantive rather than technical.
+
+`bal(full)` keeps one fixed set of units behind every reported cell, which makes
+the estimand easy to state: the effect on units observed throughout. That is
+also its cost — if attrition is related to treatment, the units it drops are
+exactly the ones you would want to know about, and the report telling you how
+many went is the signal to think about that.
+
+`bal(none)` uses everything. On a balanced panel each 2×2 cell is formed by
+differencing a unit over two periods; when units come and go that is not
+available for everyone, so the estimator pools observations from both periods
+instead. Consequences worth knowing:
 
 - it is **slower** — roughly 2–4×, because each cell fits more regressions on
   more rows
 - the guard on small cohorts is **stricter**, because cohort size is measured as
   observations divided by periods, which on an unbalanced panel is smaller than
   the distinct-unit count
-- estimates are **not** comparable to a balanced-subset analysis: those are
-  different samples answering different questions
 
-If a run that used to work now refuses with "the never-treated group is too
-small", the usual fix is `notyet`, which enlarges the comparison group.
+If a run refuses with "the never-treated group is too small", `notyet` enlarges
+the comparison group and is usually the fix. It is also the default, so you will
+only meet that refusal if you asked for `nevertreated`. See
+[comparison groups](comparison-groups.html).
+
+## `bal(pair)`
+
+Stata `csdid` Version 1.82 balanced each 2×2 comparison separately, keeping the
+units observed in both of that comparison's periods, and did so without saying
+anything. `bal(pair)` is the name reserved for that behaviour.
+
+`bal(pair)` is that behaviour, made explicit. Every unit stays in the sample;
+what varies is which units each individual comparison can use, so `e(N_units)`
+matches `bal(none)` while the estimates do not.
+
+```stata
+use "jel_unbalanced.dta", clear
+csdid mrate, ivar(county_code) time(year) gvar(gvar) bal(pair) rseed(20250101)
+display "panel mode: " e(panel_mode)
+display "units: "      e(N_units)
+estat event
+```
+
+`e(panel_mode)` reports `pair-balanced` — neither `panel` nor
+`allow_unbalanced`, because it is neither. Use this mode to reproduce a result
+computed with Version 1.82.
+
+```stata
+capture erase "jel_unbal_base.dta"
+capture erase "jel_unbalanced.dta"
+```
 
 Next: [repeated cross sections](repeated-cross-sections.html).

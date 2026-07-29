@@ -77,19 +77,19 @@ assert _N == 1
 assert divergence_id[1] == "RT028-DIV001"
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 rt028_assert_any_finite_att
 generate byte t1 = 1
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 rt028_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/mpdta.csv", clear asdouble
 replace lpop = . in 1
-quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 rt028_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/fewer-periods.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix ATT = e(attgt)
 preserve
 clear
@@ -105,7 +105,7 @@ rt028_assert_nonmissing_overall, type(calendar)
 
 foreach bp in universal varying {
     import delimited using "`root'/tests/fixtures/parity/rt028/inputs/zero-pre.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical bal(none)
     matrix ATT = e(attgt)
     preserve
     clear
@@ -118,11 +118,11 @@ foreach bp in universal varying {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/missing-var.csv", clear asdouble
-capture noisily csdid y x2, ivar(id) time(period) gvar(g) method(dr) notyet cluster(cluster) analytical
+capture noisily csdid y x2, ivar(id) time(period) gvar(g) method(dr) notyet cluster(cluster) analytical base_period(varying) bal(none)
 assert _rc != 0
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/anticipation.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(group) anticipation(0) analytical
+quietly csdid y, ivar(id) time(time) gvar(group) anticipation(0) analytical nevertreated base_period(varying) bal(none)
 matrix Ant0 = e(attgt)
 preserve
 clear
@@ -131,7 +131,7 @@ assert group == 4 if !missing(att)
 restore
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/anticipation.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(group) anticipation(2) analytical
+quietly csdid y, ivar(id) time(time) gvar(group) anticipation(2) analytical nevertreated base_period(varying) bal(none)
 matrix Ant2 = e(attgt)
 preserve
 clear
@@ -141,12 +141,12 @@ assert r(N) > 0
 restore
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/anticipation.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(group) anticipation(0) fast analytical
+quietly csdid y, ivar(id) time(time) gvar(group) anticipation(0) fast analytical nevertreated base_period(varying) bal(none)
 matrix Ant0Fast = e(attgt)
 rt028_assert_matrix_equal Ant0 Ant0Fast 1e-10
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/anticipation.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(group) anticipation(2) fast analytical
+quietly csdid y, ivar(id) time(time) gvar(group) anticipation(2) fast analytical nevertreated base_period(varying) bal(none)
 matrix Ant2Fast = e(attgt)
 rt028_assert_matrix_equal Ant2 Ant2Fast 1e-10
 
@@ -195,16 +195,16 @@ program define rt028_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/rt028/inputs/fewer-periods.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt028_grab "fewer_periods" "`rt028_actual'"
 foreach bp in varying universal {
     import delimited using "`root'/tests/fixtures/parity/rt028/inputs/zero-pre.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical bal(none)
     rt028_grab "zero_pre_`bp'" "`rt028_actual'"
 }
 foreach a in 0 2 {
     import delimited using "`root'/tests/fixtures/parity/rt028/inputs/anticipation.csv", clear asdouble
-    quietly csdid y, ivar(id) time(time) gvar(group) anticipation(`a') analytical
+    quietly csdid y, ivar(id) time(time) gvar(group) anticipation(`a') analytical nevertreated base_period(varying) bal(none)
     rt028_grab "anticipation_`a'" "`rt028_actual'"
 }
 

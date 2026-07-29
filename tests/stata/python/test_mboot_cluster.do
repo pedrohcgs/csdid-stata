@@ -34,7 +34,7 @@ program define py015_assert_clustered_mboot
     syntax, INPUT(string) BITERS(integer) SEED(integer) NCLUSTERS(integer)
 
     import delimited using "`input'", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(`biters') cluster(cl) rseed(`seed'))
+    csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(`biters') cluster(cl) rseed(`seed')) nevertreated base_period(varying) bal(none)
     assert e(bstrap) == 1
     assert e(biters) == `biters'
     assert e(N_clusters) == `nclusters'
@@ -93,7 +93,7 @@ import delimited using "`root'/tests/fixtures/parity/py015/inputs/clustered-inva
 tempfile evlog
 capture log close py015event
 log using "`evlog'", text replace name(py015event)
-capture noisily csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(31) cluster(cl cl2) rseed(20251503))
+capture noisily csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(31) cluster(cl cl2) rseed(20251503)) nevertreated base_period(varying) bal(none)
 local rc = _rc
 log close py015event
 assert `rc' == 198
@@ -147,10 +147,10 @@ program define py015_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/py015/inputs/clustered-unbalanced.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(399) cluster(cl) rseed(20251501))
+quietly csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(399) cluster(cl) rseed(20251501)) nevertreated base_period(varying) bal(none)
 py015_grab "unbalanced_399" "`py015_actual'"
 import delimited using "`root'/tests/fixtures/parity/py015/inputs/clustered-balanced.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(399) cluster(cl) rseed(20251502))
+quietly csdid y, ivar(id) time(t) gvar(g) method(reg) wboot(reps(399) cluster(cl) rseed(20251502)) nevertreated base_period(varying) bal(none)
 py015_grab "balanced_399" "`py015_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py015/expected/r/attgt.csv", clear asdouble varnames(1)

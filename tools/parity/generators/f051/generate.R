@@ -124,6 +124,66 @@ writeLines(
   file.path(fixture, "expected/contract/default-surface.json")
 )
 
+# ---------------------------------------------------------------------------
+# Approved divergences: the two omitted-option defaults that deliberately
+# differ from R did 2.5.1.
+#
+# These are the only places where csdid's *numbers* differ from the reference
+# implementation for the same command, and they differ only because the
+# omitted-option default resolves elsewhere; state either option explicitly
+# and csdid and R agree to machine precision. They are divergences from Stata
+# csdid Version 1.82 as well, which shares R's two defaults, so they are
+# recorded here rather than buried in a migration note.
+#
+# Every other approved divergence in this repository is about surface --
+# an R internal with no public Stata command, an R language feature with no
+# Stata analogue, a deliberately omitted option. These two are the behavioural
+# ones.
+# ---------------------------------------------------------------------------
+divergences <- data.frame(
+  divergence_id = c("F051-DIV001", "F051-DIV002"),
+  source_tests = c(
+    "R did 2.5.1 att_gt() default base_period = \"varying\"",
+    "R did 2.5.1 att_gt() default control_group = \"nevertreated\""
+  ),
+  reason = c(
+    paste(
+      "csdid defaults to base_period(universal); R did and Stata csdid Version 1.82",
+      "both default to varying. Universal is the layout an event-study plot assumes,",
+      "and event studies are how these results are almost always presented.",
+      "Post-treatment ATT(g,t) are identical under either choice; the pre-treatment",
+      "cells differ, and universal additionally reports the g-1 normalisation row.",
+      "base_period(varying) reproduces R exactly."
+    ),
+    paste(
+      "csdid defaults to not-yet-treated controls; R did and Stata csdid Version 1.82",
+      "both default to never-treated. Not-yet-treated uses more of the data, usually",
+      "gives tighter standard errors, and does not require a never-treated group to",
+      "exist or to be large enough to trust -- it is also the remedy R's own",
+      "too-small-never-treated refusal recommends. nevertreated reproduces R exactly."
+    )
+  ),
+  accepted_behavior = c(
+    paste(
+      "F051 pins e(base_period) == universal when the option is omitted and asserts",
+      "that base_period(varying) matches the R oracle; the whole test suite pins the",
+      "R-matching value explicitly wherever it compares against an R fixture."
+    ),
+    paste(
+      "F051 pins e(control_group) == notyettreated when the option is omitted and",
+      "asserts that nevertreated matches the R oracle; F008 estimates both arms and",
+      "compares each against its own R oracle."
+    )
+  ),
+  divergence_kind = c("behavioral-default", "behavioral-default"),
+  stringsAsFactors = FALSE
+)
+write.csv(divergences, file.path(fixture, "expected/contract/approved-divergence.csv"), row.names = FALSE, na = "")
+writeLines(
+  jsonlite::toJSON(divergences, dataframe = "rows", auto_unbox = TRUE, pretty = TRUE),
+  file.path(fixture, "expected/contract/approved-divergence.json")
+)
+
 manifest <- list(
   matrix_id = "F051",
   fixture_family = "release-productization-defaults",
@@ -137,13 +197,14 @@ manifest <- list(
   rng = NULL,
   expected_outputs = list(
     list(path = "expected/r/default-attgt.csv", schema = "attgt"),
-    list(path = "expected/contract/default-surface.json", schema = "release-default-surface")
+    list(path = "expected/contract/default-surface.json", schema = "release-default-surface"),
+    list(path = "expected/contract/approved-divergence.csv", schema = "approved-divergence")
   ),
   comparison_plan = list(
     list(actual = "Stata omitted-option ATT(g,t)", expected = "expected/r/default-attgt.csv", tolerance_id = "TOL001", key_columns = c("group", "time")),
     list(actual = "Stata stored-result defaults and diagnostics", expected = "expected/contract/default-surface.json", tolerance_id = "EXACT", key_columns = c("setting"))
   ),
-  approved_divergence = NULL,
+  approved_divergence = list(path = "expected/contract/approved-divergence.csv", ids = divergences$divergence_id),
   scope_note = "Release-productization fixture binding omitted-option defaults, explicit default-equivalent calls, Stata-style aliases including bare universal/varying base-period aliases, id(), notyettreated/nevertreated, vce(cluster), bootstrap shorthand, optimized default computation/storage metadata, storeall full-storage compatibility, csdid_stats default/event aggregation aliases, estat/csdid_estat event and aggregation replay, csdid_plot saving() plot-data handoff, and user-facing diagnostics. Omitted inference follows R did 2.5.1 bootstrap/cband/1000 defaults; the fixture uses set.seed(20260707) only to make bootstrap SE evidence deterministic. Numerical point estimates remain R did 2.5.1-oracle; storage and Stata UX details are governed by the frozen Stata release contract."
 )
 writeLines(

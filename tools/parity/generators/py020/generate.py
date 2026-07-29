@@ -161,8 +161,11 @@ def write_contract(inputs: list[dict[str, object]]) -> None:
         source_row("TestBooleanOutcome.test_bool_outcome_accepted", "boolean_outcome", "numeric 0/1 outcome is accepted as a Stata boolean analogue"),
         source_row("TestFormulaValidation.test_bad_formula_raises", "bad_formula", "missing covariate is rejected"),
         source_row("TestFormulaValidation.test_intercept_formula_still_works", "intercept_formula", "intercept-only public command succeeds"),
-        source_row("TestUnbalancedPanel.test_allow_unbalanced_false_runs", "python-balance-drop-option-only", "Python allow_unbalanced_panel=False has no Stata command analogue", "approved-divergence", "PY020-DIV002", "F016/F017"),
-        source_row("TestUnbalancedPanel.test_allow_unbalanced_false_balances", "python-balance-drop-option-only", "Python allow_unbalanced_panel=False balance-drop path has no Stata command analogue", "approved-divergence", "PY020-DIV002", "F016/F017"),
+        # PY020-DIV002 retired: bal(full) IS allow_unbalanced_panel=False, and it
+        # is now the csdid default. These two stopped being divergences the moment
+        # the mode landed.
+        source_row("TestUnbalancedPanel.test_allow_unbalanced_false_runs", "balance_full_runs", "bal(full) runs on an unbalanced panel", evidence="F017"),
+        source_row("TestUnbalancedPanel.test_allow_unbalanced_false_balances", "balance_full_drops_units", "bal(full) drops units not observed in every period and reports how many", evidence="F017"),
         source_row("TestUnbalancedPanel.test_unbalanced_switches_to_rc", "unbalanced_switches_to_rc", "unbalanced ivar() routes to repeated-cross-section computation", evidence="F016/PY007"),
         source_row("TestUnbalancedPanel.test_balanced_panel_stays_panel", "balanced_stays_panel", "balanced ivar() data stays on panel path", evidence="F016/PY007"),
         source_row("TestUnbalancedPanel.test_uniform_count_but_missing_periods_is_unbalanced", "uniform_missing_periods", "equal row counts with missing periods are still unbalanced", evidence="F016"),
@@ -197,12 +200,6 @@ def write_contract(inputs: list[dict[str, object]]) -> None:
                 "source_tests": "TestChunking.*; TestMemoryChunkedBootstrap.*",
                 "reason": "The Python source tests private/multiprocessing multiplier-bootstrap helper array shapes and moments. The Stata port exposes bootstrap behavior through csdid wboot() metadata and ATT(g,t) bootstrap outputs, not the Python helper API.",
                 "accepted_behavior": "Public Stata bootstrap reps, seed, clustered finite-SE behavior, and validation remain covered by F035 and PY015; PY020 adds a clustered bootstrap sanity check.",
-            },
-            {
-                "divergence_id": "PY020-DIV002",
-                "source_tests": "TestUnbalancedPanel.test_allow_unbalanced_false_runs; TestUnbalancedPanel.test_allow_unbalanced_false_balances",
-                "reason": "The owner-directed Stata contract does not expose Python's allow_unbalanced_panel=False balance-dropping path. Stata defaults unbalanced ivar() data to repeated-cross-section computation and soft-deprecates legacy balance modes as no-op aliases.",
-                "accepted_behavior": "F016 verifies the R-compatible allow_unbalanced default; F017 records soft-deprecated legacy balance aliases.",
             },
             {
                 "divergence_id": "PY020-DIV003",

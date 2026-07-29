@@ -72,7 +72,7 @@ assert drop_reason == drop_reason_actual
 assert cell_membership == cell_membership_actual
 
 import delimited using "`root'/tests/fixtures/parity/f022/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 
 preserve
@@ -99,7 +99,7 @@ tempfile evlog
 import delimited using "`root'/tests/fixtures/parity/f022/inputs/negative-g.csv", clear asdouble
 capture log close f022event
 log using "`evlog'", text replace name(f022event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f022event
 assert `actual_rc' == 198

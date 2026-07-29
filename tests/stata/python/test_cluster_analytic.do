@@ -83,10 +83,10 @@ assert r(N) == 20
 tempfile iid cl fast std
 
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-404.csv", clear asdouble
-csdid y, ivar(id) time(t) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(t) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 py004_save_attgt_se, outfile("`iid'")
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-404.csv", clear asdouble
-csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) analytical
+csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
 py004_save_attgt_se, outfile("`cl'")
 use "`iid'", clear
 rename se se_iid
@@ -97,21 +97,21 @@ quietly count if rel > 0.01
 assert r(N) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-505.csv", clear asdouble
-csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) analytical
+csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
 py004_assert_positive_attgt_se
 foreach type in simple group dynamic {
     py004_assert_agg_positive, type(`type')
 }
 
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-505.csv", clear asdouble
-csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) wboot(reps(1499) rseed(20250401))
+csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) wboot(reps(1499) rseed(20250401)) nevertreated base_period(varying) bal(none)
 py004_assert_bootstrap_close, rtol(.35)
 
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-808.csv", clear asdouble
-csdid y, time(t) gvar(g) method(reg) cluster(cl) nofast analytical
+csdid y, time(t) gvar(g) method(reg) cluster(cl) nofast analytical nevertreated base_period(varying) bal(none)
 py004_save_attgt_se, outfile("`std'")
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-808.csv", clear asdouble
-csdid y, time(t) gvar(g) method(reg) cluster(cl) fast analytical
+csdid y, time(t) gvar(g) method(reg) cluster(cl) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-repeated-cross-section"
@@ -124,18 +124,18 @@ assert abs(att_std - att_fast) < 1e-10
 assert abs(se_std - se_fast) < 1e-8
 
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-606.csv", clear asdouble
-csdid y, time(t) gvar(g) method(reg) cluster(cl) wboot(reps(1499) rseed(20250402))
+csdid y, time(t) gvar(g) method(reg) cluster(cl) wboot(reps(1499) rseed(20250402)) nevertreated base_period(varying) bal(none)
 py004_assert_bootstrap_close, rtol(.35)
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-606.csv", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical
+    csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
     py004_assert_positive_attgt_se
 }
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-707.csv", clear asdouble
-    csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical
+    csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
     foreach type in simple group dynamic {
         py004_assert_agg_positive, type(`type')
     }
@@ -187,20 +187,20 @@ program define py004_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-404.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 py004_grab "p404_iid_reg" "`py004_actual'"
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-404.csv", clear asdouble
-quietly csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) analytical
+quietly csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
 py004_grab "p404_cluster_reg" "`py004_actual'"
 import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-606.csv", clear asdouble
-quietly csdid y, time(t) gvar(g) method(reg) cluster(cl) analytical
+quietly csdid y, time(t) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
 py004_grab "rcs606_cluster_reg" "`py004_actual'"
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-606.csv", clear asdouble
-    quietly csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical
+    quietly csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
     py004_grab "p606_cluster_`method'" "`py004_actual'"
     import delimited using "`root'/tests/fixtures/parity/py004/inputs/clustered-shocks-707.csv", clear asdouble
-    quietly csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical
+    quietly csdid y, ivar(id) time(t) gvar(g) method(`method') cluster(cl) analytical nevertreated base_period(varying) bal(none)
     py004_grab "p707_cluster_`method'" "`py004_actual'"
 }
 

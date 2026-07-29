@@ -47,7 +47,7 @@ tempfile actual
 local first 1
 
 import delimited using "`root'/tests/fixtures/parity/rt003/inputs/single-treated.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 foreach type in simple group dynamic calendar {
     local appendopt ""
     if !`first' local appendopt "append"
@@ -56,7 +56,7 @@ foreach type in simple group dynamic calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt003/inputs/dynamic-window.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt003_save_agg, scenario("dynamic_min_max_window") type(dynamic) saving("`actual'") append dynamicwindow
 
 import delimited using "`root'/tests/fixtures/parity/rt003/expected/r/aggte.csv", clear asdouble

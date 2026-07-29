@@ -11,8 +11,8 @@ first_period_treated_drop,mapped,first-period treated units are dropped from est
 boolean_outcome,mapped,numeric 0/1 outcome is accepted as a Stata boolean analogue
 bad_formula,mapped,missing covariate is rejected
 intercept_formula,mapped,intercept-only public command succeeds
-python-balance-drop-option-only,approved-divergence,Python allow_unbalanced_panel=False has no Stata command analogue
-python-balance-drop-option-only,approved-divergence,Python allow_unbalanced_panel=False balance-drop path has no Stata command analogue
+balance_full_runs,mapped,bal(full) runs on an unbalanced panel
+balance_full_drops_units,mapped,bal(full) drops units not observed in every period and reports how many
 unbalanced_switches_to_rc,mapped,unbalanced ivar() routes to repeated-cross-section computation
 balanced_stays_panel,mapped,balanced ivar() data stays on panel path
 uniform_missing_periods,mapped,equal row counts with missing periods are still unbalanced

@@ -5,6 +5,18 @@ set more off
 local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
+
+* These export lines write a RUN ARTEFACT, not an expectation. They used to
+* write into tests/fixtures/.../expected/new-stata/, where nothing ever read
+* them back -- the real comparison is against expected/r/, the R oracle. Sitting
+* under a directory called expected/ they looked like reviewed expectations,
+* they were committed, they dirtied the tree on every run, and they fed the
+* preflight digest. A garbage copy left behind by a failing run was later read
+* as evidence that a gate had passed while recording nonsense; it had not, it
+* had failed. Artefacts belong in build/.
+capture mkdir "`root'/build"
+capture mkdir "`root'/build/test-artefacts"
+capture mkdir "`root'/build/test-artefacts/f043"
 local f043_abs_tol 1e-8
 local f043_rel_tol 2e-6
 
@@ -20,7 +32,7 @@ program define f043_run_scenario
 
     quietly csdid crude_rate_20_64 `covlist' [iw=set_wt], analytical ///
         ivar(county_code) time(year) gvar(treat_year) method(dr) ///
-        base_period(universal) notyet
+        base_period(universal) notyet bal(none)
     assert "`e(panel_mode)'" == "panel"
     assert "`e(method)'" == "dr"
     assert "`e(base_period)'" == "universal"
@@ -111,7 +123,7 @@ collapse (mean) mortality = crude_rate_20_64 [iw=set_wt], by(treat_year_label ye
 rename treat_year_label treat_year
 rename mortality mortality_stata
 save "`trends_actual'", replace
-export delimited using "`root'/tests/fixtures/parity/f043/expected/new-stata/trends.csv", replace
+export delimited using "`root\'/build/test-artefacts/f043/trends.csv", replace
 
 f043_run_scenario, scenario(figure6_no_cov_dr) covariates(none) ///
     attfile("`att_actual'") dynfile("`dyn_actual'") winfile("`win_actual'")
@@ -120,11 +132,11 @@ f043_run_scenario, scenario(figure9_cov_dr) covariates(numeric) ///
 
 preserve
 use "`att_actual'", clear
-export delimited using "`root'/tests/fixtures/parity/f043/expected/new-stata/attgt.csv", replace
+export delimited using "`root\'/build/test-artefacts/f043/attgt.csv", replace
 use "`dyn_actual'", clear
-export delimited using "`root'/tests/fixtures/parity/f043/expected/new-stata/dynamic.csv", replace
+export delimited using "`root\'/build/test-artefacts/f043/dynamic.csv", replace
 use "`win_actual'", clear
-export delimited using "`root'/tests/fixtures/parity/f043/expected/new-stata/post-window.csv", replace
+export delimited using "`root\'/build/test-artefacts/f043/post-window.csv", replace
 restore
 
 import delimited using "`root'/tests/fixtures/parity/f043/expected/r/trends.csv", clear asdouble

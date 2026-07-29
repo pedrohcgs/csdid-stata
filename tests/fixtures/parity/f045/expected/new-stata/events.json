@@ -1,10 +1,10 @@
 [
   {
-    "event_key": "legacy_balance_alias",
+    "event_key": "balance_full_is_default",
     "return_code": 0,
-    "event_type": "warning",
+    "event_type": "none",
     "offending_option": "balance(full)",
-    "message_normalized": "csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+    "message_normalized": "balance(full) is the same option as bal(full), which is the default; it is not deprecated and prints no note. On a balanced panel it also drops nothing, so no balancing report is emitted either."
   },
   {
     "event_key": "legacy_long_alias",

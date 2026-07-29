@@ -25,7 +25,7 @@ Legacy behavior may be retained only when:
 
 Generic warning prefix for retained legacy modes:
 
-`csdid legacy compatibility: this option reproduces behavior from Stata csdid 1.82 and is not the R did 2.5.1 default; see help csdid migration.`
+`csdid legacy compatibility: this option reproduces behavior from Stata csdid Version 1.82 and is not the R did 2.5.1 default; see help csdid migration.`
 
 ## Command Surface
 

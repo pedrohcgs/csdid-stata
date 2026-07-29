@@ -1,0 +1,20 @@
+{
+  "claim": "saving(filename) on any estat subcommand writes the result that subcommand computed, as a Stata dataset. replace overwrites.",
+  "subcommands": ["attgt", "event", "dynamic", "simple", "group", "calendar"],
+  "attgt_options": {
+    "accepted": ["saving", "replace"],
+    "refused": ["post", "window", "level", "dropmissing"],
+    "refused_return_code": 198
+  },
+  "undocumented_but_supported": {
+    "subcommands": ["tidy", "glance"],
+    "note": "tidy and glance keep working and are not documented. They are borrowed from R's broom package, where the words carry meaning they do not carry in Stata. They are pinned against the new spellings so the two paths cannot drift apart."
+  },
+  "prior_defect": "saving() was parsed at the syntax line and then ignored on event, dynamic, simple, group and calendar, so `estat event, saving(f)' returned rc 0 and wrote no file; estat attgt refused it outright.",
+  "panel": {
+    "units": 60,
+    "periods": 4,
+    "cohorts": [3, 4, 0],
+    "rows": 240
+  }
+}

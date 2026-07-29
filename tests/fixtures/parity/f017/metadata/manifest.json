@@ -1,7 +1,7 @@
 {
   "matrix_id": "F017",
-  "fixture_family": "legacy-balance-compatibility",
-  "normative_source": "D003/D008 conformance contract; legacy Stata 1.82 behavior is rejected for v1 defaults",
+  "fixture_family": "balance-vocabulary-and-legacy-spellings",
+  "normative_source": "D003/D008 conformance contract; bal() vocabulary is full/pair/none with deprecated spellings mapped onto it",
   "source_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
   "decision_refs": ["D003", "D008"],
   "tolerance_ids": "EXACT",

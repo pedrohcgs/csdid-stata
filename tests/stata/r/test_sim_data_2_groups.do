@@ -32,7 +32,7 @@ program define rt031_run
     quietly import delimited using "`root'/tests/fixtures/parity/rt031/inputs/two-groups.csv", clear asdouble
     local opts ""
     if "`ctrl'" == "notyet" local opts "notyet"
-    quietly csdid y, ivar(id) time(t) gvar(g) method(reg) base_period(`bp') `opts' analytical
+    quietly csdid y, ivar(id) time(t) gvar(g) method(reg) base_period(`bp') `opts' analytical bal(none)
 end
 
 * collect every specification into one long file keyed by spec/group/time

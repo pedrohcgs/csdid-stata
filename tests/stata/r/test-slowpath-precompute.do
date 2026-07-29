@@ -49,7 +49,7 @@ assert divergence_id[1] == "RT025-DIV001"
 assert strpos(reason[1], "did.disable_precompute") > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input.csv", clear asdouble
-quietly csdid y x1, time(time) gvar(g) method(dr) nofast analytical
+quietly csdid y x1, time(time) gvar(g) method(dr) nofast analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "repeated-cross-section"
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
@@ -58,7 +58,7 @@ assert "`e(compute_path)'" == "baseline"
 matrix BaseRC = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input.csv", clear asdouble
-quietly csdid y x1, time(time) gvar(g) method(dr) fast analytical
+quietly csdid y x1, time(time) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "repeated-cross-section"
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
@@ -67,7 +67,7 @@ matrix FastRC = e(attgt)
 rt025_assert_matrix_equal BaseRC FastRC 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input-unbalanced.csv", clear asdouble
-quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) nofast analytical
+quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) nofast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -75,7 +75,7 @@ assert "`e(compute_path)'" == "baseline"
 matrix BaseUB = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input-unbalanced.csv", clear asdouble
-quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) fast analytical
+quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
@@ -83,11 +83,11 @@ matrix FastUB = e(attgt)
 rt025_assert_matrix_equal BaseUB FastUB 1e-9
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix Ordered = e(attgt)
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input-shuffled.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix Shuffled = e(attgt)
 rt025_assert_matrix_equal Ordered Shuffled 1e-10
 
@@ -137,16 +137,16 @@ program define rt025_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input.csv", clear asdouble
-quietly csdid y x1, time(time) gvar(g) method(dr) analytical
+quietly csdid y x1, time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt025_grab "rcs_dr" "`rt025_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input-unbalanced.csv", clear asdouble
-quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) analytical
+quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt025_grab "unbal_dr" "`rt025_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 rt025_grab "panel_reg" "`rt025_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt025/inputs/input-shuffled.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 rt025_grab "shuffled_reg" "`rt025_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt025/expected/r/attgt.csv", clear asdouble varnames(1)

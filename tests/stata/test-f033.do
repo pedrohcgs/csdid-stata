@@ -38,19 +38,19 @@ foreach scenario in panel_intercept panel_intercept_unweighted panel_covariates 
             local expected_trim .7
         }
         if inlist("`scenario'", "panel_intercept", "panel_intercept_unweighted") {
-            csdid y `weightopt', ivar(id) time(time) gvar(g) method(`method') `trimopt' analytical
+            csdid y `weightopt', ivar(id) time(time) gvar(g) method(`method') `trimopt' analytical nevertreated base_period(varying) bal(none)
             assert "`e(panel_mode)'" == "panel"
         }
         else if inlist("`scenario'", "panel_covariates", "panel_covariates_unweighted", "panel_covariates_trim07") {
-            csdid y x1 x2 `weightopt', ivar(id) time(time) gvar(g) method(`method') `trimopt' analytical
+            csdid y x1 x2 `weightopt', ivar(id) time(time) gvar(g) method(`method') `trimopt' analytical nevertreated base_period(varying) bal(none)
             assert "`e(panel_mode)'" == "panel"
         }
         else if inlist("`scenario'", "rc_intercept", "rc_intercept_unweighted") {
-            csdid y `weightopt', time(time) gvar(g) method(`method') `trimopt' analytical
+            csdid y `weightopt', time(time) gvar(g) method(`method') `trimopt' analytical nevertreated base_period(varying) bal(none)
             assert "`e(panel_mode)'" == "repeated-cross-section"
         }
         else {
-            csdid y x1 x2 `weightopt', time(time) gvar(g) method(`method') `trimopt' analytical
+            csdid y x1 x2 `weightopt', time(time) gvar(g) method(`method') `trimopt' analytical nevertreated base_period(varying) bal(none)
             assert "`e(panel_mode)'" == "repeated-cross-section"
         }
         assert "`e(method)'" == "`method'"

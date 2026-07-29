@@ -15,7 +15,7 @@
 {viewerjumpto "Remarks" "csdid_plot##remarks"}{...}
 {viewerjumpto "Plot-data schema" "csdid_plot##schema"}{...}
 {viewerjumpto "Notes on the exported series" "csdid_plot##plotnotes"}{...}
-{viewerjumpto "Relationship to legacy Stata csdid 1.82" "csdid_plot##legacy"}{...}
+{viewerjumpto "Relationship to legacy Stata csdid Version 1.82" "csdid_plot##legacy"}{...}
 {viewerjumpto "Examples" "csdid_plot##examples"}{...}
 {viewerjumpto "Stored results" "csdid_plot##results"}{...}
 {viewerjumpto "Diagnostics" "csdid_plot##errors"}{...}
@@ -324,7 +324,7 @@ o {cmd:group()} is honored on {cmd:type(group)} aggregation exports as well as
 on group-time exports, and {cmd:csdid_plot} reports when it is ignoring it.{p_end}
 
 {marker legacy}{...}
-{title:Relationship to legacy Stata csdid 1.82}
+{title:Relationship to legacy Stata csdid Version 1.82}
 
 {pstd}
 Legacy {cmd:csdid_plot} drew a graph directly and accepted styling options

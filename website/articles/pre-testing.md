@@ -61,12 +61,13 @@ Negative event times are pre-treatment. Look for **pattern**, not stars: a
 gentle drift toward zero as treatment approaches is more worrying than one
 isolated period, because it suggests the groups were already converging.
 
-With `base_period(varying)`, the default, each pre-treatment cell is a separate
-one-period comparison, so a violation appears in the period where it happens.
-Under `base_period(universal)` the pre-treatment estimates are cumulative and
-serially correlated — one bad early period pushes every later point away from
-zero, which can look like a systematic trend when it is a single deviation. For
-pre-testing, prefer `varying`. See [Base periods](base-periods.html).
+`base_period(universal)` is the default, and under it the pre-treatment
+estimates are cumulative and serially correlated — one bad early period pushes
+every later point away from zero, which can look like a systematic trend when it
+is a single deviation. With `base_period(varying)` each pre-treatment cell is a
+separate one-period comparison, so a violation appears in the period where it
+happens. **For pre-testing, ask for `varying` explicitly.** See
+[Base periods](base-periods.html).
 
 ## Power, and what a clean pre-test does not buy you
 

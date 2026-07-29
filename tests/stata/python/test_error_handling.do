@@ -88,24 +88,24 @@ import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv",
 py008_expect_failure, command("csdid y, ivar(brant) time(period) gvar(g) analytical") message("variable brant not found")
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/no-never-treated.csv", clear asdouble
-py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("No never-treated group available")
+py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("No never-treated group available")
 assert e(N_attgt) > 0
 assert e(N_groups) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/small-groups.csv", clear asdouble
-py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("very few observations")
+py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("very few observations")
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/first-period-treated.csv", clear asdouble
-py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("Units treated in the first period are dropped")
+py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("Units treated in the first period are dropped")
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/missing-outcome.csv", clear asdouble
-py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("dropped observations with missing or non-finite data")
+py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("dropped observations with missing or non-finite data")
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv", clear asdouble
-csdid y, ivar(id) time(period) gvar(g) analytical
+csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)
@@ -133,4 +133,4 @@ import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv",
 py008_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) method(bogus) analytical") message("method() must be one of dr, reg, or ipw")
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/treatment-reversal.csv", clear asdouble
-py008_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("treatment timing must be irreversible")
+py008_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("treatment timing must be irreversible")

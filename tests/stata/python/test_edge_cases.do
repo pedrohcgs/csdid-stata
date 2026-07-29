@@ -116,69 +116,69 @@ assert _N == 27
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/single_group.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_assert_any_finite_att
 }
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/single_group.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 foreach agg_type in simple dynamic group calendar {
     py007_assert_nonmissing_overall, type(`agg_type')
 }
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/two_period.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') base_period(universal) analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') base_period(universal) analytical nevertreated bal(none)
     py007_assert_any_finite_att
 }
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/no_never.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical
+quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical base_period(varying) bal(none)
 assert "`e(control_group)'" == "notyettreated"
 py007_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/no_never.csv", clear asdouble
-py007_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") ///
+py007_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") ///
     message("No never-treated group available")
 py007_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/first_period.csv", clear asdouble
-py007_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") ///
+py007_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") ///
     message("Units treated in the first period are dropped")
 py007_assert_any_finite_att
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/nonconsecutive_time.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_assert_any_finite_att
     py007_assert_nonmissing_overall, type(dynamic)
 }
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/nonconsecutive_group.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_assert_multiple_groups
 }
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/sim_data.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "panel"
 py007_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/unbalanced.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 py007_assert_any_finite_att
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/single_post.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_assert_post_finite_att
 }
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/unbalanced.csv", clear asdouble
-    quietly csdid y, time(period) gvar(g) method(`method') analytical
+    quietly csdid y, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(panel_mode)'" == "repeated-cross-section"
     py007_assert_any_finite_att
 }
@@ -229,26 +229,26 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/single_group.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_grab "single_group_`method'" "`py007_actual'"
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/two_period.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') base_period(universal) analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') base_period(universal) analytical nevertreated bal(none)
     py007_grab "two_period_univ_`method'" "`py007_actual'"
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/nonconsecutive_time.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_grab "nonconsec_time_`method'" "`py007_actual'"
     import delimited using "`root'/tests/fixtures/parity/py007/inputs/nonconsecutive_group.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py007_grab "nonconsec_group_`method'" "`py007_actual'"
 }
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/no_never.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical
+quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical base_period(varying) bal(none)
 py007_grab "no_never_notyet" "`py007_actual'"
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/sim_data.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 py007_grab "sim_data" "`py007_actual'"
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/unbalanced.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 py007_grab "unbalanced" "`py007_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py007/expected/r/attgt.csv", clear asdouble varnames(1)

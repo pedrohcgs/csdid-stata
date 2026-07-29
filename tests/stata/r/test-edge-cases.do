@@ -92,7 +92,7 @@ import delimited using "`root'/tests/fixtures/parity/rt010/expected/contract/sce
 assert _N == 11
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/single_treated.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_assert_any_finite_att
 
 foreach agg_type in simple dynamic group calendar {
@@ -100,31 +100,31 @@ foreach agg_type in simple dynamic group calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/two_period.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) base_period(universal) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) base_period(universal) analytical nevertreated bal(none)
 rt010_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/no_never.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical
+quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical base_period(varying) bal(none)
 assert "`e(control_group)'" == "notyettreated"
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/no_never.csv", clear asdouble
-rt010_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") ///
+rt010_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") ///
     message("No never-treated group available")
 rt010_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/first_period.csv", clear asdouble
-rt010_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") ///
+rt010_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") ///
     message("Units treated in the first period are dropped")
 rt010_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/nonconsecutive_time.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_assert_any_finite_att
 rt010_assert_nonmissing_overall, type(dynamic)
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/nonconsecutive_group.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 matrix ATT = e(attgt)
 preserve
 clear
@@ -135,17 +135,17 @@ assert `ngroups' >= 2
 restore
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/balanced_allow.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "panel"
 rt010_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/unbalanced_allow.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 rt010_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/single_post.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 matrix ATT = e(attgt)
 clear
 svmat double ATT, names(col)
@@ -200,28 +200,28 @@ program define rt010_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/single_treated.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_grab "single_treated" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/two_period.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) base_period(universal) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) base_period(universal) analytical nevertreated bal(none)
 rt010_grab "two_period_universal" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/no_never.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical
+quietly csdid y, ivar(id) time(period) gvar(g) notyet analytical base_period(varying) bal(none)
 rt010_grab "no_never_notyet" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/nonconsecutive_time.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_grab "nonconsecutive_time" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/nonconsecutive_group.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_grab "nonconsecutive_group" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/balanced_allow.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_grab "balanced_allow" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/unbalanced_allow.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_grab "unbalanced_allow" "`rt010_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt010/inputs/single_post.csv", clear asdouble
-quietly csdid y, ivar(id) time(period) gvar(g) analytical
+quietly csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 rt010_grab "single_post" "`rt010_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt010/expected/r/attgt.csv", clear asdouble varnames(1)

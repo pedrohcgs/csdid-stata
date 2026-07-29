@@ -13,10 +13,11 @@ program define f037_run_scenario
     import delimited using "`c(pwd)'/tests/fixtures/parity/f037/inputs/input.csv", clear asdouble
     local panelopt ""
     if `panel' local panelopt "ivar(id)"
-    local controlopt ""
+    * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+    local controlopt "nevertreated"
     if "`control'" == "notyettreated" local controlopt "notyet"
 
-    quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') `controlopt' base_period(`base') anticipation(`anticipation') analytical
+    quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') `controlopt' base_period(`base') anticipation(`anticipation') analytical bal(none)
     matrix A = e(attgt)
     preserve
     clear

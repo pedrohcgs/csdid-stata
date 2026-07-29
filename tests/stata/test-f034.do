@@ -21,11 +21,11 @@ foreach scenario in panel_reg rc_reg {
     import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
     tempfile rif
     if "`scenario'" == "panel_reg" {
-        csdid y, ivar(id) time(time) gvar(g) method(reg) saverif("`rif'") replace analytical
+        csdid y, ivar(id) time(time) gvar(g) method(reg) saverif("`rif'") replace analytical nevertreated base_period(varying) bal(none)
         assert "`e(rif_file)'" == "`rif'"
     }
     else {
-        csdid y, time(time) gvar(g) method(reg) saverif("`rif'") replace analytical
+        csdid y, time(time) gvar(g) method(reg) saverif("`rif'") replace analytical nevertreated base_period(varying) bal(none)
         assert "`e(rif_file)'" == "`rif'"
     }
     confirm file "`rif'"
@@ -34,10 +34,10 @@ foreach scenario in panel_reg rc_reg {
         tempname direct reload
         import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
         if "`scenario'" == "panel_reg" {
-            csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+            csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
         }
         else {
-            csdid y, time(time) gvar(g) method(reg) analytical
+            csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
         }
         csdid_stats, type(`agg_type')
         matrix `direct' = e(aggte)
@@ -60,7 +60,7 @@ foreach scenario in panel_reg rc_reg {
         }
     }
 
-    capture noisily csdid y, time(time) gvar(g) method(reg) saverif("`rif'") analytical
+    capture noisily csdid y, time(time) gvar(g) method(reg) saverif("`rif'") analytical nevertreated base_period(varying) bal(none)
     assert _rc == 602
 
     use "`rif'", clear

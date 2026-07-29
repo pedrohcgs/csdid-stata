@@ -25,16 +25,17 @@ platform-specific binaries, nothing else to install.
 | [Balanced panels](articles/balanced-panel.html) | the standard case, end to end |
 | [Covariates and estimators](articles/covariates-and-estimators.html) | `dr`, `reg`, `ipw`, and what each assumes |
 | [Aggregations](articles/aggregations.html) | event study, cohort, calendar, overall, and event-time windows |
-| [Comparison groups](articles/comparison-groups.html) | never-treated or `notyet`, and what to do with no never-treated units |
-| [Base periods](articles/base-periods.html) | `varying` or `universal`, and what each pre-treatment number means |
+| [Comparison groups](articles/comparison-groups.html) | `notyet` or never-treated, and what to do with no never-treated units |
+| [Base periods](articles/base-periods.html) | `universal` or `varying`, and what each pre-treatment number means |
 | [Anticipation](articles/anticipation.html) | when units respond before treatment starts |
 | [Pre-testing](articles/pre-testing.html) | the Wald pre-test, reading pre-treatment cells, what to do if it fails |
 | [Sampling weights](articles/weights.html) | `[iw=]`, and `fix_weights()` when weights change over time |
-| [Unbalanced panels](articles/unbalanced-panels.html) | what changes, and what is never done silently |
+| [Unbalanced panels](articles/unbalanced-panels.html) | `bal(full)`, `bal(none)`, and what is never done silently |
 | [Repeated cross sections](articles/repeated-cross-sections.html) | when units are not followed over time |
 | [Inference](articles/inference.html) | bootstrap, simultaneous bands, clustering, the pre-test |
 | [Trimming and overlap](articles/trimming-and-overlap.html) | `pscoretrim()`, the overlap warning, and how to keep overlap |
-| [Working with results](articles/working-with-results.html) | `estat tidy`, `estat glance`, `e()`, influence functions, plot data |
+| [Working with results](articles/working-with-results.html) | results as a dataset, `e()`, influence functions, plot data |
+| [Upgrading from Version 1.82](articles/upgrading-from-182.html) | what moves, what is deprecated, and what each old option is called now |
 
 Every example on this site is runnable from a clean Stata session. The data are
 downloaded from a pinned commit, never shipped with the package, so the numbers

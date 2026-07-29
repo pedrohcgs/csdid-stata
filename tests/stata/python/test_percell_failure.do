@@ -95,7 +95,7 @@ tempfile smallcomparisonlog
 local first 1
 
 import delimited using "`root'/tests/fixtures/parity/py018/inputs/zero-weight-failure.csv", clear asdouble
-quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 assert e(N) == 360
 assert e(N_units) == 90
 matrix A = e(attgt)
@@ -123,7 +123,7 @@ forvalues i = 1/`=rowsof(A)' {
 }
 
 import delimited using "`root'/tests/fixtures/parity/py018/inputs/normal.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 preserve
 clear
@@ -145,7 +145,7 @@ forvalues i = 1/`=rowsof(A)' {
 import delimited using "`root'/tests/fixtures/parity/py018/inputs/tiny-group.csv", clear asdouble
 capture log close py018warning
 log using "`tinylog'", text replace name(py018warning)
-capture noisily csdid y, ivar(id) time(year) gvar(group) method(dr) analytical
+capture noisily csdid y, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close py018warning
 assert `actual_rc' == 0
@@ -177,7 +177,7 @@ assert `saw2006' == 1
 import delimited using "`root'/tests/fixtures/parity/py018/inputs/collinear-covariates.csv", clear asdouble
 capture log close py018collinear
 log using "`collinearlog'", text replace name(py018collinear)
-capture noisily csdid y x1 x2, ivar(id) time(year) gvar(group) method(dr) analytical
+capture noisily csdid y x1 x2, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close py018collinear
 assert `actual_rc' == 0
@@ -213,7 +213,7 @@ assert r(mean) == 0
 import delimited using "`root'/tests/fixtures/parity/py018/inputs/overlap-failure.csv", clear asdouble
 capture log close py018overlap
 log using "`overlaplog'", text replace name(py018overlap)
-capture noisily csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical
+capture noisily csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close py018overlap
 assert `actual_rc' == 0
@@ -259,7 +259,7 @@ foreach method in reg dr {
     import delimited using "`root'/tests/fixtures/parity/py018/inputs/singular-control.csv", clear asdouble
     capture log close py018singular
     log using "`singularlog'", text replace name(py018singular)
-    capture noisily csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical
+    capture noisily csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical base_period(varying) bal(none)
     local actual_rc = _rc
     log close py018singular
     assert `actual_rc' == 0
@@ -292,7 +292,7 @@ foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py018/inputs/small-comparison-upstream.csv", clear asdouble
     capture log close py018smallcomparison
     log using "`smallcomparisonlog'", text replace name(py018smallcomparison)
-    capture noisily csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical
+    capture noisily csdid y x, ivar(id) time(period) gvar(g) method(`method') notyet analytical base_period(varying) bal(none)
     local actual_rc = _rc
     log close py018smallcomparison
     assert `actual_rc' == 0

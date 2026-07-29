@@ -48,16 +48,17 @@ foreach panel in panel repeated-cross-section {
         foreach method in dr reg ipw {
             foreach base_period in varying universal {
                 local ++scenario_count
-                local cgopt ""
+                * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+                local cgopt "nevertreated"
                 if "`control_group'" == "notyettreated" local cgopt "notyet"
 
                 import delimited using "`root'/tests/fixtures/parity/py009/inputs/sim-fast.csv", clear asdouble
                 if "`panel'" == "panel" {
-                    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' nofast analytical
+                    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' nofast analytical bal(none)
                     assert "`e(panel_mode)'" == "panel"
                 }
                 else {
-                    quietly csdid y x, time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' nofast analytical
+                    quietly csdid y x, time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' nofast analytical bal(none)
                     assert "`e(panel_mode)'" == "repeated-cross-section"
                 }
                 assert e(fast_requested) == 0
@@ -68,11 +69,11 @@ foreach panel in panel repeated-cross-section {
 
                 import delimited using "`root'/tests/fixtures/parity/py009/inputs/sim-fast.csv", clear asdouble
                 if "`panel'" == "panel" {
-                    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' fast analytical
+                    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' fast analytical bal(none)
                     assert "`e(panel_mode)'" == "panel"
                 }
                 else {
-                    quietly csdid y x, time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' fast analytical
+                    quietly csdid y x, time(period) gvar(g) method(`method') base_period(`base_period') `cgopt' fast analytical bal(none)
                     assert "`e(panel_mode)'" == "repeated-cross-section"
                 }
                 assert e(fast_requested) == 1
@@ -142,14 +143,15 @@ foreach panel in panel rcs {
     foreach cg in nevertreated notyettreated {
         foreach method in dr reg ipw {
             foreach bp in varying universal {
-                local cgopt ""
+                * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+                local cgopt "nevertreated"
                 if "`cg'" == "notyettreated" local cgopt "notyet"
                 import delimited using "`root'/tests/fixtures/parity/py009/inputs/sim-fast.csv", clear asdouble
                 if "`panel'" == "panel" {
-                    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(`bp') `cgopt' analytical
+                    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(`bp') `cgopt' analytical bal(none)
                 }
                 else {
-                    quietly csdid y x, time(period) gvar(g) method(`method') base_period(`bp') `cgopt' analytical
+                    quietly csdid y x, time(period) gvar(g) method(`method') base_period(`bp') `cgopt' analytical bal(none)
                 }
                 py009_grab "`panel'_`cg'_`method'_`bp'" "`py009_actual'"
             }

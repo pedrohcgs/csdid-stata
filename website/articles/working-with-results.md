@@ -32,33 +32,51 @@ use "jel_results.dta", clear
 csdid mrate, ivar(county_code) time(year) gvar(gvar) cluster(stfips) rseed(20250101)
 ```
 
-## Tidy output
+## Results as a dataset
 
-`estat tidy` writes one row per estimate with the columns a table or a plot
-needs — estimate, standard error, test statistic, p-value, confidence bounds.
-`saving()` is required: these commands hand you a dataset rather than printing,
-which is what makes them scriptable.
+Add `saving()` to any `estat` subcommand and it writes what it computed to a
+dataset instead of only printing it. This is how Stata spells "put this in a
+file" — the same option `margins`, `simulate` and `graph` take — so there is no
+separate export command to learn.
+
+`estat attgt, saving()` gives one row per ATT(g,t) cell, with the estimate, its
+standard error, the test statistic, the p-value, and both the reported and the
+pointwise confidence limits:
 
 ```stata
-estat tidy, saving("attgt_table.dta") replace
+estat attgt, saving("attgt_cells.dta") replace
 preserve
-use "attgt_table.dta", clear
+use "attgt_cells.dta", clear
 describe
 list in 1/5
 restore
-capture erase "attgt_table.dta"
+capture erase "attgt_cells.dta"
 ```
 
-`estat glance` is the one-line summary of the fit, and also takes `saving()`:
+Every aggregation exports itself the same way, and the file holds that
+aggregation rather than the cells:
 
 ```stata
-estat glance, saving("glance.dta") replace
+estat event, saving("eventstudy.dta") replace
 preserve
-use "glance.dta", clear
+use "eventstudy.dta", clear
+list in 1/5
+restore
+capture erase "eventstudy.dta"
+```
+
+```stata
+estat simple, saving("overall.dta") replace
+preserve
+use "overall.dta", clear
 list
 restore
-capture erase "glance.dta"
+capture erase "overall.dta"
 ```
+
+Because `saving()` sits on the subcommand, options that shape the result go
+there too and are reflected in the file — `estat event, window(-3 3)
+saving(w.dta)` saves the windowed event study, not the full one.
 
 ## Stored results
 

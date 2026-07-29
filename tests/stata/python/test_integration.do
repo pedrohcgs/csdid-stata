@@ -66,7 +66,7 @@ local expected_rows = real(expected_att_rows[1])
 local positive_threshold = real(positive_threshold[1])
 
 import delimited using "`root'/tests/fixtures/parity/py013/inputs/panel-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) analytical
+csdid y, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
 py013_assert_attgt_public `expected_rows'
 
 foreach agg_type in simple group dynamic calendar {
@@ -79,12 +79,12 @@ assert SIMPLE[1,4] > `positive_threshold'
 
 foreach method in dr ipw reg {
     import delimited using "`root'/tests/fixtures/parity/py013/inputs/panel-data.csv", clear asdouble
-    csdid y, ivar(id) time(year) gvar(group) method(`method') analytical
+    csdid y, ivar(id) time(year) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
     py013_assert_attgt_public `expected_rows'
 }
 
 import delimited using "`root'/tests/fixtures/parity/py013/inputs/panel-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical
+csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical base_period(varying) bal(none)
 matrix NY = e(attgt)
 assert rowsof(NY) > 0
 preserve
@@ -140,11 +140,11 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py013/inputs/panel-data.csv", clear asdouble
-    quietly csdid y, ivar(id) time(year) gvar(group) method(`method') analytical
+    quietly csdid y, ivar(id) time(year) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
     py013_grab "`method'" "`py013_actual'"
 }
 import delimited using "`root'/tests/fixtures/parity/py013/inputs/panel-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical base_period(varying) bal(none)
 py013_grab "notyet_dr" "`py013_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py013/expected/r/attgt.csv", clear asdouble varnames(1)

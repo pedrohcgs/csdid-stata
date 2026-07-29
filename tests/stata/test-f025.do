@@ -20,7 +20,7 @@ local first 1
 
 foreach scenario in dynamic_window dynamic_balance simple_maxe group_maxe calendar_ignored {
     import delimited using "`root'/tests/fixtures/parity/f025/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
     if "`scenario'" == "dynamic_window" {
         csdid_stats, type(dynamic) min_e(-1) max_e(0)
     }
@@ -57,7 +57,7 @@ foreach scenario in dynamic_window dynamic_balance simple_maxe group_maxe calend
 }
 
 import delimited using "`root'/tests/fixtures/parity/f025/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)
@@ -81,7 +81,7 @@ append using "`part'"
 save "`actual'", replace
 
 import delimited using "`root'/tests/fixtures/parity/f025/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)

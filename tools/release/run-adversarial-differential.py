@@ -302,10 +302,16 @@ def write_stata_script(path: Path, scenarios: list[Scenario]) -> None:
             cmd_parts.append("id(id)")
         if s.cluster:
             cmd_parts.append("cluster(state)")
-        if s.notyet:
-            cmd_parts.append("notyettreated")
-        if s.base_period == "universal":
-            cmd_parts.append("universal")
+        # State every option the R side states. R passes control_group and
+        # base_period explicitly on every run and sets allow_unbalanced_panel
+        # =TRUE, so leaving any of them to a Stata default compares two
+        # different specifications. Before this, csdid's defaults changed to
+        # not-yet-treated, universal and bal(full) while these branches still
+        # appended nothing, so the comparison silently drifted on all three.
+        cmd_parts.append("notyettreated" if s.notyet else "nevertreated")
+        cmd_parts.append("universal" if s.base_period == "universal" else "varying")
+        # R's allow_unbalanced_panel=TRUE is bal(none): keep every unit.
+        cmd_parts.append("bal(none)")
         if s.anticipation:
             cmd_parts.append(f"anticipation({s.anticipation})")
         if s.bootstrap:

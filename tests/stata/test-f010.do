@@ -10,7 +10,7 @@ tempfile actual allactual
 local first 1
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(`method') analytical
+    csdid y, ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     matrix A = e(attgt)
     clear
     svmat double A, names(col)
@@ -37,7 +37,7 @@ tempfile allactual_cov
 local first 1
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') analytical
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     matrix A = e(attgt)
     clear
     svmat double A, names(col)
@@ -64,7 +64,7 @@ tempfile allactual_rc
 local first 1
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    csdid y, time(time) gvar(g) method(`method') analytical
+    csdid y, time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(idvar)'" == ""
     assert "`e(panel_mode)'" == "repeated-cross-section"
     matrix A = e(attgt)
@@ -95,7 +95,7 @@ tempfile allactual_rc_cov
 local first 1
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    csdid y x1 x2, time(time) gvar(g) method(`method') analytical
+    csdid y x1 x2, time(time) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     assert "`e(idvar)'" == ""
     assert "`e(panel_mode)'" == "repeated-cross-section"
     matrix A = e(attgt)
@@ -127,21 +127,22 @@ local first_control 1
 foreach panel_mode in panel repeated-cross-section {
     foreach covariates in none numeric {
         foreach control_group in nevertreated notyettreated {
-            local cgopt ""
+            * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+            local cgopt "nevertreated"
             if "`control_group'" == "notyettreated" local cgopt "notyet"
             foreach method in dr reg ipw {
                 import delimited using "`root'/tests/fixtures/parity/f010/inputs/input-staggered.csv", clear asdouble
                 if "`panel_mode'" == "panel" & "`covariates'" == "numeric" {
-                    csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') `cgopt' analytical
+                    csdid y x1 x2, ivar(id) time(time) gvar(g) method(`method') `cgopt' analytical base_period(varying) bal(none)
                 }
                 else if "`panel_mode'" == "panel" {
-                    csdid y, ivar(id) time(time) gvar(g) method(`method') `cgopt' analytical
+                    csdid y, ivar(id) time(time) gvar(g) method(`method') `cgopt' analytical base_period(varying) bal(none)
                 }
                 else if "`covariates'" == "numeric" {
-                    csdid y x1 x2, time(time) gvar(g) method(`method') `cgopt' analytical
+                    csdid y x1 x2, time(time) gvar(g) method(`method') `cgopt' analytical base_period(varying) bal(none)
                 }
                 else {
-                    csdid y, time(time) gvar(g) method(`method') `cgopt' analytical
+                    csdid y, time(time) gvar(g) method(`method') `cgopt' analytical base_period(varying) bal(none)
                 }
                 assert "`e(panel_mode)'" == "`panel_mode'"
                 assert "`e(control_group)'" == "`control_group'"
@@ -177,12 +178,12 @@ assert abs(att - att_stata) <= 1e-10 + 1e-10 * abs(att) if !missing(att)
 assert abs(se - se_stata) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 
 import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-capture noisily csdid y, time(time) gvar(g) method(bad) analytical
+capture noisily csdid y, time(time) gvar(g) method(bad) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 198
 
 foreach badmethod in drimp aipw {
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    capture noisily csdid y, time(time) gvar(g) method(`badmethod') analytical
+    capture noisily csdid y, time(time) gvar(g) method(`badmethod') analytical nevertreated base_period(varying) bal(none)
     assert _rc == 198
 }
 
@@ -195,11 +196,11 @@ foreach alias in dripw stdipw {
     }
 
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(`canonical') analytical
+    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(`canonical') analytical nevertreated base_period(varying) bal(none)
     matrix C = e(attgt)
 
     import delimited using "`root'/tests/fixtures/parity/f010/inputs/input.csv", clear asdouble
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(`alias') analytical
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(`alias') analytical nevertreated base_period(varying) bal(none)
     assert "`e(method)'" == "`canonical'"
     assert "`e(method_requested)'" == "`alias'"
     matrix A = e(attgt)

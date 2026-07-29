@@ -45,7 +45,7 @@ assert divergence_id[1] == "F036-DIV001"
 tempfile evlog tidy glance plotdata
 
 import delimited using "`root'/tests/fixtures/parity/f036/inputs/input.csv", clear asdouble
-quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dripw) notyet base_period(universal) anticipation(0) level(90)
+quietly csdid y x1 x2 [iw=w], ivar(id) time(time) gvar(g) method(dripw) notyet base_period(universal) anticipation(0) level(90) bal(none)
 assert "`e(method_requested)'" == "dripw"
 assert "`e(method)'" == "dr"
 assert "`e(control_group)'" == "notyettreated"
@@ -53,13 +53,13 @@ assert "`e(base_period)'" == "universal"
 assert e(level) == 90
 
 import delimited using "`root'/tests/fixtures/parity/f036/inputs/input.csv", clear asdouble
-quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(stdipw)
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(stdipw) nevertreated base_period(varying) bal(none)
 assert "`e(method_requested)'" == "stdipw"
 assert "`e(method)'" == "ipw"
 
 capture log close f036event
 log using "`evlog'", text replace name(f036event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) asinr
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) asinr nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f036event
 assert `actual_rc' == 0
@@ -76,13 +76,13 @@ confirm file "`plotdata'"
 
 capture log close f036event
 log using "`evlog'", text replace name(f036event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) dryrun
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) dryrun nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f036event
 assert `actual_rc' == 198
 f036_assert_log_contains using "`evlog'", message("dryrun is an internal legacy option and is unsupported")
 
-quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) pscoretrim(.95)
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) pscoretrim(.95) nevertreated base_period(varying) bal(none)
 assert abs(e(pscoretrim) - .95) < 1e-12
 
 * pscoretrim() >= 1 means NO TRIMMING and must be ACCEPTED. This assertion
@@ -91,15 +91,15 @@ assert abs(e(pscoretrim) - .95) < 1e-12
 * accepts trim.level of 1, 1.01, 2 or 1e6 without error (all identical to no
 * trimming; verified directly against DRDID::drdid_panel). Legacy csdid also
 * defaulted to pscoretrim(1.0), so rejecting it broke legacy scripts.
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) pscoretrim(1)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) pscoretrim(1) nevertreated base_period(varying) bal(none)
 assert abs(e(pscoretrim) - 1) < 1e-12
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) pscoretrim(2)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) pscoretrim(2) nevertreated base_period(varying) bal(none)
 assert abs(e(pscoretrim) - 2) < 1e-12
 
 * nonpositive and missing levels are still refused
 capture log close f036event
 log using "`evlog'", text replace name(f036event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) pscoretrim(0)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) pscoretrim(0) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f036event
 assert `actual_rc' == 198
@@ -107,7 +107,7 @@ f036_assert_log_contains using "`evlog'", message("pscoretrim() must be greater 
 
 capture log close f036event
 log using "`evlog'", text replace name(f036event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) from(-1)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) from(-1) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f036event
 * from() is unsupported-by-design and must say so BY NAME rather than falling
@@ -117,13 +117,13 @@ f036_assert_log_contains using "`evlog'", message("from() is no longer supported
 
 capture log close f036event
 log using "`evlog'", text replace name(f036event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) agg(simple)
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) agg(simple) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f036event
 assert `actual_rc' == 498
 f036_assert_log_contains using "`evlog'", message("agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation")
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) nevertreated base_period(varying) bal(none)
 assert "`e(agg_type)'" == "dynamic"
 matrix T = r(table)
 local cn : colnames T
@@ -173,7 +173,7 @@ forvalues j = 1/`=rowsof(AGG3)' {
 local last3 : word `=colsof(T3)' of `cn3'
 assert "`last3'" == "Post_avg"
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(29) rseed(24680)) agg(event)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(29) rseed(24680)) agg(event) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert "`e(agg_type)'" == "dynamic"
 confirm matrix e(aggte)

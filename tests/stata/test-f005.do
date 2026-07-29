@@ -7,7 +7,7 @@ adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
 import delimited using "`root'/tests/fixtures/parity/f005/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 csdid_stats, type(calendar)
 matrix A = e(aggte)
 

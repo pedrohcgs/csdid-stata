@@ -58,7 +58,7 @@ tempfile evlog plotdata
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) method(bad) analytical
+capture noisily csdid y, time(time) gvar(g) method(bad) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -69,7 +69,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) base_period(Universal) analytical
+capture noisily csdid y, time(time) gvar(g) base_period(Universal) analytical nevertreated bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -80,7 +80,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) fix_weights(bad) analytical
+capture noisily csdid y, time(time) gvar(g) fix_weights(bad) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -91,7 +91,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) fix_weights(first_period) analytical
+capture noisily csdid y, time(time) gvar(g) fix_weights(first_period) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -102,7 +102,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) anticipation(-1) analytical
+capture noisily csdid y, time(time) gvar(g) anticipation(-1) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -113,7 +113,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/negative-weight.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y [iw=w], time(time) gvar(g) method(reg) analytical
+capture noisily csdid y [iw=w], time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -124,7 +124,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/duplicate-input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -135,7 +135,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) method(reg) foo analytical
+capture noisily csdid y, time(time) gvar(g) method(reg) foo analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///
@@ -155,7 +155,7 @@ f029_assert_failure using "`evlog'", ///
     message("csdid_stats requires prior csdid results or a saved RIF file")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
 capture noisily csdid_stats, type(bad)
@@ -178,7 +178,7 @@ f029_assert_failure using "`evlog'", ///
     message("csdid_estat requires prior csdid results")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
 capture noisily csdid_estat tidy
@@ -190,7 +190,7 @@ f029_assert_failure using "`evlog'", ///
     message("tidy requires saving(filename)")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
 capture noisily csdid_plot
@@ -202,7 +202,7 @@ f029_assert_failure using "`evlog'", ///
     message("csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 csdid_stats, type(simple)
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
@@ -217,7 +217,7 @@ f029_assert_failure using "`evlog'", ///
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/empty-after-markout.csv", clear asdouble
 capture log close f029event
 log using "`evlog'", text replace name(f029event)
-capture noisily csdid y, time(time) gvar(g) method(reg) analytical
+capture noisily csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f029event
 f029_assert_failure using "`evlog'", ///

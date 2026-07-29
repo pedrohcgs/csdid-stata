@@ -174,11 +174,10 @@ compile errors, then stages the installable payload that `csdid.pkg` lists.
 - `docs/conformance-profile-v1.md` — the frozen contract.
 - `docs/tolerance-registry-v1.md` — per-fixture numerical tolerances.
 - `docs/legacy-stata-compatibility.md`, `docs/legacy-migration-guide.md` —
-  legacy Stata `csdid` 1.82 surface and how it maps onto this port.
+  legacy Stata `csdid` Version 1.82 surface and how it maps onto this port.
 - `docs/public-api-freeze-v2.md`, `docs/stored-results-api.md` — the public
   command and `e()` surface, and its stability guarantees.
 - `docs/versioning-and-release-policy.md`, `docs/release-checklist.md`,
   `docs/release-engineering.md` — release process.
 - `docs/platform-matrix.md` — what is certified on which platform.
 - `docs/support-runbook.md` — triage process for user reports.
-- `LICENSE-DECISION.md` — licensing analysis and the pending owner decision.

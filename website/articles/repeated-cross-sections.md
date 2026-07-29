@@ -5,8 +5,13 @@ title: Repeated cross sections
 # Repeated cross sections
 
 When each observation is an independent draw rather than a unit followed over
-time — repeated survey waves, pooled cross sections — omit `ivar()`. That is the
-whole switch.
+time — repeated survey waves, pooled cross sections — say so with `rcs`, as in
+`csdid y, time(year) gvar(gvar) rcs`.
+
+Omitting `ivar()` does the same thing, and for data with no identifier that is
+the natural way to write it. `rcs` exists for the common case where the data do
+carry an identifier — a survey respondent number, a county code — and you should
+not have to withhold a real variable to describe your data correctly.
 
 ## The data
 
@@ -51,6 +56,36 @@ This is a construction for illustration, not a design you would choose: throwing
 away 10 of every 11 observations costs precision. It is here because the shape
 is what matters, and a genuine repeated-cross-section dataset with staggered
 treatment is not part of the JEL package.
+
+## When the data carry an identifier anyway
+
+`county_code` still exists in the extract above, and it is a perfectly real
+variable — it just no longer identifies a unit followed over time. Declaring the
+structure explicitly, and keeping the identifier, gives the same estimates:
+
+```stata
+csdid mrate, ivar(county_code) time(year) gvar(gvar) rcs rseed(20250101)
+estat event
+```
+
+`csdid` says plainly that it is not using `ivar()` as a panel identifier, and
+`e(idvar)` comes back empty while `e(panel_mode)` reads
+`repeated-cross-section`. This mirrors the reference implementation, which
+validates the identifier and then replaces it with a row number.
+
+The identifier is not wasted. It is exactly what you pass to `cluster()` if
+observations sharing it are correlated:
+
+```stata
+csdid mrate, ivar(county_code) time(year) gvar(gvar) rcs ///
+    cluster(stfips) rseed(20250101)
+display "clusters: " e(N_clusters)
+```
+
+Because there is nothing to balance in a cross section, `rcs` implies
+`bal(none)`; asking for `bal(full)` alongside it is an error
+rather than a silent override, as is `fix_weights(base)`, which needs the same
+unit in more than one period. See [unbalanced panels](unbalanced-panels.html).
 
 ## What to watch
 

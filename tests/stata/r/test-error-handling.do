@@ -114,7 +114,7 @@ rt011_expect_success_message, command("csdid y x, ivar(id) time(period) gvar(g) 
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-csdid y, time(period) gvar(g) analytical
+csdid y, time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "repeated-cross-section"
 assert e(N_attgt) > 0
 
@@ -141,17 +141,17 @@ rt011_expect_failure, command("csdid y_str, ivar(id) time(period) gvar(g) analyt
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
 generate int y_int = round(y)
-csdid y_int, ivar(id) time(period) gvar(g) analytical
+csdid y_int, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/treatment-reversal.csv", clear asdouble
-rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("treatment timing must be irreversible")
+rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("treatment timing must be irreversible")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/missing-inputs.csv", clear asdouble
-rt011_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("dropped observations with missing or non-finite data")
+rt011_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("dropped observations with missing or non-finite data")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/small-groups.csv", clear asdouble
-rt011_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("very few observations")
+rt011_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("very few observations")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
 rt011_expect_success_message, command("csdid y x [iw=tw], ivar(id) time(period) gvar(g) analytical") message("Time-varying weights detected")
@@ -160,13 +160,13 @@ import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-hand
 rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) wboot(cluster(cl cl2) reps(31))") message("wboot(cluster()) accepts one numeric cluster variable")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
 matrix Acluster = e(attgt)
 assert rowsof(Acluster) > 0
 assert e(N_clusters) > 0
 assert !missing(Acluster[1,5])
 
-csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) wboot(reps(25) rseed(20260401))
+csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) wboot(reps(25) rseed(20260401)) nevertreated base_period(varying) bal(none)
 matrix Bcluster = e(attgt)
 assert rowsof(Bcluster) > 0
 assert e(N_clusters) > 0
@@ -180,7 +180,7 @@ matrix G = e(aggte)
 assert rowsof(G) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-csdid y, ivar(id) time(period) gvar(g) analytical
+csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)
@@ -200,4 +200,4 @@ generate double xsep = (g > 0)
 rt011_expect_success_message, command("csdid y xsep, ivar(id) time(period) gvar(g) method(dr) analytical") message("overlap condition violated")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/no-never-treated.csv", clear asdouble
-rt011_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical") message("No never-treated group available")
+rt011_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("No never-treated group available")

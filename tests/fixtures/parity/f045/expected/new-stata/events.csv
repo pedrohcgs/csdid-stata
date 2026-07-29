@@ -1,5 +1,5 @@
 "event_key","return_code","event_type","offending_option","message_normalized"
-"legacy_balance_alias",0,"warning","balance(full)","csdid legacy compatibility: bal()/balance() are soft-deprecated; use allowunbalanced or omit the option. Legacy balancing modes no longer drop units; this run uses R-compatible allowunbalanced handling"
+"balance_full_is_default",0,"none","balance(full)","balance(full) is the same option as bal(full), which is the default; it is not deprecated and prints no note. On a balanced panel it also drops nothing, so no balancing report is emitted either."
 "legacy_long_alias",0,"warning","long","warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
 "legacy_long2_alias",0,"warning","long2","warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
 "legacy_dryrun_rejected",198,"error","dryrun","dryrun is an internal legacy option and is unsupported"

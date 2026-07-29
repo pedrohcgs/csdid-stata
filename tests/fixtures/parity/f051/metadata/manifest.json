@@ -38,6 +38,10 @@
     {
       "path": "expected/contract/default-surface.json",
       "schema": "release-default-surface"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
     }
   ],
   "comparison_plan": [
@@ -54,6 +58,9 @@
       "key_columns": "setting"
     }
   ],
-  "approved_divergence": {},
+  "approved_divergence": {
+    "path": "expected/contract/approved-divergence.csv",
+    "ids": ["F051-DIV001", "F051-DIV002"]
+  },
   "scope_note": "Release-productization fixture binding omitted-option defaults, explicit default-equivalent calls, Stata-style aliases including bare universal/varying base-period aliases, id(), notyettreated/nevertreated, vce(cluster), bootstrap shorthand, optimized default computation/storage metadata, storeall full-storage compatibility, csdid_stats default/event aggregation aliases, estat/csdid_estat event and aggregation replay, csdid_plot saving() plot-data handoff, and user-facing diagnostics. Omitted inference follows R did 2.5.1 bootstrap/cband/1000 defaults; the fixture uses set.seed(20260707) only to make bootstrap SE evidence deterministic. Numerical point estimates remain R did 2.5.1-oracle; storage and Stata UX details are governed by the frozen Stata release contract."
 }

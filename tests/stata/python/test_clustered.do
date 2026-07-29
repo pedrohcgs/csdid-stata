@@ -55,7 +55,7 @@ quietly count if coverage_status == "mapped"
 assert r(N) == 5
 
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(200) cluster(cluster) rseed(20250501))
+csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(200) cluster(cluster) rseed(20250501)) nevertreated base_period(varying) bal(none)
 assert e(bstrap) == 1
 assert e(biters) == 200
 assert e(N_clusters) == 10
@@ -70,11 +70,11 @@ restore
 
 tempfile no_cluster clustered unit_cluster
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250502))
+csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250502)) nevertreated base_period(varying) bal(none)
 py005_save_boot_se, outfile("`no_cluster'")
 
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(cluster) rseed(20250502))
+csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(cluster) rseed(20250502)) nevertreated base_period(varying) bal(none)
 py005_save_boot_se, outfile("`clustered'")
 
 use "`no_cluster'", clear
@@ -88,11 +88,11 @@ quietly count if rel_diff > 0.10
 assert r(N) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250503))
+csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250503)) nevertreated base_period(varying) bal(none)
 py005_save_boot_se, outfile("`no_cluster'")
 
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(unit_cluster) rseed(20250503))
+csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(unit_cluster) rseed(20250503)) nevertreated base_period(varying) bal(none)
 py005_save_boot_se, outfile("`unit_cluster'")
 
 use "`no_cluster'", clear
@@ -107,7 +107,7 @@ import delimited using "`root'/tests/fixtures/parity/py005/inputs/time-varying-c
 tempfile evlog
 capture log close py005event
 log using "`evlog'", text replace name(py005event)
-capture noisily csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(50) cluster(tv_cluster) rseed(20250504))
+capture noisily csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(50) cluster(tv_cluster) rseed(20250504)) nevertreated base_period(varying) bal(none)
 local rc = _rc
 log close py005event
 assert `rc' == 459
@@ -159,19 +159,19 @@ program define py005_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(200) cluster(cluster) rseed(20250501))
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(200) cluster(cluster) rseed(20250501)) nevertreated base_period(varying) bal(none)
 py005_grab "boot200_cluster" "`py005_actual'"
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250502))
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250502)) nevertreated base_period(varying) bal(none)
 py005_grab "boot500_iid" "`py005_actual'"
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(cluster) rseed(20250502))
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(cluster) rseed(20250502)) nevertreated base_period(varying) bal(none)
 py005_grab "boot500_cluster" "`py005_actual'"
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250503))
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) rseed(20250503)) nevertreated base_period(varying) bal(none)
 py005_grab "boot500_iid_b" "`py005_actual'"
 import delimited using "`root'/tests/fixtures/parity/py005/inputs/clustered-data.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(unit_cluster) rseed(20250503))
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) wboot(reps(500) cluster(unit_cluster) rseed(20250503)) nevertreated base_period(varying) bal(none)
 py005_grab "boot500_unitcluster" "`py005_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/py005/expected/r/attgt.csv", clear asdouble varnames(1)

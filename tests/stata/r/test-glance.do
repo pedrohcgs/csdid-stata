@@ -71,7 +71,7 @@ assert r(N) == 1
 tempfile actual
 
 import delimited using "`root'/tests/fixtures/parity/rt014/inputs/sim-glance.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Slow = e(attgt)
 rt014_append_glance, object(MP_slow) source(slow) saving("`actual'")
 
@@ -81,7 +81,7 @@ foreach agg_type in simple dynamic group calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt014/inputs/sim-glance.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) fast analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 matrix Fast = e(attgt)
 assert mreldif(Slow, Fast) < 1e-8

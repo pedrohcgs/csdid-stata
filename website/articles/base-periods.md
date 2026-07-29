@@ -10,9 +10,15 @@ which one, and it changes the pre-treatment estimates, the shape of an event
 study, and how many cells you get back. It does not change the post-treatment
 effects.
 
-- **`varying`** (the default) compares each pre-treatment period with the one
-  immediately before it, and each post-treatment period with *g-1*.
-- **`universal`** compares every period with *g-1*.
+- **`universal`** (the default) compares every period with *g-1*.
+- **`varying`** compares each pre-treatment period with the one immediately
+  before it, and each post-treatment period with *g-1*.
+
+Universal is the default because it is the layout an event-study plot assumes,
+and event studies are how these results are almost always presented. R `did`
+and Stata `csdid` Version 1.82 both default to `varying` instead; this is a
+deliberate departure from both, and `base_period(varying)` restores their
+behaviour exactly.
 
 ## The data
 
@@ -31,7 +37,21 @@ keep if nyears == 11
 save "jel_balanced.dta", replace
 ```
 
-## Varying: the default
+## Universal: the default
+
+```stata
+use "jel_balanced.dta", clear
+csdid mrate, ivar(county_code) time(year) gvar(gvar) analytical
+display "cells: " e(N_attgt)
+estat event
+```
+
+Each pre-treatment number answers a **cumulative** question: how far had this
+cohort drifted from the comparison group by period *t*, relative to *g-1*? This
+is the layout most event-study plots assume, with everything measured from a
+single normalized reference point — which is why it is the default.
+
+## Varying
 
 ```stata
 use "jel_balanced.dta", clear
@@ -40,31 +60,19 @@ display "cells: " e(N_attgt)
 estat event
 ```
 
-Each pre-treatment number answers a **local** question: did this cohort's
+Each pre-treatment number now answers a **local** question: did this cohort's
 outcome move between consecutive periods differently from the comparison group?
-That makes the pre-treatment cells a sequence of one-period placebo tests.
-
-## Universal
-
-```stata
-use "jel_balanced.dta", clear
-csdid mrate, ivar(county_code) time(year) gvar(gvar) base_period(universal) analytical
-display "cells: " e(N_attgt)
-estat event
-```
-
-Each pre-treatment number now answers a **cumulative** question: how far had this
-cohort drifted from the comparison group by period *t*, relative to *g-1*? This
-is the layout most event-study plots assume, with everything measured from a
-single normalized reference point.
+That makes the pre-treatment cells a sequence of one-period placebo tests, which
+is what you want when the question is *where* a violation happened rather than
+*how far* it had accumulated. See [Pre-testing](pre-testing.html).
 
 ## What actually differs
 
 Two things change, and it is worth seeing both.
 
-**You get more cells.** Universal reports the base period itself, which is zero
-by construction, so each cohort contributes one extra row. That is why
-`e(N_attgt)` grew above.
+**You get more cells under universal.** It reports the base period itself, which
+is zero by construction, so each cohort contributes one extra row. That is why
+`e(N_attgt)` shrank when the varying run above dropped it.
 
 **Post-treatment effects are identical; pre-treatment ones are not.** Both
 specifications measure post-treatment periods against *g-1*, so those cells

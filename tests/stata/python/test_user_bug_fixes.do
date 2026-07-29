@@ -69,19 +69,19 @@ import delimited using "`root'/tests/fixtures/parity/py023/expected/contract/sce
 assert _N == 9
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 py023_assert_any_finite_att
 generate byte t1 = 1
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 py023_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/mpdta.csv", clear asdouble
 replace lpop = . in 1
-quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 py023_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/fewer_periods.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix ATT = e(attgt)
 preserve
 clear
@@ -97,7 +97,7 @@ py023_assert_nonmissing_overall, type(calendar)
 
 foreach bp in universal varying {
     import delimited using "`root'/tests/fixtures/parity/py023/inputs/zero_pretreat.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical bal(none)
     matrix ATT = e(attgt)
     preserve
     clear
@@ -110,11 +110,11 @@ foreach bp in universal varying {
 }
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/missing_var.csv", clear asdouble
-capture noisily csdid y x2, ivar(id) time(period) gvar(g) method(dr) notyet analytical
+capture noisily csdid y x2, ivar(id) time(period) gvar(g) method(dr) notyet analytical base_period(varying) bal(none)
 assert _rc != 0
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/anticipation.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(group) anticipation(0) analytical
+quietly csdid y, ivar(id) time(time) gvar(group) anticipation(0) analytical nevertreated base_period(varying) bal(none)
 py023_group_count, expected(1)
 matrix ATT0 = e(attgt)
 preserve
@@ -124,7 +124,7 @@ assert group == 4 if !missing(att)
 restore
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/anticipation.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(group) anticipation(2) analytical
+quietly csdid y, ivar(id) time(time) gvar(group) anticipation(2) analytical nevertreated base_period(varying) bal(none)
 py023_group_count, expected(2) atleast
 matrix ATT2 = e(attgt)
 preserve
@@ -136,7 +136,7 @@ restore
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py023/inputs/fewer_periods.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     py023_assert_any_finite_att
     py023_assert_nonmissing_overall, type(dynamic)
 }
@@ -186,22 +186,22 @@ program define py023_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 py023_grab "mpdta_reg_notyet" "`py023_actual'"
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical
+quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(firsttreat) method(reg) notyet analytical base_period(varying) bal(none)
 py023_grab "mpdta_reg_notyet_x" "`py023_actual'"
 import delimited using "`root'/tests/fixtures/parity/py023/inputs/fewer_periods.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 py023_grab "fewer_periods" "`py023_actual'"
 foreach bp in varying universal {
     import delimited using "`root'/tests/fixtures/parity/py023/inputs/zero_pretreat.csv", clear asdouble
-    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical
+    quietly csdid y, ivar(id) time(period) gvar(g) notyet base_period(`bp') analytical bal(none)
     py023_grab "zero_pre_`bp'" "`py023_actual'"
 }
 foreach a in 0 2 {
     import delimited using "`root'/tests/fixtures/parity/py023/inputs/anticipation.csv", clear asdouble
-    quietly csdid y, ivar(id) time(time) gvar(group) anticipation(`a') analytical
+    quietly csdid y, ivar(id) time(time) gvar(group) anticipation(`a') analytical nevertreated base_period(varying) bal(none)
     py023_grab "anticipation_`a'" "`py023_actual'"
 }
 

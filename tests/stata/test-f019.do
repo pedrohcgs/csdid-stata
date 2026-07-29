@@ -39,7 +39,7 @@ assert drop_reason == drop_reason_actual
 assert cell_membership == cell_membership_actual
 
 import delimited using "`root'/tests/fixtures/parity/f019/inputs/input.csv", clear asdouble
-csdid y if keep == 1, ivar(id) time(time) gvar(g) method(reg) analytical
+csdid y if keep == 1, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert e(N) == 40
 matrix A = e(attgt)
 

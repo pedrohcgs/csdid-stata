@@ -105,7 +105,7 @@ Stata-only options on `csdid`, with no R counterpart:
 | `agg(event)` | Runs `csdid` and then the dynamic aggregation in one command, posting the event-study coefficients. Other aggregation types go through `csdid_stats`. |
 | `lean`, `storeall`, `performance(auto\|lean\|full)` | Storage policy for the large influence-function matrices. Numerically inert. |
 | `vce(analytical)`, `vce(cluster var)` | Stata-idiomatic spellings of `bstrap = FALSE` and `clustervars`. |
-| `long`, `long2`, `asinr`, `never`, `bal()` / `balance()`, `performance(materialized)`, `dripw`, `stdipw` | Legacy Stata `csdid` 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
+| `long`, `long2`, `asinr`, `never`, `bal()` / `balance()`, `performance(materialized)`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
 
 ---
 
@@ -260,7 +260,7 @@ runs in Mata and reproduces R's random-number stream; `e(bootstrap_accelerator)`
 and `e(bootstrap_accelerator_status)` report which path ran.
 
 Legacy-Stata-facing divergences (options that exist only to ease migration from
-Stata `csdid` 1.82, and that R has no notion of) are catalogued separately in
+Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in
 `docs/legacy-stata-compatibility.md` and `docs/legacy-migration-guide.md`.
 
 ---
@@ -454,6 +454,6 @@ Related reading:
 - `help csdid_stats`, `help csdid_estat`, `help csdid_plot`
 - `docs/behavior-decisions.md` - the frozen decisions behind section 6
 - `docs/legacy-stata-compatibility.md`, `docs/legacy-migration-guide.md` - the
-  Stata 1.82 -> 2.0 mapping, which is a different question from this document
+  Stata Version 1.82 -> 2.0 mapping, which is a different question from this document
 - `docs/stored-results-api.md` - stability guarantees for the `e()` results in
   section 4

@@ -99,10 +99,10 @@ foreach weight_var in wt wt_scaled {
             foreach method in dr reg ipw {
                 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
                 if "`covariates'" == "numeric" {
-                    csdid y x1 x2 [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y x1 x2 [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 else {
-                    csdid y [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 assert e(method) == "`method'"
                 assert "`e(panel_mode)'" == "panel"
@@ -142,10 +142,10 @@ foreach weight_var in wt wt_scaled {
             foreach method in dr reg ipw {
                 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
                 if "`covariates'" == "numeric" {
-                    csdid y x1 x2 [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y x1 x2 [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 else {
-                    csdid y [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 assert e(method) == "`method'"
                 assert "`e(panel_mode)'" == "repeated-cross-section"
@@ -199,10 +199,10 @@ foreach fix_weights in default varying base_period first_period {
         foreach method in dr reg ipw {
             import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
             if "`covariates'" == "numeric" {
-                csdid y x1 x2 [iw=wt_unit], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                csdid y x1 x2 [iw=wt_unit], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
             }
             else {
-                csdid y [iw=wt_unit], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                csdid y [iw=wt_unit], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
             }
             assert e(method) == "`method'"
             assert "`e(panel_mode)'" == "panel"
@@ -261,10 +261,10 @@ foreach weight_var in wt wt_scaled {
             foreach method in dr reg ipw {
                 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
                 if "`covariates'" == "numeric" {
-                    csdid y x1 x2 [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y x1 x2 [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 else {
-                    csdid y [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 foreach type in simple group calendar dynamic {
                     local appendopt ""
@@ -291,10 +291,10 @@ foreach weight_var in wt wt_scaled {
             foreach method in dr reg ipw {
                 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
                 if "`covariates'" == "numeric" {
-                    csdid y x1 x2 [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y x1 x2 [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 else {
-                    csdid y [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y [iw=`weight_var'], time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 foreach type in simple group calendar dynamic {
                     f012_save_agg, type(`type') panelmode("repeated-cross-section") ///
@@ -318,10 +318,10 @@ foreach weight_var in wt wt_scaled {
             foreach method in dr reg ipw {
                 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input-unbalanced.csv", clear asdouble
                 if "`covariates'" == "numeric" {
-                    csdid y x1 x2 [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y x1 x2 [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 else {
-                    csdid y [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical
+                    csdid y [iw=`weight_var'], ivar(id) time(time) gvar(g) method(`method') `fixopt' analytical nevertreated base_period(varying) bal(none)
                 }
                 assert e(method) == "`method'"
                 assert "`e(panel_mode)'" == "allow_unbalanced"
@@ -364,11 +364,11 @@ foreach v in att se overall_att overall_se {
 
 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
 replace wt = -1 in 1
-capture noisily csdid y [iw=wt], ivar(id) time(time) gvar(g) method(reg) analytical
+capture noisily csdid y [iw=wt], ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 198
 
 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
-capture noisily csdid y [iw=wt], time(time) gvar(g) method(reg) fix_weights(base_period) analytical
+capture noisily csdid y [iw=wt], time(time) gvar(g) method(reg) fix_weights(base_period) analytical nevertreated base_period(varying) bal(none)
 assert _rc == 198
 
 import delimited using "`root'/tests/fixtures/parity/f012/expected/r/events.csv", clear varnames(1)
@@ -384,7 +384,7 @@ tempfile f012log
 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
 capture log close f012event
 log using "`f012log'", text replace name(f012event)
-capture noisily csdid y [iw=wt], ivar(id) time(time) gvar(g) method(reg) analytical
+capture noisily csdid y [iw=wt], ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f012event
 assert `actual' == 0
@@ -393,7 +393,7 @@ f012_assert_log_contains using "`f012log'", message("Time-varying weights detect
 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input.csv", clear asdouble
 capture log close f012event
 log using "`f012log'", text replace name(f012event)
-capture noisily csdid y [iw=wt_unit], ivar(id) time(time) gvar(g) method(reg) analytical
+capture noisily csdid y [iw=wt_unit], ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f012event
 assert `actual' == 0
@@ -402,7 +402,7 @@ f012_assert_log_not_contains using "`f012log'", message("Time-varying weights de
 import delimited using "`root'/tests/fixtures/parity/f012/inputs/input-unbalanced.csv", clear asdouble
 capture log close f012event
 log using "`f012log'", text replace name(f012event)
-capture noisily csdid y [iw=wt], ivar(id) time(time) gvar(g) method(reg) fix_weights(first_period) analytical
+capture noisily csdid y [iw=wt], ivar(id) time(time) gvar(g) method(reg) fix_weights(first_period) analytical nevertreated base_period(varying) bal(none)
 local actual = _rc
 log close f012event
 assert `actual' == 0

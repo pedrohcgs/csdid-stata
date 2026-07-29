@@ -119,12 +119,12 @@ import delimited using "`root'/tests/fixtures/parity/rt024/inputs/zero-weights.c
 rt024_expect_failure, command("csdid y x [iw=wzero], ivar(id) time(period) gvar(g) method(dr) analytical") message("iweights must have positive mean")
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/positive-weights.csv", clear asdouble
-quietly csdid y x [iw=wgt], ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x [iw=wgt], ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 assert e(N_attgt) > 0
 matrix Base = e(attgt)
 quietly count
 local n_before = r(N)
-quietly csdid y x [iw=wgt], ivar(id) time(period) gvar(g) method(dr) fast analytical
+quietly csdid y x [iw=wgt], ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 matrix Fast = e(attgt)
 rt024_assert_matrix_equal Base Fast 1e-8
@@ -143,23 +143,23 @@ forvalues i = 1/`=rowsof(A)' {
 assert `saw_missing_group2' == 1
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/small-never-treated.csv", clear asdouble
-rt024_expect_failure, command("csdid y x1 x2 x3 x4 x5 x6, ivar(id) time(period) gvar(g) method(dr) analytical") message("never-treated group is too small")
-rt024_expect_failure, command("csdid y x1 x2 x3 x4 x5 x6, ivar(id) time(period) gvar(g) method(dr) fast analytical") message("never-treated group is too small")
+rt024_expect_failure, command("csdid y x1 x2 x3 x4 x5 x6, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated") message("never-treated group is too small")
+rt024_expect_failure, command("csdid y x1 x2 x3 x4 x5 x6, ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated") message("never-treated group is too small")
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/fractional-unbalanced.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 matrix Base = e(attgt)
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) fast analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 1
 assert "`e(panel_mode)'" == "allow_unbalanced"
 matrix Fast = e(attgt)
 rt024_assert_matrix_equal Base Fast 1e-8
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/column-named-weights.csv", clear asdouble
-quietly csdid weights_y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid weights_y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Base = e(attgt)
-quietly csdid weights_y x, ivar(id) time(period) gvar(g) method(dr) fast analytical
+quietly csdid weights_y x, ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 matrix Fast = e(attgt)
 rt024_assert_matrix_equal Base Fast 1e-8
 local nonzero_att 0
@@ -168,28 +168,28 @@ forvalues i = 1/`=rowsof(Fast)' {
 }
 assert `nonzero_att' == 1
 
-quietly csdid y weights_x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y weights_x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Base = e(attgt)
-quietly csdid y weights_x, ivar(id) time(period) gvar(g) method(dr) fast analytical
+quietly csdid y weights_x, ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 matrix Fast = e(attgt)
 rt024_assert_matrix_equal Base Fast 1e-8
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/transformed-nonfinite.csv", clear asdouble
-rt024_expect_success_message, command("csdid y log_xpos, time(period) gvar(g) method(dr) analytical") message("dropped observations with missing or non-finite data")
+rt024_expect_success_message, command("csdid y log_xpos, time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)") message("dropped observations with missing or non-finite data")
 matrix Base = e(attgt)
 local missing_att 0
 forvalues i = 1/`=rowsof(Base)' {
     if missing(Base[`i',4]) local missing_att 1
 }
 assert `missing_att' == 0
-quietly csdid y log_xpos, time(period) gvar(g) method(dr) fast analytical
+quietly csdid y log_xpos, time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 matrix Fast = e(attgt)
 rt024_assert_matrix_equal Base Fast 1e-8
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/panel-nan-cells.csv", clear asdouble
-quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 matrix Base = e(attgt)
-quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) fast analytical
+quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) fast analytical nevertreated base_period(varying) bal(none)
 matrix Fast = e(attgt)
 rt024_assert_matrix_equal Base Fast 1e-8
 local saw_missing_group3 0
@@ -247,10 +247,10 @@ program define rt024_grab
 end
 
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/positive-weights.csv", clear asdouble
-quietly csdid y x [iw=wgt], ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x [iw=wgt], ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt024_grab "positive_weights" "`rt024_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt024/inputs/fractional-unbalanced.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt024_grab "fractional_unbalanced" "`rt024_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt024/expected/r/attgt.csv", clear asdouble varnames(1)

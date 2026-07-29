@@ -15,7 +15,7 @@
 #   preflight.sh --fast       spec tier only (pre-commit convenience)
 #   preflight.sh --list       show what would run, and why each tier exists
 #
-# This runs the ENTIRE Stata suite (113 tests). There is no second command to
+# This runs the ENTIRE Stata suite (117 tests). There is no second command to
 # remember: `preflight.sh` is the whole thing. The unit tier once globbed only
 # tests/stata/test-*.do, leaving the 55 inherited R/Python parity tests to be
 # run by hand -- so a green preflight said nothing about parity.
@@ -99,6 +99,11 @@ if [ -n "${CSDID_DID_UPSTREAM:-}" ] && [ -d "${CSDID_DID_UPSTREAM:-}" ]; then
 else
   run spec "upstream did test coverage" python3 tools/spec/check-upstream-coverage.py
 fi
+# Each fixture records its own approved divergences, which is the right place
+# for the detail and a poor place to see the shape of the whole. This keeps the
+# classification registry in exact correspondence with the fixtures, so "2 of 56
+# are behavioural" stays a fact rather than a recollection.
+run spec "divergence classification" python3 tools/spec/check-divergence-kinds.py
 for gate in tests/meta/*.sh; do
   run spec "meta: $(basename "$gate" .sh)" bash "$gate"
 done
@@ -114,7 +119,7 @@ fi
 # The whole Stata suite. These are what actually test csdid.
 #
 # tests/stata/r/ and tests/stata/python/ used to be excluded: this tier globbed
-# tests/stata/test-*.do only, so 55 of the 113 tests -- every test inherited
+# tests/stata/test-*.do only, so 55 of the tests -- every test inherited
 # from the R and Python suites, which is where the parity claims live -- ran in
 # no runner at all and had to be invoked by hand. A green preflight therefore
 # said nothing about parity.
@@ -131,7 +136,7 @@ if have "$STATA"; then
     run unit "inherited-py: $(basename "$t" .do)" stata_do "$t"
   done
 else
-  block unit "full Stata suite (113 tests)" "$STATA not on PATH (set STATA_CMD)"
+  block unit "full Stata suite (117 tests)" "$STATA not on PATH (set STATA_CMD)"
 fi
 
 # ---------------------------------------------------------------- tier: docs
@@ -146,6 +151,11 @@ if have "$STATA"; then
 else
   block docs "documented examples run" "$STATA not on PATH (set STATA_CMD)"
 fi
+
+# The legacy release is written "Version 1.82" everywhere, never a bare "1.82".
+# Prose corrected by hand drifts back, so the convention is gated rather than
+# merely documented.
+run docs "version-naming convention" python3 tools/docs/check-version-convention.py
 
 # -------------------------------------------------------------- tier: parity
 # Regenerating the R oracles proves the committed expectations still match what

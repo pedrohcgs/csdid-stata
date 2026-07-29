@@ -1100,6 +1100,7 @@ void csdid_basic_attgt(
     string scalar clustername,
     string scalar notyet,
     string scalar base_period,
+    string scalar balance_mode,
     string scalar fix_weights,
     real scalar anticipation,
     real scalar trim_level,
@@ -1129,6 +1130,8 @@ void csdid_basic_attgt(
     real colvector dr_cache_score_ps, dr_cache_xgamma_treat, dr_cache_xgamma_cont
     real colvector y_rc, post_rc, d_rc, w_rc, fit_if, uid_vec, uid_sums
     real colvector dy_fast, treat_fast, control_fast, eligible_vec, uid_seq, drop_ids, unit_p1, p1_present, wpos  // F-001/F-022: first-appearance period sweep
+    real colvector pair_obs_ok
+    real scalar pair_mode
     real colvector row_treat_t, row_treat_pre, row_control_t, row_control_pre
     real matrix out, ifmat, group_prob_mat, unit_group_mat, x, x_cell, x_rc, row_index, y_fast
     real matrix uid_fit, uid_info
@@ -1494,11 +1497,12 @@ void csdid_basic_attgt(
         printf("Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells). Use the fix_weights() option to control this behavior; see help csdid.\n")
     }
 
+    pair_mode = (balance_mode == "pair" & idname != "")
     if (idname != "") {
         balanced_panel = (sum(row_index :>= .) == 0)
     }
     fast_used = (fast_flag != 0)
-    fast_eligible = (fast_flag != 0) & balanced_panel & !has_w & !has_x & (method == "reg") & (fix_weights == "")
+    fast_eligible = (fast_flag != 0) & balanced_panel & !pair_mode & !has_w & !has_x & (method == "reg") & (fix_weights == "")
     y_fast = J(0, 0, .)
     if (fast_eligible) {
         y_fast = y_panel
@@ -1653,7 +1657,13 @@ void csdid_basic_attgt(
                 continue
             }
 
-            if (balanced_panel) {
+            // bal(pair) balances each 2x2 on its own, so it uses the panel
+            // branch: that branch already selects a per-cell unit set and
+            // scales the influence function by n_units / n1 with zeros
+            // elsewhere, so restricting the set further is the whole change.
+            // balanced_panel itself stays truthful -- weight handling, the
+            // unbalanced paths and e(panel_balanced) all read it.
+            if (balanced_panel | pair_mode) {
                 covt = min((pret, t))
                 tidx_t = csdid__time_index(tlevels, t)
                 tidx_pre = csdid__time_index(tlevels, pret)
@@ -1677,6 +1687,17 @@ void csdid_basic_attgt(
                     control_fast = (unit_group :== 0)
                 }
                 eligible_vec = treat_fast :| control_fast
+                // bal(pair): keep only the units this comparison can actually
+                // use -- observed in BOTH of its periods, and wherever the
+                // covariates and weights are read from. row_index is missing
+                // exactly where a unit-period has no row, which is what makes
+                // this a lookup rather than a search.
+                if (pair_mode) {
+                    pair_obs_ok = (row_index[., tidx_t] :< .) :& (row_index[., tidx_pre] :< .)
+                    if (has_x) pair_obs_ok = pair_obs_ok :& (row_index[., tidx_x] :< .)
+                    if (has_w) pair_obs_ok = pair_obs_ok :& (row_index[., tidx_w] :< .)
+                    eligible_vec = eligible_vec :& pair_obs_ok
+                }
                 n1 = sum(eligible_vec)
                 if (n1 == 0) continue
                 valid_uid = select(uid_seq, eligible_vec)

@@ -10,7 +10,7 @@ tempfile allactual
 local first 1
 foreach base_period in varying universal {
     import delimited using "`root'/tests/fixtures/parity/f007/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) base_period(`base_period') analytical
+    csdid y, ivar(id) time(time) gvar(g) method(reg) base_period(`base_period') analytical nevertreated bal(none)
     matrix A = e(attgt)
     clear
     svmat double A, names(col)
@@ -34,5 +34,5 @@ assert missing(se) == missing(se_stata) if missing(se) | missing(se_stata)
 assert abs(se - se_stata) < 1e-8 if !missing(se) & !missing(se_stata)
 
 import delimited using "`root'/tests/fixtures/parity/f007/inputs/input.csv", clear asdouble
-capture noisily csdid y, ivar(id) time(time) gvar(g) base_period(bad) analytical
+capture noisily csdid y, ivar(id) time(time) gvar(g) base_period(bad) analytical nevertreated bal(none)
 assert _rc == 198

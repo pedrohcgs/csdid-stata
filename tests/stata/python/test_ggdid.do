@@ -65,7 +65,7 @@ assert r(N) == 1
 tempfile plotdata allplot evlog
 
 import delimited using "`root'/tests/fixtures/parity/py010/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 csdid_plot, saving("`plotdata'") replace
 py010_assert_plot_file using "`plotdata'", type("attgt")
 copy "`plotdata'" "`allplot'", replace
@@ -75,7 +75,7 @@ local first_group = r(min)
 local all_rows = _N
 
 import delimited using "`root'/tests/fixtures/parity/py010/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 csdid_plot, saving("`plotdata'") replace group(`first_group')
 py010_assert_plot_file using "`plotdata'", type("attgt")
 use "`plotdata'", clear
@@ -83,7 +83,7 @@ assert group == `first_group'
 assert _N < `all_rows'
 
 import delimited using "`root'/tests/fixtures/parity/py010/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 capture log close py010event
 log using "`evlog'", text replace name(py010event)
 capture noisily csdid_plot, saving("`plotdata'") replace group(9999)
@@ -97,14 +97,14 @@ assert _N == `all_rows'
 
 foreach agg_type in dynamic group calendar {
     import delimited using "`root'/tests/fixtures/parity/py010/inputs/sim-ggdid.csv", clear asdouble
-    csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+    csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
     csdid_stats, type(`agg_type')
     csdid_plot, saving("`plotdata'") replace
     py010_assert_plot_file using "`plotdata'", type("aggte_`agg_type'")
 }
 
 import delimited using "`root'/tests/fixtures/parity/py010/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 capture log close py010event
 log using "`evlog'", text replace name(py010event)
 capture noisily csdid_plot, saving("`plotdata'") replace title(Test)

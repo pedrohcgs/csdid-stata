@@ -20,7 +20,7 @@ program define rt004_save_att
     }
 
     quietly csdid y, ivar(uid) time(t) gvar(g) method(`method') `notyet' analytical ///
-        anticipation(`anticipation') `fast'
+        anticipation(`anticipation') `fast' bal(none)
     matrix ATT = e(attgt)
     clear
     svmat double ATT, names(col)
@@ -109,7 +109,7 @@ rt004_save_att using "`root'/tests/fixtures/parity/rt004/inputs/fastslow.csv", /
 rt004_assert_common_att_equal, base("`slow'") using("`fast'") tol(1e-10)
 
 import delimited using "`root'/tests/fixtures/parity/rt004/inputs/structural.csv", clear asdouble
-quietly csdid y, ivar(uid) time(t) gvar(g) method(dr) notyet analytical
+quietly csdid y, ivar(uid) time(t) gvar(g) method(dr) notyet analytical base_period(varying) bal(none)
 matrix ATT = e(attgt)
 matrix GP = e(group_prob)
 matrix UG = e(unit_group)
@@ -197,17 +197,17 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/rt004/inputs/p1.csv", clear asdouble
-    quietly csdid y, ivar(uid) time(t) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(uid) time(t) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     rt004_grab "p1_`method'" "`rt004_actual'"
     import delimited using "`root'/tests/fixtures/parity/rt004/inputs/structural.csv", clear asdouble
-    quietly csdid y, ivar(uid) time(t) gvar(g) method(`method') analytical
+    quietly csdid y, ivar(uid) time(t) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     rt004_grab "structural_`method'" "`rt004_actual'"
 }
 import delimited using "`root'/tests/fixtures/parity/rt004/inputs/structural.csv", clear asdouble
-quietly csdid y, ivar(uid) time(t) gvar(g) method(dr) notyet analytical
+quietly csdid y, ivar(uid) time(t) gvar(g) method(dr) notyet analytical base_period(varying) bal(none)
 rt004_grab "structural_notyet_dr" "`rt004_actual'"
 import delimited using "`root'/tests/fixtures/parity/rt004/inputs/fastslow.csv", clear asdouble
-quietly csdid y, ivar(uid) time(t) gvar(g) method(dr) analytical
+quietly csdid y, ivar(uid) time(t) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
 rt004_grab "fastslow_dr" "`rt004_actual'"
 
 import delimited using "`root'/tests/fixtures/parity/rt004/expected/r/attgt.csv", clear asdouble varnames(1)

@@ -76,7 +76,8 @@ program define py017_run_fit
     import delimited using "`input'", clear asdouble
     local panelopt ""
     if `panel' local panelopt "ivar(id)"
-    local controlopt ""
+    * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+    local controlopt "nevertreated"
     if "`control'" == "notyettreated" local controlopt "notyet"
     local bootopt ""
     if "`wboot'" != "" local bootopt "wboot(reps(31) rseed(202617))"
@@ -84,7 +85,7 @@ program define py017_run_fit
     if "`wboot'" != "" local inferopt ""
 
     quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') `inferopt' ///
-        `controlopt' base_period(`base') anticipation(`anticipation') `bootopt'
+        `controlopt' base_period(`base') anticipation(`anticipation') `bootopt' bal(none)
     if `panel' {
         assert "`e(panel_mode)'" == "panel"
     }
@@ -248,26 +249,27 @@ local py017_ant   "`root'/tests/fixtures/parity/py017/inputs/anticipation-data.c
 foreach method in dr reg ipw {
     foreach control in nevertreated notyettreated {
         foreach base in varying universal {
-            local cgopt ""
+            * States the never-treated arm explicitly; the omitted-option default is now not-yet-treated.
+            local cgopt "nevertreated"
             if "`control'" == "notyettreated" local cgopt "notyet"
             import delimited using "`py017_panel'", clear asdouble
-            quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') `cgopt' base_period(`base') anticipation(0) analytical
+            quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') `cgopt' base_period(`base') anticipation(0) analytical bal(none)
             py017_grab "g1_`method'_`control'_`base'" "`py017_actual'"
         }
     }
 }
 foreach method in dr reg ipw {
     import delimited using "`py017_panel'", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(varying) anticipation(0) analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(varying) anticipation(0) analytical nevertreated bal(none)
     py017_grab "g2_`method'_panel" "`py017_actual'"
     import delimited using "`py017_panel'", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') base_period(varying) anticipation(0) analytical
+    quietly csdid y x, time(period) gvar(g) method(`method') base_period(varying) anticipation(0) analytical nevertreated bal(none)
     py017_grab "g2_`method'_rcs" "`py017_actual'"
 }
 foreach ant in 0 1 2 {
     foreach method in dr reg ipw {
         import delimited using "`py017_ant'", clear asdouble
-        quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(varying) anticipation(`ant') analytical
+        quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') base_period(varying) anticipation(`ant') analytical nevertreated bal(none)
         py017_grab "g3_`method'_`ant'" "`py017_actual'"
     }
 }

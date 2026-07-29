@@ -45,7 +45,7 @@ egen byte tag_id = tag(countyreal)
 quietly count if tag_id
 local mp_nobs = r(N)
 drop tag_id
-csdid lemp, ivar(countyreal) time(year) gvar(first_treat) method(reg) analytical
+csdid lemp, ivar(countyreal) time(year) gvar(first_treat) method(reg) analytical nevertreated base_period(varying) bal(none)
 assert e(N_units) == `mp_nobs'
 confirm matrix e(attgt)
 confirm matrix e(inffunc)
@@ -62,7 +62,7 @@ assert std_error > 0 if !missing(estimate)
 py022_append_structure, object(MP) outfile("`actual'")
 
 import delimited using "`root'/tests/fixtures/parity/py022/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) method(reg) analytical
+quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) method(reg) analytical nevertreated base_period(varying) bal(none)
 foreach agg_type in simple dynamic group calendar {
     csdid_stats, type(`agg_type')
     confirm matrix e(aggte)
@@ -89,7 +89,7 @@ foreach agg_type in simple dynamic group calendar {
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py022/inputs/sim-tidy.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
     csdid_estat tidy, saving("`tidy'") replace
     use "`tidy'", clear
     assert _N > 0

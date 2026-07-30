@@ -169,7 +169,9 @@ change: a silently substituted setting is a result you did not ask for.
 No external dependency. Version 1.82's SSC entry reads
 `Requires: Stata version 14 and drdid from SSC`; 2.0.0 needs nothing beyond
 Stata. And it is 5× to 28× faster on every workload measured, never slower — the
-per-workload benchmark table is in the package README.
+per-workload benchmark table is in the package README, and the gains by
+sample size, periods, cohorts, and sampling scheme (16× to 208×) are on
+[their own page](speed-vs-182.html).
 
 ```stata
 capture erase "jel_upgrade.dta"

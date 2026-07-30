@@ -90,8 +90,8 @@ matrix A = e(attgt)
 scalar f049_cells = rowsof(A)
 assert `rows' == 1000
 assert "`e(performance_mode)'" == "auto"
-assert "`e(performance_resolved)'" == "full"
-assert e(large_store) == 1
+assert "`e(performance_resolved)'" == "lean"
+assert e(large_store) == 0
 assert f049_seconds <= 5
 assert f049_memory_mb <= 250
 post `benchpost' ("small_smoke") (`rows') (f049_cells) (f049_seconds) ///

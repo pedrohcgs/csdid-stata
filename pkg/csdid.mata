@@ -1088,6 +1088,182 @@ real colvector csdid__dr_rc_fit(
     return(att \ inf \ 0)
 }
 
+
+// ---------------------------------------------------------------------------
+// One-pass pre-estimation scan. Replaces, in a single st_data load and linear
+// scans, what the ado layer previously assembled from two bysorts, two
+// levelsofs, two summarizes, a tempvar generate/replace pair and several
+// counts - each a full pass over the data. Pure bookkeeping: every output
+// feeds the same guards, messages and locals as before; nothing here touches
+// estimate arithmetic.
+//   - time/gvar min-max, ascending level lists and per-level "gsmall" counts
+//     (gsmall = gvar with cohorts beyond max_time + anticipation folded to 0,
+//     exactly the old tempvar's definition);
+//   - the bal(full) balance verdict: units observed in fewer than n_time
+//     periods, via a runs-scan over id in data order (grouped data needs no
+//     sort; interleaved data falls back to one Mata sort), writing a 0/1 drop
+//     marker only when incomplete units exist.
+// Level lists use a bounded-range histogram when the value range is small
+// (every ordinary time axis) and uniqrows otherwise, so a pathological axis
+// cannot allocate absurd memory here - it is refused by the name-width guard
+// downstream exactly as before.
+// ---------------------------------------------------------------------------
+void csdid__prescan(
+    string scalar idname,
+    string scalar timename,
+    string scalar gname,
+    string scalar tousename,
+    real scalar anticipation,
+    real scalar want_balance,
+    string scalar dropmarkname,
+    string scalar gcountname)
+{
+    real colvector tv, gv, idv, rowsel, runlen, runstart, runheads, gsmall
+    real colvector tlev, glev, tcnt, gcnt, hist, ord, badunit
+    real scalar n, i, r0, nrun, tmin, tmax, gmin, gmax, span, nt, cutoff
+    real scalar never_ct, firstper_ct, n_units, inc_units, inc_obs, grouped
+    string scalar tlist, glist
+
+    rowsel = selectindex(st_data(., tousename) :!= 0)
+    n = rows(rowsel)
+    tv = st_data(., timename)[rowsel]
+    gv = st_data(., gname)[rowsel]
+
+    tmin = min(tv); tmax = max(tv)
+    gmin = min(gv); gmax = max(gv)
+
+    // ---- time levels (ascending) via one sort + vectorized run bounds ----
+    ord = sort(tv, 1)
+    if (n > 1) runstart = selectindex((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
+    else runstart = J(1, 1, 1)
+    tlev = ord[runstart]
+    nt = rows(tlev)
+    tlist = ""
+    for (i = 1; i <= nt; i++) tlist = tlist + (i > 1 ? " " : "") + strofreal(tlev[i], "%21.0g")
+
+    // ---- gsmall levels and per-level row counts ----
+    cutoff = tmax + anticipation
+    gsmall = gv :* (gv :<= cutoff)          // cohorts beyond the horizon fold to 0
+    ord = sort(gsmall, 1)
+    if (n > 1) runstart = selectindex((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
+    else runstart = J(1, 1, 1)
+    glev = ord[runstart]
+    if (rows(runstart) > 1) gcnt = (runstart[|2 \ rows(runstart)|] \ (n + 1)) :- runstart
+    else gcnt = J(1, 1, n)
+    // keep the treated levels only; the zero bucket becomes never_ct
+    // selectindex on a 1x1 input returns a 1x0 ROWVECTOR, so an emptiness
+    // guard on rows() passes and the subscript aborts with 3301 - length()
+    // is orientation-proof (caught by the single-period refusal fixture)
+    ord = selectindex(glev :> 0)
+    if (length(ord) > 0) {
+        glev = glev[ord]
+        gcnt = gcnt[ord]
+    }
+    else {
+        glev = J(0, 1, .)
+        gcnt = J(0, 1, .)
+    }
+    never_ct = n - sum(gcnt)
+    firstper_ct = 0
+    for (i = 1; i <= rows(glev); i++) {
+        if (glev[i] <= tmin + anticipation) firstper_ct = firstper_ct + gcnt[i]
+    }
+    // the counts matrix mirrors csdid__value_counts over the old gsmall
+    // tempvar: ascending values, 0 first when present
+    if (never_ct > 0) st_matrix(gcountname, (0, never_ct \ (glev, gcnt)))
+    else st_matrix(gcountname, (glev, gcnt))
+
+    st_numscalar("__csdid_ps_tmin", tmin)
+    st_numscalar("__csdid_ps_tmax", tmax)
+    st_numscalar("__csdid_ps_gmin", gmin)
+    st_numscalar("__csdid_ps_gmax", gmax)
+    st_numscalar("__csdid_ps_ntime", nt)
+    st_numscalar("__csdid_ps_never", never_ct)
+    st_numscalar("__csdid_ps_firstper", firstper_ct)
+    st_local("__csdid_ps_tlevels", tlist)
+    glist = ""
+    for (i = 1; i <= rows(glev); i++) glist = glist + (i > 1 ? " " : "") + strofreal(glev[i], "%21.0g")
+    st_local("__csdid_ps_glevels", glist)
+
+    // ---- balance verdict ----
+    n_units = .
+    inc_units = 0
+    inc_obs = 0
+    if (want_balance & idname != "" & n > 0) {
+        idv = st_data(., idname)[rowsel]
+        // runs in data order (n == 1 and single-run panels need their own
+        // ranges: a [|2 \ 1|] subscript is an error, not an empty vector)
+        if (n == 1) runstart = 1
+        else runstart = selectindex((1 :: n) :== 1 :| (idv :!= (idv[1] \ idv[|1 \ n - 1|])))
+        nrun = rows(runstart)
+        if (nrun > 1) runlen = (runstart[|2 \ nrun|] \ (n + 1)) :- runstart
+        else runlen = J(1, 1, n)
+        runheads = idv[runstart]
+        grouped = 1
+        if (nrun > 1) {
+            ord = sort(runheads, 1)
+            for (i = 2; i <= nrun; i++) {
+                if (ord[i] == ord[i - 1]) {
+                    grouped = 0
+                    break
+                }
+            }
+        }
+        if (grouped) {
+            n_units = nrun
+            badunit = selectindex(runlen :< nt)
+            inc_units = rows(badunit)
+            if (inc_units > 0) {
+                for (i = 1; i <= inc_units; i++) {
+                    r0 = badunit[i]
+                    inc_obs = inc_obs + runlen[r0]
+                    st_store(rowsel[|runstart[r0] \ runstart[r0] + runlen[r0] - 1|], dropmarkname, J(runlen[r0], 1, 1))
+                }
+            }
+        }
+        else {
+            // interleaved panel: fall back to one sort by id
+            ord = order(idv, 1)
+            i = 1
+            n_units = 0
+            while (i <= n) {
+                r0 = i
+                while (i < n) {
+                    if (idv[ord[i + 1]] != idv[ord[r0]]) break
+                    i = i + 1
+                }
+                n_units = n_units + 1
+                if (i - r0 + 1 < nt) {
+                    inc_units = inc_units + 1
+                    inc_obs = inc_obs + (i - r0 + 1)
+                    st_store(rowsel[ord[|r0 \ i|]], dropmarkname, J(i - r0 + 1, 1, 1))
+                }
+                i = i + 1
+            }
+        }
+    }
+    st_numscalar("__csdid_ps_nunits", n_units)
+    st_numscalar("__csdid_ps_incunits", inc_units)
+    st_numscalar("__csdid_ps_incobs", inc_obs)
+}
+
+real colvector csdid__rc_slice(
+    real colvector srows,
+    real matrix lut,
+    real scalar nbt,
+    real scalar bg,
+    real scalar tid)
+{
+    real scalar key, st, ct
+
+    if (bg >= . | tid >= .) return(J(0, 1, .))
+    key = (bg - 1) * nbt + tid
+    st = lut[key, 1]
+    ct = lut[key, 2]
+    if (ct <= 0) return(J(0, 1, .))
+    return(srows[|st \ st + ct - 1|])
+}
+
 void csdid_basic_attgt(
     string scalar yname,
     string scalar tname,
@@ -1155,6 +1331,11 @@ void csdid_basic_attgt(
     real scalar dr_cache_n
     real scalar dr_cache_mw_treat, dr_cache_mw_cont
     real colvector idx_t1, idx_t0, idx_c1, idx_c0, idx_rc, valid_rows, valid_rc, dropped_ids
+    real colvector rc_rowsel, rc_gcats, rc_gidx, rc_tidxv, rc_bid, rc_ord, rc_sorted_rows
+    real colvector rc_treat_t, rc_treat_pre, rc_ctrl_t, rc_ctrl_pre
+    real matrix rc_binfo, rc_lut
+    real scalar rc_built, rc_nbg, rc_nbt, rc_bg, rc_b, rc_c, rc_tid_t, rc_tid_pre, rr
+    real colvector rc_mask
 
     csdid__profile_reset()
     prof_t0 = csdid__profile_start()
@@ -1564,6 +1745,55 @@ void csdid_basic_attgt(
     out = J(max_cells, 9, .)
     ifmat = J(n_units, max_cells, .)
     csdid__profile_add(1, prof_t0, rows(y))
+    // ------------------------------------------------------------------
+    // One-time (cohort-value, period) row buckets for the repeated-cross-
+    // section / allow_unbalanced cell route. The per-cell boolean masks
+    // this replaces cost some twenty O(N) vector passes per cell; the
+    // buckets cost one O(N log N) sort once, and every cell then assembles
+    // exactly the same rows in exactly the same ascending order from a few
+    // slice lookups. Same rows, same order, same arithmetic - the change
+    // is where the rows come from, never what is computed on them.
+    // ------------------------------------------------------------------
+    rc_built = 0
+    rc_nbg = 0
+    rc_nbt = 0
+    // Shape gate, measured 2026-07-30: buckets win on repeated cross
+    // sections (one row per unit; 6.41 -> 5.64s at 1M rows) and LOSE on
+    // panel-shaped data (many rows per unit; 3.71 -> 4.23s at 850k rows,
+    // slice concatenation outgrows the mask savings). Panels keep the
+    // original mask path verbatim below.
+    if (!balanced_panel & !pair_mode & idname == "") {
+        prof_t0 = csdid__profile_start()
+        rc_rowsel = selectindex(use :!= 0)
+        if (rows(rc_rowsel) > 0) {
+            rc_gcats = uniqrows(geff[rc_rowsel])
+            rc_nbg = rows(rc_gcats)
+            rc_nbt = cols(tlevels)
+            rc_gidx = J(rows(rc_rowsel), 1, .)
+            for (rc_b = 1; rc_b <= rc_nbg; rc_b++) {
+                rc_ord = selectindex(geff[rc_rowsel] :== rc_gcats[rc_b])
+                if (length(rc_ord) > 0) rc_gidx[rc_ord] = J(length(rc_ord), 1, rc_b)
+            }
+            rc_tidxv = J(rows(rc_rowsel), 1, .)
+            for (rc_b = 1; rc_b <= rc_nbt; rc_b++) {
+                rc_ord = selectindex(tt[rc_rowsel] :== tlevels[rc_b])
+                if (length(rc_ord) > 0) rc_tidxv[rc_ord] = J(length(rc_ord), 1, rc_b)
+            }
+            rc_bid = (rc_gidx :- 1) :* rc_nbt :+ rc_tidxv
+            rc_ord = order((rc_bid, rc_rowsel), (1, 2))
+            rc_sorted_rows = rc_rowsel[rc_ord]
+            rc_bid = rc_bid[rc_ord]
+            rc_binfo = panelsetup(rc_bid, 1)
+            rc_lut = J(rc_nbg * rc_nbt, 2, 0)
+            for (rc_b = 1; rc_b <= rows(rc_binfo); rc_b++) {
+                rc_lut[rc_bid[rc_binfo[rc_b, 1]], 1] = rc_binfo[rc_b, 1]
+                rc_lut[rc_bid[rc_binfo[rc_b, 1]], 2] = rc_binfo[rc_b, 2] - rc_binfo[rc_b, 1] + 1
+            }
+            rc_built = 1
+            rc_mask = J(rows(y), 1, 0)
+        }
+        csdid__profile_add(2, prof_t0, rows(rc_rowsel))
+    }
     dr_cache_valid = 0
     dr_cache_g = .
     dr_cache_tidx_x = .
@@ -2058,18 +2288,48 @@ void csdid_basic_attgt(
                 continue
             }
 
-            idx_t1 = (use :!= 0) :& (geff :== g) :& (tt :== t)
-            idx_t0 = (use :!= 0) :& (geff :== g) :& (tt :== pret)
-            if (notyet != "") {
-                idx_c1 = (use :!= 0) :& ((geff :== 0) :| (geff :> control_time + anticipation)) :& (tt :== t)
-                idx_c0 = (use :!= 0) :& ((geff :== 0) :| (geff :> control_time + anticipation)) :& (tt :== pret)
+            if (rc_built) {
+                // bucket-slice assembly: the same rows, in the same ascending
+                // order, that the boolean masks select - at O(rows in the
+                // cell) instead of O(N) per mask. The control condition
+                // deliberately has no g-exclusion, exactly like the masks.
+                rc_tid_t = csdid__time_index(tlevels, t)
+                rc_tid_pre = csdid__time_index(tlevels, pret)
+                rc_bg = .
+                for (rc_b = 1; rc_b <= rc_nbg; rc_b++) {
+                    if (rc_gcats[rc_b] == g) rc_bg = rc_b
+                }
+                rc_treat_t = csdid__rc_slice(rc_sorted_rows, rc_lut, rc_nbt, rc_bg, rc_tid_t)
+                rc_treat_pre = csdid__rc_slice(rc_sorted_rows, rc_lut, rc_nbt, rc_bg, rc_tid_pre)
+                rc_ctrl_t = J(0, 1, .)
+                rc_ctrl_pre = J(0, 1, .)
+                for (rc_c = 1; rc_c <= rc_nbg; rc_c++) {
+                    if (notyet != "") {
+                        if (!(rc_gcats[rc_c] == 0 | rc_gcats[rc_c] > control_time + anticipation)) continue
+                    }
+                    else {
+                        if (rc_gcats[rc_c] != 0) continue
+                    }
+                    rc_ctrl_t = rc_ctrl_t \ csdid__rc_slice(rc_sorted_rows, rc_lut, rc_nbt, rc_c, rc_tid_t)
+                    rc_ctrl_pre = rc_ctrl_pre \ csdid__rc_slice(rc_sorted_rows, rc_lut, rc_nbt, rc_c, rc_tid_pre)
+                }
+                nt1 = rows(rc_treat_t); nt0 = rows(rc_treat_pre)
+                nc1 = rows(rc_ctrl_t); nc0 = rows(rc_ctrl_pre)
             }
             else {
-                idx_c1 = (use :!= 0) :& (geff :== 0) :& (tt :== t)
-                idx_c0 = (use :!= 0) :& (geff :== 0) :& (tt :== pret)
+                // panel-shaped data: the original mask path, verbatim
+                idx_t1 = (use :!= 0) :& (geff :== g) :& (tt :== t)
+                idx_t0 = (use :!= 0) :& (geff :== g) :& (tt :== pret)
+                if (notyet != "") {
+                    idx_c1 = (use :!= 0) :& ((geff :== 0) :| (geff :> control_time + anticipation)) :& (tt :== t)
+                    idx_c0 = (use :!= 0) :& ((geff :== 0) :| (geff :> control_time + anticipation)) :& (tt :== pret)
+                }
+                else {
+                    idx_c1 = (use :!= 0) :& (geff :== 0) :& (tt :== t)
+                    idx_c0 = (use :!= 0) :& (geff :== 0) :& (tt :== pret)
+                }
+                nt1 = sum(idx_t1); nt0 = sum(idx_t0); nc1 = sum(idx_c1); nc0 = sum(idx_c0)
             }
-
-            nt1 = sum(idx_t1); nt0 = sum(idx_t0); nc1 = sum(idx_c1); nc0 = sum(idx_c0)
             if (min((nt1, nt0, nc1, nc0)) <= 0) {
                 if (nt1 <= 0) printf("warning: No units in group %g in time period %g\n", g, t)
                 event_time = t - g
@@ -2087,8 +2347,21 @@ void csdid_basic_attgt(
             }
 
             if (!balanced_panel & (has_w | has_x | notyet != "")) {
-                idx_rc = idx_t0 :| idx_t1 :| idx_c0 :| idx_c1
-                valid_rows = select((1::rows(y)), idx_rc)
+                if (rc_built) {
+                    // union of the four slices, deduplicated and ascending -
+                    // identical to select() over the OR of the masks; the
+                    // reusable 0/1 buffer needs no per-cell sort
+                    if (rows(rc_treat_t)) rc_mask[rc_treat_t] = J(rows(rc_treat_t), 1, 1)
+                    if (rows(rc_treat_pre)) rc_mask[rc_treat_pre] = J(rows(rc_treat_pre), 1, 1)
+                    if (rows(rc_ctrl_t)) rc_mask[rc_ctrl_t] = J(rows(rc_ctrl_t), 1, 1)
+                    if (rows(rc_ctrl_pre)) rc_mask[rc_ctrl_pre] = J(rows(rc_ctrl_pre), 1, 1)
+                    valid_rows = selectindex(rc_mask)
+                    if (rows(valid_rows)) rc_mask[valid_rows] = J(rows(valid_rows), 1, 0)
+                }
+                else {
+                    idx_rc = idx_t0 :| idx_t1 :| idx_c0 :| idx_c1
+                    valid_rows = select((1::rows(y)), idx_rc)
+                }
                 n1 = rows(valid_rows)
                 dropped_ids = J(0, 1, .)
                 if (fix_weights == "base_period") {
@@ -2222,23 +2495,63 @@ void csdid_basic_attgt(
                 continue
             }
 
-            mt1 = csdid__mean(select(y, idx_t1))
-            mt0 = csdid__mean(select(y, idx_t0))
-            mc1 = csdid__mean(select(y, idx_c1))
-            mc0 = csdid__mean(select(y, idx_c0))
+            if (rc_built) {
+                mt1 = csdid__mean(y[rc_treat_t])
+                mt0 = csdid__mean(y[rc_treat_pre])
+                mc1 = csdid__mean(y[rc_ctrl_t])
+                mc0 = csdid__mean(y[rc_ctrl_pre])
+            }
+            else {
+                mt1 = csdid__mean(select(y, idx_t1))
+                mt0 = csdid__mean(select(y, idx_t0))
+                mc1 = csdid__mean(select(y, idx_c1))
+                mc0 = csdid__mean(select(y, idx_c0))
+            }
             att = (mt1 - mt0) - (mc1 - mc0)
             unit_if = J(n_units, 1, 0)
-            for (r = 1; r <= rows(y); r++) {
-                if (use[r] == 0) continue
-                if_value = 0
-                if (idx_t1[r]) if_value = n_units / nt1 * (y[r] - mt1)
-                if (idx_t0[r]) if_value = -n_units / nt0 * (y[r] - mt0)
-                if (idx_c1[r]) if_value = -n_units / nc1 * (y[r] - mc1)
-                if (idx_c0[r]) if_value = n_units / nc0 * (y[r] - mc0)
-                if (if_value != 0) {
-                    uid_index = row_unit_index[r]
-                    if (uid_index >= .) uid_index = csdid__sorted_col_index(idlevels, id[r])
-                    if (uid_index < .) unit_if[uid_index] = unit_if[uid_index] + if_value
+            if (rc_built) {
+                // the same if-value chain, evaluated only on the union rows
+                // (ascending = original scan order); conditions and their
+                // overwrite priority untouched
+                if (rows(rc_treat_t)) rc_mask[rc_treat_t] = J(rows(rc_treat_t), 1, 1)
+                if (rows(rc_treat_pre)) rc_mask[rc_treat_pre] = J(rows(rc_treat_pre), 1, 1)
+                if (rows(rc_ctrl_t)) rc_mask[rc_ctrl_t] = J(rows(rc_ctrl_t), 1, 1)
+                if (rows(rc_ctrl_pre)) rc_mask[rc_ctrl_pre] = J(rows(rc_ctrl_pre), 1, 1)
+                valid_rows = selectindex(rc_mask)
+                if (rows(valid_rows)) rc_mask[valid_rows] = J(rows(valid_rows), 1, 0)
+                for (rr = 1; rr <= rows(valid_rows); rr++) {
+                    r = valid_rows[rr]
+                    if_value = 0
+                    if (geff[r] == g & tt[r] == t) if_value = n_units / nt1 * (y[r] - mt1)
+                    if (geff[r] == g & tt[r] == pret) if_value = -n_units / nt0 * (y[r] - mt0)
+                    if (notyet != "") {
+                        if ((geff[r] == 0 | geff[r] > control_time + anticipation) & tt[r] == t) if_value = -n_units / nc1 * (y[r] - mc1)
+                        if ((geff[r] == 0 | geff[r] > control_time + anticipation) & tt[r] == pret) if_value = n_units / nc0 * (y[r] - mc0)
+                    }
+                    else {
+                        if (geff[r] == 0 & tt[r] == t) if_value = -n_units / nc1 * (y[r] - mc1)
+                        if (geff[r] == 0 & tt[r] == pret) if_value = n_units / nc0 * (y[r] - mc0)
+                    }
+                    if (if_value != 0) {
+                        uid_index = row_unit_index[r]
+                        if (uid_index >= .) uid_index = csdid__sorted_col_index(idlevels, id[r])
+                        if (uid_index < .) unit_if[uid_index] = unit_if[uid_index] + if_value
+                    }
+                }
+            }
+            else {
+                for (r = 1; r <= rows(y); r++) {
+                    if (use[r] == 0) continue
+                    if_value = 0
+                    if (idx_t1[r]) if_value = n_units / nt1 * (y[r] - mt1)
+                    if (idx_t0[r]) if_value = -n_units / nt0 * (y[r] - mt0)
+                    if (idx_c1[r]) if_value = -n_units / nc1 * (y[r] - mc1)
+                    if (idx_c0[r]) if_value = n_units / nc0 * (y[r] - mc0)
+                    if (if_value != 0) {
+                        uid_index = row_unit_index[r]
+                        if (uid_index >= .) uid_index = csdid__sorted_col_index(idlevels, id[r])
+                        if (uid_index < .) unit_if[uid_index] = unit_if[uid_index] + if_value
+                    }
                 }
             }
             if_ss = quadcross(unit_if, unit_if)
@@ -4492,9 +4805,12 @@ void csdid_aggte(
     real scalar use_cluster,
     real scalar use_cache,
     string scalar outname,
-    string scalar ifname)
+    string scalar ifname,
+    real scalar store_large)
 {
     external real matrix CSDID_LAST_INFFUNC, CSDID_LAST_UNIT_GROUP, CSDID_LAST_CLUSTER_VEC
+    external real matrix CSDID_LAST_AGG_INFFUNC
+    external real scalar CSDID_LAST_TOKEN, CSDID_LAST_AGG_TOKEN
     real matrix attgt, inffunc, group_prob, unit_group_mat, out, wif, effect_if
     real matrix effect_if_mat, t_first_mat  // F-009: defensive e(time_first) fetch
     real colvector group, tt, event_time, att, pg, unit_group, unit_weight, glist, pgg, cluster_vec
@@ -4580,8 +4896,22 @@ void csdid_aggte(
         overall_if = csdid__agg_if(att, inffunc, keep, weights, wif)
         overall_se = csdid__se_from_if_cluster(overall_if, cluster_vec)
         out = (., overall_att, overall_se, overall_att, overall_se)
+        // The aggregation influence functions are one row per UNIT. Stata's
+        // classic-matrix layer is quadratic in a matrix's longest dimension
+        // (measured on Stata MP: writing or copying an n x 1 matrix costs
+        // 4s at n=25,000, 27s at 50,000, 148s at 100,000 -- independent of
+        // orientation and of the number of cells), so an unconditional
+        // st_matrix() here made `estat event' after a 400,000-unit estimation
+        // hang for hours while csdid itself finished in seconds. The IF
+        // therefore always lands in the Mata cache, tagged with the token of
+        // the estimation it belongs to, and crosses into a Stata matrix only
+        // under full storage -- the same policy the estimator applies to
+        // e(inffunc). Consumers fall back to the cache through the same
+        // empty-name convention the bootstrap plumbing already uses.
+        CSDID_LAST_AGG_INFFUNC = (overall_if, overall_if)
+        CSDID_LAST_AGG_TOKEN = CSDID_LAST_TOKEN
         st_matrix(outname, out)
-        st_matrix(ifname, (overall_if, overall_if))
+        if (store_large) st_matrix(ifname, CSDID_LAST_AGG_INFFUNC)
         return
     }
 
@@ -4622,8 +4952,11 @@ void csdid_aggte(
         for (i = 1; i <= n_effects; i++) {
             out = out \ (egt[i], effects[i], ses[i], overall_att, overall_se)
         }
+        // lean storage: see the note in the simple branch
+        CSDID_LAST_AGG_INFFUNC = (effect_if_mat, overall_if)
+        CSDID_LAST_AGG_TOKEN = CSDID_LAST_TOKEN
         st_matrix(outname, out)
-        st_matrix(ifname, (effect_if_mat, overall_if))
+        if (store_large) st_matrix(ifname, CSDID_LAST_AGG_INFFUNC)
         return
     }
 
@@ -4686,8 +5019,11 @@ void csdid_aggte(
         for (i = 1; i <= n_effects; i++) {
             out = out \ (egt[i], effects[i], ses[i], overall_att, overall_se)
         }
+        // lean storage: see the note in the simple branch
+        CSDID_LAST_AGG_INFFUNC = (effect_if_mat, overall_if)
+        CSDID_LAST_AGG_TOKEN = CSDID_LAST_TOKEN
         st_matrix(outname, out)
-        st_matrix(ifname, (effect_if_mat, overall_if))
+        if (store_large) st_matrix(ifname, CSDID_LAST_AGG_INFFUNC)
         return
     }
 
@@ -4723,8 +5059,11 @@ void csdid_aggte(
         for (i = 1; i <= n_effects; i++) {
             out = out \ (egt[i], effects[i], ses[i], overall_att, overall_se)
         }
+        // lean storage: see the note in the simple branch
+        CSDID_LAST_AGG_INFFUNC = (effect_if_mat, overall_if)
+        CSDID_LAST_AGG_TOKEN = CSDID_LAST_TOKEN
         st_matrix(outname, out)
-        st_matrix(ifname, (effect_if_mat, overall_if))
+        if (store_large) st_matrix(ifname, CSDID_LAST_AGG_INFFUNC)
         return
     }
 }
@@ -5141,13 +5480,23 @@ void csdid_post_mapped_v(
     string scalar mapname,
     string scalar vname)
 {
-    external real matrix CSDID_LAST_CLUSTER_VEC
+    external real matrix CSDID_LAST_CLUSTER_VEC, CSDID_LAST_AGG_INFFUNC
     real matrix inf, sc, V, Vvalid, oldV, draws, centered
     real rowvector map, valid_pos, cols_keep
     real colvector cluster_vec, se
     real scalar n, nc, scale, j
 
-    inf = st_matrix(ifname)
+    if (ifname == "") {
+        // Lean aggregation posts no e(agg_inffunc): an n_units-row matrix
+        // never crosses into Stata's classic-matrix layer, whose cost is
+        // quadratic in the longest dimension (see csdid_aggte). The caller
+        // has already token-validated the cache against the active results,
+        // so the posted covariances are computed from the cached copy.
+        inf = CSDID_LAST_AGG_INFFUNC
+    }
+    else {
+        inf = st_matrix(ifname)
+    }
     oldV = st_matrix(vname)
     map = st_matrix(mapname)
     if (rows(map) > 1) map = map'
@@ -5207,6 +5556,60 @@ void csdid_post_mapped_v(
     se = sqrt(diagonal(oldV))
     csdid__rescale_v_to_se(V, se)
     st_matrix(vname, V)
+}
+
+// ---------------------------------------------------------------------------
+// RIF artifact export.
+//
+// Fills the CURRENT (empty, preset-obs) dataset with the saved-RIF columns
+// directly from the Mata cache: id/group/weight from the unit map and one
+// rif# column per ATT(g,t) cell. The old path routed the same numbers
+// through `matrix IF = e(inffunc)' plus svmat - three crossings of Stata's
+// classic-matrix layer, each quadratic in n_units (see csdid_aggte).
+// st_store of the cached matrix is one linear copy. The caller has already
+// token-validated the cache against the active e() results and set the
+// observation count to rows(CSDID_LAST_INFFUNC).
+// ---------------------------------------------------------------------------
+void csdid_rif_export()
+{
+    external real matrix CSDID_LAST_INFFUNC, CSDID_LAST_UNIT_GROUP
+    real matrix inf, ug
+    real scalar n, k, j
+    string rowvector rifnames
+    real rowvector idx
+
+    // Reading a Stata matrix INTO Mata is linear (measured: 0.00s at 50k
+    // rows); only writes and Stata-side copies pay the quadratic cost. So
+    // the export reads whichever source holds the influence functions -
+    // e(inffunc) under full storage, the cache under lean - and never
+    // creates another Stata matrix.
+    inf = st_matrix("e(inffunc)")
+    if (rows(inf) > 0) {
+        ug = st_matrix("e(unit_group)")
+    }
+    else {
+        inf = CSDID_LAST_INFFUNC
+        ug = CSDID_LAST_UNIT_GROUP
+    }
+    n = rows(inf)
+    k = cols(inf)
+    if (k != rows(st_matrix("e(attgt)"))) {
+        errprintf("stored influence functions do not match ATT(g,t) results\n")
+        _error(498)
+    }
+    if (st_nobs() != n) {
+        errprintf("csdid_rif_export: observation count does not match the influence functions\n")
+        _error(498)
+    }
+    // schema: id group weight, exactly as the svmat path produced. The unit
+    // map may carry a 4th (bootstrap draw-order) column; it is internal and
+    // stays out of the artifact (F-001/F-022).
+    idx = st_addvar("double", ("id", "group", "weight"))
+    st_store(., idx, ug[., 1..3])
+    rifnames = J(1, k, "")
+    for (j = 1; j <= k; j++) rifnames[j] = "rif" + strofreal(j)
+    idx = st_addvar("double", rifnames)
+    st_store(., idx, inf)
 }
 
 // ---------------------------------------------------------------------------
@@ -5314,8 +5717,8 @@ void csdid__globals_init()
 {
     external real matrix CSDID_LAST_ATTGT, CSDID_LAST_INFFUNC, CSDID_LAST_GROUP_PROB
     external real matrix CSDID_LAST_UNIT_GROUP, CSDID_LAST_UNIT_ROW, CSDID_LAST_ROW_UNIT
-    external real matrix CSDID_LAST_CLUSTER_VEC
-    external real scalar CSDID_LAST_TOKEN, CSDID_TOKEN_COUNTER
+    external real matrix CSDID_LAST_CLUSTER_VEC, CSDID_LAST_AGG_INFFUNC
+    external real scalar CSDID_LAST_TOKEN, CSDID_TOKEN_COUNTER, CSDID_LAST_AGG_TOKEN
     external real matrix CSDID_PROFILE, CSDID_BOOT_PROFILE, CSDID_BOOT_KERNEL_PROFILE
     external real matrix CSDID_AGG_BOOT_PROFILE
     external real scalar CSDID_BOOT_PLUGIN_PROFILE_START
@@ -5336,8 +5739,10 @@ void csdid__globals_init()
     CSDID_LAST_UNIT_ROW = J(0, 0, .)
     CSDID_LAST_ROW_UNIT = J(0, 0, .)
     CSDID_LAST_CLUSTER_VEC = J(0, 0, .)
+    CSDID_LAST_AGG_INFFUNC = J(0, 0, .)
     CSDID_LAST_TOKEN = 0
     CSDID_TOKEN_COUNTER = 0
+    CSDID_LAST_AGG_TOKEN = 0
     CSDID_PROFILE = J(8, 3, 0)
     CSDID_BOOT_PROFILE = J(6, 3, 0)
     CSDID_BOOT_KERNEL_PROFILE = J(5, 3, 0)

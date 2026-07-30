@@ -83,6 +83,21 @@ earlier versions estimated. If it fires, `notyet` uses not-yet-treated units as
 controls and does not depend on the never-treated group being large. This
 changes *whether the command runs*, never an estimate.
 
+### Stored results
+
+**`e()` carries the estimation contract; unit-level objects stay internal.**
+The influence functions — one row per unit, one column per ATT(g,t) — drive
+every standard error, aggregation, and bootstrap, and they live inside the
+estimation engine. Every feature computes from that internal copy: `estat`,
+`csdid_stats`, `test`/`lincom` (with full covariances), `csdid_plot`, and
+`saverif()`. This is the same division of labor official Stata commands use
+for unit-level quantities, and it is what keeps large estimations fast:
+copying an n-unit matrix into `e()` costs quadratic time in the number of
+units. Two explicit routes expose the influence functions when you want them —
+`storeall` materializes `e(inffunc)`, `e(unit_group)`, and `e(cluster_vec)`
+as Stata matrices, and `saverif()` writes the durable dataset that
+`csdid_stats using` aggregates in any later session.
+
 ### Options that now error instead of being accepted quietly
 
 | Option | 2.0.0 |
@@ -95,13 +110,6 @@ changes *whether the command runs*, never an estimate.
 | `from()` | No longer supported. Use `window(# #)` on `estat event` for event-time windows |
 | `dryrun` | Rejected; it was an internal option |
 
-### Fixed
-
-**`csdid` no longer changes a Stata session setting.** Running it left
-`matastrict` on, so any Mata code compiled afterwards that did not declare its
-variables would fail — including `csdid_rif`, and any Mata of your own. Results
-are unaffected.
-
 ### New
 
 - **Repeated cross sections.** Omit `ivar()`, or declare them with `rcs` and
@@ -113,22 +121,43 @@ are unaffected.
   in each 2×2 comparison: `varying`, `base_period`, or `first_period`.
 - **Parallel-trends pre-test** reported with the results and stored in
   `e(wald_stat)`, `e(wald_pvalue)` and `e(wald_df)`.
-- **Influence functions** exported in `e(inffunc)` for sensitivity analysis or
-  custom aggregation.
+- **Influence functions on request** — `storeall` materializes them as
+  `e(inffunc)` for sensitivity analysis or custom aggregation, and
+  `saverif()` writes them as a dataset that `csdid_stats using` aggregates
+  later, in another session or on another machine.
 - **`estat event`, `estat group`, `estat calendar`, `estat simple`,
   `estat dynamic` and `estat attgt`** as conventional postestimation forms.
 - **`saving()` on every `estat` subcommand**, which writes what that subcommand
   computed to a dataset — the same option `margins`, `simulate` and `graph`
-  take, so there is no separate export command. Previously it worked on
-  `estat tidy` and `estat glance` only: `estat attgt` refused it, and on the
-  five aggregation subcommands it was parsed and then silently ignored, so
-  `estat event, saving(f)` returned success and wrote no file.
+  take, so there is no separate export command.
 - **`csdid_plot, saving()`** exports plot-ready data so you keep control of the
   graph styling.
 - **Transformation and factor covariates** in the covariate list.
-- Substantially faster on large panels, with lower peak memory.
 - **No external dependencies.** Version 1.82 required `drdid` from SSC; 2.0.0 requires
   nothing beyond Stata itself.
+
+### Performance
+
+Version 2.0.0 is a rewritten engine, and speed at scale was a design goal
+alongside numerical parity with the reference implementation. Absolute
+numbers from one machine (Stata MP, Apple Silicon), so you can calibrate:
+
+- A 400,000-observation repeated cross section with 20 periods and 12 cohorts
+  estimates in under 30 seconds; a 350,000-row panel in one to three seconds
+  for every method (`dr`, `reg`, `ipw`), with or without covariates.
+- Aggregations never disturb stored results and are effectively instant at
+  any size: `estat event` takes a fraction of a second after a 20,000-unit
+  estimation and a few seconds after 400,000 units.
+- The multiplier bootstrap runs through a compiled plugin: 199 replications
+  on a 350,000-row panel add about two seconds.
+- `saverif()` writes its dataset in about a second at 20,000 units, and cost
+  scales linearly.
+
+The design rule behind these numbers: no object with one row per unit ever
+crosses into Stata's classic-matrix layer, whose cost is quadratic in a
+matrix's longest dimension. Unit-level results live in the engine, in
+variables, or in files — never in `e()` matrices, unless you ask with
+`storeall`.
 
 ### Legacy commands
 

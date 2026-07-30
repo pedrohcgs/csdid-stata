@@ -92,7 +92,7 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `faster_mode` | `TRUE` | `fast` / `nofast` (closest analogue, not a port of R's internals) | optimization allowed | Both are speed switches that leave the estimand alone, and both default to on, but they optimize different code: R reorganizes its data handling, Stata selects specialized Mata kernels. `nofast` is the way to ask for the unoptimized path, as `faster_mode = FALSE` is in R. `e(fast_used)` reports whether the optimized path actually engaged and `e(compute_path)` names it. |
 | `print_details` | `FALSE` | prefix the command with `quietly` to suppress, run it plain to see diagnostics | diagnostics shown | Stata's `c(noisily)` gate replaces the argument; there is no `print_details()` option. |
 | `pl`, `cores` | `FALSE`, `1` | - | - | No parallel backend; the engine is single-threaded Mata. |
-| `compute_inffunc` | `TRUE` | - | always computed | No equivalent. `performance(lean)` changes where influence functions are *stored* (a Mata cache instead of `e()`), never whether they are computed. |
+| `compute_inffunc` | `TRUE` | - | always computed | No equivalent: influence functions are always computed and kept internal. `storeall` materializes them in `e()`; `saverif()` writes them to a dataset. |
 | `...` (extra args for a custom `est_method`) | - | - | - | Custom estimators are not supported. |
 | `set.seed(n)` before the call | - | `rseed(#)`, `seed(#)`, `wboot(rseed(#))`, `wboot(seed(#))` | unseeded | For the same integer, the Stata run reproduces R's multiplier draws; see [section 8](#8-worked-example-the-same-analysis-in-both-languages). |
 
@@ -103,7 +103,7 @@ Stata-only options on `csdid`, with no R counterpart:
 | `pscoretrim(#)` | Propensity-score trimming threshold passed to the doubly robust / IPW step (default `0.995`). |
 | `saverif(filename) [replace]` | Writes the influence functions to a dataset that `csdid_stats using` can re-aggregate later without re-estimating. |
 | `agg(event)` | Runs `csdid` and then the dynamic aggregation in one command, posting the event-study coefficients. Other aggregation types go through `csdid_stats`. |
-| `lean`, `storeall`, `performance(auto\|lean\|full)` | Storage policy for the large influence-function matrices. Numerically inert. |
+| `lean`, `storeall`, `performance(auto\|lean\|full)` | Storage policy for the large influence-function matrices: internal by default at every sample size; `storeall` (or `performance(full)`) materializes them in `e()`. Numbers are identical either way. |
 | `vce(analytical)`, `vce(cluster var)` | Stata-idiomatic spellings of `bstrap = FALSE` and `clustervars`. |
 | `long`, `long2`, `asinr`, `never`, `bal()` / `balance()`, `performance(materialized)`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
 
@@ -169,7 +169,7 @@ calendar, and `ATT` for simple.
 | `att` | `e(attgt)`, column `att` | Also posted to `e(b)`, named `g<g>___<t>_<g-1>` (e.g. `g2004___2005_2003`). Cells at event time -1 and cells with a missing ATT are not posted, so `e(b)` can be shorter than `e(attgt)` has rows. |
 | `se` | `e(attgt)`, column `se` | Bootstrap SE when `bstrap`, analytical otherwise - same rule as R. Under the bootstrap, `e(boot_attgt)` carries both `se_boot` and `se_analytic`. |
 | `c` | `e(crit_val)` | The simultaneous critical value under `cband`, the pointwise one otherwise. `e(point_crit_val)` always holds the normal quantile. |
-| `inffunc` | `e(inffunc)` | One column per ATT(g,t), one row per unit (per observation for repeated cross sections), as in R. R identifies rows by `rownames`; Stata identifies them by the `id` column of `e(unit_group)`. Stored subject to the storage policy in `docs/stored-results-api.md`. |
+| `inffunc` | `e(inffunc)` under `storeall`, or `saverif()` as a dataset | One column per ATT(g,t), one row per unit (per observation for repeated cross sections), as in R. R identifies rows by `rownames`; Stata identifies them by the `id` column of `e(unit_group)`. Stored subject to the storage policy in `docs/stored-results-api.md`. |
 | `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R returns both objects; Stata posts one. |
 | `n` | `e(N_units)` | `e(N)` is the number of observations, not units. |
 | `alp` | `e(level)` | `level = 100 * (1 - alp)`. |

@@ -49,7 +49,7 @@ assert divergence_id[1] == "RT008-DIV001"
 assert strpos(reason[1], "compute_inffunc=FALSE") > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt008/inputs/input.csv", clear asdouble
-csdid y x, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none)
+csdid y x, ivar(id) time(year) gvar(group) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 confirm matrix e(attgt)
 confirm matrix e(inffunc)
 matrix ATT = e(attgt)
@@ -75,7 +75,7 @@ import delimited using "`root'/tests/fixtures/parity/rt008/inputs/input.csv", cl
 tempfile evlog
 capture log close rt008event
 log using "`evlog'", text replace name(rt008event)
-capture noisily csdid y x, ivar(id) time(year) gvar(group) compute_inffunc(false) analytical nevertreated base_period(varying) bal(none)
+capture noisily csdid y x, ivar(id) time(year) gvar(group) compute_inffunc(false) analytical nevertreated base_period(varying) bal(none) storeall
 local rc = _rc
 log close rt008event
 assert `rc' == 198
@@ -106,7 +106,7 @@ quietly {
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/rt008/inputs/input.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(year) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(year) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     tempname IF UG
     matrix `IF' = e(inffunc)
     matrix `UG' = e(unit_group)

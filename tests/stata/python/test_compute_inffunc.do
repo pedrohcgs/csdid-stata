@@ -48,7 +48,7 @@ assert _N == 1
 assert divergence_id[1] == "PY006-DIV001"
 
 import delimited using "`root'/tests/fixtures/parity/py006/inputs/sample-data.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(year) gvar(group) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 confirm matrix e(attgt)
 confirm matrix e(inffunc)
 matrix ATT = e(attgt)
@@ -76,7 +76,7 @@ import delimited using "`root'/tests/fixtures/parity/py006/inputs/sample-data.cs
 tempfile evlog
 capture log close py006event
 log using "`evlog'", text replace name(py006event)
-capture noisily csdid y, ivar(id) time(year) gvar(group) compute_inffunc(false) analytical nevertreated base_period(varying) bal(none)
+capture noisily csdid y, ivar(id) time(year) gvar(group) compute_inffunc(false) analytical nevertreated base_period(varying) bal(none) storeall
 local rc = _rc
 log close py006event
 assert `rc' == 198
@@ -102,7 +102,7 @@ quietly {
 }
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py006/inputs/sample-data.csv", clear asdouble
-    quietly csdid y, ivar(id) time(year) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y, ivar(id) time(year) gvar(group) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     tempname IF UG
     matrix `IF' = e(inffunc)
     matrix `UG' = e(unit_group)

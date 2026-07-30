@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 26jul2026}{...}
+{* *! version 2.0.0 30jul2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -100,11 +100,12 @@ results.
 
 {pstd}
 Aggregation needs the influence functions of the ATT(g,t) estimates, which
-{cmd:csdid} leaves either in {cmd:e(inffunc)} and {cmd:e(unit_group)} or, on
-large jobs, in its Mata cache. Either is enough, but both live in the current
-session: after {cmd:clear all}, {cmd:mata clear}, or a restart, re-run
-{cmd:csdid} or use the {cmd:using} form below. {cmd:csdid_stats} says which is
-missing and exits with return code 498 rather than aggregating something stale.
+{cmd:csdid} keeps in its Mata cache (and additionally materializes as
+{cmd:e(inffunc)} and {cmd:e(unit_group)} under {cmd:storeall}). Both live in
+the current session: after {cmd:clear all}, {cmd:mata clear}, or a restart,
+re-run {cmd:csdid} or use the {cmd:using} form below. {cmd:csdid_stats} says
+what is missing and exits with return code 498 rather than aggregating
+something stale.
 
 {pstd}
 The {cmd:using} form reloads a saved influence-function (RIF) file written by
@@ -465,7 +466,10 @@ columns {cmd:egt}, {cmd:att}, {cmd:se}, {cmd:overall_att}, {cmd:overall_se};
 missing for {cmd:type(simple)}{p_end}
 {synopt:{cmd:e(agg_inffunc)}}influence functions of the aggregated effects, one
 row per unit and one column per reported effect, plus a final column for the
-overall effect{p_end}
+overall effect. Posted under {cmd:storeall} only: by default the influence
+functions are held internally, and every postestimation result, including
+the posted {cmd:e(V)} after {cmd:post}, is computed from the internal
+copy{p_end}
 {synopt:{cmd:e(boot_aggte)}}bootstrap aggregation table with columns
 {cmd:egt}, {cmd:att}, {cmd:se_boot}, {cmd:crit_val}, {cmd:ci_low},
 {cmd:ci_high}, {cmd:point_crit_val}, {cmd:point_ci_low}, {cmd:point_ci_high},

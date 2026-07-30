@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 26jul2026
+*! csdid_stats 2.0.0 30jul2026
 program define csdid_stats, eclass
     version 14
     * EUX-004: parse `using' as a declared, optional part of the command
@@ -343,6 +343,20 @@ program define csdid_stats, eclass
     capture confirm matrix e(unit_group)
     local has_unit_group = !_rc
     local use_cache = !(`has_inffunc' & `has_unit_group')
+    * Aggregation storage follows estimation storage. Full storage posted
+    * e(inffunc)/e(unit_group), so the aggregation influence functions are
+    * posted as e(agg_inffunc) exactly as before. Lean storage (the
+    * performance(auto) default at N_units >= 25,000, or performance(lean))
+    * keeps the estimation IF in the Mata cache, and the aggregation IF now
+    * stays there too: every crossing of an n_units-row matrix into Stata's
+    * classic-matrix layer is quadratic in n_units (measured per write or
+    * copy: 4s at 25k rows, 27s at 50k, 145s at 100k, orientation-independent),
+    * and the old unconditional write + ereturn + post/restore copies made
+    * `estat event' after a 400,000-unit estimation spin for hours while the
+    * estimation itself took 33 seconds. Consumers of the IF fall back to the
+    * Mata cache through the same empty-name convention the bootstrap
+    * plumbing already uses (see _csdid_post.ado and csdid_post_mapped_v).
+    local agg_store_large = (`use_cache' == 0)
     capture mata: csdid__mean(J(1, 1, 0))
     if _rc {
         capture quietly findfile csdid.mata
@@ -383,7 +397,7 @@ program define csdid_stats, eclass
     * "missing values found in ATT(g,t) estimates", ...) arrived with two
     * lines of Mata frames stapled underneath it. Run it under -capture- and
     * re-raise the diagnosis from the ado.
-    capture mata: csdid_aggte("`type'", `min_e', `max_e', `balance_e', `na_rm_flag', `use_cluster', `use_cache', "`aggte'", "`agg_inffunc'")
+    capture mata: csdid_aggte("`type'", `min_e', `max_e', `balance_e', `na_rm_flag', `use_cluster', `use_cache', "`aggte'", "`agg_inffunc'", `agg_store_large')
     local aggte_rc = _rc
     if `aggte_rc' {
         _csdid_stats_aggfail, type(`type') mine(`min_e') maxe(`max_e') ///
@@ -399,6 +413,14 @@ program define csdid_stats, eclass
         local boot_dist "`e(boot_dist)'"
         if "`boot_dist'" == "" local boot_dist "rademacher"
         tempname boot_aggte agg_boot_draws agg_crit agg_pointcrit boot_rng_state agg_bootstrap_profile
+        if !`agg_store_large' {
+            * The bootstrap plumbing below consumes a named Stata matrix.
+            * Under lean aggregation the IF lives only in the Mata cache, so
+            * materialize it once here -- the single remaining quadratic
+            * boundary crossing, paid only when an aggregation bootstrap is
+            * actually requested.
+            mata: st_matrix("`agg_inffunc'", CSDID_LAST_AGG_INFFUNC)
+        }
         local boot_agg_if "`agg_inffunc'"
         local boot_agg_cluster_vec ""
         if `use_cluster' {
@@ -609,16 +631,23 @@ program define csdid_stats, eclass
     if `n_se_total' > 0 & `n_se_missing' == `n_se_total' & `overall_se_missing' {
         display as text "note: every standard error in this type(`type') aggregation is missing. The ATT(g,t) estimates it aggregates have no usable standard errors, which usually means the influence functions are degenerate for these cells (a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance). The point estimates below are still the aggregation of the ATT(g,t) estimates."
     }
-    local if_cols = colsof(`agg_inffunc')
-    local if_names ""
-    forvalues j = 1/`if_cols' {
-        if `j' == `if_cols' local if_names "`if_names' overall"
-        else local if_names "`if_names' effect`j'"
-    }
-    matrix colnames `agg_inffunc' = `if_names'
     local n_aggte = rowsof(`aggte')
     ereturn matrix aggte = `aggte'
-    ereturn matrix agg_inffunc = `agg_inffunc'
+    * e(agg_inffunc) is posted under full storage only; under lean storage the
+    * IF stays in the Mata cache (see the storage note above the aggregation
+    * call). This also keeps _csdid_post_replace_bv from round-tripping an
+    * n_units-row matrix through Stata's quadratic matrix layer on every
+    * subsequent estat call.
+    if `agg_store_large' {
+        local if_cols = colsof(`agg_inffunc')
+        local if_names ""
+        forvalues j = 1/`if_cols' {
+            if `j' == `if_cols' local if_names "`if_names' overall"
+            else local if_names "`if_names' effect`j'"
+        }
+        matrix colnames `agg_inffunc' = `if_names'
+        ereturn matrix agg_inffunc = `agg_inffunc'
+    }
     ereturn local agg_type "`type'"
     ereturn local agg_clustervar "`agg_cluster'"
     ereturn scalar agg_cluster_fallback = `agg_cluster_fallback'

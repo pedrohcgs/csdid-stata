@@ -129,9 +129,10 @@ references only.
 - For large Stata-only storage costs, prefer documented Mata-cache fast paths
   with explicit e-class flags and postestimation parity tests over silently
   changing default stored-result matrices.
-- Treat `performance(auto)` as the default large-job storage resolver: large
-  non-`saverif()` jobs use cache-backed storage, while small jobs and explicit
-  `store_all` preserve stored-result durability. Clustered,
+- Storage is unified on lean: influence-function objects live in the engine
+  cache at every sample size, and only explicit `storeall` materializes them
+  in `e()`. No object with one row per unit crosses Stata's classic-matrix
+  layer (quadratic in the longest dimension) on a default run. Clustered,
   bootstrap, replay, aggregation, and estimates-store workflows must remain
   covered by parity and performance gates.
 - Record benchmark machine metadata and Stata version.

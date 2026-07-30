@@ -17,9 +17,11 @@ Stata 14 or newer. The engine is pure Mata and ships precompiled — no
 platform-specific binaries, nothing else to install.
 
 ## Guides
+{: #guides}
 
 | | |
 | --- | --- |
+| [How csdid compares](articles/csdid-against-the-field.html) | same data, five other estimators: speed, targets, and inference |
 | [Getting started](getting-started.html) | the estimand, the three choices you make, and a first estimate |
 | [Why not two-way fixed effects](articles/why-not-twfe.html) | what a TWFE coefficient actually averages under staggered timing |
 | [Balanced panels](articles/balanced-panel.html) | the standard case, end to end |

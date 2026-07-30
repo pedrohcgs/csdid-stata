@@ -155,7 +155,7 @@ assert abs(se - se_stata) <= 1e-8 + 1e-8 * abs(se) if !missing(se)
 
 tempfile actual_rt027 actual_rt027_agg
 import delimited using "`root'/tests/fixtures/parity/f016/inputs/rt027-unbalanced-cluster.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) base_period(universal) cluster(cluster) analytical nevertreated bal(none)
+csdid y, ivar(id) time(time) gvar(g) method(reg) base_period(universal) cluster(cluster) analytical nevertreated bal(none) storeall
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert "`e(base_period)'" == "universal"
 assert "`e(clustervar)'" == "cluster"

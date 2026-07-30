@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 26jul2026}{...}
+{* *! version 2.0.0 30jul2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -501,8 +501,8 @@ Sant'Anna (2021). Loading it requires an internet connection.
 {cmd:estat event} and {cmd:estat} {it:aggregation} compute the aggregation with
 {helpb csdid_stats} and therefore store everything
 {helpb csdid_stats##results:csdid_stats} stores, including {cmd:e(aggte)},
-{cmd:e(agg_inffunc)}, {cmd:e(agg_type)}, {cmd:e(agg_level)},
-{cmd:e(crit_val)}, and {cmd:e(point_crit_val)}. In addition, they store the
+{cmd:e(agg_type)}, {cmd:e(agg_level)}, {cmd:e(crit_val)},
+{cmd:e(point_crit_val)}, and, under {cmd:storeall}, {cmd:e(agg_inffunc)}. In addition, they store the
 following in {cmd:e()}:
 
 {synoptset 26 tabbed}{...}

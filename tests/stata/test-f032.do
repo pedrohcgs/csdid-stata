@@ -104,7 +104,7 @@ tempfile base_att fast_att shuffle_att base_if fast_if shuffle_if
 tempfile base_gram fast_gram shuffle_gram base_agg fast_agg shuffle_agg actual_agg
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(time) gvar(g) method(reg) nofast analytical nevertreated base_period(varying) bal(none) storeall
 assert e(fast_requested) == 0
 assert e(fast_allowed) == 0
 assert e(fast_used) == 0
@@ -139,7 +139,7 @@ restore
 f032_collect_aggs, saving("`base_agg'") data("`root'/tests/fixtures/parity/f032/inputs/input.csv") nofast
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none) storeall
 assert e(fast_requested) == 1
 assert e(fast_allowed) == 1
 assert e(fast_used) == 1
@@ -186,7 +186,7 @@ mata: st_numscalar("f032_auto_fast_diff", f032__matrix_maxabsdiff("A1", "Aauto")
 assert scalar(f032_auto_fast_diff) <= 1e-12
 
 import delimited using "`root'/tests/fixtures/parity/f032/inputs/input-shuffled.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none) storeall
 assert e(fast_requested) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"

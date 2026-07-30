@@ -104,8 +104,8 @@ program define f026_assert_common_scalars
 end
 
 import delimited using "`root'/tests/fixtures/parity/f026/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
-assert `"`e(cmdline)'"' == `"csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)"'
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
+assert `"`e(cmdline)'"' == `"csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall"'
 f026_assert_common_macros, panelmode("panel") idvar("id")
 f026_assert_common_scalars, n(192) nunits(48)
 f026_assert_attgt_matrices, ifrows(48) unitrows(48)
@@ -128,15 +128,15 @@ assert "`rn'" == "r1"
 f026_assert_attgt_matrices, ifrows(48) unitrows(48)
 
 import delimited using "`root'/tests/fixtures/parity/f026/inputs/input.csv", clear asdouble
-csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
-assert `"`e(cmdline)'"' == `"csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)"'
+csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
+assert `"`e(cmdline)'"' == `"csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall"'
 f026_assert_common_macros, panelmode("repeated-cross-section")
 f026_assert_common_scalars, n(192) nunits(192)
 f026_assert_attgt_matrices, ifrows(192) unitrows(192)
 
 import delimited using "`root'/tests/fixtures/parity/f026/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
-assert `"`e(cmdline)'"' == `"csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)"'
+csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none) storeall
+assert `"`e(cmdline)'"' == `"csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none) storeall"'
 f026_assert_common_macros, panelmode("panel") idvar("id") clustervar("cl")
 f026_assert_common_scalars, n(192) nunits(48)
 assert e(N_clusters) == 8

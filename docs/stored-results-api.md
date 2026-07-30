@@ -12,8 +12,8 @@ The following results are intended to be stable across compatible releases:
 | `e(b)` | matrix | stable | Posted coefficient vector for nonbase ATT(g,t) estimates when available. |
 | `e(V)` | matrix | stable | Full posted covariance matrix aligned to `e(b)` when available. Analytical runs use influence-function covariance; clustered runs use cluster-summed influence functions; bootstrap runs use bootstrap-draw correlations rescaled to the reported SEs. |
 | `e(group_prob)` | matrix | stable | Treated-group probability and count metadata. |
-| `e(inffunc)` | matrix | conditional stable | Stored only for small jobs or when `storeall` is requested. Large jobs may keep IFs in Mata cache. |
-| `e(unit_group)` | matrix | conditional stable | Stored only for small jobs or when `storeall` is requested. |
+| `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` is requested. Large jobs may keep IFs in Mata cache. |
+| `e(unit_group)` | matrix | conditional stable | Stored only when `storeall` is requested. |
 | `e(cluster_vec)` | matrix | conditional stable | Stored when clustering is requested and large matrices are materialized. |
 | `e(boot_attgt)` | matrix | stable when present | Bootstrap ATT(g,t) output when `wboot()` is requested. |
 | `e(boot_draws)` | matrix | diagnostic-adjacent | Present for bootstrap runs when stored. Draw ordering is not a portable reproducibility contract. |

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 26jul2026}{...}
+{* *! version 2.0.0 30jul2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -74,6 +74,8 @@ the posted effects{p_end}
 {cmd:describe}, {cmd:table}, and {cmd:stats}{p_end}
 {synopt :{helpb estat_vce:estat vce}}display {cmd:e(V)}, with the usual
 {cmd:estat vce} options{p_end}
+{synopt :{helpb estat_summarize:estat summarize}}summarize the estimation
+sample, off {cmd:e(sample)}{p_end}
 {synoptline}
 {p2colreset}{...}
 
@@ -96,9 +98,6 @@ variables in the data: there is no linear index to score. Refused by name, rc
 {synopt :{helpb margins}}same reason; {cmd:csdid} sets
 {cmd:e(marginsnotok)} {cmd:=} {cmd:_ALL}, so {cmd:margins} refuses with rc 322
 instead of tabulating a meaningless margin{p_end}
-{synopt :{helpb estat_summarize:estat summarize}}{cmd:csdid} does not set
-{cmd:e(sample)}, so Stata refuses:
-{it:e(sample) information not available}{p_end}
 {synopt :{helpb estat_ic:estat ic}, {helpb lrtest}}no likelihood: {cmd:csdid} is
 a moment estimator and stores no {cmd:e(ll)}{p_end}
 {synopt :{cmd:estat bootstrap}}{cmd:csdid}'s multiplier bootstrap is not the
@@ -240,9 +239,9 @@ the estimation results themselves are never overwritten.
 does not work, and why, is listed in the second table under
 {help csdid_postestimation##commands:Postestimation commands}: the short version
 is that {cmd:csdid} posts treatment effects rather than coefficients on
-variables, sets no {cmd:e(sample)}, and has no likelihood, so {cmd:predict},
-{cmd:margins}, {cmd:estat summarize}, {cmd:estat ic}, and {cmd:lrtest} have
-nothing to work from. Each refuses by name.
+variables and has no likelihood, so {cmd:predict}, {cmd:margins},
+{cmd:estat ic}, and {cmd:lrtest} have nothing to work from. Each refuses by
+name. {cmd:estat summarize} works, off {cmd:e(sample)}.
 
 {marker export}{...}
 {title:Exporting results}
@@ -336,7 +335,8 @@ which after the {cmd:balance(1)} line above covers a shorter event window.
 Aggregation results are stored in {cmd:e()} by {helpb csdid_stats}, which lists
 them in {helpb csdid_stats##results:its own Stored results section}. The
 headline items are {cmd:e(aggte)} (the aggregation table), {cmd:e(agg_type)},
-{cmd:e(agg_level)}, {cmd:e(crit_val)}, and {cmd:e(agg_inffunc)}.
+{cmd:e(agg_level)}, {cmd:e(crit_val)}, and, under {cmd:storeall},
+{cmd:e(agg_inffunc)}.
 
 {pstd}
 With {cmd:post}, {cmd:e(b)} and {cmd:e(V)} hold the aggregated effects and

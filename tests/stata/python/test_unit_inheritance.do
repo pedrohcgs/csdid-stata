@@ -37,13 +37,13 @@ assert divergence_id == "PY025-DIV001"
 * ---- influence functions are mean-zero, panel and repeated cross section ----
 * test_panel_if_mean_zero, test_rc_if_mean_zero, test_inffunc_overall_mean_zero
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 matrix IF = e(inffunc)
 mata: st_local("mx", strofreal(max(abs(mean(st_matrix("IF"))))))
 assert `mx' < 1e-12
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta_extra.csv", clear asdouble
-quietly csdid lemp, time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 assert "`e(panel_mode)'" == "repeated-cross-section"
 matrix IFRC = e(inffunc)
 mata: st_local("mxrc", strofreal(max(abs(mean(st_matrix("IFRC"))))))
@@ -52,17 +52,17 @@ assert `mxrc' < 1e-12
 * ---- dr equals ipw when there are no covariates ----------------------------
 * test_panel_dr_equals_ipw_intercept_only, test_rc_dr_equals_ipw_intercept_only
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 matrix DRP = e(attgt)
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(ipw) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(ipw) analytical nevertreated base_period(varying) bal(none) storeall
 matrix IPP = e(attgt)
 mata: st_local("dp", strofreal(max(abs(st_matrix("DRP")[.,4] - st_matrix("IPP")[.,4]))))
 assert `dp' < 1e-12
 
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta_extra.csv", clear asdouble
-quietly csdid lemp, time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 matrix DRR = e(attgt)
-quietly csdid lemp, time(year) gvar(firsttreat) method(ipw) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, time(year) gvar(firsttreat) method(ipw) analytical nevertreated base_period(varying) bal(none) storeall
 matrix IPR = e(attgt)
 mata: st_local("dr", strofreal(max(abs(st_matrix("DRR")[.,4] - st_matrix("IPR")[.,4]))))
 assert `dr' < 1e-12
@@ -70,10 +70,10 @@ assert `dr' < 1e-12
 * ---- rescaling the weights leaves ATT(g,t) unchanged -----------------------
 * test_panel_weight_scale_invariance
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta_extra.csv", clear asdouble
-quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 matrix W1 = e(attgt)
 replace wt = wt * 7.5
-quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp [iw=wt], ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 matrix W2 = e(attgt)
 mata: st_local("dw", strofreal(max(abs(st_matrix("W1")[.,4] - st_matrix("W2")[.,4]))))
 assert `dw' < 1e-12
@@ -85,9 +85,9 @@ assert `dw' < 1e-12
 * Universal also emits the g-1 normalization row, so the two runs have
 * different row counts and must be compared on (group, time), not by position.
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) base_period(varying) analytical nevertreated bal(none)
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) base_period(varying) analytical nevertreated bal(none) storeall
 matrix BV = e(attgt)
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) base_period(universal) analytical nevertreated bal(none)
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) base_period(universal) analytical nevertreated bal(none) storeall
 matrix BU = e(attgt)
 mata {
     V = st_matrix("BV"); U = st_matrix("BU")
@@ -117,7 +117,7 @@ import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", cl
 quietly summarize year, meanonly
 local t1 = r(min)
 replace firsttreat = `t1' if firsttreat == 2004
-quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 matrix FP = e(attgt)
 mata: st_local("has", strofreal(sum(st_matrix("FP")[.,1] :== `t1') > 0))
 assert `has' == 0
@@ -126,14 +126,14 @@ assert `has' == 0
 * test_validate_panel_requires_idname: without ivar() csdid does not silently
 * estimate a panel, it takes the repeated-cross-section path.
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
-quietly csdid lemp, time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
+quietly csdid lemp, time(year) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 assert "`e(panel_mode)'" == "repeated-cross-section"
 
 * ---- a string time() is rejected -------------------------------------------
 * test_validate_rejects_nonnumeric_time
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
 tostring year, gen(yearstr)
-capture csdid lemp, ivar(countyreal) time(yearstr) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none)
+capture csdid lemp, ivar(countyreal) time(yearstr) gvar(firsttreat) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 assert _rc == 198
 
 display "PY025 OK: 106 unit tests classified; 98 mapped, 8 inapplicable"

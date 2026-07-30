@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 26jul2026}{...}
+{* *! version 2.0.0 30jul2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -126,11 +126,11 @@ dataset for later use by {helpb csdid_stats}{p_end}
 {synopt:{opt replace}}overwrite the file named in {cmd:saverif()}{p_end}
 
 {syntab:Storage and diagnostics {help csdid##opt_storage:[+]}}
-{synopt:{opt storeall}}always copy the large influence-function matrices into
-{cmd:e()}{p_end}
-{synopt:{opt lean}}never copy them into {cmd:e()}{p_end}
-{synopt:{opt perf:ormance(mode)}}{cmd:auto}, {cmd:lean}, or {cmd:full} storage;
-default is {cmd:performance(auto)}{p_end}
+{synopt:{opt storeall}}copy the large influence-function matrices into
+{cmd:e()}; by default they stay internal{p_end}
+{synopt:{opt lean}}the default, stated explicitly{p_end}
+{synopt:{opt perf:ormance(mode)}}{cmd:auto} and {cmd:lean} are the default;
+{cmd:full} is {cmd:storeall}{p_end}
 {synopt:{opt fast}}force the optimized Mata kernels{p_end}
 {synopt:{opt nofast}}force the baseline Mata kernels{p_end}
 
@@ -154,7 +154,7 @@ default is {cmd:performance(auto)}{p_end}
 {help csdid##opt_main:Main} below.  {cmd:aweight}s, {cmd:fweight}s, and
 {cmd:pweight}s are not allowed.{p_end}
 {p 4 6 2}
-{cmd:csdid} does not set {cmd:e(sample)} and does not support {cmd:predict} or
+{cmd:csdid} marks {cmd:e(sample)} but does not support {cmd:predict} or
 {cmd:margins}; see {help csdid##remarks_post:Postestimation}.{p_end}
 {p 4 6 2}
 See {helpb csdid_postestimation:csdid postestimation} for the commands
@@ -453,9 +453,9 @@ event-time samples.
 influence functions, one variable per (g,t) cell, together with the unit,
 cohort, and weight columns and the metadata needed to aggregate later. Load it
 with {cmd:csdid_stats using} {it:filename} to produce aggregations without
-re-estimating. {opt replace} overwrites an existing file. {cmd:saverif()}
-cannot be combined with {cmd:lean} storage, which discards the influence
-functions it would need to write.
+re-estimating. {opt replace} overwrites an existing file. The artifact is
+written from the internal influence functions, so it needs no storage
+option: it works the same under the default and under {cmd:storeall}.
 
 {pmore}
 The destination is checked {it:before} estimation starts, as
@@ -476,20 +476,26 @@ kernels run. They exist for large jobs, benchmarking, and support. They are
 not part of the econometric specification and are not needed in normal use.
 
 {phang}
-{opt storeall} forces {cmd:e(inffunc)}, {cmd:e(unit_group)}, and
-{cmd:e(cluster_vec)} into {cmd:e()} even on large samples. {cmd:store_all} is
-an accepted synonym.
+By default the one-row-per-unit influence-function objects stay internal at
+every sample size: {cmd:e()} carries the estimation contract, and every
+postestimation feature - {cmd:estat}, {helpb csdid_stats}, {cmd:test},
+{cmd:lincom}, {cmd:saverif()} - computes from the internal copy. This is the
+same division of labor official commands use, and it is what keeps large-N
+estimation and postestimation fast: copying an n-unit matrix into {cmd:e()}
+costs quadratic time in the number of units.
 
 {phang}
-{opt lean} does the opposite: the large matrices are never copied into
-{cmd:e()}. {opt performance(mode)} spells the same choice out, with
-{it:mode} equal to {cmd:auto} (the default), {cmd:lean}, or {cmd:full}. Under
-{cmd:auto}, samples of at least
-{cmd:e(performance_auto_threshold)} observations, 25,000 at present, use lean
-storage unless {cmd:saverif()} was requested. {cmd:performance(materialized)}
-is a deprecated spelling of {cmd:performance(full)}. The resolved mode is in
-{cmd:e(performance_resolved)}, and {cmd:e(large_store)} records whether the
-large matrices were kept.
+{opt storeall} additionally materializes {cmd:e(inffunc)},
+{cmd:e(unit_group)}, and {cmd:e(cluster_vec)} as Stata matrices, for users
+who want the influence functions themselves for custom calculations.
+{cmd:store_all} is an accepted synonym, as is {cmd:performance(full)}
+({cmd:performance(materialized)} is a deprecated spelling). {opt lean} and
+{cmd:performance(auto)} or {cmd:performance(lean)} state the default
+explicitly. The resolved mode is in {cmd:e(performance_resolved)}, and
+{cmd:e(large_store)} records whether the matrices were materialized. For a
+durable, session-independent artifact carrying the influence functions, use
+{cmd:saverif()} - the file it writes feeds {cmd:csdid_stats using} at any
+later time.
 
 {phang}
 {opt fast} and {opt nofast} force or forbid the optimized Mata kernels.
@@ -980,9 +986,9 @@ individual cells and on linear combinations of them.
 {cmd:predict} and {cmd:margins} are {bf:not} supported after {cmd:csdid}.
 There is no linear index to predict from and no covariate profile to average
 over: {cmd:e(b)} is a vector of treatment effects, not regression
-coefficients. Both refuse rather than returning a number. {cmd:csdid} also does
-not set {cmd:e(sample)}; use the same {cmd:if} restriction to reconstruct the
-estimation sample.
+coefficients. Both refuse rather than returning a number. {cmd:e(sample)}
+marks the estimation sample, so {cmd:summarize ... if e(sample)} and
+{cmd:estat summarize} describe exactly the observations the estimation used.
 
 {pstd}
 The refusals are the conventional Stata ones. {cmd:csdid} sets
@@ -1253,9 +1259,7 @@ cells tested {it:(conditional: pre-test computable)}{p_end}
 {synopt:{cmd:e(store_all)}}1 if {cmd:storeall} was requested{p_end}
 {synopt:{cmd:e(lean)}}1 if lean storage was resolved{p_end}
 {synopt:{cmd:e(large_store)}}1 if the large matrices were copied into
-{cmd:e()}{p_end}
-{synopt:{cmd:e(performance_auto_threshold)}}sample size at which {cmd:auto}
-storage switches to lean{p_end}
+{cmd:e()} ({cmd:storeall}){p_end}
 {synopt:{cmd:e(fast_requested)}}1 if {cmd:fast} was typed {it:(diagnostic)}{p_end}
 {synopt:{cmd:e(fast_auto)}}1 if the kernel choice was automatic
 {it:(diagnostic)}{p_end}
@@ -1343,12 +1347,12 @@ missing, in which case a warning says so{p_end}
 {synopt:{cmd:e(group_prob)}}one row per cohort, with columns {cmd:group},
 {cmd:prob} (the cohort's population share) and {cmd:n_units}{p_end}
 {synopt:{cmd:e(inffunc)}}unit-by-cell influence functions
-{it:(conditional: full storage)}{p_end}
+{it:(conditional: storeall)}{p_end}
 {synopt:{cmd:e(unit_group)}}one row per unit, with columns {cmd:id},
 {cmd:group}, {cmd:weight}, and, on unbalanced panels, an internal
-{cmd:first_period} column {it:(conditional: full storage)}{p_end}
+{cmd:first_period} column {it:(conditional: storeall)}{p_end}
 {synopt:{cmd:e(cluster_vec)}}cluster identifier per unit; present only with
-{cmd:cluster()} and full storage{p_end}
+{cmd:cluster()} and storeall{p_end}
 {synopt:{cmd:e(boot_attgt)}}bootstrap results, one row per ATT(g,t) cell, with
 columns {cmd:group}, {cmd:time}, {cmd:event_time}, {cmd:att}, {cmd:se_boot},
 {cmd:se_analytic}, {cmd:crit_val}, {cmd:ci_low}, {cmd:ci_high},
@@ -1366,14 +1370,17 @@ bootstrap draws {it:(conditional: bootstrap)}{p_end}
 {it:(conditional: bootstrap; diagnostic)}{p_end}
 {p2colreset}{...}
 
-{pstd}
-{cmd:csdid} does {bf:not} set {cmd:e(sample)}.
+{synoptset 32 tabbed}{...}
+{p2col 5 32 35 2: Functions}{p_end}
+{synopt:{cmd:e(sample)}}marks the estimation sample{p_end}
+{p2colreset}{...}
 
 {pstd}
 After {cmd:csdid, agg(event)}, and after {helpb csdid_stats} or
 {helpb csdid_estat} with {cmd:post}, {cmd:e(b)} and {cmd:e(V)} hold the
 {it:aggregated} coefficients and the additional results {cmd:e(aggte)},
-{cmd:e(agg_inffunc)}, {cmd:e(agg_type)}, and {cmd:e(N_aggte)} are present.
+{cmd:e(agg_type)}, and {cmd:e(N_aggte)} are present, along with
+{cmd:e(agg_inffunc)} under {cmd:storeall}.
 Those are documented in {helpb csdid_stats} and
 {helpb csdid_postestimation:csdid postestimation}.
 

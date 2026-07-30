@@ -17,7 +17,6 @@ if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWo
 fixture <- file.path(root, "tests/fixtures/parity/f047")
 dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "expected/r"), recursive = TRUE, showWarnings = FALSE)
-dir.create(file.path(fixture, "expected/new-stata"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "metadata"), recursive = TRUE, showWarnings = FALSE)
 
 make_panel <- function(seed, scenario, unbalanced = FALSE) {
@@ -249,8 +248,8 @@ manifest <- list(
     list(path = "expected/r/aggte.csv", schema = "aggte")
   ),
   comparison_plan = list(
-    list(actual = "expected/new-stata/attgt.csv", expected = "expected/r/attgt.csv", tolerance_id = "TOL002", key_columns = c("scenario", "group", "time")),
-    list(actual = "expected/new-stata/aggte.csv", expected = "expected/r/aggte.csv", tolerance_id = "TOL002", key_columns = c("scenario", "agg_type", "seq"))
+    list(actual = "build/test-artefacts/f047/attgt.csv", expected = "expected/r/attgt.csv", tolerance_id = "TOL002", key_columns = c("scenario", "group", "time")),
+    list(actual = "build/test-artefacts/f047/aggte.csv", expected = "expected/r/aggte.csv", tolerance_id = "TOL002", key_columns = c("scenario", "agg_type", "seq"))
   ),
   approved_divergence = NULL,
   scope_note = "Seeded small-panel randomized differential gate across balanced panel, true repeated-cross-section, and unbalanced-ivar-default-to-RC paths; dr/reg/ipw; nevertreated/notyettreated controls; varying/universal base periods; covariate/no-covariate and weighted/unweighted cells. The gate compares ATT(g,t) and simple/dynamic aggregation to R did 2.5.1 under TOL002. It is a release smoke differential test, not a replacement for exhaustive inherited R/Python suites."

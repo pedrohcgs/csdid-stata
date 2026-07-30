@@ -34,7 +34,7 @@ program define f032_surface_assert_auto
     assert e(fast_used) == 1
     assert "`e(fast_mode)'" == "auto"
     assert "`e(compute_path)'" == "`path'"
-    assert e(large_store) == 1
+    assert e(large_store) == 0
 end
 
 program define f032_surface_assert_nofast
@@ -46,7 +46,7 @@ program define f032_surface_assert_nofast
     assert e(fast_used) == 0
     assert "`e(fast_mode)'" == "off"
     assert "`e(compute_path)'" == "baseline"
-    assert e(large_store) == 1
+    assert e(large_store) == 0
 end
 
 confirm file "`root'/tests/fixtures/parity/f010/expected/r/control-method-grid.csv"

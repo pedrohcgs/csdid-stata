@@ -76,13 +76,13 @@
   ],
   "comparison_plan": [
     {
-      "actual": "expected/new-stata/attgt.csv",
+      "actual": "build/test-artefacts/f047/attgt.csv",
       "expected": "expected/r/attgt.csv",
       "tolerance_id": "TOL002",
       "key_columns": ["scenario", "group", "time"]
     },
     {
-      "actual": "expected/new-stata/aggte.csv",
+      "actual": "build/test-artefacts/f047/aggte.csv",
       "expected": "expected/r/aggte.csv",
       "tolerance_id": "TOL002",
       "key_columns": ["scenario", "agg_type", "seq"]

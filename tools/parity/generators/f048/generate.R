@@ -17,7 +17,6 @@ if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWo
 fixture <- file.path(root, "tests/fixtures/parity/f048")
 dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "expected/r"), recursive = TRUE, showWarnings = FALSE)
-dir.create(file.path(fixture, "expected/new-stata"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "metadata"), recursive = TRUE, showWarnings = FALSE)
 
 set.seed(48048)
@@ -117,8 +116,8 @@ manifest <- list(
     list(path = "expected/r/summary.csv", schema = "monte-carlo-summary")
   ),
   comparison_plan = list(
-    list(actual = "expected/new-stata/per-rep.csv", expected = "expected/r/per-rep.csv", tolerance_id = "TOL002", key_columns = c("sim")),
-    list(actual = "expected/new-stata/summary.csv", expected = "expected/r/summary.csv", tolerance_id = "TOL008", key_columns = c("nsim"))
+    list(actual = "build/test-artefacts/f048/per-rep.csv", expected = "expected/r/per-rep.csv", tolerance_id = "TOL002", key_columns = c("sim")),
+    list(actual = "build/test-artefacts/f048/summary.csv", expected = "expected/r/summary.csv", tolerance_id = "TOL008", key_columns = c("nsim"))
   ),
   approved_divergence = NULL,
   scope_note = "Known-DGP Monte Carlo sanity gate for a two-period balanced panel with one treated cohort, nevertreated controls, method(reg), analytical SEs, and a true ATT of 1.0. Stata must match R did 2.5.1 per-rep ATT/SE under TOL002 and satisfy TOL008: absolute mean bias <= 0.02 and empirical 95% coverage within 0.03. This is a release sanity gate, not exhaustive stochastic inference coverage."

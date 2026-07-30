@@ -170,17 +170,17 @@ bias / coverage at e=0):
 
 | estimator | bias | coverage |
 | --- | ---: | ---: |
-| `csdid dr` | -0.000 | 0.95 |
-| `csdid ipw` | -0.000 | 0.95 |
-| `csdid reg` | -0.000 | 0.95 |
+| `csdid dr` | +0.001 | 0.95 |
+| `csdid ipw` | +0.004 | 0.95 |
+| `csdid reg` | -0.001 | 0.95 |
 | `jwdid` | +0.001 | 0.95 |
-| `did_imputation` | +0.001 | 0.95 |
+| `did_imputation` | +0.000 | 0.96 |
 | `flexdid` | -0.001 | 1.00 |
-| `did_multiplegt_dyn` | +0.032 | 0.92 |
-| `lpdid` | **-0.135** | **0.49** |
+| `did_multiplegt_dyn` | **+0.119** | **0.61** |
+| `lpdid` | **-0.139** | **0.46** |
 
 Everyone who handles X correctly is fine, with one exception that deserves
-a close look. `did_multiplegt_dyn` drifts with the horizon (+0.20 by e=2),
+a close look. `did_multiplegt_dyn` drifts with the horizon (+0.88 by e=2),
 and its own documentation explains why: its `controls()` residualizes the
 outcome's first differences on the *first differences* of the controls,
 with one coefficient common to all groups and periods. Think about what
@@ -234,12 +234,49 @@ assume. The doubly robust estimator (Sant'Anna and Zhao, 2020) is
 consistent if *either* the outcome model *or* the treatment-probability
 model is right — two chances instead of one, at no speed cost (§1) and, in
 these simulations, no precision cost either. Every other command in this
-comparison is an outcome-regression estimator with one chance. We are
-completing a set of misspecification experiments that make each failure
-mode bite separately — designing a data-generating process where the
-nonlinearity genuinely defeats linear controls turns out to be a sharper
-exercise than it sounds, and we would rather publish cells we can explain
-than cells that merely look decisive. They will appear here.
+comparison is an outcome-regression estimator with one chance.
+
+So we broke the models on purpose, one at a time, same population and
+targets as above. First the outcome model: add a nonlinear term to the
+untreated trend — it now depends on the square of the continuous
+covariate — while every estimator keeps conditioning on the covariates in
+levels. This is the world where the outcome model you wrote down is wrong,
+and it is not an exotic world. Bias and coverage at e=1:
+
+| estimator | bias | coverage |
+| --- | ---: | ---: |
+| `csdid dr` | -0.058 | 0.94 |
+| `csdid ipw` | -0.054 | 0.93 |
+| `csdid reg` | **+0.300** | **0.46** |
+| `jwdid` | **+0.490** | **0.26** |
+| `did_imputation` | **+0.189** | **0.72** |
+| `flexdid` | **+0.327** | **0.93** |
+
+(`did_multiplegt_dyn` and `lpdid` are omitted from this table for a fair
+reason: they were already biased in the correctly-specified cell above, so
+their rows here would confound two failures.)
+
+Every outcome-regression command breaks together, and the bias grows with
+the horizon — `jwdid` reaches +0.67 by e=2, coverage 0.29. This is not a
+defect in any one implementation; it is the same wrong outcome model
+failing everywhere it is the only line of defense. The two `csdid`
+estimators that do not lean on it walk through: `ipw` because the
+treatment-probability model is still correct, `dr` because one correct
+model is all it needs. That second chance is not a luxury option — in this
+comparison, no other command has it at all.
+
+Second, the propensity score: we misspecified the treatment-probability
+model instead — cohorts differ in the *spread* of the continuous
+covariate, which a logit linear in X cannot represent — and nothing broke,
+`ipw` included. That null is worth explaining rather than hiding: the
+propensity-score error this design produces is orthogonal to the outcome
+trend, so the wrong weights have nothing to load on. A misspecification
+experiment only teaches you something when the error is aimed at the
+target, and building one where it genuinely is — without also breaking the
+outcome model — is a sharper design problem than the symmetric-sounding
+setup suggests. We would rather show you a null cell and say why it is
+null. A design where the propensity-score error does load on the trend is
+on the list, and it will appear here.
 
 ## Speed
 

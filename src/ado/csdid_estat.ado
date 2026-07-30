@@ -1,4 +1,4 @@
-*! csdid_estat 2.0.0 26jul2026
+*! csdid_estat 2.0.0 30jul2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -188,64 +188,19 @@ program define csdid_estat, eclass
         if "`window'" != "" local stat_opts `"`stat_opts' window(`window')"'
         _csdid_estat_rclear
         quietly csdid_stats, `stat_opts'
-        tempname old_b old_V show_b
-        local had_old_bv 0
-        local snapped 0
-        if "`post'" == "" {
-            capture confirm matrix e(b)
-            local has_old_b = !_rc
-            capture confirm matrix e(V)
-            local has_old_V = !_rc
-            if `has_old_b' & `has_old_V' {
-                matrix `old_b' = e(b)
-                matrix `old_V' = e(V)
-                local had_old_bv 1
-            }
-            else {
-                * SP-08 fix. A non-post `estat event' is documented as a
-                * display command, but when NO e(b)/e(V) existed to restore -
-                * the saved-RIF entry path, `csdid_stats using file.dta', posts
-                * e(cmd)="csdid" and no coefficient vector - the transient
-                * posting was simply left behind, permanently and silently,
-                * so a following test/lincom operated on an aggregation the
-                * user never asked to post.
-                * e(b)/e(V) cannot be removed by _csdid_post replacebv (it
-                * always `ereturn post's a pair), and _estimates hold ...,
-                * nullok wipes e() wholesale when there are no posted results
-                * (measured). So the surrounding e() is snapshotted GENERICALLY
-                * through e(scalars)/e(macros)/e(matrices) and rebuilt with
-                * ereturn clear + ereturn scalar/local/matrix - the same
-                * no-post idiom _csdid_stats_load_rif itself uses. Generic, not
-                * a second hand-maintained copy of _csdid_post_replace_bv's
-                * enumeration, so nothing can silently fall out of it. b and V
-                * are deliberately excluded from the rebuild: they are the
-                * transient results being removed.
-                local snap_scalars : e(scalars)
-                local snap_macros : e(macros)
-                local snap_matall : e(matrices)
-                local snap_matrices ""
-                foreach x of local snap_matall {
-                    if !inlist("`x'", "b", "V") local snap_matrices "`snap_matrices' `x'"
-                }
-                local si 0
-                foreach s of local snap_scalars {
-                    local ++si
-                    local snap_s`si' = e(`s')
-                }
-                local mi 0
-                foreach m of local snap_macros {
-                    local ++mi
-                    local snap_m`mi' `"`e(`m')'"'
-                }
-                local xi 0
-                foreach x of local snap_matrices {
-                    local ++xi
-                    tempname snap_x`xi'
-                    matrix `snap_x`xi'' = e(`x')
-                }
-                local snapped 1
-            }
-        }
+        tempname show_b
+        * No-transit (supersedes the snapshot/restore machinery, including the
+        * SP-08 generic e() snapshot): without `post', _csdid_post no longer
+        * touches e(b)/e(V) at all - it builds r(table) directly from the
+        * aggregation's B/V - so there is nothing to snapshot and nothing to
+        * restore. The old post-then-restore cycle rebuilt e() wholesale twice
+        * per estat, Stata-copying every stored matrix; under full storage
+        * that includes the one-row-per-unit influence functions, and Stata's
+        * classic-matrix layer is quadratic in the longest dimension, so a
+        * plain `estat event' after a 20,000-unit estimation spent ~19s
+        * copying matrices it did not change. SP-08's failure mode (a
+        * transient posting left behind on the saved-RIF path) cannot occur
+        * when no transient posting exists.
         * F-047: windowing happened upstream in csdid_stats, so the poster no
         * longer receives (or fabricates) window bounds.
         * F-045/SP-07: `event' keeps the historical Tm#/Tp#/Post_avg names
@@ -253,43 +208,24 @@ program define csdid_estat, eclass
         * types get the naming their own aggregation implies (G#, T#, ATT,
         * Overall). Both entry points build r(table).
         if `"`subcmd'"' == `"event"' {
-            _csdid_post event, level(`level')
+            _csdid_post event, level(`level') `post'
         }
         else {
-            _csdid_post aggte, level(`level')
+            _csdid_post aggte, level(`level') `post'
         }
         if "`post'" == "" {
-            * SP-07: only `event' displays the posted vector; the aggregation
-            * routes display e(aggte), which the restore below preserves.
-            * The confirm guard matters because _csdid_post exits without
-            * posting when the aggregation produced no usable coefficient
-            * (every att missing), and e(b) may then not exist at all.
+            * SP-07: only `event' displays the coefficient vector; the
+            * aggregation routes display e(aggte). Without `post' nothing was
+            * posted, so the display vector comes from r(table) row 1 - the
+            * same values, with the same column names, the posting path would
+            * have put in e(b). The guard matters because _csdid_post returns
+            * no table when the aggregation produced no usable coefficient
+            * (every att missing).
             local have_show 0
-            capture confirm matrix e(b)
+            capture matrix `show_b' = r(table)
             if !_rc {
-                matrix `show_b' = e(b)
+                matrix `show_b' = `show_b'[1, 1...]
                 local have_show 1
-            }
-            if `had_old_bv' {
-                _csdid_post replacebv `old_b' `old_V'
-            }
-            else if `snapped' {
-                ereturn clear
-                local xi 0
-                foreach x of local snap_matrices {
-                    local ++xi
-                    ereturn matrix `x' = `snap_x`xi''
-                }
-                local mi 0
-                foreach m of local snap_macros {
-                    local ++mi
-                    ereturn local `m' `"`snap_m`mi''"'
-                }
-                local si 0
-                foreach s of local snap_scalars {
-                    local ++si
-                    ereturn scalar `s' = `snap_s`si''
-                }
             }
             if `"`subcmd'"' == `"event"' {
                 if `have_show' matlist `show_b', names(columns) format(%10.6g)

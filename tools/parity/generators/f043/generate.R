@@ -193,16 +193,16 @@ manifest <- list(
     list(path = "expected/r/post-window.csv", schema = "jel-gxt-post-window")
   ),
   comparison_plan = list(
-    list(actual = "expected/new-stata/trends.csv", expected = "expected/r/trends.csv", tolerance_id = "TOL005", key_columns = c("treat_year", "year")),
-    list(actual = "expected/new-stata/attgt.csv", expected = "expected/r/attgt.csv", tolerance_id = "TOL004", key_columns = c("scenario", "group", "time")),
-    list(actual = "expected/new-stata/dynamic.csv", expected = "expected/r/dynamic.csv", tolerance_id = "TOL004", key_columns = c("scenario", "seq")),
-    list(actual = "expected/new-stata/post-window.csv", expected = "expected/r/post-window.csv", tolerance_id = "TOL004", key_columns = c("scenario"))
+    list(actual = "build/test-artefacts/f043/trends.csv", expected = "expected/r/trends.csv", tolerance_id = "TOL005", key_columns = c("treat_year", "year")),
+    list(actual = "build/test-artefacts/f043/attgt.csv", expected = "expected/r/attgt.csv", tolerance_id = "TOL004", key_columns = c("scenario", "group", "time")),
+    list(actual = "build/test-artefacts/f043/dynamic.csv", expected = "expected/r/dynamic.csv", tolerance_id = "TOL004", key_columns = c("scenario", "seq")),
+    list(actual = "build/test-artefacts/f043/post-window.csv", expected = "expected/r/post-window.csv", tolerance_id = "TOL004", key_columns = c("scenario"))
   ),
   approved_divergence = list(
     type = "numerical-tolerance-exception",
     threshold = "absolute 1e-8 plus relative 2e-6 for F043 analytical ATT/SE vector comparisons",
     reason = "The actual JEL GxT covariate-adjusted DR design shows cross-runtime solver-level drift in raw ATT(g,t) cells, while point estimates, SEs, dynamic aggregates, and post-window summaries remain numerically aligned at published empirical precision.",
-    evidence = c("tests/stata/test-f043.do", "tests/fixtures/parity/f043/expected/new-stata/attgt.csv", "test-f043.log")
+    evidence = c("tests/stata/test-f043.do", "test-f043.log")
   ),
   scope_note = "Partial F043 JEL GxT smoke gate. It reconstructs the JEL staggered-adoption sample from committed JEL data, verifies weighted timing-group trends for Figure 5, and compares Stata csdid analytical ATT(g,t) plus dynamic aggregation against R did 2.5.1 for weighted no-covariate and covariate-adjusted DR event-study designs with not-yet-treated controls and universal base periods. Raw ATT/SE vector comparisons use a recorded JEL-scale numerical tolerance exception for cross-runtime solver drift. Full JEL Figure 5-9 replication still requires 25,000-rep bootstrap confidence intervals, plotting wrappers, rendered artifact comparison, and runtime hardening."
 )

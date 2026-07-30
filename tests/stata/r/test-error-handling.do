@@ -114,7 +114,7 @@ rt011_expect_success_message, command("csdid y x, ivar(id) time(period) gvar(g) 
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-csdid y, time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
+csdid y, time(period) gvar(g) analytical nevertreated base_period(varying) bal(none) storeall
 assert "`e(panel_mode)'" == "repeated-cross-section"
 assert e(N_attgt) > 0
 
@@ -141,7 +141,7 @@ rt011_expect_failure, command("csdid y_str, ivar(id) time(period) gvar(g) analyt
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
 generate int y_int = round(y)
-csdid y_int, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
+csdid y_int, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none) storeall
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/treatment-reversal.csv", clear asdouble
@@ -160,13 +160,13 @@ import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-hand
 rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) wboot(cluster(cl cl2) reps(31))") message("wboot(cluster()) accepts one numeric cluster variable")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none)
+csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none) storeall
 matrix Acluster = e(attgt)
 assert rowsof(Acluster) > 0
 assert e(N_clusters) > 0
 assert !missing(Acluster[1,5])
 
-csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) wboot(reps(25) rseed(20260401)) nevertreated base_period(varying) bal(none)
+csdid y x, ivar(id) time(period) gvar(g) method(reg) cluster(cl) wboot(reps(25) rseed(20260401)) nevertreated base_period(varying) bal(none) storeall
 matrix Bcluster = e(attgt)
 assert rowsof(Bcluster) > 0
 assert e(N_clusters) > 0
@@ -180,7 +180,7 @@ matrix G = e(aggte)
 assert rowsof(G) > 0
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none) storeall
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)

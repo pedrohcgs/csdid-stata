@@ -59,7 +59,7 @@ program define f051_assert_default_metadata
     assert "`e(fast_mode)'" == "auto"
     assert "`e(compute_path)'" == "fast-balanced-panel"
     assert "`e(performance_mode)'" == "auto"
-    assert "`e(performance_resolved)'" == "full"
+    assert "`e(performance_resolved)'" == "lean"
     assert e(anticipation) == 0
     assert e(level) == 95
     assert abs(e(pscoretrim) - .995) < 1e-12
@@ -71,9 +71,11 @@ program define f051_assert_default_metadata
     assert e(fast_allowed) == 1
     assert e(fast_used) == 1
     assert e(store_all) == 0
-    assert e(large_store) == 1
-    assert e(mata_cache) == 0
-    assert e(performance_auto_threshold) == 25000
+    assert e(large_store) == 0
+    assert e(mata_cache) == 1
+    * storage is unified on lean; the auto threshold no longer exists
+    capture confirm scalar e(performance_auto_threshold)
+    assert _rc != 0
     matrix P = e(profile)
     assert rowsof(P) == 8
     assert colsof(P) == 3

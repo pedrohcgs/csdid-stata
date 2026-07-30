@@ -105,7 +105,7 @@ py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) an
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv", clear asdouble
-csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(period) gvar(g) analytical nevertreated base_period(varying) bal(none) storeall
 matrix A = e(attgt)
 matrix IF = e(inffunc)
 matrix GP = e(group_prob)

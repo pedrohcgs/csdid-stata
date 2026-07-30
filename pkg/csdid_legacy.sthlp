@@ -1,5 +1,5 @@
 {smcl}
-{* *! csdid_legacy 2.0.0 28jul2026}{...}
+{* *! csdid_legacy 2.0.0 30jul2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}

@@ -60,7 +60,7 @@ local latest_cohort = latest_cohort[1]
 local positive_threshold = positive_threshold[1]
 
 import delimited using "`root'/tests/fixtures/parity/py016/inputs/notyettreated.csv", clear asdouble
-csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical base_period(varying) bal(none)
+csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical base_period(varying) bal(none) storeall
 assert e(N_attgt) > 0
 matrix ATT = e(attgt)
 matrix GP = e(group_prob)
@@ -109,7 +109,7 @@ assert r(N) > 0
 confirm file "`root'/tests/fixtures/parity/py016/expected/r/attgt.csv"
 
 import delimited using "`root'/tests/fixtures/parity/py016/inputs/notyettreated.csv", clear asdouble
-quietly csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical base_period(varying) bal(none)
+quietly csdid y, ivar(id) time(year) gvar(group) method(dr) notyet analytical base_period(varying) bal(none) storeall
 tempname A
 matrix `A' = e(attgt)
 local nr = rowsof(`A')

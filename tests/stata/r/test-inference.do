@@ -54,23 +54,23 @@ assert r(N) == 1
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/panel.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(panel_mode)'" == "panel"
     rt015_assert_public_inference, aggtype(dynamic)
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/panel.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(clustervar)'" == "cluster"
     assert e(N_clusters) > 0
     rt015_assert_public_inference, aggtype(group)
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/repeated-cross-section.csv", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(panel_mode)'" == "repeated-cross-section"
     rt015_assert_public_inference, aggtype(calendar)
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/repeated-cross-section.csv", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(clustervar)'" == "cluster"
     assert e(N_clusters) > 0
     rt015_assert_public_inference, aggtype(dynamic)
@@ -129,19 +129,19 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/panel.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     rt015_grab "panel_`method'" "`rt015_actual'"
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/panel.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none) storeall
     rt015_grab "panel_cluster_`method'" "`rt015_actual'"
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/repeated-cross-section.csv", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     rt015_grab "rcs_`method'" "`rt015_actual'"
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/repeated-cross-section.csv", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none) storeall
     rt015_grab "rcs_cluster_`method'" "`rt015_actual'"
 
     * Unbalanced panel, with and without clustering. Upstream's two unbalanced
@@ -150,12 +150,12 @@ foreach method in dr reg ipw {
     * Pinning these scenarios against the current package is stronger: it fixes
     * the numbers instead of checking that two versions agree with each other.
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/unbalanced.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(panel_mode)'" == "allow_unbalanced"
     rt015_grab "unbal_`method'" "`rt015_actual'"
 
     import delimited using "`root'/tests/fixtures/parity/rt015/inputs/unbalanced.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') cluster(cluster) analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(panel_mode)'" == "allow_unbalanced"
     rt015_grab "unbal_cluster_`method'" "`rt015_actual'"
 }

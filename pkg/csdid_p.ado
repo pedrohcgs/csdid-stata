@@ -1,4 +1,4 @@
-*! csdid_p 2.0.0 26jul2026
+*! csdid_p 2.0.0 30jul2026
 *
 * HS-03 (= EUX-005). predict has no meaning after csdid: e(b) holds ATT(g,t)
 * treatment effects, not coefficients on regressors, so there is no linear

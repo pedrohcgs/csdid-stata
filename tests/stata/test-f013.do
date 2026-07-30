@@ -48,13 +48,13 @@ local first_if 1
 foreach scenario in panel_reg panel_cov_dr rc_reg {
     import delimited using "`root'/tests/fixtures/parity/f013/inputs/input.csv", clear asdouble
     if "`scenario'" == "panel_reg" {
-        csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+        csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
     }
     else if "`scenario'" == "panel_cov_dr" {
-        csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
+        csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
     }
     else {
-        csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+        csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
     }
 
     matrix A = e(attgt)

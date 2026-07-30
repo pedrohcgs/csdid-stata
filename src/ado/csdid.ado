@@ -1,4 +1,4 @@
-*! csdid 2.0.0 26jul2026
+*! csdid 2.0.0 30jul2026
 program define csdid, eclass sortpreserve
     * EUX-016 (repaired): this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
@@ -423,10 +423,9 @@ program define csdid, eclass sortpreserve
         display as error "analytical asks for analytical standard errors and wboot asks for bootstrapped ones; specify only one. Omitting both uses the bootstrap, the default."
         exit 198
     }
-    if `lean_requested' & `"`saverif'"' != "" {
-        display as error "lean storage cannot be combined with saverif(); omit lean when exporting RIF artifacts"
-        exit 198
-    }
+    * The old refusal of lean + saverif() is gone: the RIF exporter reads the
+    * Mata cache directly, so the artifact no longer needs the influence
+    * functions materialized in e().
     * EUX-002 (repaired): saverif() used to be checked only by the `save' inside
     * _csdid_save_rif, i.e. AFTER the whole estimation had run and printed its
     * table - the run then died r(602) with e(cmd)/e(N) left posted from a
@@ -435,7 +434,16 @@ program define csdid, eclass sortpreserve
     * so a failed csdid never leaves estimation results behind.
     if `"`saverif'"' != "" {
         local saverif_path `"`saverif'"'
-        if lower(substr(`"`saverif_path'"', -4, 4)) != ".dta" {
+        * Match -save-'s own extension rule: .dta is appended only when the
+        * FILENAME has no extension at all. The old check appended .dta
+        * whenever the last four characters were not ".dta", so for a target
+        * like results.v2 - or a tempfile, whose names end in .000001 - it
+        * confirmed a file -save- would never write: the replace-guard could
+        * refuse on a phantom, or wave the run through and die r(602) inside
+        * the writer after the whole estimation had already run and posted,
+        * which is exactly what EUX-002 moved this check up here to prevent.
+        mata: st_local("saverif_base", pathbasename(st_local("saverif_path")))
+        if strpos(`"`saverif_base'"', ".") == 0 {
             local saverif_path `"`saverif_path'.dta"'
         }
         capture confirm new file `"`saverif_path'"'
@@ -903,17 +911,42 @@ program define csdid, eclass sortpreserve
     * keeps every unit and uses the repeated-cross-section computation.
     * -----------------------------------------------------------------------
     local balance_dropped_units = 0
-    if "`ivar'" != "" & "`balance_mode'" == "full" {
-        tempvar bal_nobs bal_first
-        quietly levelsof `time' if `touse', local(bal_periods)
-        local bal_T : word count `bal_periods'
-        quietly bysort `touse' `ivar': generate long `bal_nobs' = _N if `touse'
-        quietly bysort `touse' `ivar': generate byte `bal_first' = (_n == 1) if `touse'
-        quietly count if `touse' & `bal_first' == 1 & `bal_nobs' < `bal_T'
-        local balance_dropped_units = r(N)
+    * The engine is needed a few lines early now: the balance verdict and the
+    * group/time measurements below come from one Mata pass (csdid__prescan)
+    * instead of two bysorts, two levelsofs, two summarizes and a tempvar
+    * generate/replace - each a full pass over the data. Outputs and guard
+    * semantics are identical; only the number of passes changed.
+    capture mata: csdid__mean(J(1, 1, 0))
+    if _rc {
+        capture quietly mata: mata mlib index
+        capture mata: csdid__mean(J(1, 1, 0))
+    }
+    if _rc {
+        capture quietly findfile csdid.mata
+        if _rc {
+            display as error "csdid Mata source not found on adopath"
+            exit 499
+        }
+        quietly do "`r(fn)'"
+    }
+    tempvar bal_drop
+    quietly generate byte `bal_drop' = 0
+    tempname ps_gcounts
+    local want_bal = ("`ivar'" != "" & "`balance_mode'" == "full")
+    capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'")
+    if _rc {
+        * a scan failure must refuse cleanly, never leave a previous
+        * estimation posted (the same anti-leak contract as every guard)
+        local prescan_rc = _rc
+        display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
+        ereturn clear
+        exit `prescan_rc'
+    }
+    if `want_bal' {
+        local bal_T = __csdid_ps_ntime
+        local balance_dropped_units = __csdid_ps_incunits
         if `balance_dropped_units' > 0 {
-            quietly count if `touse' & `bal_nobs' < `bal_T'
-            local balance_dropped_obs = r(N)
+            local balance_dropped_obs = __csdid_ps_incobs
             * "as error" is a DISPLAY STYLE here, not an error: it is the only
             * channel Stata does not suppress under `quietly csdid ...'.
             * Verified: `noisily display' inside a program does NOT survive a
@@ -923,7 +956,7 @@ program define csdid, eclass sortpreserve
             * why N moved. csdid Version 1.82 used the same channel
             * ("display in red \"Panel is not balanced\"").
             display as error "warning: `balance_dropped_units' unit(s) are not observed in all `bal_T' periods; the panel is being balanced by dropping them (`balance_dropped_obs' observation(s)). Use the options allowunbalanced to keep every unit, or balancepair to balance each 2×2 separately."
-            quietly replace `touse' = 0 if `bal_nobs' < `bal_T'
+            quietly replace `touse' = 0 if `bal_drop'
             quietly count if `touse'
             if r(N) == 0 {
                 display as error "balancing the panel left no observations: no unit is observed in all `bal_T' periods. Specify bal(none) to keep every unit. Consider also whether these are really an unbalanced panel or a repeated cross section -- for repeated cross sections omit ivar(), since each observation is its own unit."
@@ -1040,9 +1073,8 @@ program define csdid, eclass sortpreserve
     * command is quietly-run and side-effect free apart from the `gsmall'
     * tempvar and r(): no sort, no observation changes. The noisy-only
     * diagnostics below reuse them, so noisy runs do no duplicated work.
-    quietly summarize `time' if `touse', meanonly
-    local min_time = r(min)
-    local max_time = r(max)
+    local min_time = __csdid_ps_tmin
+    local max_time = __csdid_ps_tmax
     * DS-02 (repaired): the ATT(g,t) coefficient names are built literally from
     * the g, t and base-period VALUES (g2004___2005_2003), so a time axis in
     * epoch seconds or %tc milliseconds produced a 35-character name and the run
@@ -1053,19 +1085,18 @@ program define csdid, eclass sortpreserve
     * says how to rescale. (Renaming the coefficients is a documented public
     * contract and is the owner's call, not this fix's.)
     local name_tw = 0
-    foreach nmside in min max {
-        local nmtxt : display %21.0f `=r(`nmside')'
+    foreach nmval in `=__csdid_ps_tmin' `=__csdid_ps_tmax' {
+        local nmtxt : display %21.0f `nmval'
         local nmlen = strlen(strtrim("`nmtxt'"))
         if `nmlen' > `name_tw' local name_tw = `nmlen'
     }
-    quietly summarize `gvar' if `touse', meanonly
     local name_gw = 0
     local name_bw = 0
-    foreach nmside in min max {
-        local nmtxt : display %21.0f `=r(`nmside')'
+    foreach nmval in `=__csdid_ps_gmin' `=__csdid_ps_gmax' {
+        local nmtxt : display %21.0f `nmval'
         local nmlen = strlen(strtrim("`nmtxt'"))
         if `nmlen' > `name_gw' local name_gw = `nmlen'
-        local nmtxt : display %21.0f `=r(`nmside') - 1'
+        local nmtxt : display %21.0f `=`nmval' - 1'
         local nmlen = strlen(strtrim("`nmtxt'"))
         if `nmlen' > `name_bw' local name_bw = `nmlen'
     }
@@ -1077,11 +1108,7 @@ program define csdid, eclass sortpreserve
         ereturn clear
         exit 198
     }
-    tempvar gsmall
-    quietly generate double `gsmall' = `gvar' if `touse'
-    quietly replace `gsmall' = 0 if `touse' & `gsmall' > `max_time' + `anticipation'
-    quietly count if `touse' & `gsmall' == 0
-    local never_count = r(N)
+    local never_count = __csdid_ps_never
     * F-010 fix (DEC-021): when NO cohort can be estimated the run previously
     * fell through to the estimation kernel, which died with a silent rc=111
     * ("variable not found") from an unguarded `confirm matrix'. A cohort is
@@ -1092,7 +1119,7 @@ program define csdid, eclass sortpreserve
     * diagnostic ("No valid groups.") and a data-error code. Both silent-111
     * shapes are covered: all-one-cohort (S4757) and anticipation-eats-every-
     * base-period (S192 family).
-    quietly levelsof `gsmall' if `touse' & `gsmall' > 0, local(__treated_levels)
+    local __treated_levels "`__csdid_ps_glevels'"
     local __n_treated : word count `__treated_levels'
     local __n_usable 0
     local __gmax_usable 0
@@ -1130,7 +1157,7 @@ program define csdid, eclass sortpreserve
     * warning()/stop() are not gated on verbosity, and control flow must never
     * depend on `quietly' (the same defect class as the F-010 guard above);
     * only the DISPLAY of the warnings stays inside the noisy gate.
-    quietly levelsof `time' if `touse', local(csdid_time_levels)
+    local csdid_time_levels "`__csdid_ps_tlevels'"
     local n_time : word count `csdid_time_levels'
     local nx_req : word count `xvars'
     local reqsize = `nx_req' + 5
@@ -1139,7 +1166,7 @@ program define csdid, eclass sortpreserve
     * F-014: group sizes from ONE sorted pass rather than `levelsof' plus a
     * `count if' per level (a sort plus one full data pass per group).
     tempname gcounts
-    mata: csdid__value_counts("`gsmall'", "`touse'", "`gcounts'")
+    matrix `gcounts' = `ps_gcounts'
     forvalues __gi = 1/`=rowsof(`gcounts')' {
         local gv = `gcounts'[`__gi', 1]
         local group_units = `gcounts'[`__gi', 2] / `n_time'
@@ -1162,13 +1189,11 @@ program define csdid, eclass sortpreserve
     }
     if `diagnostics_noisy' {
         if `never_count' == 0 & "`notyet'" == "" {
-            quietly count if `touse' & `gsmall' > 0
-            if r(N) > 0 {
+            if `__n_treated' > 0 {
                 display as text "warning: No never-treated group available; using the latest treated cohort as never-treated, matching R did fallback behavior."
             }
         }
-        quietly count if `touse' & `gsmall' > 0 & `gsmall' <= `min_time' + `anticipation'
-        if r(N) > 0 {
+        if __csdid_ps_firstper > 0 {
             display as text "warning: Units treated in the first period are dropped."
         }
     }
@@ -1176,19 +1201,21 @@ program define csdid, eclass sortpreserve
     local fast_requested = ("`fast'" != "")
     local fast_auto = ("`fast_mode'" == "auto")
     local fast_allowed = ("`fast_mode'" != "off")
-    local store_large = 1
-    local performance_resolved "full"
-    local performance_auto_threshold = 25000
-    if "`performance_mode'" == "lean" {
-        local store_large = 0
-        local performance_resolved "lean"
-    }
-    else if "`performance_mode'" == "auto" {
-        if `sample_N' >= `performance_auto_threshold' & `"`saverif'"' == "" {
-            local store_large = 0
-            local performance_resolved "lean"
-        }
-    }
+    * Storage policy, unified: lean at every sample size. e() carries the
+    * estimation contract; the one-row-per-unit objects - influence
+    * functions, unit map, cluster vector - stay in the Mata engine, the
+    * same way official commands keep unit-level quantities out of e() and
+    * provide them on demand. Posting them as Stata matrices costs quadratic
+    * time in n_units per write or copy (measured: 4s at 25k rows, 145s at
+    * 100k), holds every one of them in memory twice, and - the decisive
+    * defect - made the stored-results contract depend on sample size: the
+    * old auto rule posted the matrices below 25,000 observations and not
+    * above, so the same do-file stored different objects on a subsample
+    * than on the full data. storeall is the single explicit opt-in that
+    * materializes them; saverif() writes the durable artifact and works
+    * under lean storage, because the exporter reads the engine cache.
+    local store_large = ("`performance_mode'" == "full")
+    local performance_resolved = cond(`store_large', "full", "lean")
 
     tempname attgt inffunc group_prob unit_group cluster_vec nclusters fast_used panel_balanced panel_ntime cache_token profile bootstrap_profile bootstrap_kernel_profile
     capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'")
@@ -1683,7 +1710,13 @@ program define csdid, eclass sortpreserve
     local time_first = `min_time'
     ereturn clear
     if `post_k' > 0 {
-        ereturn post `post_b' `post_V', obs(`sample_N')
+        * e(sample) marks the estimation sample, as every official estimation
+        * command does; `summarize ... if e(sample)' and `estat summarize'
+        * work off it. esample() consumes the variable it is handed, so it
+        * gets a copy of touse rather than touse itself.
+        tempvar esmp
+        quietly generate byte `esmp' = `touse'
+        ereturn post `post_b' `post_V', obs(`sample_N') esample(`esmp')
     }
     ereturn matrix attgt = `attgt'
     if `store_large' ereturn matrix inffunc = `inffunc'
@@ -1799,7 +1832,6 @@ program define csdid, eclass sortpreserve
     ereturn scalar mata_cache = ("`performance_resolved'" == "lean")
     ereturn scalar mata_cache_token = scalar(`cache_token')
     ereturn scalar large_store = `store_large'
-    ereturn scalar performance_auto_threshold = `performance_auto_threshold'
     if `bstrap' {
         ereturn scalar crit_val = `boot_crit'
         ereturn scalar point_crit_val = `boot_pointcrit'
@@ -1837,7 +1869,10 @@ program define csdid, eclass sortpreserve
 
     if "`agg_type'" != "" {
         csdid_stats, type(dynamic) na_rm
-        _csdid_post event, level(`level')
+        * agg() posts by design: after `csdid, agg(event)' e(b)/e(V) hold the
+        * aggregated coefficients (documented). The estat routes pass `post'
+        * only when the user asks for it.
+        _csdid_post event, level(`level') post
     }
 end
 
@@ -1913,25 +1948,10 @@ program define _csdid_save_rif
     version 14
     syntax using/ [, REPLACE]
 
-    tempname IF UG ATT GP
-    matrix `IF' = e(inffunc)
-    matrix `UG' = e(unit_group)
-    * F-001/F-022 (repaired): the first_period bootstrap draw-order column is
-    * internal; keep the saved RIF artifact schema at id group weight.
-    if colsof(`UG') > 3 matrix `UG' = `UG'[1..., 1..3]
+    tempname ATT GP
     matrix `ATT' = e(attgt)
     matrix `GP' = e(group_prob)
-    if colsof(`IF') != rowsof(`ATT') {
-        display as error "stored influence functions do not match ATT(g,t) results"
-        exit 498
-    }
-
-    local nrif = colsof(`IF')
-    local rifcols ""
-    forvalues j = 1/`nrif' {
-        local rifcols "`rifcols' rif`j'"
-    }
-    matrix colnames `IF' = `rifcols'
+    local nrif = rowsof(`ATT')
 
     * -----------------------------------------------------------------------
     * EUX-003 (repaired): the export below builds the artifact in a scratch
@@ -1949,10 +1969,17 @@ program define _csdid_save_rif
     quietly {
     preserve
     clear
-    svmat double `UG', names(col)
+    * The whole scratch dataset is filled by one Mata call: reading the
+    * influence functions INTO Mata is linear (measured 0.00s at 50k rows)
+    * and st_store back into variables is linear, while the old
+    * `matrix IF = e(inffunc)' + svmat route crossed Stata's classic-matrix
+    * layer three times, each crossing quadratic in n_units (measured 4s at
+    * 25k rows). The schema and the (g,t) refusal are unchanged; the refusal
+    * now comes from csdid_rif_export with the same message.
+    set obs `=e(N_units)'
+    mata: csdid_rif_export()
     generate long rif_row = _n
     order rif_row id group
-    svmat double `IF', names(col)
     forvalues j = 1/`nrif' {
         local g = strofreal(`ATT'[`j', 1], "%21.0g")
         local t = strofreal(`ATT'[`j', 2], "%21.0g")

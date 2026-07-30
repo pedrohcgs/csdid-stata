@@ -14,7 +14,7 @@ program define py012_assert_public_inference
     if "`panelmode'" == "panel" local panelopt "ivar(id)"
 
     import delimited using "`c(pwd)'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-    quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, `panelopt' time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     assert "`e(method)'" == "`method'"
     assert "`e(panel_mode)'" == "`panelmode'"
     matrix A = e(attgt)
@@ -63,11 +63,11 @@ program define py012_assert_bootstrap
     syntax , METHOD(string) REPS(integer) RATIOMIN(real) RATIOMAX(real)
 
     import delimited using "`c(pwd)'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     matrix A = e(attgt)
 
     import delimited using "`c(pwd)'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') wboot(reps(`reps') rseed(9012)) pointwise nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') wboot(reps(`reps') rseed(9012)) pointwise nevertreated base_period(varying) bal(none) storeall
     assert e(bstrap) == 1
     assert e(biters) == `reps'
     matrix B = e(boot_attgt)
@@ -118,10 +118,10 @@ foreach method in dr reg ipw {
 }
 
 import delimited using "`root'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
+quietly csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none) storeall
 matrix DR = e(attgt)
 import delimited using "`root'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 matrix REG = e(attgt)
 assert rowsof(DR) == rowsof(REG)
 forvalues i = 1/`=rowsof(DR)' {
@@ -175,10 +175,10 @@ end
 
 foreach method in dr reg ipw {
     import delimited using "`root'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, ivar(id) time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     py012_grab "panel_`method'" "`py012_actual'"
     import delimited using "`root'/tests/fixtures/parity/py012/inputs/inference-data.csv", clear asdouble
-    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y x, time(period) gvar(g) method(`method') analytical nevertreated base_period(varying) bal(none) storeall
     py012_grab "rcs_`method'" "`py012_actual'"
 }
 

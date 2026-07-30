@@ -1,4 +1,4 @@
-*! _csdid_post 2.0.0 26jul2026
+*! _csdid_post 2.0.0 30jul2026
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")
@@ -101,7 +101,7 @@ program define _csdid_post_event, eclass
     * non-missing e(aggte) row is posted, INCLUDING e = -1: R's
     * tidy/ggdid event frames carry it, so the coefficient set now matches
     * the oracle's.
-    syntax [, Level(cilevel)]
+    syntax [, Level(cilevel) POST]
 
     capture confirm matrix e(aggte)
     if _rc {
@@ -109,7 +109,7 @@ program define _csdid_post_event, eclass
         quietly csdid_stats, type(dynamic) na_rm level(`level')
     }
     * F-045: delegate to the generic poster with the historical event names.
-    _csdid_post_aggte, level(`level') eventnames
+    _csdid_post_aggte, level(`level') eventnames `post'
 end
 
 program define _csdid_post_aggte, eclass
@@ -118,7 +118,7 @@ program define _csdid_post_aggte, eclass
     * aggregation type) into e(b)/e(V) so `test' / `lincom' operate on the
     * AGGREGATED effects. Naming: dynamic -> Tm#/Tp# + Post_avg (the
     * historical event names); group -> G#; calendar -> T#; simple -> ATT.
-    syntax [, Level(cilevel) EVENTNAMES]
+    syntax [, Level(cilevel) EVENTNAMES POST]
 
     capture confirm matrix e(aggte)
     if _rc {
@@ -136,10 +136,35 @@ program define _csdid_post_aggte, eclass
     local k = 0
     local has_agg_if 0
     local overall_col 0
+    local post_if_src "e(agg_inffunc)"
     capture confirm matrix e(agg_inffunc)
     if !_rc {
         local has_agg_if 1
         local overall_col = colsof(e(agg_inffunc))
+    }
+    else {
+        * Lean aggregation posts no e(agg_inffunc): the influence functions
+        * stay in the Mata cache because an n_units-row matrix costs quadratic
+        * time in Stata's classic-matrix layer (see csdid_stats.ado). Use the
+        * cache for the posted covariances only when its token ties it to the
+        * ACTIVE results - a cache left behind by a later csdid run must not
+        * be merged into this estimation's e(aggte). Without this fallback the
+        * posted e(V) would be diagonal and a subsequent test/lincom across
+        * event times would silently use zero covariances.
+        capture confirm scalar e(mata_cache_token)
+        if !_rc {
+            tempname aggif_probe
+            capture mata: st_numscalar("`aggif_probe'", ///
+                (CSDID_LAST_AGG_TOKEN == st_numscalar("e(mata_cache_token)")) * ///
+                cols(CSDID_LAST_AGG_INFFUNC))
+            if !_rc {
+                if scalar(`aggif_probe') > 0 & scalar(`aggif_probe') < . {
+                    local has_agg_if 1
+                    local overall_col = scalar(`aggif_probe')
+                    local post_if_src ""
+                }
+            }
+        }
     }
     * F-047 fix: the fabricated zero-variance window grid is DELETED. Event
     * times absent from the data are not reported (R does not report them),
@@ -233,16 +258,32 @@ program define _csdid_post_aggte, eclass
             capture confirm matrix e(agg_boot_draws)
             if !_rc local post_boot "e(agg_boot_draws)"
         }
-        mata: csdid_post_mapped_v("e(agg_inffunc)", "`post_cluster'", "`post_boot'", `use_boot', "`MAP'", "`V'")
+        mata: csdid_post_mapped_v("`post_if_src'", "`post_cluster'", "`post_boot'", `use_boot', "`MAP'", "`V'")
     }
     matrix colnames `B' = `names'
     matrix colnames `V' = `names'
     matrix rownames `V' = `names'
-    _csdid_post_replace_bv `B' `V'
-
     tempname EB EV
-    matrix `EB' = e(b)
-    matrix `EV' = e(V)
+    if "`post'" != "" {
+        _csdid_post_replace_bv `B' `V'
+        matrix `EB' = e(b)
+        matrix `EV' = e(V)
+    }
+    else {
+        * No-transit path. A non-post estat is a display-and-return command,
+        * but it used to post the aggregation into e(b)/e(V) anyway and the
+        * caller then restored the originals. Each of those swaps rebuilds
+        * e() wholesale, Stata-copying every stored matrix - including the
+        * one-row-per-unit influence functions under full storage - and
+        * Stata's classic-matrix layer is quadratic in a matrix's longest
+        * dimension (measured: 4s at 25k rows, 27s at 50k, per copy). A plain
+        * `estat event' after a 20,000-unit estimation spent ~19 of its 19
+        * seconds copying matrices it did not change. r(table) is built from
+        * the same B/V the posting path would have posted, so its contents
+        * are identical; e() is simply never touched.
+        matrix `EB' = `B'
+        matrix `EV' = `V'
+    }
     matrix `T' = J(9, `k', .)
     * F-046 fix: level() was DEAD - the pointwise critical value computed
     * from it was unconditionally overwritten by the estimation-time
@@ -367,14 +408,8 @@ program define _csdid_post_replace_bv, eclass
         bstrap biters cband pointwise fast_requested fast_auto fast_allowed fast_used crit_val point_crit_val ///
         N_clusters level agg_cluster_fallback agg_level N_aggte time_first ///
         allow_unbalanced store_all lean mata_cache mata_cache_token large_store
-    * F-055: performance_auto_threshold cannot ride the scalar_names loop:
-    * the generated macro `has_scalar_performance_auto_threshold' is 37
-    * characters, over Stata's 31-char local-name limit (measured: rc 198 on
-    * every event path). Handled with a short-named pair like the
-    * accelerator scalars below.
-    capture confirm scalar e(performance_auto_threshold)
-    local has_perf_auto = !_rc
-    if `has_perf_auto' local perf_auto = e(performance_auto_threshold)
+    * (F-055's separate handling of performance_auto_threshold is gone with
+    * the scalar itself: storage is unified on lean, so no threshold exists.)
     foreach s of local scalar_names {
         capture confirm scalar e(`s')
         local has_scalar_`s' = !_rc
@@ -416,12 +451,25 @@ program define _csdid_post_replace_bv, eclass
         }
     }
 
+    * Carry e(sample) across the wipe: the estimation marked it, and a posted
+    * aggregation must keep describing the same estimation sample. e(sample)
+    * evaluates rowwise to 0 everywhere when it was never set, so an empty
+    * marking is detected by count and simply not re-posted.
+    tempvar esmp
+    local has_esample 0
+    quietly count if e(sample)
+    if r(N) > 0 {
+        quietly generate byte `esmp' = e(sample)
+        local has_esample 1
+    }
     ereturn clear
+    local esamp_opt ""
+    if `has_esample' local esamp_opt "esample(`esmp')"
     if `has_scalar_N' {
-        ereturn post `bmat' `vmat', obs(`scalar_N')
+        ereturn post `bmat' `vmat', obs(`scalar_N') `esamp_opt'
     }
     else {
-        ereturn post `bmat' `vmat'
+        ereturn post `bmat' `vmat', `esamp_opt'
     }
 
     if `has_ATT' ereturn matrix attgt = `ATT'
@@ -461,8 +509,6 @@ program define _csdid_post_replace_bv, eclass
             ereturn local `x' `"`keep_`x''"'
         }
     }
-    * F-055: re-post the preserved performance_auto_threshold.
-    if `has_perf_auto' ereturn scalar performance_auto_threshold = `perf_auto'
     if `has_boot_accel_rc' ereturn scalar bootstrap_accelerator_rc = `boot_accel_rc'
     if `has_boot_accel_seconds' ereturn scalar bootstrap_accelerator_seconds = `boot_accel_seconds'
     if `has_agg_boot_rc' ereturn scalar agg_boot_accel_rc = `agg_boot_rc'

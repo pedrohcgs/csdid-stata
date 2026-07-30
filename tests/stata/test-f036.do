@@ -173,7 +173,7 @@ forvalues j = 1/`=rowsof(AGG3)' {
 local last3 : word `=colsof(T3)' of `cn3'
 assert "`last3'" == "Post_avg"
 
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(29) rseed(24680)) agg(event) nevertreated base_period(varying) bal(none)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(29) rseed(24680)) agg(event) nevertreated base_period(varying) bal(none) storeall
 assert e(bstrap) == 1
 assert "`e(agg_type)'" == "dynamic"
 confirm matrix e(aggte)

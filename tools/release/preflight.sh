@@ -13,6 +13,7 @@
 #   preflight.sh              per-PR gate: every tier a change must pass
 #   preflight.sh --release    adds the expensive release-only reproductions
 #   preflight.sh --fast       spec tier only (pre-commit convenience)
+#   preflight.sh --ab         force the legacy A/B even if production code is unchanged
 #   preflight.sh --list       show what would run, and why each tier exists
 #
 # This runs the ENTIRE Stata suite (117 tests). There is no second command to
@@ -29,11 +30,14 @@ cd "$ROOT"
 FAST=0
 LIST=0
 RELEASE=0
+FORCE_AB=0
+AB_CERTIFIED=""
 for arg in "$@"; do
   case "$arg" in
     --fast) FAST=1 ;;
     --list) LIST=1 ;;
     --release) RELEASE=1 ;;
+    --ab) FORCE_AB=1 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -69,6 +73,17 @@ block() {
   if [ "$LIST" = "1" ]; then record "$1" "$2" "LIST"; return; fi
   if [ "$FAST" = "1" ] && [ "$1" != "spec" ]; then record "$1" "$2" "SKIPPED(--fast)"; return; fi
   BLOCKED=$((BLOCKED+1)); record "$1" "$2" "BLOCKED: $3"
+}
+
+# unchanged <tier> <name> <why> -- the check did not run because its subject did
+# not change, and an earlier run already established it on the identical
+# subject. This is NOT a pass and NOT a block. The receipt carries the digest
+# that makes the claim checkable, so "we did not need to run it" can be audited
+# rather than believed.
+UNCHANGED=0
+unchanged() {
+  if [ "$LIST" = "1" ]; then record "$1" "$2" "LIST"; return; fi
+  UNCHANGED=$((UNCHANGED+1)); record "$1" "$2" "UNCHANGED: $3"
 }
 
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -227,10 +242,38 @@ if [ "$RELEASE" = "1" ]; then
 fi
 
 LEGACY_REF="${CSDID_LEGACY_REFERENCE:-$(cd "$ROOT/.." && pwd)/GitHub/csdid-stata}"
-if [ -d "$LEGACY_REF" ] && have "$STATA"; then
-  run deep "legacy A/B certification" bash tests/run-legacy-candidate-ab.sh
-else
+
+# The A/B measures the shipping code against Version 1.82 and nothing else. It
+# is also 90 of preflight's 105 minutes. So it runs when the code it measures
+# has changed, and is recorded as UNCHANGED when it has not -- justified by a
+# digest over src/, pkg/, csdid.pkg and stata.toc, compared against the digest
+# the last successful A/B actually certified. Tests, fixtures, tools and
+# documents can all change a preflight verdict without changing a number; none
+# of them can change a timing.
+#
+# --release always runs it: a release claims the performance numbers, so it
+# measures them rather than inheriting them. --ab forces it on demand.
+PROD_DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh" --production)"
+AB_LAST=""
+if [ -f "$LOGDIR/receipt.json" ]; then
+  AB_LAST="$(python3 -c "
+import json
+try:
+    d = json.load(open('$LOGDIR/receipt.json'))
+    print(d.get('ab_production_digest', '') if d.get('fail', 1) == 0 else '')
+except Exception:
+    print('')
+" 2>/dev/null)"
+fi
+if [ ! -d "$LEGACY_REF" ] || ! have "$STATA"; then
   block deep "legacy A/B certification" "no legacy checkout at $LEGACY_REF"
+elif [ "$FORCE_AB" != "1" ] && [ "$RELEASE" != "1" ] && [ -n "$AB_LAST" ] && [ "$AB_LAST" = "$PROD_DIGEST" ]; then
+  unchanged deep "legacy A/B certification" \
+    "production code identical to the run that certified it (${PROD_DIGEST:0:12}); --ab forces it"
+  AB_CERTIFIED="$AB_LAST"
+else
+  run deep "legacy A/B certification" bash tests/run-legacy-candidate-ab.sh
+  [ "$FAIL" = "0" ] && AB_CERTIFIED="$PROD_DIGEST"
 fi
 
 # ------------------------------------------------------------------- report
@@ -276,5 +319,9 @@ json.dump({
 }, open(path, "w"), indent=2, sort_keys=True)
 open(path, "a").write("\n")
 PYEOF
-echo "all preflight checks passed"
+if [ "$UNCHANGED" -gt 0 ]; then
+  echo "all preflight checks passed ($UNCHANGED not re-run: subject unchanged, see UNCHANGED rows above)"
+else
+  echo "all preflight checks passed"
+fi
 echo "receipt written: $LOGDIR/receipt.json (mode=$MODE, digest=${DIGEST:0:12})"

@@ -107,17 +107,21 @@ matrix list A
 
 ## Influence functions
 
-`e(inffunc)` holds the influence function, one column per ATT(g,t) cell and one
-row per unit. It is what standard errors, uniform bands and clustered inference
-are built from, and it is exported so you can do your own:
+The influence function — one column per ATT(g,t) cell, one row per unit — is
+what standard errors, uniform bands and clustered inference are built from.
+It stays internal by default; ask for it with `storeall` when you want to do
+your own inference:
 
 ```stata
 use "jel_results.dta", clear
-quietly csdid mrate, ivar(county_code) time(year) gvar(gvar) analytical
+quietly csdid mrate, ivar(county_code) time(year) gvar(gvar) analytical storeall
 matrix IF = e(inffunc)
 display "influence function: " rowsof(IF) " units x " colsof(IF) " cells"
 mata: printf("columns are mean-zero to %g\n", max(abs(mean(st_matrix("IF")))))
 ```
+
+For a version that survives the session — and feeds `csdid_stats using` for
+later aggregation — write it to a dataset instead with `saverif()`.
 
 Each column is mean-zero by construction. With it you can compute standard
 errors for aggregations `csdid` does not provide, or feed a sensitivity

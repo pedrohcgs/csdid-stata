@@ -1,6 +1,10 @@
 title: csdid
 description: Difference-in-Differences with Multiple Time Periods, in Stata
-theme: jekyll-theme-cayman
 markdown: kramdown
 exclude:
   - README.md
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

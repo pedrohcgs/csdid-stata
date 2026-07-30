@@ -64,7 +64,7 @@ program define rt017_assert_bootstrap_target
 
     import delimited using "`input'", clear asdouble
     csdid y, ivar(id) time(t) gvar(g) method(reg) base_period(varying) ///
-        wboot(reps(`biters') cluster(cl) rseed(`seed')) pointwise bal(none)
+        wboot(reps(`biters') cluster(cl) rseed(`seed')) pointwise bal(none) storeall
     assert e(bstrap) == 1
     assert e(biters) == `biters'
     assert e(cband) == 0
@@ -162,7 +162,7 @@ tempfile evlog
 capture log close rt017event
 log using "`evlog'", text replace name(rt017event)
 capture noisily csdid y, ivar(id) time(t) gvar(g) method(reg) base_period(varying) ///
-    wboot(reps(99) cluster(cl cl2) rseed(20261703)) pointwise bal(none)
+    wboot(reps(99) cluster(cl cl2) rseed(20261703)) pointwise bal(none) storeall
 local rc = _rc
 log close rt017event
 assert `rc' == 198

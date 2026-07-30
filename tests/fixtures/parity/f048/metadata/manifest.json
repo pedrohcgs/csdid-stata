@@ -47,13 +47,13 @@
   ],
   "comparison_plan": [
     {
-      "actual": "expected/new-stata/per-rep.csv",
+      "actual": "build/test-artefacts/f048/per-rep.csv",
       "expected": "expected/r/per-rep.csv",
       "tolerance_id": "TOL002",
       "key_columns": "sim"
     },
     {
-      "actual": "expected/new-stata/summary.csv",
+      "actual": "build/test-artefacts/f048/summary.csv",
       "expected": "expected/r/summary.csv",
       "tolerance_id": "TOL008",
       "key_columns": "nsim"

@@ -4,9 +4,9 @@ title: Unbalanced panels
 
 # Unbalanced panels
 
-A panel is unbalanced when some units are not observed in every period. You have
-three choices about what to do, and `csdid` makes you aware of the one it took
-rather than picking silently:
+A panel is unbalanced when some units are not observed in every period (through
+attrition, late entry, or simply missing records). You have three choices about
+what to do. `csdid` reports the one it took:
 
 | | |
 | --- | --- |
@@ -16,15 +16,15 @@ rather than picking silently:
 
 <div class="important" markdown="1">
 Dropping units changes the estimand, so `bal(full)` reports how many units and
-how many observations it removed. Changing an estimand is a legitimate choice;
-changing one silently is not, and that is the whole reason the report exists.
+how many observations it removed (both counts, printed above the table). The
+report is there so that nobody has to take the change on trust.
 </div>
 
 ## The data
 
-Every guide on this site is self-contained: run this first and the rest of the
-page follows. It is the county mortality panel from the
-[JEL-DiD](https://github.com/pedrohcgs/JEL-DiD) replication package.
+The county mortality panel from the
+[JEL-DiD](https://github.com/pedrohcgs/JEL-DiD) replication package is the
+starting point here.
 
 ```stata
 import delimited using ///
@@ -41,9 +41,9 @@ keep if nyears == 11
 save "jel_unbal_base.dta", replace
 ```
 
-As downloaded the JEL panel is only nearly balanced; the `keep if nyears == 11`
-step above makes it exactly balanced. So there is no unbalancedness left to
-demonstrate with, and the block below creates it deliberately and reproducibly:
+As downloaded the JEL panel is only nearly balanced, and the `keep if nyears == 11`
+step above makes it exactly balanced. That leaves nothing to demonstrate on. The
+block below creates some unbalancedness deliberately and reproducibly:
 
 ```stata
 use "jel_unbal_base.dta", clear
@@ -63,10 +63,10 @@ display "units: "      e(N_units)
 estat event
 ```
 
-Read the message above the table: it names how many counties were not observed
-in all eleven years and how many observations went with them. `e(panel_mode)`
-reports `panel`, because after the drop the panel is balanced — which is the
-point of the mode.
+Read the message above the table. It names how many counties were not observed
+in all eleven years and how many observations went with them, so you never have
+to reconstruct that count from the data yourself. `e(panel_mode)` reports
+`panel`. After the drop the panel is balanced, which is the point of the mode.
 
 ## Keeping every unit
 
@@ -79,48 +79,49 @@ estat event
 ```
 
 `e(panel_mode)` now reports `allow_unbalanced`, and `e(N_units)` is larger,
-because no county was removed. `e(N_units)` is the cross-sectional unit count,
-which is what the influence function and the standard errors are scaled by;
-`e(N)` remains the observation count, as it means everywhere in Stata.
+because no county was removed. `e(N_units)` is the cross-sectional unit count.
+That is what the influence function and the standard errors are scaled by.
+`e(N)` remains the observation count, as it does everywhere in Stata.
 
 `unbalanced` is a supported synonym of `bal(none)`, for when that reads better
 than a mode inside `bal()`. `allowunbalanced` and `allow_unbalanced` are the
-longhand form of the same thing — it is the name this setting carries in the
-reference implementation, so code written with that vocabulary runs here
-unchanged. None of them prints a warning or is deprecated.
+longhand form of the same thing -- that is the name the setting carries in the
+reference implementation, the R package -- so code written with that vocabulary
+runs here unchanged. None of these spellings prints a warning or is deprecated.
 
-All three are typed in full. `unbal` is not an option, deliberately: it reads
-as `bal(unbal)`, which `bal()` does not accept either. Combining any of the
-three with a `bal()` that means something else is an error rather than a silent
-resolution.
+All three are typed in full (no abbreviation). `unbal` is deliberately not an
+option, because it reads as `bal(unbal)`, which `bal()` does not accept either.
+Combining any of the three with a `bal()` that means something else is an error.
+The run stops and tells you.
 
 ## Which to use
 
 <div class="note" markdown="1">
-These are **different samples answering different questions**, so the choice is
-substantive rather than technical.
+These are *different samples answering different questions*. The choice is a
+substantive one, and it belongs in the text.
 </div>
 
 `bal(full)` keeps one fixed set of units behind every reported cell, which makes
-the estimand easy to state: the effect on units observed throughout. That is
-also its cost — if attrition is related to treatment, the units it drops are
-exactly the ones you would want to know about, and the report telling you how
-many went is the signal to think about that.
+the estimand easy to state: the effect on units observed throughout. However,
+that is also its cost. If attrition is related to treatment, the units it drops
+are exactly the ones you would want to know about, and the report telling you
+how many went is your signal to think about that.
 
-`bal(none)` uses everything. On a balanced panel each 2×2 cell is formed by
+`bal(none)` uses everything you gave it. On a balanced panel each 2×2 cell is formed by
 differencing a unit over two periods; when units come and go that is not
 available for everyone, so the estimator pools observations from both periods
-instead. Consequences worth knowing:
+instead (this is the repeated-cross-section computation). Two consequences are
+worth knowing:
 
-- it is **slower** — roughly 2–4×, because each cell fits more regressions on
+- it is *slower*, by roughly 2–4×, because each cell fits more regressions on
   more rows
-- the guard on small cohorts is **stricter**, because cohort size is measured as
+- the guard on small cohorts is *stricter*, because cohort size is measured as
   observations divided by periods, which on an unbalanced panel is smaller than
   the distinct-unit count
 
 <div class="tip" markdown="1">
 If a run refuses with "the never-treated group is too small", `notyet` enlarges
-the comparison group and is usually the fix. It is also the default, so you will
+the comparison group and is usually the fix. It is also the default, so you'll
 only meet that refusal if you asked for `nevertreated`. See
 [comparison groups](comparison-groups.html).
 </div>
@@ -128,10 +129,10 @@ only meet that refusal if you asked for `nevertreated`. See
 ## `bal(pair)`
 
 Stata `csdid` Version 1.82 balanced each 2×2 comparison separately, keeping the
-units observed in both of that comparison's periods, and did so without saying
-anything. `bal(pair)` is that behaviour, made explicit and asked for. Every unit
+units observed in both of that comparison's periods, and it said nothing about
+doing so. `bal(pair)` does the same thing explicitly and on request. Every unit
 stays in the sample; what varies is which units each individual comparison can
-use, so `e(N_units)` matches `bal(none)` while the estimates do not.
+use. Thus `e(N_units)` matches `bal(none)` while the estimates do not.
 
 ```stata
 use "jel_unbalanced.dta", clear
@@ -141,9 +142,9 @@ display "units: "      e(N_units)
 estat event
 ```
 
-`e(panel_mode)` reports `pair-balanced` — neither `panel` nor
-`allow_unbalanced`, because it is neither. Use this mode to reproduce a result
-computed with Version 1.82.
+`e(panel_mode)` reports `pair-balanced`. The mode is neither `panel` nor
+`allow_unbalanced`, and the string says so. We would use it to reproduce a
+result computed with Version 1.82, and we would not choose it for new work.
 
 ```stata
 capture erase "jel_unbal_base.dta"

@@ -4,9 +4,18 @@ title: Guides
 
 # Guides
 
-Every guide is self-contained, runnable from a clean Stata session, and
-built around the choices you actually have to make. Numbers shown are the
-numbers you get.
+Each guide runs from a clean Stata session and is organized around one
+choice you have to make in a real application (the comparison group, the
+base period, the balancing rule), so the options named in the text, and
+the defaults they replace, are the ones you will type. The four guides
+under "Start here" are enough to run an analysis end to end, and each of
+the rest answers one question.
+
+Every script loads its own data, some of it over the network, so nothing
+here depends on a file you do not have and nothing needs a package other
+than `csdid`. The numbers shown are the numbers the code produces, and
+they are not empirical findings about the applications whose data the
+guides borrow.
 
 **Start here**
 
@@ -50,6 +59,6 @@ numbers you get.
 | | |
 | --- | --- |
 | [Upgrading from Version 1.82](articles/upgrading-from-182.html) | what moves, what is deprecated, and what each old option is called now |
-| [Speed against Version 1.82](articles/speed-vs-182.html) | the gains by sample size, periods, cohorts, and sampling scheme — 16x to 208x |
+| [Speed against Version 1.82](articles/speed-vs-182.html) | the gains by sample size, periods, cohorts, and sampling scheme, from 16x to 208x |
 | [References](references.html) | the papers behind the estimator, and how to cite `csdid` |
 

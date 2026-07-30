@@ -5,16 +5,21 @@ title: Trimming and overlap
 # Trimming and overlap
 
 With covariates, `method(dr)` and `method(ipw)` weight comparison units by a
-propensity score — the estimated probability of belonging to the treated cohort.
+propensity score (the estimated probability of belonging to the treated cohort).
 A unit with a score near 1 gets an enormous weight, and a handful of such units
-can dominate the estimate and inflate its variance.
+can dominate the estimate and inflate its variance at the same time. That is why
+the problem is easy to miss in a table of point estimates.
 
 <div class="note" markdown="1">
-That is an **overlap** problem: the data contain treated units with no
-comparable units to compare them against. `csdid` guards against it in two ways, both visible.
+That is an *overlap* problem: the data contain treated units with nothing
+comparable to compare them against. `csdid` guards against it in two ways, a
+warning and a trimming rule, both visible in the output.
 </div>
 
 ## The data
+
+Let's build the sample once and vary only the trimming threshold (everything else
+about the specification is held fixed below).
 
 ```stata
 import delimited using ///
@@ -33,9 +38,10 @@ save "jel_overlap.dta", replace
 
 ## The overlap warning
 
-Every `dr` and `ipw` cell is checked. If the fitted propensity scores get too
-close to 1, `csdid` warns for that cohort–period cell and keeps going, so you
-learn which comparison is fragile rather than silently averaging it in:
+Every `dr` and `ipw` cell is checked, cell by cell rather than once for the
+sample as a whole. If the fitted propensity scores get too close to 1, `csdid`
+warns for that cohort–period cell and keeps going. You learn which particular
+comparison is fragile, and it is not averaged silently into the cohort total:
 
 ```stata
 use "jel_overlap.dta", clear
@@ -44,14 +50,14 @@ csdid mrate unemp_rate poverty_rate, ivar(county_code) time(year) gvar(gvar) ///
 estat event
 ```
 
-No warning here means overlap held in every cell for these covariates. Add
-enough covariates and it will not: the more you condition on, the easier it is
-to predict cohort membership perfectly.
+No warning here means overlap held in every cell for these covariates. This is
+good news! However, add enough covariates and it will not hold. The more you
+condition on, the easier it becomes to predict cohort membership perfectly.
 
 ## Trimming
 
-`pscoretrim()` caps how extreme a propensity score may get. The default is
-`.995`:
+`pscoretrim()` caps how extreme a propensity score may get, and the default is a
+deliberately mild `.995`:
 
 ```stata
 use "jel_overlap.dta", clear
@@ -61,7 +67,8 @@ display "trim: " e(pscoretrim)
 estat simple
 ```
 
-Tighten it to see how sensitive the estimate is to the most extreme weights:
+Tighten it to see how sensitive the estimate is to the most extreme weights (a
+cheap robustness check):
 
 ```stata
 use "jel_overlap.dta", clear
@@ -71,7 +78,8 @@ display "trim: " e(pscoretrim)
 estat simple
 ```
 
-Turn it off with `pscoretrim(1)`, which permits any score:
+Turn it off with `pscoretrim(1)`, which permits any score (including scores that
+ought to worry you):
 
 ```stata
 use "jel_overlap.dta", clear
@@ -80,7 +88,8 @@ csdid mrate unemp_rate poverty_rate, ivar(county_code) time(year) gvar(gvar) ///
 estat simple
 ```
 
-A value of zero or below is refused — it would trim away every observation:
+A value of zero or below is refused (the run stops), since it would trim away
+every observation in the sample:
 
 ```stata
 use "jel_overlap.dta", clear
@@ -91,36 +100,43 @@ display "return code: " _rc
 
 ## Reading the sensitivity
 
-If the estimate moves a lot between `pscoretrim(1)` and a tighter bound, a small
-number of extreme-weight units are driving the result. That is worth reporting,
-not hiding: it tells the reader the estimate rests on units with few
-counterparts.
+If the estimate moves a lot between `pscoretrim(1)` and a tighter bound, then a
+small number of extreme-weight units are driving the result. We would report
+that. It tells a reader that the estimate rests on units with very few
+counterparts in the comparison group, and that a different trimming rule would
+have given a different answer.
 
 <div class="important" markdown="1">
-Trimming changes the estimand slightly — it reweights toward the region of
-common support. That is usually preferable to an estimate dominated by units
-that have no real comparison, but it is a choice, so state the value you used.
+Trimming changes the estimand slightly. It reweights toward the region of common
+support, the region where comparison units actually exist. That is usually
+preferable to an estimate dominated by units with no real comparison. It is
+still a choice, so state the value you used.
 </div>
 
 ## Avoiding the problem
 
 <div class="tip" markdown="1">
-Overlap is easier to keep than to repair.
+It is easier to keep overlap at the design stage than to repair it afterwards,
+so we think about it when choosing the specification.
 </div>
 
-- **Condition on fewer things.** Every covariate makes cohort membership easier
-  to predict. Include what parallel trends plausibly needs, not everything
-  available.
-- **Prefer `method(reg)` when overlap is genuinely poor.** Outcome regression
-  does not weight by a propensity score, so it does not blow up on extreme
-  scores — at the cost of relying on the outcome model being right.
-- **Use `notyet`.** A larger comparison pool makes extreme scores less likely.
-  See [Comparison groups](comparison-groups.html).
+- **Fewer covariates.** Every covariate makes cohort membership easier to
+  predict (that is what a propensity score is for), so include what parallel
+  trends plausibly needs, which is usually fewer covariates than the dataset
+  happens to contain.
+- **Outcome regression.** We prefer `method(reg)` when overlap is genuinely
+  poor. It does not weight by a propensity score, so it cannot blow up on
+  extreme scores, and it relies instead on the outcome model being right.
+- **A larger comparison pool.** `notyet` makes extreme scores less likely (it is
+  the default, as it happens), simply because there are more units available to
+  compare against. See
+  [Comparison groups](comparison-groups.html).
 
 `method(dr)`, the default, is doubly robust: it is consistent if *either* the
-outcome model or the propensity model is correct. That is why it is the default,
-and it is the reason overlap matters less here than for plain `ipw` — but
-"doubly robust" is not "immune to no overlap". See
+outcome model or the propensity model is correct. That is why we made it the
+default, and it is the reason overlap matters less here than it does for plain
+`ipw`. Double robustness still needs overlap, though, and we would read the
+warnings before trusting any individual cell. See
 [Covariates and estimators](covariates-and-estimators.html).
 
 ```stata

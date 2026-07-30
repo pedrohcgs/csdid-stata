@@ -57,7 +57,10 @@ fixed effects on *all* untreated observations and impute Y(0) from the fit —
 on a balanced panel those two produce identical point estimates, with and
 without covariates (we verified agreement to six decimals with each
 command's documented covariate specification), and `flexdid`'s default
-specification joins them. Identical points are not identical inference,
+specification joins them. One domain note before any table: `flexdid`
+implements Deb, Norton, Wooldridge and Zabel (2025), whose title scopes
+the estimator to repeated cross sections — so this guide compares it
+there, and only there. Identical points are not identical inference,
 though: when effects vary with covariates, `did_imputation`'s standard
 errors are deliberately conservative under that heterogeneity while
 `jwdid` reports conventional regression inference — on one of our draws
@@ -129,18 +132,23 @@ about half a second per million rows.
 
 ### Unbalanced panels
 
-Fifteen percent of rows deleted at random from balanced panels. The
-apples-to-apples row is `bal(none)`, which keeps every observation the way
-the other commands do. `bal(full)` — the default — is faster because it
-drops the units not observed in every period before estimating, which is a
-different (and disclosed) sample, not a speed trick; it is shown so the
-difference is visible rather than hidden:
+Fifteen percent of rows deleted at random from balanced panels. All three
+`bal()` modes are shown, because they are three different estimands and
+their speeds are not comparable to each other — only to the rivals'.
+`bal(none)` keeps every observation the way the other commands do, and is
+the apples-to-apples column. `bal(pair)` balances each 2x2 comparison
+separately — Version 1.82's estimand, on request. `bal(full)` — the
+default — is fastest because it drops the units not observed in every
+period before estimating: a smaller, disclosed sample, not a speed trick.
+It is kept in the table for completeness precisely because it is the
+default, and its time should be read as "the default's sample," never as
+`csdid` outrunning the field:
 
-| n (T=10, G=4) | rows | `csdid bal(none)` | `csdid bal(full)` | `jwdid` | `lpdid` | `did_imputation` |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 8,500 | 0.10 | 0.02 | 0.20 | 0.32 | 0.57 |
-| 10,000 | 85,000 | 0.69 | 0.11 | 0.70 | 0.85 | 3.85 |
-| 100,000 | 850,000 | **3.79** | 0.89 | 6.28 | 5.83 | 38.0 |
+| n (T=10, G=4) | rows | `csdid bal(none)` | `csdid bal(pair)` | `csdid bal(full)` | `jwdid` | `lpdid` | `did_imputation` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 8,500 | 0.10 | 0.04 | 0.02 | 0.20 | 0.32 | 0.57 |
+| 10,000 | 85,000 | 0.69 | 0.29 | 0.11 | 0.70 | 0.85 | 3.85 |
+| 100,000 | 850,000 | **3.79** | 2.07 | 0.89 | 6.28 | 5.83 | 38.0 |
 
 ### Repeated cross sections
 
@@ -204,7 +212,6 @@ Every command runs; most agree. One does not:
 | `jwdid` | +0.005 | 0.96 |
 | `did_imputation` | +0.005 | 0.96 |
 | `did_multiplegt_dyn` | +0.005 | 0.95 |
-| `flexdid` | +0.004 | 1.00 |
 | `lpdid` | **-0.13** | **0.53** |
 
 `lpdid` is off by 6.5% of the true effect on a perfectly balanced panel with
@@ -212,9 +219,7 @@ nothing exotic anywhere. This is not a bug, and it is not noise (it is the
 same at n = 4,000). It is the effective-sample-size weighting doing exactly
 what it does: later cohorts get less weight because earlier cohorts are no
 longer clean comparisons, so its event study averages a different mix of
-cohorts than the population has. (`flexdid`'s 1.00 in the coverage column
-is the opposite, milder anomaly: its intervals over-cover — conservative
-rather than wrong, and it recurs in every table it appears in.) You do not
+cohorts than the population has. You do not
 need missing data for the estimand question to matter.
 
 ### Unequal sampling across periods
@@ -232,7 +237,6 @@ equal cross-sections.
 | `jwdid` | -0.16 | 0.36 |
 | `did_imputation` | -0.17 | 0.38 |
 | `did_multiplegt_dyn` | -0.29 | 0.16 |
-| `flexdid` | -0.17 | 0.73 |
 | `lpdid` | -0.40 | 0.02 |
 
 Every observation-weighted estimator is now estimating a different — and
@@ -252,7 +256,8 @@ would not even mention it.
 
 With fresh samples each period and equal period sizes, the commands that
 support repeated cross sections (`csdid` via `rcs`, `jwdid`, `did_imputation`
-with group fixed effects, `flexdid`) are all fine. Make the period sizes
+with group fixed effects, and `flexdid` — on its design target, the one
+place it appears in our comparisons) are all fine. Make the period sizes
 unequal — entirely ordinary in survey data — and the drift returns with a
 twist: it *flips sign across event times* (-0.16 at e=0, +0.23 at e=2 for
 the observation-weighted commands). The estimated event study does not just
@@ -308,7 +313,6 @@ bias / coverage at e=0):
 | `csdid reg` | -0.001 | 0.95 |
 | `jwdid` | +0.001 | 0.95 |
 | `did_imputation` | +0.000 | 0.96 |
-| `flexdid` | -0.001 | 1.00 |
 | `did_multiplegt_dyn` | **+0.119** | **0.61** |
 | `lpdid` | **-0.139** | **0.46** |
 
@@ -373,7 +377,6 @@ and it is not an exotic world. Bias and coverage at e=1:
 | `csdid reg` | **+0.300** | **0.46** |
 | `jwdid` | **+0.490** | **0.26** |
 | `did_imputation` | **+0.189** | **0.72** |
-| `flexdid` | **+0.327** | **0.93** |
 | `did_multiplegt_dyn` | **+0.303** | **0.22** |
 | `lpdid` | **-0.162** | **0.68** |
 
@@ -422,7 +425,6 @@ treatment-probability model is broken. Bias and coverage at e=1:
 | `csdid reg` | -0.001 | 0.95 |
 | `jwdid` | +0.001 | 0.92 |
 | `did_imputation` | +0.002 | 0.93 |
-| `flexdid` | -0.001 | 0.99 |
 | `did_multiplegt_dyn` | **+0.229** | **0.28** |
 | `lpdid` | **-0.112** | **0.66** |
 

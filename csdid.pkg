@@ -19,6 +19,11 @@ d Unlike the SSC csdid, this implementation does not require drdid: the
 d doubly robust, outcome-regression and IPW estimators are implemented
 d internally, so the package has no dependencies.
 d
+d On macOS the multiplier bootstrap uses a compiled accelerator plugin
+d (universal binary, Intel and Apple silicon). On other platforms, or if
+d the plugin cannot load, csdid falls back to the Mata implementation
+d automatically; results are identical either way.
+d
 d KW: difference in differences
 d KW: DID
 d KW: difference-in-differences
@@ -40,7 +45,7 @@ d
 d Author: Brantly Callaway, University of Georgia
 d Support: email brantly.callaway@@uga.edu
 d
-d Distribution-Date: 20260726
+d Distribution-Date: 20260730
 d
 f pkg/csdid.ado
 f pkg/_csdid_post.ado
@@ -55,6 +60,7 @@ f pkg/csdid_table.ado
 f pkg/dipt.ado
 f pkg/tsvmat.ado
 f pkg/csdid.mata
+f pkg/csdid_bootstrap_macosx.plugin
 f pkg/lcsdid.mlib
 f pkg/csdid.sthlp
 f pkg/csdid_postestimation.sthlp

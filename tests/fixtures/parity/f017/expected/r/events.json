@@ -1,35 +1,66 @@
 [
   {
-    "event_key": "legacy_bal_unbal",
-    "return_code": 0,
-    "event_type": "warning",
-    "offending_option": "bal(unbal)",
-    "message_normalized": "csdid: bal(unbal) is deprecated; use bal(none)",
-    "resolves_to": "none"
-  },
-  {
-    "event_key": "legacy_bal_all",
-    "return_code": 0,
-    "event_type": "warning",
-    "offending_option": "bal(all)",
-    "message_normalized": "csdid: bal(all) is deprecated; use bal(full)",
-    "resolves_to": "full"
-  },
-  {
-    "event_key": "legacy_allowunbalanced",
-    "return_code": 0,
-    "event_type": "warning",
-    "offending_option": "allowunbalanced",
-    "message_normalized": "csdid: allowunbalanced is deprecated; use bal(none)",
-    "resolves_to": "none"
-  },
-  {
-    "event_key": "legacy_balanceall",
-    "return_code": 0,
-    "event_type": "warning",
+    "event_key": "removed_balanceall",
+    "return_code": 198,
+    "event_type": "error",
     "offending_option": "balanceall",
-    "message_normalized": "csdid: balanceall is deprecated; use bal(full)",
-    "resolves_to": "full"
+    "bal_mode": "bal(full)"
+  },
+  {
+    "event_key": "removed_balancepair",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "balancepair",
+    "bal_mode": "bal(pair)"
+  },
+  {
+    "event_key": "removed_bal_all",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "bal(all)",
+    "bal_mode": "bal(full)"
+  },
+  {
+    "event_key": "removed_bal_unbal",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "bal(unbal)",
+    "bal_mode": "bal(none)"
+  },
+  {
+    "event_key": "removed_bal_unbalanced",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "bal(unbalanced)",
+    "bal_mode": "bal(none)"
+  },
+  {
+    "event_key": "removed_bal_allow_unbalanced",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "bal(allow_unbalanced)",
+    "bal_mode": "bal(none)"
+  },
+  {
+    "event_key": "accepted_unbalanced",
+    "return_code": 0,
+    "event_type": "accepted",
+    "offending_option": "unbalanced",
+    "bal_mode": "bal(none)"
+  },
+  {
+    "event_key": "accepted_allowunbalanced",
+    "return_code": 0,
+    "event_type": "accepted",
+    "offending_option": "allowunbalanced",
+    "bal_mode": "bal(none)"
+  },
+  {
+    "event_key": "accepted_allow_unbalanced",
+    "return_code": 0,
+    "event_type": "accepted",
+    "offending_option": "allow_unbalanced",
+    "bal_mode": "bal(none)"
   },
   {
     "event_key": "legacy_long",

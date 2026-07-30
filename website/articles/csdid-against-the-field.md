@@ -16,15 +16,32 @@ these estimators agree, and speed looks like the only difference — most,
 not all, as the first table below shows. Take
 anything away from that ideal — unequal sampling across periods, an
 unbalanced panel, repeated cross sections — and they quietly stop estimating
-the same parameter. Not with worse precision: with different targets. A
-target parameter is an estimand. It should be a fixed feature of the
+the same parameter. Not with worse precision: with different targets.
+
+<div class="note" markdown="1">
+A target parameter is an estimand. It should be a fixed feature of the
 population, and it should not move because your sample did.
+</div>
 
 Everything below uses one data-generating process (1,000 units per draw,
-seven periods), fixed effect sizes, and 500 simulation draws per setting;
-the scripts and seeds are available from the authors. We report bias against the *population* targets — never against a
+seven periods), fixed effect sizes, and 500 simulation draws per setting.
+We report bias against the *population* targets — never against a
 sample-dependent quantity — along with the standard deviation across draws
 and the coverage of nominal 95% intervals.
+
+<nav class="toc">
+<div class="toc-title">Contents</div>
+<ul>
+<li><a href="#what-each-command-is-actually-computing">The command map</a></li>
+<li><a href="#speed">Speed</a></li>
+<li><a href="#reliability-part-i-no-covariates">Reliability I &mdash; no covariates</a></li>
+<li><a href="#reliability-part-ii-covariates-and-the-case-for-doubly-robust">Reliability II &mdash; covariates and DR</a></li>
+<li><a href="#precision-and-a-word-on-efficiency">Precision</a></li>
+<li><a href="#simultaneous-inference">Simultaneous inference</a></li>
+<li><a href="#reproducing-everything">Reproducing everything</a></li>
+<li><a href="#the-bottom-line">The bottom line</a></li>
+</ul>
+</nav>
 
 ## What each command is actually computing
 
@@ -37,8 +54,23 @@ prediction, usually to four decimal places.
 `lpdid` difference each cohort against its base period, the period right
 before treatment. `jwdid` and `did_imputation` instead fit unit and time
 fixed effects on *all* untreated observations and impute Y(0) from the fit —
-on a balanced panel with no covariates, those two produce identical numbers,
-and `flexdid`'s default specification joins them. Pooling every pre-period
+on a balanced panel those two produce identical point estimates, with and
+without covariates (we verified agreement to six decimals with each
+command's documented covariate specification), and `flexdid`'s default
+specification joins them. Identical points are not identical inference,
+though: when effects vary with covariates, `did_imputation`'s standard
+errors are deliberately conservative under that heterogeneity while
+`jwdid` reports conventional regression inference — on one of our draws
+the gap grew from 11% at event time 0 to 55% at event time 2. Same
+estimator, two inference philosophies; a practitioner comparing printed
+standard errors across the two would conclude they disagree when their
+point estimates could not agree more. The same lesson holds on the
+differencing side: on designs where `csdid` and `did_multiplegt_dyn`
+produce identical point estimates, their standard errors differ by
+roughly 8%, because the inference conventions differ in what they treat
+as random — ours follows Callaway and Sant'Anna (2021) in treating
+cohort membership as sampled, so the estimated cohort shares contribute
+uncertainty. Pooling every pre-period
 buys efficiency when parallel trends holds exactly in every period, and
 pays for it with non-locality: anything that happened five periods before
 treatment is still in the estimate.
@@ -60,6 +92,61 @@ with time fixed effects, and they are nearly invariant to how *large* a
 cohort is. None of the second or third columns is wrong as arithmetic. But
 if the question is "what is the average effect for treated units," only the
 first column answers it regardless of how the sample arrived.
+
+## Speed
+
+Every cell below is the mean of 10 timed runs in a fresh Stata process with
+one discarded warmup, so nobody pays the one-time library load and nobody
+benefits from a warm cache. Standard deviations across the timed runs never
+exceed a few hundredths of a second at the sizes shown. A dash marks a
+workload without a measured time; `flexdid` is timed in the
+repeated-cross-section table, where it is a native competitor. Rows =
+units x 10 periods, 4 cohorts, event-study estimation with clustered
+standard errors.
+
+### Balanced panels, no covariates (seconds)
+
+| rows | `csdid` | `jwdid` | `did_imputation` | `lpdid` | `did_multiplegt_dyn` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 0.01 | 0.06 | 0.20 | 0.24 | 0.66 |
+| 10,000 | 0.04 | 0.15 | 0.61 | 0.34 | 0.99 |
+| 100,000 | 0.27 | 0.66 | 3.41 | 0.98 | 4.62 |
+| 1,000,000 | **1.78** | 5.84 | 44.6 | 7.91 | not run |
+
+`csdid` is the fastest command in every cell — about 3x `jwdid` and 25x
+`did_imputation` at a million rows. `did_multiplegt_dyn` was capped at
+100,000 rows for runtime.
+
+### Unbalanced panels (~850,000 rows)
+
+| | `csdid` | `jwdid` | `did_imputation` | `lpdid` |
+| --- | ---: | ---: | ---: | ---: |
+| no covariates | **3.9** | 6.1 | 40.3 | 5.7 |
+| with covariates | **4.6** | 15.3 | 49.8 | — |
+
+### Repeated cross sections (1,000,000 rows)
+
+| | `csdid` | `flexdid` | `jwdid` | `did_imputation` |
+| --- | ---: | ---: | ---: | ---: |
+| no covariates | 5.7 | **5.3** | 7.0 | 21.6 |
+| with covariates | **6.5** | 7.6 | — | 22.5 |
+
+Credit where due: `flexdid` is the faster command at the largest
+repeated-cross-section size without covariates, by about 7%; with
+covariates the ordering reverses. The remaining gap is the cost of
+computing forty auditable ATT(g,t) cells rather than one regression.
+
+### Estimation methods, 100,000 rows with covariates
+
+`csdid` `reg` 0.24s, `ipw` 0.44s, `dr` 0.46s — against `lpdid` 1.03s,
+`jwdid` 1.67s, `did_imputation` 4.50s, `did_multiplegt_dyn` 7.84s. The
+doubly robust estimator, which the covariates section below argues you
+should want anyway, is not a speed compromise: it is 2x faster than the fastest
+alternative with covariates.
+
+Aggregation is not in these numbers because it is not worth a table:
+`estat event` takes a fraction of a second after any of these estimations,
+at any size shown.
 
 ## Reliability, part I: no covariates
 
@@ -86,7 +173,7 @@ Every command runs; most agree. One does not:
 nothing exotic anywhere. This is not a bug, and it is not noise (it is the
 same at n = 4,000). It is the effective-sample-size weighting doing exactly
 what it does: later cohorts get less weight because earlier cohorts are no
-longer clean controls, so its event study averages a different mix of
+longer clean comparisons, so its event study averages a different mix of
 cohorts than the population has. (`flexdid`'s 1.00 in the coverage column
 is the opposite, milder anomaly: its intervals over-cover — conservative
 rather than wrong, and it recurs in every table it appears in.) You do not
@@ -115,9 +202,13 @@ moving — quantity, and its confidence intervals cover the true effect
 between 2% and 38% of the time. `csdid` does not move, because P(G=g) does
 not move. Restore equal period sizes (ordinary uniform missingness) and the
 other estimators come right back: the mechanism is the unequal weighting,
-not unbalancedness itself. We find this the single most consequential table
-in the guide, and it comes from a violation so mild that most applied
-descriptions of the data would not even mention it.
+not unbalancedness itself.
+
+<div class="important" markdown="1">
+We find this the single most consequential table in the guide, and it
+comes from a violation so mild that most applied descriptions of the data
+would not even mention it.
+</div>
 
 ### Repeated cross sections
 
@@ -136,10 +227,10 @@ are within 0.02 of their known truths in every setting we ran.
 returns nothing here; `lpdid` refuses outright — which we consider the
 honest failure mode.
 
-### What this section establishes
+### The transparency scorecard
 
-Transparency, mostly. The scorecard below is documentation-verified fact,
-not simulation:
+Nothing below is a simulation result. It is documentation-verified fact
+about what each command reports and how it says it computes it:
 
 | | reports every ATT(g,t) | weights stated in closed form | target fixed under sampling | balance choice explicit | uniform bands |
 | --- | --- | --- | --- | --- | --- |
@@ -166,7 +257,7 @@ earnings in a year before the sample starts — whose distribution differs
 across cohorts, and which shift both the level and the trend of the
 untreated outcome. That is conditional parallel trends: the unconditional
 comparison is biased by construction, and the covariate handling is the
-whole game. Effects still do not depend on X, so the targets have not
+whole game. Effects still do not depend on the covariates, so the targets have not
 moved.
 
 With every model correctly specified, on a balanced panel (500 reps,
@@ -183,60 +274,50 @@ bias / coverage at e=0):
 | `did_multiplegt_dyn` | **+0.119** | **0.61** |
 | `lpdid` | **-0.139** | **0.46** |
 
-Everyone who handles X correctly is fine, with one exception that deserves
-a close look. `did_multiplegt_dyn` drifts with the horizon (+0.88 by e=2),
-and its own documentation explains why: its `controls()` residualizes the
-outcome's first differences on the *first differences* of the controls,
-with one coefficient common to all groups and periods. Think about what
-that assumption buys you. For time-invariant covariates — gender, race,
-baseline earnings, most of what applied researchers actually condition on —
-the first differences are zero, the residualization does nothing, and the
-condition collapses to unconditional parallel trends. We verified this the
-hard way: on this design, its estimates with and without `controls(x1 x2)`
-are numerically identical to the last digit. The command accepts the
-option, runs without a word, and returns the unadjusted number — a
-researcher who typed the controls believing they had conditioned on them
-has not, and nothing in the output says so.
-
-Its documentation points to `trends_nonparam()` as the remedy for
-time-invariant covariates: exact matching on their values, documented as
-requiring the covariates to be discrete (coarser than the unit). We tested
-that too. `trends_nonparam(x1)` does what it says: matching on the binary
-covariate removes its share of the bias (+0.88 falls to +0.66 at e=2),
-leaving the share owed to the continuous one. Passing the continuous
-covariate — `trends_nonparam(x1 x2)` — cannot work, and to the command's
-credit it prints an explanation (Design Restriction 1 is not satisfied).
-But it exits with return code zero and leaves the PREVIOUS command's
-results posted in `e()`. A script that checks the return code and then
-harvests the results — which is what scripts do — silently gets the
-previous run's numbers. We state this with confidence because our own
-first harvest did exactly that, and only a fresh-session check caught it.
-So the command's two covariate options fail in two different silent ways:
-`controls()` estimates and is silently unadjusted; `trends_nonparam()`
-with an unusable covariate refuses on screen but hands your script
-someone else's estimates.
-
-And even on `controls()`'s intended domain — time-varying covariates,
-where we verify it does work — the assumption requires the covariate effect on trends to be
-linear with a single homogeneous coefficient. There is an irony here worth
+Everyone who handles covariates correctly is fine. The exception worth
+understanding is `did_multiplegt_dyn` (SSC version dated January 17,
+2026, the current release as we write), which drifts with the horizon —
++0.88 by e=2 — not because of a defect, but because its covariate
+adjustment answers a different question. Its `controls()` option imposes
+parallel trends on outcomes residualized on the first differences of the
+covariates, with a single coefficient common to all groups and periods.
+That is a different assumption from conditional parallel trends in
+Callaway and Sant'Anna (2021), and it is more restrictive in two specific
+ways. For time-invariant covariates — gender, race, baseline earnings,
+most of what applied researchers actually condition on — the first
+differences are zero, so the residualization leaves the unconditional
+comparison unchanged and the condition collapses to unconditional
+parallel trends. And by giving every group and period one common
+coefficient, it implicitly restricts how covariates may shift trends
+heterogeneously across cohorts — which is exactly the heterogeneity that
+conditional parallel trends exists to allow. There is an irony here worth
 stating plainly: the entire point of this literature is that imposing
 homogeneity on treatment effects breaks TWFE, and this covariate scheme
-re-imposes exactly that kind of homogeneity one layer down. Conditional
-parallel trends as in Callaway and Sant'Anna (2021) asks for none of it:
-the trend may depend on X flexibly, heterogeneously, and `csdid`'s doubly
-robust estimator conditions on the covariates themselves — which is why its
-column of this table is clean. And the same
+re-imposes that kind of homogeneity one layer down.
+
+On its own terms — genuinely time-varying covariates whose effect on
+trends really is common across cohorts — the approach works, and our
+experiments confirm it. But those terms are narrow, and they are not the
+terms most applied covariate stories satisfy. The documentation offers
+`trends_nonparam()` — exact matching on discrete covariates — as the
+route for time-invariant characteristics; matching on our binary
+covariate removes its share of the drift (+0.88 falls to +0.66 at e=2),
+and continuous covariates are outside that option's scope. Conditional
+parallel trends as in Callaway and Sant'Anna (2021) asks for none of
+this: the trend may depend on the covariates flexibly and heterogeneously, and
+`csdid`'s doubly robust estimator conditions on the covariates
+themselves — which is why its column of this table is clean. And the same
 covariates change nothing about Part I's conclusion: rerunning the
-repeated-cross-section comparison with X included, `csdid dr` stays on
+repeated-cross-section comparison with the covariates included, `csdid dr` stays on
 target in both sampling regimes while the regression-style estimators
-reproduce their unequal-period drift, covariates and all — adjusting for X
-cannot repair a weighting scheme.
+reproduce their unequal-period drift, covariates and all — adjusting for
+covariates cannot repair a weighting scheme.
 
 Why prefer `dr` among the three csdid methods, when all three are clean
 here? Because correct specification is exactly what you do not get to
 assume. The doubly robust estimator (Sant'Anna and Zhao, 2020) is
 consistent if *either* the outcome model *or* the treatment-probability
-model is right — two chances instead of one, at no speed cost (see Speed below) and, in
+model is right — two chances instead of one, at no speed cost (the Speed section above) and, in
 these simulations, no precision cost either. Every other command in this
 comparison is an outcome-regression estimator with one chance.
 
@@ -268,8 +349,12 @@ defect in any one implementation; it is the same wrong outcome model
 failing everywhere it is the only line of defense. The two `csdid`
 estimators that do not lean on it walk through: `ipw` because the
 treatment-probability model is still correct, `dr` because one correct
-model is all it needs. That second chance is not a luxury option — in this
-comparison, no other command has it at all.
+model is all it needs.
+
+<div class="tip" markdown="1">
+That second chance is not a luxury option — in this comparison, no other
+command has it at all.
+</div>
 
 Second, the propensity score. Our first attempt at this cell is worth
 reporting precisely because it failed: we made cohorts differ in the
@@ -330,62 +415,6 @@ again. Every other command is a one-model estimator that happens to live
 in the world where its model is the broken one or not. `dr` is the only
 one that gets to be wrong once for free.
 
-## Speed
-
-Every cell below is the mean of 10 timed runs in a fresh Stata process with
-one discarded warmup, so nobody pays the one-time library load and nobody
-benefits from a warm cache. Standard deviations across the timed runs never
-exceed a few hundredths of a second at the sizes shown. A dash marks a
-workload without a measured time; `flexdid` is timed in the
-repeated-cross-section table, where it is a native competitor. Rows =
-units x 10 periods, 4 cohorts, event-study estimation with clustered
-standard errors.
-
-### Balanced panels, no covariates (seconds)
-
-| rows | `csdid` | `jwdid` | `did_imputation` | `lpdid` | `did_multiplegt_dyn` |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 0.01 | 0.06 | 0.20 | 0.24 | 0.66 |
-| 10,000 | 0.04 | 0.15 | 0.61 | 0.34 | 0.99 |
-| 100,000 | 0.27 | 0.66 | 3.41 | 0.98 | 4.62 |
-| 1,000,000 | **1.78** | 5.84 | 44.6 | 7.91 | not run |
-
-`csdid` is the fastest command in every cell — about 3x `jwdid` and 25x
-`did_imputation` at a million rows. `did_multiplegt_dyn` was capped at
-100,000 rows for runtime.
-
-### Unbalanced panels (~850,000 rows)
-
-| | `csdid` | `jwdid` | `did_imputation` | `lpdid` |
-| --- | ---: | ---: | ---: | ---: |
-| no covariates | **3.9** | 6.1 | 40.3 | 5.7 |
-| with covariates | **4.6** | 15.3 | 49.8 | — |
-
-### Repeated cross sections (1,000,000 rows)
-
-| | `csdid` | `flexdid` | `jwdid` | `did_imputation` |
-| --- | ---: | ---: | ---: | ---: |
-| no covariates | 5.7 | **5.3** | 7.0 | 21.6 |
-| with covariates | **6.5** | 7.6 | — | 22.5 |
-
-Credit where due: `flexdid` is the faster command at the largest
-repeated-cross-section size without covariates, by about 7%; with
-covariates the ordering reverses. Chasing that 7% is what led us to
-profile this path and take 12% off it — the remaining gap is the cost of
-computing forty auditable ATT(g,t) cells rather than one regression.
-
-### Estimation methods, 100,000 rows with covariates
-
-`csdid` `reg` 0.24s, `ipw` 0.44s, `dr` 0.46s — against `lpdid` 1.03s,
-`jwdid` 1.67s, `did_imputation` 4.50s, `did_multiplegt_dyn` 7.84s. The
-doubly robust estimator, which the previous section argued you should want
-anyway, is not a speed compromise: it is 2x faster than the fastest
-alternative with covariates.
-
-Aggregation is not in these numbers because it is not worth a table:
-`estat event` takes a fraction of a second after any of these estimations,
-at any size shown.
-
 ## Precision, and a word on efficiency
 
 Where the targets coincide — a balanced panel, no covariates — it is fair to
@@ -443,4 +472,42 @@ band is the interval that means what readers think the plotted band means.
 Every table above is generated by a script with a fixed seed, package
 versions pinned to their current SSC releases, and population targets that
 are computed once, by hand, from the data-generating process — never
-re-derived from a draw. The scripts are available from the authors.
+re-derived from a draw. Every script is in the
+[code appendix](../code-appendix.html), ready to run.
+
+## The bottom line
+
+Six commands, one population, one set of targets that never moved. That
+was the whole experiment, and it is worth being plain about what it did
+and did not show.
+
+It did not show that anyone else's software is broken. Every command in
+this comparison was written by researchers whose work moved this
+literature forward, and the differences we measured are not bugs — they
+are design choices, made in the open by people who understood them,
+that answer slightly different questions.
+
+What it showed is that "slightly different questions" stops being slight
+the moment your data are less than ideal. Change nothing about the
+population and only how the sample arrives, and commands that "mostly
+agree" split by whole coverage points, because their targets travel with
+the sample while the truth stands still. Break one model quietly, and
+every estimator with one model breaks with it — the doubly robust
+default is the only one in this comparison that gets a second chance.
+Read pointwise intervals as a band, and the certainty on the plot is
+more than the certainty you have. None of these failures announces
+itself. That is precisely what makes them dangerous, and precisely why
+we built `csdid` to announce everything: a target fixed in the
+population, every ATT(g,t) cell with its own standard error, aggregation
+weights in closed form, sample decisions disclosed in `e()`, overlap
+failures printed rather than absorbed, and uniform bands that mean what
+readers think bands mean. The speed is not the point; it is what makes
+refusing to compromise on the rest cost nothing.
+
+Our opinion, stated once more as an opinion: an estimator you can take
+apart is an estimator you can trust, and the tables above exist because
+`csdid` is built to be taken apart. The point of this guide is not that
+`csdid` wins those tables, although it does. The point is that every
+number in them can be recomputed, from a seed, by anyone — including the
+ones we lost. That is the standard we think this literature should hold
+every estimator to. Ours first.

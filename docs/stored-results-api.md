@@ -12,8 +12,8 @@ The following results are intended to be stable across compatible releases:
 | `e(b)` | matrix | stable | Posted coefficient vector for nonbase ATT(g,t) estimates when available. |
 | `e(V)` | matrix | stable | Full posted covariance matrix aligned to `e(b)` when available. Analytical runs use influence-function covariance; clustered runs use cluster-summed influence functions; bootstrap runs use bootstrap-draw correlations rescaled to the reported SEs. |
 | `e(group_prob)` | matrix | stable | Treated-group probability and count metadata. |
-| `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` (or the soft-deprecated `performance(full)`) is requested; otherwise the influence functions stay in the Mata cache at every sample size. |
-| `e(unit_group)` | matrix | conditional stable | Stored only when `storeall` (or the soft-deprecated `performance(full)`) is requested. |
+| `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` is requested; otherwise the influence functions stay in the Mata cache at every sample size. |
+| `e(unit_group)` | matrix | conditional stable | Stored only when `storeall` is requested. |
 | `e(cluster_vec)` | matrix | conditional stable | Stored when clustering is requested and the stored matrices are materialized. |
 | `e(boot_attgt)` | matrix | stable when present | Bootstrap ATT(g,t) output when `wboot()` is requested. |
 | `e(boot_draws)` | matrix | diagnostic-adjacent | Present for bootstrap runs when stored. Draw ordering is not a portable reproducibility contract. |
@@ -25,20 +25,22 @@ The following results are intended to be stable across compatible releases:
 Stable macros include `e(cmd)`, `e(cmdline)`, `e(version)`, `e(method)`,
 `e(method_requested)`, `e(control_group)`, `e(base_period)`, `e(panel_mode)`,
 `e(timevar)`, `e(gvar)`, `e(idvar)`, `e(clustervar)`, `e(weightvar)`,
-`e(fix_weights)`, `e(boot_dist)`, `e(boot_seed)`, `e(fast_mode)`,
-`e(performance_mode)`, `e(performance_resolved)`, and `e(compute_path)`.
+`e(fix_weights)`, `e(boot_dist)`, `e(boot_seed)`, and `e(storage)`.
 
 Stable scalars include `e(N)`, `e(N_units)`, `e(N_attgt)`, `e(N_groups)`,
 `e(N_time)`, `e(level)`, `e(bstrap)`, `e(cband)`, `e(biters)`, `e(pointwise)`,
-`e(N_clusters)`, `e(fast_used)`, `e(mata_cache)`, `e(store_all)`, and
-`e(lean)`.
+and `e(N_clusters)`.
 
-`e(fast_used)` and `e(compute_path)` describe the public optimized execution
-surface: `e(fast_used)=1` means optimized computation was allowed by
-`fast(auto)` or `fast`, and `e(compute_path)` reports the resolved optimized
-surface for the data layout. It is not a promise that the narrowest internal
-balanced, unweighted, no-covariate kernel handled every cell; eligible cells may
-still use specialized or baseline Mata subroutines when required for parity.
+`e(fast_mode)`, `e(compute_path)`, `e(fast_used)` and `e(mata_cache)` are
+**diagnostics, not stable results**, exactly as `help csdid` marks them: they
+describe which internal execution surface ran and may change as the engine is
+refined. `e(fast_used)=1` means optimized computation was allowed by the
+default `fast(auto)` or by explicit `fast`, and `e(compute_path)` reports the
+resolved optimized surface for the data layout. Neither is a promise that the
+narrowest internal balanced, unweighted, no-covariate kernel handled every
+cell; eligible cells may still use specialized or baseline Mata subroutines
+when required for parity. Do not branch econometric workflows on any of the
+four.
 
 ## Diagnostic Results
 
@@ -72,8 +74,10 @@ used in analysis code.
 Storage is lean at every sample size. The large influence-function and unit-map
 matrices are held in the Mata cache and are not copied into `e()`, whether the
 job is small or large; there is no size threshold and no automatic switch.
-Requesting `storeall` (equivalently the soft-deprecated `performance(full)`)
-materializes those matrices in `e()`. Numbers are identical either way -- the choice affects only
+Requesting `storeall` (equivalently `store_all`) materializes those matrices
+in `e()`. There is no option that asks for the default and no `performance()`
+option: those spellings have never been part of any release and are refused
+with return code 198. Numbers are identical either way -- the choice affects only
 where the matrices live.
 
 This policy is part of the public API because one uniform rule means a workflow

@@ -10,10 +10,12 @@ effects that differ across cohorts or over time, its coefficient is not the
 average treatment effect on the treated. It is a weighted average of many
 2×2 comparisons, and some of those weights are negative.
 
-The reason is that TWFE uses **already-treated units as controls**. A cohort
+<div class="note" markdown="1">
+The reason is that TWFE uses **already-treated units as comparison units**. A cohort
 treated in 2014 becomes a comparison group for one treated in 2016, so if the
 2014 cohort's effect is still growing, that growth is subtracted from the 2016
 cohort's estimate.
+</div>
 
 ## The data
 
@@ -54,11 +56,13 @@ estat simple
 `estat simple` is the closest analogue to the TWFE coefficient: a single overall
 effect. Compare it with the regression above.
 
+<div class="important" markdown="1">
 If the two are close, TWFE was not badly contaminated here — which is worth
 knowing, but it is a fact about this dataset, not a general licence. If they
 differ, the difference is the contamination, and no amount of clustering or
 extra fixed effects removes it: it comes from *which comparisons* the estimator
 makes, not from how the standard errors are computed.
+</div>
 
 ## Where the single number came from
 
@@ -85,11 +89,13 @@ average is reporting an artefact of the weighting.
 
 ## What to report
 
+<div class="tip" markdown="1">
 Report the disaggregated estimates and an aggregation you can name. `estat
 event` for dynamics, `estat group` for cohort heterogeneity, `estat calendar`
 for calendar-time effects, `estat simple` for one overall number. Each has
 explicit, non-negative weights, and each says which average it is taking. See
 [Aggregations](aggregations.html).
+</div>
 
 Nothing here says fixed effects are wrong in general. With a single treatment
 date and homogeneous effects, TWFE and Callaway–Sant'Anna coincide. The problem

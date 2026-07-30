@@ -1,7 +1,7 @@
 {
   "matrix_id": "F017",
   "fixture_family": "balance-vocabulary-and-legacy-spellings",
-  "normative_source": "D003/D008 conformance contract; bal() vocabulary is full/pair/none with deprecated spellings mapped onto it",
+  "normative_source": "D003/D008 conformance contract; bal() vocabulary is full/pair/none, with unbalanced (longhand allowunbalanced) as the synonym spelling of bal(none)",
   "source_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
   "decision_refs": ["D003", "D008"],
   "tolerance_ids": "EXACT",
@@ -41,15 +41,15 @@
   ],
   "comparison_plan": [
     {
-      "actual": "Stata captured legacy balance/default events",
+      "actual": "Stata captured balance-vocabulary refusals and legacy-option warnings",
       "expected": "expected/r/events.csv",
       "tolerance_id": "EXACT",
       "key_columns": "event_key"
     }
   ],
   "approved_divergence": {
-    "status": "soft-deprecated-alias",
-    "reason": "Old pair-balanced/full-balanced unbalanced-panel behavior is not retained in v1; bal()/balance() are accepted only as warning aliases for the R-compatible allow_unbalanced default."
+    "status": "removed-development-era-spelling",
+    "reason": "The balance spellings in the error rows never appeared in a released csdid; they are absent from the pinned Version 1.82 source and 2.0.0 is the first release of this rewrite. There is nothing to deprecate, so they are refused as unknown options rather than accepted as aliases. unbalanced and allowunbalanced/allow_unbalanced are not among them: unbalanced is the documented spelling of the bal(none) synonym and allowunbalanced is the longhand carrying the argument name did::att_gt uses for this setting. All are supported as silent, non-deprecated synonyms of bal(none)."
   },
-  "scope_note": "F017 accepts legacy bal()/balance() unbalanced-panel modes with a soft-deprecation warning, verifies that they match the default allowunbalanced ATT(g,t) path, keeps long/long2 as strongly deprecated aliases that use baseperiod(universal) when baseperiod() is omitted, and verifies asinr as a no-op warning."
+  "scope_note": "F017 pins the bal() vocabulary as full/pair/none: the three modes are three different estimands on this deliberately unbalanced fixture, unbalanced and its longhand allowunbalanced/allow_unbalanced are accepted silently as synonyms of bal(none), typed in full with no abbreviations, and must reproduce it exactly, the development-era spellings (balanceall, balancepair, bal(all), bal(unbal), bal(unbalanced), bal(allow_unbalanced)) are refused with rc 198, and the genuine Version 1.82 options long/long2 stay accepted with a deprecation warning and use baseperiod(universal) when baseperiod() is omitted, as does asinr as a no-op warning."
 }

@@ -407,7 +407,7 @@ program define _csdid_post_replace_bv, eclass
     local scalar_names N N_units N_attgt N_groups N_time anticipation pscoretrim ///
         bstrap biters cband pointwise fast_requested fast_auto fast_allowed fast_used crit_val point_crit_val ///
         N_clusters level agg_cluster_fallback agg_level N_aggte time_first ///
-        allow_unbalanced store_all lean mata_cache mata_cache_token large_store
+        allow_unbalanced mata_cache mata_cache_token
     * (F-055's separate handling of performance_auto_threshold is gone with
     * the scalar itself: storage is unified on lean, so no threshold exists.)
     foreach s of local scalar_names {
@@ -426,7 +426,7 @@ program define _csdid_post_replace_bv, eclass
     local local_names cmd cmdline version yname timevar gvar idvar clustervar ///
         panel_mode control_group method method_requested weightvar base_period ///
         fix_weights boot_dist boot_dist_requested boot_seed fast_mode compute_path rif_file ///
-        performance_mode performance_resolved agg_type agg_clustervar ///
+        storage agg_type agg_clustervar ///
         marginsnotok depvar vce vcetype predict
     foreach m of local local_names {
         local local_`m' `"`e(`m')'"'

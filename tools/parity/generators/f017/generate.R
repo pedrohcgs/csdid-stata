@@ -34,52 +34,79 @@ d <- d[!(d$id == 14 & d$time == 4), ]
 
 write.csv(d, file.path(fixture, "inputs/input.csv"), row.names = FALSE, na = "")
 
-# The bal() vocabulary is full / pair / none. Everything below is a deprecated
-# spelling of one of those three, and each one announces itself and names its
-# replacement -- a deprecation nobody is told about is not a deprecation.
-# bal(pair) has no row here yet because the mode is not implemented; when it
-# lands, balancepair joins this table.
-dep_unbal      <- "csdid: bal(unbal) is deprecated; use bal(none)"
-dep_all        <- "csdid: bal(all) is deprecated; use bal(full)"
-dep_allowunbal <- "csdid: allowunbalanced is deprecated; use bal(none)"
-dep_balanceall <- "csdid: balanceall is deprecated; use bal(full)"
+# The bal() vocabulary is full / pair / none, and those three spellings plus
+# the unabbreviated balance() are the whole surface.
+#
+# The six spellings in the `removed` block below were development-era names
+# that never appeared in any released csdid: they are absent from the pinned
+# Version 1.82 source, and 2.0.0 is the first release of this rewrite. There is
+# therefore nothing to deprecate. They are not options, and csdid must say so
+# with the ordinary unknown-option refusal (rc 198) rather than accepting them
+# quietly or pretending they once worked.
+#
+# unbalanced and allowunbalanced / allow_unbalanced are a different case and
+# are NOT in that block. unbalanced is the documented spelling of the bal(none)
+# synonym; allowunbalanced / allow_unbalanced are the longhand for the same
+# thing, carrying the argument name the reference implementation uses --
+# did::att_gt(allow_unbalanced_panel = TRUE) -- so code written with that
+# vocabulary transliterates directly. All are first-class synonyms of
+# bal(none): accepted, silent, and current. No warning is printed, because
+# there is nothing to warn about. Combining one of them with a bal() that means
+# something else is an error rather than a silent resolution.
+#
+# long / long2 / asinr ARE genuine Version 1.82 options, so they stay: accepted,
+# working, and announcing their deprecation.
 long_message <- "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts."
 asinr_message <- "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
 
+removed <- c(
+  "balanceall",
+  "balancepair",
+  "bal(all)",
+  "bal(unbal)",
+  "bal(unbalanced)",
+  "bal(allow_unbalanced)"
+)
+removed_keys <- c(
+  "removed_balanceall",
+  "removed_balancepair",
+  "removed_bal_all",
+  "removed_bal_unbal",
+  "removed_bal_unbalanced",
+  "removed_bal_allow_unbalanced"
+)
+# For an error row, the bal() setting the user should type instead; for an
+# accepted row, the bal() setting the spelling resolves to. csdid never prints
+# either -- an unknown option gets the ordinary Stata refusal and no message of
+# its own, and an accepted synonym is silent -- so this column is documentation
+# and the mode the test compares estimates against.
+removed_bal_mode <- c(
+  "bal(full)",
+  "bal(pair)",
+  "bal(full)",
+  "bal(none)",
+  "bal(none)",
+  "bal(none)"
+)
+
+# Typed in full, with no abbreviations: prefixes such as unbal or allow are
+# unknown options. `unbal` in particular would read as the refused bal(unbal)
+# token, so accepting it would make that confusion silent. The prefix refusals
+# are asserted in test-f051.do.
+accepted <- c("unbalanced", "allowunbalanced", "allow_unbalanced")
+accepted_keys <- c(
+  "accepted_unbalanced",
+  "accepted_allowunbalanced",
+  "accepted_allow_unbalanced"
+)
+
 events <- data.frame(
-  event_key = c(
-    "legacy_bal_unbal",
-    "legacy_bal_all",
-    "legacy_allowunbalanced",
-    "legacy_balanceall",
-    "legacy_long",
-    "legacy_long2",
-    "legacy_asinr_noop"
-  ),
-  return_code = rep(0, 7),
-  event_type = rep("warning", 7),
-  offending_option = c(
-    "bal(unbal)",
-    "bal(all)",
-    "allowunbalanced",
-    "balanceall",
-    "long",
-    "long2",
-    "asinr"
-  ),
-  message_normalized = c(
-    dep_unbal,
-    dep_all,
-    dep_allowunbal,
-    dep_balanceall,
-    long_message,
-    long_message,
-    asinr_message
-  ),
-  # Which bal() mode each spelling resolves to. none and full are not the same
-  # estimand on this deliberately unbalanced fixture, so the test can tell them
-  # apart rather than merely checking that nothing errored.
-  resolves_to = c("none", "full", "none", "full", NA, NA, NA),
+  event_key = c(removed_keys, accepted_keys, "legacy_long", "legacy_long2", "legacy_asinr_noop"),
+  return_code = c(rep(198, length(removed)), rep(0, length(accepted)), 0, 0, 0),
+  event_type = c(rep("error", length(removed)), rep("accepted", length(accepted)), "warning", "warning", "warning"),
+  offending_option = c(removed, accepted, "long", "long2", "asinr"),
+  message_normalized = c(rep(NA, length(removed) + length(accepted)), long_message, long_message, asinr_message),
+  bal_mode = c(removed_bal_mode, rep("bal(none)", length(accepted)), NA, NA, NA),
   stringsAsFactors = FALSE
 )
 
@@ -89,7 +116,7 @@ writeLines(jsonlite::toJSON(events, dataframe = "rows", auto_unbox = TRUE, prett
 manifest <- list(
   matrix_id = "F017",
   fixture_family = "balance-vocabulary-and-legacy-spellings",
-  normative_source = "D003/D008 conformance contract; bal() vocabulary is full/pair/none with deprecated spellings mapped onto it",
+  normative_source = "D003/D008 conformance contract; bal() vocabulary is full/pair/none, with unbalanced (longhand allowunbalanced) as the synonym spelling of bal(none)",
   source_commit = "fdbae25521a941314af8d84ec0c93fb0596daa8e",
   decision_refs = c("D003", "D008"),
   tolerance_ids = c("EXACT"),
@@ -104,12 +131,12 @@ manifest <- list(
     list(path = "expected/r/events.csv", schema = "error-warning-events-csv")
   ),
   comparison_plan = list(
-    list(actual = "Stata captured legacy balance/default events", expected = "expected/r/events.csv", tolerance_id = "EXACT", key_columns = c("event_key"))
+    list(actual = "Stata captured balance-vocabulary refusals and legacy-option warnings", expected = "expected/r/events.csv", tolerance_id = "EXACT", key_columns = c("event_key"))
   ),
   approved_divergence = list(
-    status = "soft-deprecated-alias",
-    reason = "Old pair-balanced/full-balanced unbalanced-panel behavior is not retained in v1; bal()/balance() are accepted only as warning aliases for the R-compatible allow_unbalanced default."
+    status = "removed-development-era-spelling",
+    reason = "The balance spellings in the error rows never appeared in a released csdid; they are absent from the pinned Version 1.82 source and 2.0.0 is the first release of this rewrite. There is nothing to deprecate, so they are refused as unknown options rather than accepted as aliases. unbalanced and allowunbalanced/allow_unbalanced are not among them: unbalanced is the documented spelling of the bal(none) synonym and allowunbalanced is the longhand carrying the argument name did::att_gt uses for this setting. All are supported as silent, non-deprecated synonyms of bal(none)."
   ),
-  scope_note = "F017 accepts legacy bal()/balance() unbalanced-panel modes with a soft-deprecation warning, verifies that they match the default allowunbalanced ATT(g,t) path, keeps long/long2 as strongly deprecated aliases that use baseperiod(universal) when baseperiod() is omitted, and verifies asinr as a no-op warning."
+  scope_note = "F017 pins the bal() vocabulary as full/pair/none: the three modes are three different estimands on this deliberately unbalanced fixture, unbalanced and its longhand allowunbalanced/allow_unbalanced are accepted silently as synonyms of bal(none), typed in full with no abbreviations, and must reproduce it exactly, the development-era spellings (balanceall, balancepair, bal(all), bal(unbal), bal(unbalanced), bal(allow_unbalanced)) are refused with rc 198, and the genuine Version 1.82 options long/long2 stay accepted with a deprecation warning and use baseperiod(universal) when baseperiod() is omitted, as does asinr as a no-op warning."
 )
 writeLines(jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE), file.path(fixture, "metadata/manifest.json"))

@@ -1076,7 +1076,7 @@ program define _jel_table7_csdid_cell, rclass
         unemp_rate_pc poverty_rate median_income_k `wt', ///
         ivar(county_code) time(year) gvar(treat_year) ///
         method(`method') base_period(universal) nevertreated ///
-        pscoretrim(0.995) analytical performance(full)
+        pscoretrim(0.995) analytical storeall
     quietly csdid_stats, type(group) na_rm
     matrix `aggte' = e(aggte)
     mata: csdid_boot_reorder_r("e(unit_group)", "e(agg_inffunc)", "", "`boot_if_ordered'", "`boot_cluster_ordered'")

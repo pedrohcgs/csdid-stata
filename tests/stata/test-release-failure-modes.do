@@ -46,9 +46,18 @@ capture noisily csdid y x1, id(id) time(year) gvar(first_treat) universal varyin
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
 
+* lean and performance() were development-era storage spellings that never
+* shipped in any release, so they are refused as unknown options. storeall is
+* the one storage switch, and it still works.
 capture noisily csdid y x1, id(id) time(year) gvar(first_treat) storeall lean nevertreated base_period(varying) bal(none)
 assert _rc == 198
 assert "`e(cmd)'" == "csdid"
+
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) lean nevertreated base_period(varying) bal(none)
+assert _rc == 198
+
+capture noisily csdid y x1, id(id) time(year) gvar(first_treat) performance(full) nevertreated base_period(varying) bal(none)
+assert _rc == 198
 
 capture noisily csdid y x1, id(id) time(year) gvar(first_treat) dryrun nevertreated base_period(varying) bal(none)
 assert _rc == 198

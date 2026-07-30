@@ -4,9 +4,11 @@ title: Aggregations
 
 # Aggregations
 
+<div class="note" markdown="1">
 ATT(g,t) is a table. An aggregation turns it into an answer. Which one you want
 depends on the question, and they answer different questions — a difference
 between them is information, not a problem to reconcile.
+</div>
 
 ## The data
 
@@ -46,8 +48,12 @@ estat simple        // one overall number
 
 ## Event-time windows
 
+<div class="important" markdown="1">
 At long event times only the early-treated cohorts contribute, so a trend across
-event time can be **composition rather than dynamics**. Two tools:
+event time can be **composition rather than dynamics**.
+</div>
+
+Two tools:
 
 ```stata
 csdid_stats, type(dynamic) window(-3 3)     // restrict the event-time range
@@ -73,7 +79,9 @@ purpose. `na_rm` drops them and averages the rest:
 csdid_stats, type(dynamic) na_rm
 ```
 
+<div class="important" markdown="1">
 Use it deliberately: it changes the estimand from "the average over these cells"
 to "the average over the cells that worked."
+</div>
 
 Next: [unbalanced panels](unbalanced-panels.html).

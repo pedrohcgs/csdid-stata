@@ -8,9 +8,11 @@ Pass sampling weights as `[iw=varname]`. They enter the propensity score, the
 outcome regression, and the aggregation weights, so a weighted run answers a
 question about the weighted population rather than about the sample.
 
+<div class="important" markdown="1">
 For county data, weighting by population changes the estimand from *the effect
 on the average county* to *the effect on the average resident* — a real
 difference when small rural counties behave differently from large urban ones.
+</div>
 
 ## The data
 
@@ -43,9 +45,11 @@ csdid mrate [iw=population_20_64], ivar(county_code) time(year) gvar(gvar) analy
 estat simple
 ```
 
+<div class="tip" markdown="1">
 If these differ materially, that is a finding about heterogeneity across county
 size, not a problem to be tuned away. Report the one that matches the question
 you are asking, and say which it is.
+</div>
 
 Only the scale of the weights is irrelevant — multiplying every weight by a
 constant leaves every ATT(g,t) unchanged:
@@ -97,9 +101,11 @@ the modes agree exactly.
 
 ## Weights are not clustering
 
+<div class="note" markdown="1">
 Weights say how much each observation represents. Clustering says which
 observations share correlated shocks. They are separate options answering
 separate questions, and using one does not address the other:
+</div>
 
 ```stata
 use "jel_weighted.dta", clear

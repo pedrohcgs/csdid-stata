@@ -41,7 +41,7 @@ divided by the number of periods*, i.e. the average number of units per period
 
 The two measures are **identical on balanced panels**. They differ only on
 **unbalanced** panels, where rows-per-period is strictly smaller, so the guard
-now fires in some cases where earlier builds estimated. Concretely, a
+now fires in some cases where Version 1.82 estimated. Concretely, a
 never-treated group of 5 distinct units observed in only 19 of 20
 possible unit-periods averages 4.75 units per period and is now refused,
 exactly as R refuses it.
@@ -53,8 +53,8 @@ one R recommends:
 csdid y, ivar(id) time(t) gvar(g) notyet
 ```
 
-`notyet` uses not-yet-treated units as controls, which does not depend on the
-never-treated group being large. Alternatively, supply more never-treated units
+`notyet` uses not-yet-treated units as the comparison group, which does not
+depend on the never-treated group being large. Alternatively, supply more never-treated units
 or fewer covariates (the threshold scales with the covariate count).
 
 **Why this is the right default:** without it, `csdid` silently returned
@@ -100,16 +100,16 @@ that version.
 | --- | --- |
 | `method(dripw)` | Accepted with warning; canonical method is `dr`. |
 | `method(stdipw)` | Accepted with warning; canonical method is `ipw`. |
-| `asinr` | Accepted with warning as a no-op; R-compatible not-yet controls are governed by `notyet`. |
+| `asinr` | Accepted with warning as a no-op; the R-compatible not-yet-treated comparison group is governed by `notyet`. |
 | `wboot(wtype(rademacher))` | Accepted as the R-compatible multiplier path. |
-| `wboot(wbtype(mammen))`, `wboot(wtype(gaussian))`, `wboot(wtype(normal))` | Unsupported in this R-parity port and now fail loudly rather than being silently coerced to rademacher. |
+| `wboot(wtype(mammen))`, `wboot(wtype(gaussian))`, `wboot(wtype(normal))` | Unsupported in this R-parity port and now fail loudly rather than being silently coerced to rademacher. `wtype()` and `wbtype()` are both accepted spellings of the sub-option, so these fail under either; giving both with different values is itself an error. |
 | `wboot reps(#) seed(#)`, `wboot reps(#) rseed(#)` | Accepted as Stata-style shorthand for `wboot(reps(#) seed(#))` and `wboot(reps(#) rseed(#))`; top-level `reps()`, `biters()`, `seed()`, and `rseed()` are also accepted with default bootstrap inference. |
-| `allowunbalanced`, `allow_unbalanced` | Accepted as a deprecated spelling of `bal(none)`, which keeps every unit and uses the repeated-cross-section computation. It is not the default: an unbalanced `ivar()` panel is balanced with `bal(full)` unless you ask otherwise. |
+| `unbalanced`, `allowunbalanced`, `allow_unbalanced` | Supported, silent, and not deprecated. `unbalanced` is the documented spelling of the `bal(none)` synonym, typed in full; `allowunbalanced` / `allow_unbalanced` are the R-style longhand for the same thing, also typed in full, since that is the argument name R `did` gives the setting (`att_gt(allow_unbalanced_panel = TRUE)`), so code written with that vocabulary runs here unchanged. All of them mean `bal(none)`, which keeps every unit and uses the repeated-cross-section computation. It is not the default: an unbalanced `ivar()` panel is balanced with `bal(full)` unless you ask otherwise. No abbreviation of any of them is an option -- `unbal` is refused along with the rest, deliberately, since it would read as the refused `bal(unbal)`. Giving any of them together with a `bal()` that means something different is an error rather than a silent resolution. |
 | `storeall`, `store_all` | Preferred full stored-result opt-in for users who need large matrices in `e()`. `store_all` remains as the R-parity spelling. |
-| `bal(full)`, `balance(full)`, `bal(unbal)` | `bal(full)` is the default and drops units not observed in every period; `balance()` is an accepted spelling of `bal()`; `bal(unbal)` is a deprecated spelling of `bal(none)`. None of them restores legacy per-comparison unit dropping -- that is `bal(pair)`. |
+| `bal(full)`, `balance(full)`, `bal(unbal)` | `bal(full)` is the default and drops units not observed in every period; `balance()` is the same option written out in full, not a second option. `bal(unbal)` is not a value of `bal()` at all: the vocabulary is `full`, `pair`, `none`, and anything else is refused with return code 198. Not options, and never were: `bal(unbal)`, `bal(unbalanced)`, `bal(allow_unbalanced)`, `bal(all)`, `balanceall` and `balancepair` are absent from the Version 1.82 source, and 2.0.0 is the first release of this rewrite, so there is nothing to deprecate. `bal(none)` is the mode `bal(unbal)` was reaching for, and `unbalanced` (longhand `allowunbalanced`) is the supported synonym of it. None of them restores legacy per-comparison unit dropping -- that is `bal(pair)`. |
 | `long`, `long2` | Accepted with a strong deprecation warning; when `baseperiod()` is omitted they use `baseperiod(universal)` to preserve legacy/JEL event-study layout. |
 | `id(idvar)` | Accepted as a Stata-style alias for `ivar(idvar)`; conflicting `id()` and `ivar()` values are rejected. |
-| `notyettreated`, `nevertreated` | Accepted as readable control-group aliases; `notyettreated` maps to `notyet`, and `nevertreated` selects never-treated controls, which is R's default and not csdid's. |
+| `notyettreated`, `nevertreated` | Accepted as readable comparison-group aliases; `notyettreated` maps to `notyet`, and `nevertreated` selects the never-treated comparison group, which is R's default and not csdid's. |
 | `vce(cluster clustvar)` | Accepted as Stata-style syntax for `cluster(clustvar)`; conflicting `vce(cluster ...)` and `cluster()` values are rejected. |
 | `dryrun` | Rejected as an internal legacy option. |
 | `agg(event)` | Accepted as an immediate wrapper over verified dynamic aggregation, with legacy `r(table)` and posted coefficient matrices. Other immediate `agg()` types still use `csdid_stats`. |
@@ -117,9 +117,12 @@ that version.
 | `estat dynamic`, `estat simple`, `estat group`, `estat calendar` | Accepted as conventional postestimation aggregation replay forms backed by `csdid_stats`. |
 | graph styling options | Cosmetic only; parity is checked on plot data before graph rendering. |
 
-Every retained legacy alias must be opt-in, emit a deprecation or compatibility
-warning, record canonical behavior in stored results when applicable, and avoid
-changing R-parity defaults.
+Every retained *deprecated* spelling must be opt-in, emit a deprecation or
+compatibility warning, record canonical behavior in stored results when
+applicable, and avoid changing R-parity defaults. This does not apply to
+`unbalanced` / `allowunbalanced`, `balance()`, `store_all` or the other current
+synonyms above: they are present-tense names for present-tense options, so they
+are silent by design and there is nothing to warn about.
 
 ## What To Compare
 
@@ -131,8 +134,9 @@ other things:
 - the retained legacy warning text and the canonical behavior each alias maps
   to;
 - the three `bal()` settings for unbalanced panels;
-- the soft-deprecated balancing aliases and the strongly deprecated legacy
-  `long` / `long2` options;
+- the silent `unbalanced` / `allowunbalanced` synonyms of `bal(none)`, the
+  refusal of the balance spellings that never shipped, and the strongly
+  deprecated legacy `long` / `long2` options;
 - the bootstrap option-surface mapping;
 - the immediate `agg(event)` wrapper;
 - the Stata-style aliases, bootstrap shorthand, postestimation aggregation

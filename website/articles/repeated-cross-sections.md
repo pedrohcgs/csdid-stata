@@ -4,9 +4,11 @@ title: Repeated cross sections
 
 # Repeated cross sections
 
+<div class="note" markdown="1">
 When each observation is an independent draw rather than a unit followed over
 time — repeated survey waves, pooled cross sections — say so with `rcs`, as in
 `csdid y, time(year) gvar(gvar) rcs`.
+</div>
 
 Omitting `ivar()` does the same thing, and for data with no identifier that is
 the natural way to write it. `rcs` exists for the common case where the data do
@@ -85,11 +87,13 @@ unit in more than one period. See [unbalanced panels](unbalanced-panels.html).
 
 ## What to watch
 
+<div class="important" markdown="1">
 **`gvar()` must still be well defined for every observation.** In a panel,
 cohort is a property of the unit. In repeated cross sections each row carries
 its own cohort label, and it has to be the cohort that row's unit belongs to —
 usually a group-level variable such as the state's expansion year, not something
 measured on the individual.
+</div>
 
 **Every row is its own cross-sectional unit.** `e(N_units)` equals the number of
 observations, and standard errors are scaled accordingly. There is no

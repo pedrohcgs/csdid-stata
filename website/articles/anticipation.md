@@ -8,10 +8,12 @@ Callaway–Sant'Anna assumes units do not respond before treatment starts. That
 fails when treatment is announced in advance: a state's Medicaid expansion is
 legislated before it takes effect, and behaviour can move in between.
 
+<div class="note" markdown="1">
 If units respond *k* periods early, then those *k* periods are not clean
 pre-treatment periods — using one of them as the base period contaminates every
 comparison drawn from it. `anticipation(#)` tells `csdid` to treat the last `#`
 pre-treatment periods as already affected and to measure from before them.
+</div>
 
 ## The data
 
@@ -60,15 +62,19 @@ effect at event time −1 is gone, because that period is no longer assumed clea
 
 ## Choosing the value
 
+<div class="important" markdown="1">
 `anticipation()` is an assumption, not a diagnostic. Set it from what you know
 about the policy — when it was announced, signed, or became widely expected —
 not by trying values until the pre-trends look flat. Searching over it and
 keeping the value with the best-looking pre-treatment plot invalidates the
 pre-test you are using to justify the design.
+</div>
 
+<div class="tip" markdown="1">
 If you genuinely do not know, the honest options are to report the default
 alongside a sensitivity check at one period, or to use a design that does not
 lean on the immediate pre-treatment period.
+</div>
 
 The cost is real: each anticipated period removes one usable pre-treatment
 period, so effects are measured from further back and cohorts treated early
@@ -76,8 +82,8 @@ enough may drop out entirely for want of a clean base period.
 
 ## Interaction with the comparison group
 
-With `notyet`, later-treated cohorts serve as controls. If those cohorts are
-themselves anticipating, they are not clean controls either. `anticipation()`
+With `notyet`, later-treated cohorts serve as comparison units. If those cohorts
+are themselves anticipating, they are not clean comparisons either. `anticipation()`
 applies to them as well — a unit is removed from the comparison group once it is
 within the anticipation window of its own treatment date, not only once treated.
 

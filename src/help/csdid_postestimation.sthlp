@@ -13,7 +13,6 @@
 {viewerjumpto "Remarks" "csdid_postestimation##remarks"}{...}
 {viewerjumpto "Examples" "csdid_postestimation##examples"}{...}
 {viewerjumpto "Stored results" "csdid_postestimation##results"}{...}
-{viewerjumpto "Acknowledgments" "csdid_postestimation##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_postestimation##references"}{...}
 {viewerjumpto "Authors" "csdid_postestimation##authors"}{...}
 {title:Title}
@@ -354,15 +353,6 @@ cells no matter what has been aggregated or posted.
 {pstd}
 The estimation results themselves are documented in
 {helpb csdid##results:help csdid}.
-
-
-{marker acknowledgments}{...}
-{title:Acknowledgments}
-
-{phang}
-The R package {bf:did}, by Brantly Callaway and Pedro H. C. Sant'Anna, is the
-reference implementation of these methods. {cmd:csdid} derives from it and was
-constructed and benchmarked against {bf:did} version 2.5.1.{p_end}
 
 
 {marker references}{...}

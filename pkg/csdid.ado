@@ -65,7 +65,7 @@ program define csdid, eclass sortpreserve
           CLuster(varname) VCE(string asis) POINTwise WBOOT(string asis) ///
           REPS(string) BITERS(string) SEED(string) ///
           PSCORETRIM(real 0.995) RSEED(string) ///
-          SAVERIF(string) REPLACE FAST NOFAST LEAN PERFormance(string) ///
+          SAVERIF(string) REPLACE FAST NOFAST ///
           ASINR NEVER LONG LONG2 BALance(string) RCS DRYRUN FROM(string) ///
           ANALYTical * ]
 
@@ -90,16 +90,9 @@ program define csdid, eclass sortpreserve
         local options_clean ""
         foreach opt of local options {
             local opt_l = lower(`"`opt'"')
-            if `"`opt_l'"' == "balance_all" | (strlen(`"`opt_l'"') >= 8 & ///
-                    `"`opt_l'"' == substr("balanceall", 1, strlen(`"`opt_l'"'))) {
-                local balanceall "balanceall"
-            }
-            else if `"`opt_l'"' == "balance_pair" | (strlen(`"`opt_l'"') >= 8 & ///
-                    `"`opt_l'"' == substr("balancepair", 1, strlen(`"`opt_l'"'))) {
-                local balancepair "balancepair"
-            }
-            else if `"`opt_l'"' == "allow_unbalanced" | (strlen(`"`opt_l'"') >= 5 & ///
-                    `"`opt_l'"' == substr("allowunbalanced", 1, strlen(`"`opt_l'"'))) {
+            * Synonyms of bal(none), typed as written -- no abbreviations,
+            * matching the balance_e() rule on the aggregation side.
+            if inlist(`"`opt_l'"', "unbalanced", "allowunbalanced", "allow_unbalanced") {
                 local allow_unbalanced "allow_unbalanced"
             }
             else if `"`opt_l'"' == "wboot" {
@@ -214,40 +207,11 @@ program define csdid, eclass sortpreserve
     if "`fast'" != "" local fast_mode "on"
     if "`nofast'" != "" local fast_mode "off"
 
-    local performance_mode = lower(strtrim(`"`performance'"'))
-    if "`performance_mode'" == "materialized" {
-        display as text "csdid legacy compatibility: performance(materialized) is soft-deprecated; use storeall"
-        local performance_mode "full"
-        local store_all "store_all"
-    }
-    else if "`performance_mode'" == "full" {
-        display as text "csdid legacy compatibility: performance(full) is soft-deprecated; use storeall"
-        local store_all "store_all"
-    }
-    if "`lean'" != "" {
-        if `"`performance'"' != "" & "`performance_mode'" != "lean" {
-            display as error "lean cannot be combined with performance() except performance(lean)"
-            exit 198
-        }
-        local performance_mode "lean"
-    }
-    if "`store_all'" != "" {
-        if "`performance_mode'" == "lean" | "`lean'" != "" {
-            display as error "storeall cannot be combined with lean storage; omit lean or performance(lean)"
-            exit 198
-        }
-        if `"`performance'"' != "" & !inlist("`performance_mode'", "full", "auto", "") {
-            display as error "storeall cannot be combined with performance() except performance(auto) or performance(full)"
-            exit 198
-        }
-        local performance_mode "full"
-    }
-    if "`performance_mode'" == "" local performance_mode "auto"
-    if !inlist("`performance_mode'", "full", "lean", "auto") {
-        display as error "performance() must be one of auto, lean, or full"
-        exit 198
-    }
-    local lean_requested = ("`performance_mode'" == "lean")
+    * Storage is lean at every size; storeall materializes the stored
+    * matrices. (The development-era performance()/lean spellings never
+    * shipped in any release and were removed before 2.0.0.)
+    local performance_mode = cond("`store_all'" != "", "full", "auto")
+    local lean_requested = 0
     * ---------------------------------------------------------------------
     * bal() selects what happens to an unbalanced ivar() panel.
     *
@@ -264,44 +228,20 @@ program define csdid, eclass sortpreserve
     local balance_mode ""
     if "`balance'" != "" {
         local balance_mode = lower(strtrim(`"`balance'"'))
-        if inlist("`balance_mode'", "unbal", "unbalanced", "allow_unbalanced") {
-            display as text "csdid: bal(`balance_mode') is deprecated; use bal(none)"
-            local balance_mode "none"
-        }
-        else if "`balance_mode'" == "all" {
-            display as text "csdid: bal(all) is deprecated; use bal(full)"
-            local balance_mode "full"
-        }
         if !inlist("`balance_mode'", "full", "pair", "none") {
             display as error "bal() must be full, pair, or none"
             exit 198
         }
     }
-    local balance_alias ""
-    local balance_alias_name ""
-    if "`balanceall'" != "" {
-        local balance_alias "full"
-        local balance_alias_name "balanceall"
-    }
-    if "`balancepair'" != "" {
-        local balance_alias "pair"
-        local balance_alias_name "balancepair"
-    }
     if "`allow_unbalanced'" != "" {
-        local balance_alias "none"
-        local balance_alias_name "allowunbalanced"
-    }
-    if "`balance_alias'" != "" {
-        if "`balance_mode'" != "" & "`balance_mode'" != "`balance_alias'" {
-            display as error "bal(`balance_mode') conflicts with the `balance_alias_name' option, which means bal(`balance_alias'). Specify only one of them."
+        if "`balance_mode'" != "" & "`balance_mode'" != "none" {
+            display as error "bal(`balance_mode') conflicts with unbalanced, which means bal(none). Specify only one of them."
             exit 198
         }
-        * Every deprecated spelling announces itself and names its
-        * replacement. A deprecation nobody is told about is not a
-        * deprecation, and the option-by-option migration guide is only
-        * useful to someone who has been told which option to look up.
-        display as text "csdid: `balance_alias_name' is deprecated; use bal(`balance_alias')"
-        local balance_mode "`balance_alias'"
+        * Supported synonyms of bal(none), not deprecations: unbalanced is
+        * the documented spelling; allowunbalanced/allow_unbalanced are the
+        * R-compatible longhand (att_gt's allow_unbalanced_panel = TRUE).
+        local balance_mode "none"
     }
     * DEFAULT: full, matching R did. An unbalanced panel is balanced by
     * dropping units not observed in every period, and says so.
@@ -341,10 +281,11 @@ program define csdid, eclass sortpreserve
         display as error "never (the legacy spelling of nevertreated) and notyettreated select different comparison groups; specify only one. Omitting both uses not-yet-treated, the default."
         exit 198
     }
-    * DEFAULT: not-yet-treated. Units not yet treated at t serve as controls,
-    * which uses more of the data and does not depend on a never-treated group
-    * existing or being large enough to trust. nevertreated (or the legacy
-    * never) selects never-treated controls instead.
+    * DEFAULT: not-yet-treated. Units not yet treated at t form the
+    * comparison group, which uses more of the data and does not depend on a
+    * never-treated group existing or being large enough to trust.
+    * nevertreated (or the legacy never) selects the never-treated
+    * comparison group instead.
     *
     * This is a deliberate divergence from R did, which defaults to
     * never-treated. It also means the small-never-treated-group refusal below
@@ -354,7 +295,7 @@ program define csdid, eclass sortpreserve
         local notyet "notyet"
     }
     if "`never'" != "" {
-        display as text "csdid legacy compatibility: never is accepted as a request for never-treated controls, which are no longer the default"
+        display as text "csdid legacy compatibility: never is accepted as a request for the never-treated comparison group, which is no longer the default"
     }
     if "`long'`long2'" != "" {
         display as text "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
@@ -955,7 +896,7 @@ program define csdid, eclass sortpreserve
             * it -- a scripted run that silently drops units leaves no trace of
             * why N moved. csdid Version 1.82 used the same channel
             * ("display in red \"Panel is not balanced\"").
-            display as error "warning: `balance_dropped_units' unit(s) are not observed in all `bal_T' periods; the panel is being balanced by dropping them (`balance_dropped_obs' observation(s)). Use the options allowunbalanced to keep every unit, or balancepair to balance each 2×2 separately."
+            display as error "warning: `balance_dropped_units' unit(s) are not observed in all `bal_T' periods; the panel is being balanced by dropping them (`balance_dropped_obs' observation(s)). Use bal(none) to keep every unit, or bal(pair) to balance each 2×2 separately."
             quietly replace `touse' = 0 if `bal_drop'
             quietly count if `touse'
             if r(N) == 0 {
@@ -1136,7 +1077,7 @@ program define csdid, eclass sortpreserve
         }
     }
     if `__n_usable' <= 0 {
-        display as error "No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and control-group settings."
+        display as error "No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings."
         * F-010 (repaired): a refusal must not leave a previous estimation's
         * e() posted (test-release-failure-modes asserts e(cmd) == "" here).
         ereturn clear
@@ -1182,7 +1123,7 @@ program define csdid, eclass sortpreserve
         display as text "  Check groups: `small_groups'."
     }
     if "`small_groups'" != "" & `never_small' & "`notyet'" == "" {
-        display as error "The never-treated group is too small to serve as a reliable control. Try specifying notyet to include not-yet-treated units as controls."
+        display as error "The never-treated group is too small to serve as a reliable comparison group. Try specifying notyet to include not-yet-treated units in the comparison group."
         * As with the F-010 refusal, do not leave a previous estimation posted.
         ereturn clear
         exit 459
@@ -1780,8 +1721,7 @@ program define csdid, eclass sortpreserve
     ereturn local bootstrap_accelerator_status "`bootstrap_accelerator_status'"
     ereturn local bootstrap_accelerator_file "`bootstrap_accelerator_file'"
     ereturn local fast_mode "`fast_mode'"
-    ereturn local performance_mode "`performance_mode'"
-    ereturn local performance_resolved "`performance_resolved'"
+    ereturn local storage = cond("`performance_resolved'" == "full", "materialized", "lean")
     local compute_path "baseline"
     if scalar(`fast_used') != 0 {
         if "`panel_mode'" == "panel" {
@@ -1827,11 +1767,8 @@ program define csdid, eclass sortpreserve
     ereturn scalar fast_allowed = `fast_allowed'
     ereturn scalar fast_used = scalar(`fast_used')
     ereturn scalar allow_unbalanced = `allow_unbalanced_resolved'
-    ereturn scalar store_all = ("`store_all'" != "")
-    ereturn scalar lean = ("`performance_resolved'" == "lean")
     ereturn scalar mata_cache = ("`performance_resolved'" == "lean")
     ereturn scalar mata_cache_token = scalar(`cache_token')
-    ereturn scalar large_store = `store_large'
     if `bstrap' {
         ereturn scalar crit_val = `boot_crit'
         ereturn scalar point_crit_val = `boot_pointcrit'

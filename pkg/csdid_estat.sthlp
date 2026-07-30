@@ -11,7 +11,6 @@
 {viewerjumpto "Remarks" "csdid_estat##remarks"}{...}
 {viewerjumpto "Examples" "csdid_estat##examples"}{...}
 {viewerjumpto "Stored results" "csdid_estat##results"}{...}
-{viewerjumpto "Acknowledgments" "csdid_estat##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_estat##references"}{...}
 {viewerjumpto "Authors" "csdid_estat##authors"}{...}
 {title:Title}
@@ -533,10 +532,12 @@ immediately, because the next command that returns in {cmd:r()} -- including
 {cmd:lincom} and {cmd:test} -- replaces it.
 
 {pstd}
-{cmd:e(cmd)} remains {cmd:csdid} and {cmd:e(attgt)}, {cmd:e(group_prob)},
-{cmd:e(inffunc)} and the estimation macros and scalars are preserved across
-posting, so aggregation and estimation results can be read from the same
-{cmd:e()}.
+{cmd:e(cmd)} remains {cmd:csdid} and {cmd:e(attgt)}, {cmd:e(group_prob)} and
+the estimation macros and scalars are preserved across posting, so aggregation
+and estimation results can be read from the same {cmd:e()}. {cmd:e(inffunc)} is
+preserved too when it is there at all, which is only when the estimation was
+run with {cmd:storeall}; otherwise the influence functions stay internal and
+{cmd:e(inffunc)} does not exist before or after posting.
 
 {pstd}
 {cmd:estat tidy} and {cmd:estat glance} store nothing; they write the dataset
@@ -551,15 +552,6 @@ name -- {cmd:predict} with return code 198 and {cmd:margins} with return code
 {helpb test}, {helpb lincom}, {helpb nlcom}, {helpb predictnl}, and
 {helpb estimates} all work on what is posted; the complete list is in
 {helpb csdid_postestimation##commands:csdid postestimation}.
-
-
-{marker acknowledgments}{...}
-{title:Acknowledgments}
-
-{phang}
-The R package {bf:did}, by Brantly Callaway and Pedro H. C. Sant'Anna, is the
-reference implementation of these methods. {cmd:csdid} derives from it and was
-constructed and benchmarked against {bf:did} version 2.5.1.{p_end}
 
 
 {marker references}{...}

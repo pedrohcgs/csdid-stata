@@ -101,7 +101,9 @@ contract <- list(
       fixweights = "fix_weights",
       "fixweights(base)" = "fix_weights(base_period)",
       "fixweights(first)" = "fix_weights(first_period)",
-      allowunbalanced = "allow_unbalanced",
+      balance = "bal",
+      unbalanced = "bal(none)",
+      allowunbalanced = "bal(none)",
       storeall = "store_all"
     ),
     postestimation = list(

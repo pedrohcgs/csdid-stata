@@ -64,6 +64,11 @@ changing the estimand. Version 2.0.0 makes the choice explicit and reports it.
 
 Whenever a mode discards observations, `csdid` reports how many units and how
 many observations went. `e(panel_mode)` records the resolved layout.
+`unbalanced` is a supported synonym of `bal(none)`, for when that reads better
+than a mode inside `bal()`; `allowunbalanced` and `allow_unbalanced` are the
+longhand form of the same thing, carrying the name the reference implementation
+gives this setting. All three are typed in full — no abbreviation of them is an
+option.
 
 **Repeated cross sections can be declared, not just inferred.** The new `rcs`
 option is the counterpart of the reference implementation's `panel = FALSE`.
@@ -79,7 +84,7 @@ small group. Group size is measured as rows divided by periods — the average
 number of units per period — not as distinct units. The two agree on balanced
 panels and differ only on unbalanced ones, where the guard now fires in cases
 earlier versions estimated. If it fires, `notyet` uses not-yet-treated units as
-controls and does not depend on the never-treated group being large. This
+the comparison group and does not depend on the never-treated group being large. This
 changes *whether the command runs*, never an estimate.
 
 ### Stored results
@@ -173,26 +178,45 @@ supported through `csdid_stats using`.
 
 ### Compatibility
 
-These are accepted, warn, and map to the documented spelling. New code should
-use the names in `help csdid`.
+These are accepted and map to the documented spelling. Most warn; the ones
+marked as supported below do not, because they are current names rather than
+deprecations. New code should use the names in `help csdid`.
 
 | Accepted | Canonical |
 | --- | --- |
 | `id()` | `ivar()` |
 | `vce(cluster var)` | `cluster(var)` |
-| `notyettreated` | `notyet`, the default control group |
-| `allowunbalanced`, `allow_unbalanced` | `bal(none)` |
-| `balanceall` | `bal(full)` |
-| `balancepair` | `bal(pair)` |
-| `storeall`, `store_all`, `performance(full)`, `performance(materialized)` | `storeall` |
+| `notyettreated` | `notyet`, the default comparison group |
+| `storeall`, `store_all` | `storeall` |
+| `balance()` | `bal()`, the same option unabbreviated |
+| `unbalanced` | `bal(none)`. Supported and silent, not deprecated: the documented synonym, for when it reads better than a mode inside `bal()`. Typed in full; `unbal` is not an option, since it would read as the refused `bal(unbal)`. Combining it with a conflicting `bal()` is an error |
+| `allowunbalanced`, `allow_unbalanced` | `bal(none)`, same as `unbalanced`. The R-style longhand: it is the argument name this setting carries in R `did` (`att_gt(allow_unbalanced_panel = TRUE)`), so code written with that vocabulary runs unchanged. Also supported, silent, not deprecated, and also typed in full |
 | `baseperiod()`, bare `universal` / `varying` | `base_period()` |
 | `method(dripw)`, `method(stdipw)` | `method(dr)`, `method(ipw)` |
 | `wboot reps(#) seed(#)` | `wboot(reps(#) rseed(#))` |
 | `asinr` | no-op; use `notyet` |
-| `bal(all)` | `bal(full)` |
-| `bal(unbal)`, `bal(unbalanced)`, `bal(allow_unbalanced)` | `bal(none)` |
 | `long`, `long2` | deprecated; imply `baseperiod(universal)` when `baseperiod()` is omitted |
 | `agg(event)`, `csdid_stats event` | dynamic aggregation |
+
+#### Spellings that are not options
+
+These have never been options in any release, so there is nothing to be
+compatible with: they are absent from Version 1.82 and 2.0.0 is the first
+release of this rewrite. Each is refused as an unknown option
+(return code 198).
+
+| Not an option | Use instead |
+| --- | --- |
+| `bal(unbal)`, `bal(unbalanced)`, `bal(allow_unbalanced)` | `bal(none)`, or the `unbalanced` spelling of it (longhand `allowunbalanced`) |
+| `balanceall`, `bal(all)` | `bal(full)` |
+| `balancepair` | `bal(pair)` |
+| `lean`, `performance()` in every form | nothing to type: storage is internal at every sample size, and `storeall` is the one switch that changes it |
+
+`unbalanced` and `allow_unbalanced` are not in this table: as *options* they
+are supported (see above). What is refused is `unbalanced` or
+`allow_unbalanced` as a *value inside* `bal()`.
+`e(allow_unbalanced)` and the `allow_unbalanced` value of `e(panel_mode)` are
+stored-result names and are unaffected.
 
 ### Upgrading
 

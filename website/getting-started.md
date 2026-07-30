@@ -6,8 +6,10 @@ title: Getting started
 
 ## The estimand
 
+<div class="note" markdown="1">
 The building block is the **group-time average treatment effect** ATT(g,t): the
 average effect, in period *t*, on the cohort first treated in period *g*.
+</div>
 
 A staggered design produces one of these for every cohort and every period. That
 is more numbers than anyone reads directly, which is the point: `csdid`
@@ -21,7 +23,7 @@ not choose.
 never-treated units with `nevertreated`. Not-yet-treated gives you more
 comparisons and does not require a never-treated group to exist, at the cost of
 assuming later-treated cohorts' untreated paths are comparable over the periods
-they serve as controls.
+they spend in the comparison group.
 
 **The 2×2 estimator.** `method(dr)` (default) is doubly robust: consistent if
 *either* the outcome model or the propensity score is right. `method(reg)` is
@@ -58,11 +60,13 @@ columns carry `"NA"`, hence the `destring ... , force`.
 
 ## Two rules about the axis
 
+<div class="important" markdown="1">
 `gvar()` is `0` for never-treated units and the first treated period otherwise;
 `time()` is 1 or more. Cohorts and periods share one positive calendar-time
 axis, and `0` is reserved for "never treated", so a zero or negative cohort code
 has no consistent reading. If your data start at or below zero, shift both by
 the same amount — a monotone relabelling of the periods leaves every estimate
 unchanged.
+</div>
 
 Next: [balanced panels](articles/balanced-panel.html).

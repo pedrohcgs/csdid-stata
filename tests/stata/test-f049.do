@@ -89,9 +89,8 @@ forvalues rr = 1/3 {
 matrix A = e(attgt)
 scalar f049_cells = rowsof(A)
 assert `rows' == 1000
-assert "`e(performance_mode)'" == "auto"
-assert "`e(performance_resolved)'" == "lean"
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 250
 post `benchpost' ("small_smoke") (`rows') (f049_cells) (f049_seconds) ///
@@ -119,11 +118,10 @@ assert e(fast_allowed) == 1
 assert e(fast_used) == 1
 assert "`e(fast_mode)'" == "auto"
 assert "`e(compute_path)'" == "fast-balanced-panel"
-assert "`e(performance_mode)'" == "auto"
-assert "`e(performance_resolved)'" == "lean"
-assert e(lean) == 1
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert e(mata_cache) == 1
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
 capture confirm matrix e(inffunc)
 assert _rc != 0
 capture confirm matrix e(unit_group)
@@ -142,7 +140,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) fast lean analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -153,12 +151,13 @@ assert `rows' == 50000
 assert e(fast_requested) == 1
 assert e(fast_allowed) == 1
 assert e(fast_used) == 1
-assert e(lean) == 1
+assert "`e(storage)'" == "lean"
 assert e(mata_cache) == 1
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
 assert "`e(fast_mode)'" == "on"
-assert "`e(performance_mode)'" == "lean"
-assert "`e(performance_resolved)'" == "lean"
+* Storage is lean at every sample size and there is no option that asks for it:
+* the benchmark name is historical, the resolved mode is the contract.
+assert "`e(storage)'" == "lean"
 assert "`e(compute_path)'" == "fast-balanced-panel"
 capture confirm matrix e(inffunc)
 assert _rc != 0
@@ -178,13 +177,18 @@ post `benchpost' ("medium_panel_fast_lean") (`rows') (f049_cells) (f049_seconds)
     (5) (f049_memory_mb) (1200) (f049_seconds <= 5) (f049_memory_mb <= 1200) ///
     ("`stata_version'") ("`stata_flavor'") ("`os'") ("`machine_type'") ("stata_c_memory_setting")
 
+* The benchmark name is historical: performance(auto) was a development-era
+* spelling of the storage policy that never shipped, and the policy it named --
+* lean storage at every sample size -- is now simply what csdid does. The
+* budget below therefore times the default storage path, which is what this
+* benchmark always measured.
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
 local rows = _N
 scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) performance(auto) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -200,12 +204,11 @@ assert e(fast_requested) == 0
 assert e(fast_auto) == 1
 assert e(fast_allowed) == 1
 assert e(fast_used) == 1
-assert e(lean) == 1
+assert "`e(storage)'" == "lean"
 assert e(mata_cache) == 1
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
 assert "`e(fast_mode)'" == "auto"
-assert "`e(performance_mode)'" == "auto"
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert "`e(compute_path)'" == "fast-balanced-panel"
 capture confirm matrix e(inffunc)
 assert _rc != 0
@@ -246,8 +249,8 @@ assert e(fast_auto) == 1
 assert e(fast_allowed) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
-assert "`e(performance_resolved)'" == "lean"
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1600
 post `benchpost' ("medium_panel_covariate_dr") (`rows') (f049_cells) (f049_seconds) ///
@@ -276,8 +279,8 @@ assert P[3, 2] >= 1
 assert e(fast_auto) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-balanced-panel"
-assert "`e(performance_resolved)'" == "lean"
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1600
 post `benchpost' ("medium_panel_weighted_ipw") (`rows') (f049_cells) (f049_seconds) ///
@@ -304,8 +307,8 @@ assert e(fast_auto) == 1
 assert e(fast_used) == 1
 assert "`e(clustervar)'" == "cl"
 assert e(N_clusters) == 100
-assert "`e(performance_resolved)'" == "lean"
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 capture confirm matrix e(inffunc)
 assert _rc != 0
 capture confirm matrix e(cluster_vec)
@@ -352,8 +355,8 @@ assert e(fast_auto) == 1
 assert e(fast_used) == 1
 assert e(bstrap) == 1
 assert e(biters) == 1000
-assert "`e(performance_resolved)'" == "lean"
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 capture confirm matrix e(inffunc)
 assert _rc != 0
 confirm matrix e(boot_attgt)
@@ -392,7 +395,7 @@ assert e(fast_used) == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert BP[3, 3] > 0
 assert BP[4, 2] == 1
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800
 post `benchpost' ("medium_panel_bootstrap_cband_reg") (`rows') (f049_cells) (f049_seconds) ///
@@ -423,7 +426,7 @@ assert "`e(boot_seed)'" == ""
 assert "`e(bootstrap_accelerator)'" == "mata"
 assert "`e(bootstrap_accelerator_status)'" == "mata-unseeded"
 assert e(fast_used) == 1
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800
 post `benchpost' ("medium_panel_bootstrap_default") (`rows') (f049_cells) (f049_seconds) ///
@@ -452,7 +455,7 @@ assert e(biters) == 1000
 assert e(fast_used) == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert "`e(method)'" == "dr"
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800
 post `benchpost' ("medium_panel_bootstrap_covariate_dr") (`rows') (f049_cells) (f049_seconds) ///
@@ -481,7 +484,7 @@ assert e(biters) == 1000
 assert e(fast_used) == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert "`e(method)'" == "ipw"
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800
 post `benchpost' ("medium_panel_bootstrap_weighted_ipw") (`rows') (f049_cells) (f049_seconds) ///
@@ -510,7 +513,7 @@ assert e(biters) == 1000
 assert e(fast_used) == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert e(N_clusters) == 100
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 2000
 post `benchpost' ("medium_panel_bootstrap_clustered_reg") (`rows') (f049_cells) (f049_seconds) ///
@@ -540,7 +543,7 @@ assert e(biters) == 1000
 assert e(fast_used) == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert "`e(method)'" == "dr"
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800
 post `benchpost' ("medium_unbalanced_bootstrap_cov_weight_dr") (`rows') (f049_cells) (f049_seconds) ///
@@ -567,8 +570,8 @@ assert "`e(panel_mode)'" == "allow_unbalanced"
 assert e(fast_auto) == 1
 assert e(fast_used) == 1
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
-assert "`e(performance_resolved)'" == "lean"
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800
 post `benchpost' ("medium_unbalanced_cov_weight_dr") (`rows') (f049_cells) (f049_seconds) ///
@@ -576,12 +579,11 @@ post `benchpost' ("medium_unbalanced_cov_weight_dr") (`rows') (f049_cells) (f049
     ("`stata_version'") ("`stata_flavor'") ("`os'") ("`machine_type'") ("stata_c_memory_setting")
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) performance(auto) agg(event) analytical nevertreated base_period(varying) bal(none)
-assert e(lean) == 1
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) analytical nevertreated base_period(varying) bal(none)
+assert "`e(storage)'" == "lean"
 assert e(mata_cache) == 1
-assert e(large_store) == 0
-assert "`e(performance_mode)'" == "auto"
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
+assert "`e(storage)'" == "lean"
 confirm matrix e(aggte)
 capture confirm matrix e(inffunc)
 assert _rc != 0
@@ -701,3 +703,5 @@ assert passed_time == 1
 assert passed_memory == 1
 assert rows == rows_budget if !missing(rows_budget)
 assert attgt_cells >= attgt_cells_budget if !missing(attgt_cells_budget)
+
+display as text "test-f049 passed"

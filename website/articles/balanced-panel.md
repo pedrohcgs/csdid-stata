@@ -43,15 +43,19 @@ Read the output in three parts:
 - the **ATT(g,t) table** is one row per cohort-period cell
 - the **pre-test** is a joint test that all pre-treatment cells are zero
 
+<div class="tip" markdown="1">
 Seed the bootstrap with `rseed()` if you want the run to be reproducible; an
 unseeded run says so in the header.
+</div>
 
 ## Read the pre-test carefully
 
+<div class="important" markdown="1">
 A large p-value is weak evidence, not a certificate. The test has low power in
 exactly the samples where parallel trends is most fragile, and it looks only at
 the periods in your sample. Read it alongside the pre-treatment cells
 themselves, and — when the design turns on the assumption — a sensitivity
 analysis.
+</div>
 
 Next: [covariates and estimators](covariates-and-estimators.html).

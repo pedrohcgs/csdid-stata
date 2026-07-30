@@ -4,8 +4,10 @@ title: Inference
 
 # Inference
 
+<div class="note" markdown="1">
 `csdid` bootstraps by default: 1,000 multiplier-bootstrap iterations with
 Rademacher multipliers, reported with **simultaneous** confidence bands.
+</div>
 
 ## The data
 
@@ -33,10 +35,12 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
 
 ## Simultaneous versus pointwise
 
+<div class="important" markdown="1">
 This matters more than it looks. A pointwise 95% interval is correct for **one**
 cell considered alone. Read a table or a plot of fifteen cells and ask "is
 anything significant?", and pointwise intervals will mislead you — roughly one
 in twenty will exclude zero by chance.
+</div>
 
 Simultaneous bands cover the whole family at once, so you can scan the table.
 They are wider, and that width is the honest price of looking at everything.
@@ -54,7 +58,9 @@ critical value actually applied.
 csdid mrate, ivar(county_code) time(year) gvar(gvar) analytical
 ```
 
+<div class="tip" markdown="1">
 Faster, and pointwise only. Useful while iterating; report the bootstrap.
+</div>
 
 ## Reproducibility
 

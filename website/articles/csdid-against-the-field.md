@@ -95,58 +95,96 @@ first column answers it regardless of how the sample arrived.
 
 ## Speed
 
-Every cell below is the mean of 10 timed runs in a fresh Stata process with
-one discarded warmup, so nobody pays the one-time library load and nobody
-benefits from a warm cache. Standard deviations across the timed runs never
-exceed a few hundredths of a second at the sizes shown. A dash marks a
-workload without a measured time; `flexdid` is timed in the
-repeated-cross-section table, where it is a native competitor. Rows =
-units x 10 periods, 4 cohorts, event-study estimation with clustered
-standard errors.
+Let us say the quiet part first: on an ordinary balanced panel at ordinary
+sizes, every command in this comparison is fast enough for real work. The
+differences start to matter when you bootstrap, iterate on specifications,
+or move to the sizes and designs in the lower rows of these tables — and
+there they matter a great deal. Every cell below is the median of 10 timed
+runs with one discarded warmup (the first `csdid` call in a session pays a
+one-time library load that no later call pays), event-study estimation
+with clustered standard errors throughout, cells labeled by the design —
+units n, periods T, cohorts G — with the row count derived from them. A
+dash marks a cell without a measured time, and the note says why.
 
-### Balanced panels, no covariates (seconds)
+### A balanced panel, and what the default costs
 
-| rows | `csdid` | `jwdid` | `did_imputation` | `lpdid` | `did_multiplegt_dyn` |
+The commands' own defaults differ in how much inference they buy. These
+two columns are the same `csdid` estimation twice: pointwise analytical
+standard errors, and the shipped default — 999 multiplier-bootstrap draws
+with simultaneous confidence bands (the macOS accelerator that ships with
+the package is active; every other platform computes identical numbers in
+Mata):
+
+| n (T=10, G=4) | rows | analytical | full default: 999 draws + uniform bands |
+| --- | ---: | ---: | ---: |
+| 100 | 1,000 | 0.01 | 0.04 |
+| 1,000 | 10,000 | 0.04 | 0.07 |
+| 10,000 | 100,000 | 0.26 | 0.32 |
+| 100,000 | 1,000,000 | 1.80 | **2.38** |
+
+The premium for complete inference shrinks with size — 32% at a million
+rows — and the full default remains faster than any rival's *pointwise
+analytical* time at that size. Refusing to compromise on inference costs
+about half a second per million rows.
+
+### Unbalanced panels
+
+Fifteen percent of rows deleted at random from balanced panels. The
+apples-to-apples row is `bal(none)`, which keeps every observation the way
+the other commands do. `bal(full)` — the default — is faster because it
+drops the units not observed in every period before estimating, which is a
+different (and disclosed) sample, not a speed trick; it is shown so the
+difference is visible rather than hidden:
+
+| n (T=10, G=4) | rows | `csdid bal(none)` | `csdid bal(full)` | `jwdid` | `lpdid` | `did_imputation` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 8,500 | 0.10 | 0.02 | 0.20 | 0.32 | 0.57 |
+| 10,000 | 85,000 | 0.69 | 0.11 | 0.70 | 0.85 | 3.85 |
+| 100,000 | 850,000 | **3.79** | 0.89 | 6.28 | 5.83 | 38.0 |
+
+### Repeated cross sections
+
+With and without one covariate, at each command's documented
+covariate specification:
+
+| n per period (T=10, G=4) | rows | `csdid` | `flexdid` | `jwdid` | `did_imputation` |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 0.01 | 0.06 | 0.20 | 0.24 | 0.66 |
-| 10,000 | 0.04 | 0.15 | 0.61 | 0.34 | 0.99 |
-| 100,000 | 0.27 | 0.66 | 3.41 | 0.98 | 4.62 |
-| 1,000,000 | **1.78** | 5.84 | 44.6 | 7.91 | not run |
+| 1,000 | 10,000 | 0.12 | 0.19 | 0.16 | 0.24 |
+| 10,000 | 100,000 | 0.86 | 0.71 | 0.76 | 1.48 |
+| 100,000 | 1,000,000 | 5.56 | 5.53 | 7.22 | 20.9 |
+| with a covariate: | | | | | |
+| 1,000 | 10,000 | 0.18 | 0.33 | 0.35 | 0.27 |
+| 10,000 | 100,000 | 1.18 | 1.03 | 1.74 | 1.58 |
+| 100,000 | 1,000,000 | **6.70** | 7.41 | 17.96 | 21.5 |
 
-`csdid` is the fastest command in every cell — about 3x `jwdid` and 25x
-`did_imputation` at a million rows. `did_multiplegt_dyn` was capped at
-100,000 rows for runtime.
+Credit where due: `flexdid` holds a modest genuine edge at the middle
+size without covariates, and the million-row race without covariates is a
+dead heat. Add the covariate and `csdid` leads at the largest size while
+`jwdid`'s time grows two and a half times over its own no-covariate run.
 
-### Unbalanced panels (~850,000 rows)
+### More periods, more cohorts
 
-| | `csdid` | `jwdid` | `did_imputation` | `lpdid` |
-| --- | ---: | ---: | ---: | ---: |
-| no covariates | **3.9** | 6.1 | 40.3 | 5.7 |
-| with covariates | **4.6** | 15.3 | 49.8 | — |
+Richer designs, not just bigger samples, are where architectures separate.
+Periods first, at n = 10,000 fixed:
 
-### Repeated cross sections (1,000,000 rows)
+| T (n=10,000, G=4) | rows | `csdid` | `jwdid` | `lpdid` | `did_imputation` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 5 | 50,000 | 0.13 | 0.26 | 0.55 | 1.44 |
+| 10 | 100,000 | 0.26 | 0.67 | 1.05 | 3.44 |
+| 20 | 200,000 | 0.52 | 2.76 | 1.92 | 8.99 |
+| 40 | 400,000 | **1.07** | 12.1 | 3.66 | 20.0 |
 
-| | `csdid` | `flexdid` | `jwdid` | `did_imputation` |
-| --- | ---: | ---: | ---: | ---: |
-| no covariates | 5.7 | **5.3** | 7.0 | 21.6 |
-| with covariates | **6.5** | 7.6 | — | 22.5 |
-
-Credit where due: `flexdid` is the faster command at the largest
-repeated-cross-section size without covariates, by about 7%; with
-covariates the ordering reverses. The remaining gap is the cost of
-computing forty auditable ATT(g,t) cells rather than one regression.
-
-### Estimation methods, 100,000 rows with covariates
-
-`csdid` `reg` 0.24s, `ipw` 0.44s, `dr` 0.46s — against `lpdid` 1.03s,
-`jwdid` 1.67s, `did_imputation` 4.50s, `did_multiplegt_dyn` 7.84s. The
-doubly robust estimator, which the covariates section below argues you
-should want anyway, is not a speed compromise: it is 2x faster than the fastest
-alternative with covariates.
+`csdid` scales linearly in T; `jwdid` does not — at forty periods the gap
+is 11x, and `did_imputation`'s is 19x. Long panels are where a design
+choice becomes a budget. Cohorts are milder for everyone: from G=3 to
+G=18 at 200,000 rows, `csdid` goes 0.45s to 1.52s — more cells to
+estimate and report — and stays about 4x ahead of the field throughout.
 
 Aggregation is not in these numbers because it is not worth a table:
-`estat event` takes a fraction of a second after any of these estimations,
-at any size shown.
+`estat event` takes a fraction of a second after any of these
+estimations. And the comparison against `csdid` Version 1.82 — where the
+gains run from 16x to 208x depending on the design — has its own page:
+[Speed against Version 1.82](speed-vs-182.html).
 
 ## Reliability, part I: no covariates
 

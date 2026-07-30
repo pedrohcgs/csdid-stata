@@ -39,24 +39,30 @@ csdid mrate unemp_rate poverty_rate, ivar(county_code) time(year) gvar(gvar) ///
 | `method(reg)` | outcome regression | the outcome model is correct |
 | `method(ipw)` | propensity score | the propensity model is correct |
 
+<div class="tip" markdown="1">
 `dr` is the default because it gives you two chances to be right, and is
 locally efficient when both models are. Prefer it unless you have a specific
 reason not to.
+</div>
 
 ## Conditional parallel trends
 
+<div class="important" markdown="1">
 With no covariates, the identifying assumption is unconditional parallel
 trends. With covariates it is weaker in one direction and stronger in another:
 it permits trends to differ across observably different units, but it requires
 your covariate model to capture how. Adding covariates is not free.
+</div>
 
 ## Overlap
 
+<div class="note" markdown="1">
 Doubly robust and IPW estimators need comparison units at every covariate value
 the treated units take. When the estimated propensity approaches 1, weights
 explode. `csdid` guards this two ways: it refuses a cell whose fitted
 propensity reaches 0.999, and it trims comparison observations at
 `pscoretrim()`, default `.995`.
+</div>
 
 ```stata
 csdid mrate unemp_rate, ivar(county_code) time(year) gvar(gvar) pscoretrim(.99)

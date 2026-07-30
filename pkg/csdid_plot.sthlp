@@ -19,7 +19,6 @@
 {viewerjumpto "Examples" "csdid_plot##examples"}{...}
 {viewerjumpto "Stored results" "csdid_plot##results"}{...}
 {viewerjumpto "Diagnostics" "csdid_plot##errors"}{...}
-{viewerjumpto "Acknowledgments" "csdid_plot##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_plot##references"}{...}
 {viewerjumpto "Authors" "csdid_plot##authors"}{...}
 {title:Title}
@@ -232,8 +231,8 @@ export {cmd:estat tidy} (see {helpb csdid_estat}), which reports both the band
 bounds and the pointwise bounds along with standard errors and p-values.
 
 {pstd}
-Standard errors, p-values, the overall aggregated ATT, and the treated/control
-cell counts are {it:not} in the plot dataset; they are one command away in
+Standard errors, p-values, the overall aggregated ATT, and the
+treated/comparison cell counts are {it:not} in the plot dataset; they are one command away in
 {cmd:estat tidy}, {cmd:e(attgt)}, and {cmd:e(aggte)}.
 
 
@@ -299,17 +298,10 @@ were not estimated.
 {pstd}
 {cmd:csdid_plot} writes a dataset rather than rendering a graph, so the styling
 is yours: draw it with {cmd:twoway} and whatever theme, colors, reference line,
-and {cmd:by(group)} faceting you prefer.
-
-{phang2}
-o {bf:Interval construction.} {cmd:ci_low} and {cmd:ci_high} are
-{cmd:att - c*att.se} to {cmd:att + c*att.se}, using the critical value actually
-applied by the estimation or aggregation being exported.{p_end}
-
-{phang2}
-o {bf:Pre/post labeling.} {cmd:series} is {cmd:"Post"} when
-{cmd:time >= group} on {cmd:attgt} exports and when {cmd:x >= 0} on aggregation
-exports.{p_end}
+and {cmd:by(group)} faceting you prefer. The variables it writes, including how
+{cmd:ci_low}/{cmd:ci_high} and {cmd:series} are built, are documented under
+{it:{help csdid_plot##schema:Plot-data schema}} above; what follows is
+the handful of behaviours that are easy to be surprised by.
 
 {phang2}
 o {bf:type(simple) has no plot.} A simple aggregation is a single number, so
@@ -458,15 +450,6 @@ A successful export prints nothing. The scratch-dataset work
 {cmd:csdid_plot} does to build the file is silent, so neither observation-count
 notices nor a {cmd:more} prompt interrupts the export; the notes above are the
 only things it ever says on a run that succeeds.
-
-
-{marker acknowledgments}{...}
-{title:Acknowledgments}
-
-{phang}
-The R package {bf:did}, by Brantly Callaway and Pedro H. C. Sant'Anna, is the
-reference implementation of these methods. {cmd:csdid} derives from it and was
-constructed and benchmarked against {bf:did} version 2.5.1.{p_end}
 
 
 {marker references}{...}

@@ -8,11 +8,14 @@ It handles covariates, sampling weights, unbalanced panels and repeated cross
 sections, with doubly robust, outcome-regression and inverse-probability-weighted
 estimators.
 
-It follows the same estimators and defaults as our R package
+It implements the same estimators as our R package
 [`did`](https://github.com/bcallaway11/did), from which this implementation
-derives. The same methods are also available in Python through
-[`csdid`](https://github.com/DrSquare/csdid) (`pip install csdid`), so results
-are comparable across all three.
+derives, and the same methods are available in Python through
+[`csdid`](https://github.com/DrSquare/csdid) (`pip install csdid`). Two
+omitted-option defaults differ deliberately — this package defaults to
+the not-yet-treated comparison group and a universal base period, where `did`
+defaults to never-treated and varying — and both are documented in `NEWS.md`. State those
+two options and the three implementations agree to machine precision.
 
 It runs in Stata 14 or newer. The estimation engine is written in Mata and
 ships precompiled, so there is nothing else to install:
@@ -84,8 +87,9 @@ population by US county from 2009 to 2019, with the year each state expanded
 Medicaid under the ACA — a staggered treatment.
 
 The data are downloaded rather than shipped with the package, so every example
-below runs from a clean Stata session. The URL is pinned to a commit, so the
-numbers printed here stay reproducible even if the upstream branch moves.
+below runs from a clean Stata session. The download address points at a
+fixed, dated copy of the data, so the numbers printed here stay
+reproducible even if the source is later updated.
 
 ```stata
 * ---- load and prepare -------------------------------------------------------
@@ -194,9 +198,10 @@ you. Whatever you choose (or let default), `e(panel_mode)` reports the
 resolved rule, and `e(N_units)` reports how many units contributed — the
 choice is never invisible.
 
-The JEL panel is nearly balanced, so this example **creates** the
-unbalancedness deliberately and reproducibly, deleting a seeded subset of
-county-years from the balanced sample above:
+As downloaded the JEL panel is only nearly balanced, and the
+`keep if nyears == 11` step above made it exactly balanced. So this example
+**creates** the unbalancedness deliberately and reproducibly, deleting a seeded
+subset of county-years from that balanced sample:
 
 ```stata
 set seed 424242
@@ -249,7 +254,7 @@ path.
 | `anticipation(#)` | periods of anticipated treatment effect |
 | `[iw=varname]` | sampling weights |
 | `cluster(varname)` | cluster the influence function above the unit level |
-| `wboot(reps(#) rseed(#))` | bootstrap controls; `reps()` must exceed 20 |
+| `wboot(reps(#) rseed(#))` | bootstrap settings; `reps()` must exceed 20 |
 | `analytical` | analytical pointwise standard errors instead of the bootstrap |
 | `pointwise` | pointwise intervals instead of simultaneous bands |
 | `level(#)` | confidence level; default 95 |
@@ -270,6 +275,7 @@ From inside Stata:
 | `help csdid_estat` | `estat attgt`, `estat event`, `estat tidy`, `estat glance` |
 | `help csdid_stats` | aggregation, event-time windows, balanced event samples |
 | `help csdid_plot` | plot-ready data export |
+| `help csdid_legacy` | utility and deprecated commands carried over from Version 1.82 |
 
 ## How to cite
 

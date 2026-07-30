@@ -66,7 +66,7 @@ drop if mod(id, 17) == 0 & inlist(year, 2, 5)
 drop if mod(id, 19) == 0 & year == 4
 save "`unbalanced'", replace
 
-quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
+quietly csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) cluster(state) nevertreated base_period(varying) bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
 assert e(mata_cache) == 1
@@ -134,7 +134,7 @@ release_assert_matrix_equal Slow Fast 1e-7
 
 mata: mata clear
 use "`unbalanced'", clear
-quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
+quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) nevertreated base_period(varying) bal(none)
 assert "`e(compute_path)'" == "fast-allow-unbalanced"
 assert e(mata_cache) == 1
 quietly csdid_stats group
@@ -150,16 +150,16 @@ matrix EventV = e(V)
 release_assert_offdiag_nonzero EventV 1e-12
 
 use "`unbalanced'", clear
-quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
+quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) nevertreated base_period(varying) bal(none)
 estimates store LeanOne
 release_make_panel, obs(360)
-quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) performance(lean) nevertreated base_period(varying) bal(none)
+quietly csdid y x1, id(id) time(year) gvar(first_treat) method(reg) nevertreated base_period(varying) bal(none)
 estimates restore LeanOne
 capture noisily csdid_stats group
 assert _rc == 498
 
 use "`unbalanced'", clear
-quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) performance(lean) nevertreated base_period(varying) bal(none)
+quietly csdid y x1 [iw=w], id(id) time(year) gvar(first_treat) method(ipw) cluster(state) nevertreated base_period(varying) bal(none)
 mata: mata clear
 capture noisily csdid_stats group
 assert _rc == 498
@@ -182,3 +182,5 @@ foreach m in dr ipw reg {
 foreach ex in 01_balanced_panel 02_unbalanced_weighted_clustered 03_repeated_cross_section 04_postestimation_exports 05_legacy_migration 06_mpdta_workflow {
     do "`root'/examples/`ex'.do"
 }
+
+display as text "test-release-hardening passed"

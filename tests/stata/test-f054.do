@@ -102,17 +102,27 @@ foreach f in fast nofast {
 }
 
 * -----------------------------------------------------------------------
-* 4. balancepair is the deprecated spelling and announces itself.
+* 4. bal(pair) is the only spelling of this mode.
+*
+* balancepair was a development-era name that never appeared in a released
+* csdid -- it is absent from the pinned Version 1.82 source, and 2.0.0 is the
+* first release of this rewrite -- so it is refused as an unknown option
+* rather than accepted as an alias.
 * -----------------------------------------------------------------------
-tempfile evlog
 import delimited using "`FIX'/inputs/input.csv", clear asdouble
-capture log close f054event
-log using "`evlog'", text replace name(f054event)
-capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///
+capture csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///
     analytical base_period(varying) balancepair
 local rc = _rc
-log close f054event
-assert `rc' == 0
+assert `rc' == 198
+
+* The unabbreviated balance() is the same option, not a second one.
+import delimited using "`FIX'/inputs/input.csv", clear asdouble
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///
+    analytical base_period(varying) balance(pair)
 assert "`e(panel_mode)'" == "pair-balanced"
+matrix PB = e(attgt)
+forvalues i = 1/`n' {
+    assert abs(PB[`i',4] - R[`i',5]) < 1e-12
+}
 
 display as text "test-f054 passed"

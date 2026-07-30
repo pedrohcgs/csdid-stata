@@ -4,9 +4,11 @@ title: Working with results
 
 # Working with results
 
+<div class="note" markdown="1">
 Everything `csdid` computes is available programmatically: as tidy data for
 tables, as matrices for your own calculations, and as plot-ready data so the
 graph stays yours.
+</div>
 
 ## The data
 
@@ -90,7 +92,7 @@ display "units        : " e(N_units)
 display "cohorts      : " e(N_groups)
 display "periods      : " e(N_time)
 display "method       : " e(method)
-display "control group: " e(control_group)
+display "comparison group: " e(control_group)
 display "base period  : " e(base_period)
 display "panel mode   : " e(panel_mode)
 display "clusters     : " e(N_clusters)
@@ -120,8 +122,10 @@ display "influence function: " rowsof(IF) " units x " colsof(IF) " cells"
 mata: printf("columns are mean-zero to %g\n", max(abs(mean(st_matrix("IF")))))
 ```
 
+<div class="tip" markdown="1">
 For a version that survives the session — and feeds `csdid_stats using` for
 later aggregation — write it to a dataset instead with `saverif()`.
+</div>
 
 Each column is mean-zero by construction. With it you can compute standard
 errors for aggregations `csdid` does not provide, or feed a sensitivity
@@ -150,11 +154,15 @@ capture erase "eventdata.dta"
 
 The exported columns are `x` (the value on the horizontal axis), `estimate`,
 the bounds `ci_low` and `ci_high`, plus `group`, `time`, `event_time`,
-`series` (Pre/Post), `x_label` and `significant`. Note the estimate column is
+`series` (Pre/Post), `x_label` and `significant`.
+
+<div class="important" markdown="1">
+Note the estimate column is
 `estimate`, not `att` — `csdid_plot` renames it on export. Because the bounds come from the same
 run as the estimates, a simultaneous band stays simultaneous — building the
 interval yourself from a standard error would silently turn it into a pointwise
 one. See [Inference](inference.html).
+</div>
 
 ## Replaying without re-estimating
 

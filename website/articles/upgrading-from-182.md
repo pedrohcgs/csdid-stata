@@ -13,9 +13,11 @@ move, commands that are deprecated, and option spellings that have been renamed.
 
 ## Results that move
 
+<div class="important" markdown="1">
 Two omitted-option defaults changed, and on unbalanced panels the balancing
 default changed too (see [Unbalanced panels](#unbalanced-panels) below).
 Those are the only changes that alter a number you were already getting.
+</div>
 
 | | Version 1.82 | 2.0.0 | To keep the old behaviour |
 | --- | --- | --- | --- |
@@ -26,10 +28,12 @@ Both are also departures from R `did` 2.5.1, which shares Version 1.82's two
 defaults. State either option explicitly and `csdid` and R agree to machine
 precision.
 
+<div class="note" markdown="1">
 A third change is about inference rather than the estimand: standard errors are
 now the multiplier bootstrap with simultaneous confidence bands by default,
 where Version 1.82 reported pointwise analytical standard errors. Point
 estimates are unaffected. `analytical` restores the old standard errors.
+</div>
 
 To reproduce a Version 1.82 run, state all three explicitly. Load the county
 mortality panel used throughout this site:
@@ -52,7 +56,7 @@ save "jel_upgrade.dta", replace
 use "jel_upgrade.dta", clear
 csdid mrate, ivar(county_code) time(year) gvar(gvar) ///
     nevertreated base_period(varying) analytical
-display "control group: " e(control_group)
+display "comparison group: " e(control_group)
 display "base period:   " e(base_period)
 estat event
 ```
@@ -63,7 +67,7 @@ errors. Drop them and you get the 2.0.0 defaults:
 ```stata
 use "jel_upgrade.dta", clear
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
-display "control group: " e(control_group)
+display "comparison group: " e(control_group)
 display "base period:   " e(base_period)
 estat event
 ```
@@ -80,8 +84,10 @@ reports whatever it drops:
 | `bal(none)` | keep every unit and use the repeated-cross-section computation. |
 | `bal(pair)` | Version 1.82's per-comparison balancing: each 2x2 keeps the units observed in both of its periods. |
 
+<div class="tip" markdown="1">
 `bal(pair)` reproduces Version 1.82's estimand exactly, so an unbalanced-panel
 result from that version can be reproduced here by asking for it.
+</div>
 
 ## Deprecated commands
 
@@ -89,7 +95,7 @@ These still ship and still run, so nothing breaks. Each prints a notice.
 
 | Deprecated | Use instead |
 | --- | --- |
-| `csdid_rif` | `estat tidy, saving(results) replace` then `use results, clear` |
+| `csdid_rif` | `estat attgt, saving(results) replace` then `use results, clear` |
 | `csdid_table` | the table `csdid` prints, or `estat tidy, saving()` for the numbers |
 | `dipt` | never documented; no replacement |
 | `tsvmat` | never documented; no replacement |
@@ -105,24 +111,44 @@ deprecated.
 
 ## Renamed options
 
-Every old spelling is accepted and each says what to use instead, so you find
-out from running your do-file rather than from reading this page.
+Every Version 1.82 spelling below is accepted and says what to use instead, so
+you find out from running your do-file rather than from reading this page.
 
-| Old | Current |
+| Old (warns) | Current |
 | --- | --- |
-| `allowunbalanced`, `allow_unbalanced` | `bal(none)` |
-| `balanceall` | `bal(full)` |
-| `balancepair` | `bal(pair)` |
-| `bal(all)` | `bal(full)` |
-| `bal(unbal)`, `bal(unbalanced)` | `bal(none)` |
-| `long`, `long2` | `base_period(universal)` |
+| `long`, `long2` | `base_period(universal)`, which is now the default, so usually nothing |
+| `method(dripw)` | `method(dr)` |
+| `method(stdipw)` | `method(ipw)` |
+| `asinr` | no-op; use `notyet` |
+| `never` | `nevertreated`. Not a no-op: the not-yet-treated comparison group is the default now, so this changes which units the treated are compared against |
+
+## Spellings that are not renames
+
+These are alternative names for current options. They are not deprecated,
+nothing warns, and there is nothing to change in a do-file that uses them.
+
+| Spelling | Same as |
+| --- | --- |
 | `baseperiod()` | `base_period()` |
 | `id()` | `ivar()` |
 | `vce(cluster var)` | `cluster(var)` |
-| `method(dripw)` | `method(dr)` |
-| `method(stdipw)` | `method(ipw)` |
 | `fixweights(base)` | `fix_weights(base_period)` |
-| `asinr` | no-op; use `notyet` |
+| `balance()` | `bal()`, the same option unabbreviated |
+| `unbalanced` | `bal(none)`. Typed in full -- `unbal` is not an option |
+| `allowunbalanced`, `allow_unbalanced` | `bal(none)` as well; the R-style longhand, also typed in full |
+
+## Spellings that were never options
+
+You may have seen these somewhere. They have never been options in any
+release: they are not in Version 1.82, and 2.0.0 is the first release of the
+rewrite. csdid refuses them the way it refuses any name it does not know.
+
+| Not an option | Type instead |
+| --- | --- |
+| `bal(unbal)`, `bal(unbalanced)`, `bal(allow_unbalanced)` | `bal(none)`, or the `unbalanced` option |
+| `balanceall`, `bal(all)` | `bal(full)` |
+| `balancepair` | `bal(pair)` |
+| `lean`, `performance(...)` | nothing: influence functions stay internal at every size, and `storeall` is the one switch that copies them into `e()` |
 
 ## Options that now refuse
 

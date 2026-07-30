@@ -4,10 +4,12 @@ title: Pre-testing
 
 # Pre-testing parallel trends
 
+<div class="note" markdown="1">
 Identification rests on parallel trends, which is an assumption about
 *untreated* potential outcomes after treatment starts. It is not testable. What
 is testable is its analogue *before* treatment: if the cohorts were already
 diverging beforehand, the assumption is harder to believe.
+</div>
 
 `csdid` gives you two ways to look at that — the pre-treatment cells themselves,
 and a joint test across all of them.
@@ -42,9 +44,11 @@ display "p-value = " e(wald_pvalue)
 display "df      = " e(wald_df)
 ```
 
+<div class="important" markdown="1">
 A small p-value says the pre-treatment cells are jointly distinguishable from
 zero. A large one does not say parallel trends holds — it says this test did not
 detect a violation, which with modest samples it often cannot.
+</div>
 
 ## Reading the cells, not just the test
 
@@ -61,6 +65,7 @@ Negative event times are pre-treatment. Look for **pattern**, not stars: a
 gentle drift toward zero as treatment approaches is more worrying than one
 isolated period, because it suggests the groups were already converging.
 
+<div class="tip" markdown="1">
 `base_period(universal)` is the default, and under it the pre-treatment
 estimates are cumulative and serially correlated — one bad early period pushes
 every later point away from zero, which can look like a systematic trend when it
@@ -68,6 +73,7 @@ is a single deviation. With `base_period(varying)` each pre-treatment cell is a
 separate one-period comparison, so a violation appears in the period where it
 happens. **For pre-testing, ask for `varying` explicitly.** See
 [Base periods](base-periods.html).
+</div>
 
 ## Power, and what a clean pre-test does not buy you
 

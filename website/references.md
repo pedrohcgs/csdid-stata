@@ -72,9 +72,11 @@ timing is staggered and effects are heterogeneous. See
 
 ## Citing csdid
 
+<div class="tip" markdown="1">
 Cite **both** the method and the software. For the method, Callaway and
 Sant'Anna (2021) above, plus Sant'Anna and Zhao (2020) if you use `method(dr)`.
 For the software, cite the version you ran — report it with `csdid version`:
+</div>
 
 ```
 @misc{csdidStata,

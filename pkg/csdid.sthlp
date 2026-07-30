@@ -75,6 +75,7 @@ sections{p_end}
 {cmd:ivar()} is supplied{p_end}
 {synopt:{opt bal(mode)}}panel balancing: {cmd:full}, {cmd:pair}, or
 {cmd:none}; default is {cmd:bal(full)}{p_end}
+{synopt:{opt unbalanced}}synonym for {cmd:bal(none)}{p_end}
 
 {syntab:Model {help csdid##opt_model:[+]}}
 {synopt:{opt method(string)}}2x2 estimator: {cmd:dr}, {cmd:reg}, or
@@ -84,7 +85,7 @@ sections{p_end}
 {synopt:{opt fix_w:eights(rule)}}weight rule when {cmd:iweight}s are used:
 {cmd:varying}, {cmd:base}, or {cmd:first}; by default the option is not set{p_end}
 
-{syntab:Control group {help csdid##opt_control:[+]}}
+{syntab:Comparison group {help csdid##opt_control:[+]}}
 {synopt:{opt notyet}}state the default not-yet-treated comparison group
 explicitly{p_end}
 {synopt:{opt notyettreated}}synonym for {cmd:notyet}{p_end}
@@ -130,19 +131,13 @@ dataset for later use by {helpb csdid_stats}{p_end}
 {syntab:Storage and diagnostics {help csdid##opt_storage:[+]}}
 {synopt:{opt storeall}}copy the large influence-function matrices into
 {cmd:e()}; by default they stay internal{p_end}
-{synopt:{opt lean}}the default, stated explicitly{p_end}
-{synopt:{opt perf:ormance(mode)}}{cmd:auto} and {cmd:lean} are the default;
-{cmd:full} is {cmd:storeall}{p_end}
 {synopt:{opt fast}}force the optimized Mata kernels{p_end}
 {synopt:{opt nofast}}force the baseline Mata kernels{p_end}
 
 {syntab:Legacy compatibility {help csdid##opt_legacy:[+]}}
 {synopt:{opt asinr}}accepted as a no-op{p_end}
-{synopt:{opt never}}accepted as a no-op{p_end}
+{synopt:{opt never}}legacy spelling of {opt nevertreated}{p_end}
 {synopt:{opt long}, {opt long2}}deprecated event-study layout aliases{p_end}
-{synopt:{opt allowunbalanced}}deprecated name for {cmd:bal(none)}{p_end}
-{synopt:{opt balanceall}}deprecated name for {cmd:bal(full)}{p_end}
-{synopt:{opt balancepair}}deprecated name for {cmd:bal(pair)}{p_end}
 {synoptline}
 {p2colreset}{...}
 {p 4 6 2}
@@ -309,7 +304,7 @@ all four settings coincide. {cmd:csdid} prints a note when it detects
 time-varying weights.
 
 {marker opt_control}{...}
-{dlgtab:Control group}
+{dlgtab:Comparison group}
 
 {phang}
 {opt notyet} uses units that have not been treated as of the current period,
@@ -317,9 +312,12 @@ including units that will be treated later, as the comparison group.
 {opt notyettreated} is a synonym.
 
 {phang}
-{opt nevertreated} states the default explicitly: only units with
-{cmd:gvar() == 0} serve as controls. Combining it with {cmd:notyet} is an
-error. If the data contain no never-treated units, {cmd:csdid} falls back to
+{opt nevertreated} selects the never-treated comparison group instead of the
+default not-yet-treated one: only units with {cmd:gvar() == 0} are compared
+against.
+This changes the estimand, so it is an explicit request rather than a default.
+{opt never} is the legacy spelling of it and does the same thing, with a
+message saying so. Combining either with {cmd:notyet} is an error. If the data contain no never-treated units, {cmd:csdid} falls back to
 using the latest treated cohort as the comparison group and says so. The
 resolved choice is recorded in
 {cmd:e(control_group)}.
@@ -490,14 +488,13 @@ costs quadratic time in the number of units.
 {opt storeall} additionally materializes {cmd:e(inffunc)},
 {cmd:e(unit_group)}, and {cmd:e(cluster_vec)} as Stata matrices, for users
 who want the influence functions themselves for custom calculations.
-{cmd:store_all} is an accepted synonym, as is {cmd:performance(full)}
-({cmd:performance(materialized)} is a deprecated spelling). {opt lean} and
-{cmd:performance(auto)} or {cmd:performance(lean)} state the default
-explicitly. The resolved mode is in {cmd:e(performance_resolved)}, and
-{cmd:e(large_store)} records whether the matrices were materialized. For a
-durable, session-independent artifact carrying the influence functions, use
-{cmd:saverif()} - the file it writes feeds {cmd:csdid_stats using} at any
-later time.
+{cmd:store_all} is an accepted synonym. There is no option that asks for the
+default: internal storage is what csdid does at every sample size, and
+{opt storeall} is the single switch that changes it. {cmd:e(storage)}
+records the resolved mode: {cmd:lean}, or {cmd:materialized} when the
+matrices were posted. For a durable, session-independent artifact
+carrying the influence functions, use {cmd:saverif()} - the file it writes
+feeds {cmd:csdid_stats using} at any later time.
 
 {phang}
 {opt fast} and {opt nofast} force or forbid the optimized Mata kernels.
@@ -540,6 +537,25 @@ reproduce a result computed with that version. {cmd:e(panel_mode)} reports
 {cmd:pair-balanced}.
 
 {phang}
+{opt unbalanced} is a synonym for {cmd:bal(none)}, for when that reads better
+than a mode inside {cmd:bal()}. {cmd:allowunbalanced} and
+{cmd:allow_unbalanced} are the longhand form of the same thing, carrying the
+name this setting has outside Stata so that code and worked examples written
+with that vocabulary run here unchanged. All three are current spellings, not
+deprecated ones - nothing is warned about and nothing is slated for removal.
+
+{pmore}
+These three are typed in full, as {cmd:balance_e()} is on the aggregation side:
+no abbreviation of them is an option. {cmd:unbal} is refused along with the
+rest, and deliberately so - it would read as {cmd:bal(unbal)}, which is not a
+mode {cmd:bal()} accepts either.
+
+{pmore}
+Giving any of the three together with a {cmd:bal()} that means something
+different is an error rather than a silent resolution; {cmd:bal(none)} agrees
+with them and is accepted.
+
+{phang}
 {opt rcs} declares that the data are repeated cross sections rather than a
 panel.
 
@@ -574,10 +590,15 @@ running. All of them announce themselves. None of them changes a default.
 See {it:{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}}.
 
 {phang}
-{opt asinr} and {opt never} are accepted as no-ops with a message.
-{cmd:asinr} used to switch on an alternative not-yet-treated pre-treatment
-selection, which is now governed by {cmd:notyet}; {cmd:never} used to request the
-never-treated comparison group, which is now the default.
+{opt asinr} is accepted as a no-op with a message: it used to switch on an
+alternative not-yet-treated pre-treatment selection, which is now governed by
+{cmd:notyet}.
+
+{phang}
+{opt never} is the legacy spelling of {opt nevertreated}. It is not a no-op: it
+selects the never-treated comparison group, which is not the default here, so
+it changes the estimand. It says so when used, and combining it with {cmd:notyettreated}
+is an error.
 
 {phang}
 {opt long} and {opt long2} are deprecated aliases for the legacy event-study
@@ -586,20 +607,13 @@ layout. When {cmd:base_period()} is not otherwise given, they select
 {cmd:base_period(universal)}.
 
 {phang}
-{opt allowunbalanced} and {cmd:allow_unbalanced} are deprecated names for
-{cmd:bal(none)}; {opt balanceall} is a deprecated name for {cmd:bal(full)};
-{opt balancepair} is a deprecated name for {cmd:bal(pair)}, which balances each
-2x2 comparison separately and is reported as {cmd:pair-balanced} in
-{cmd:e(panel_mode)}. Each is accepted
-with a note naming its replacement. Giving one of them together with a
-{cmd:bal()} that means something different is an error rather than a silent
-resolution.
-
-{phang}
-Inside {cmd:bal()} itself, the values {cmd:unbal}, {cmd:unbalanced} and
-{cmd:allow_unbalanced} are deprecated spellings of {cmd:none}, and {cmd:all}
-is a deprecated spelling of {cmd:full}. See
-{it:{help csdid##opt_panel:Panel structure}} for the current vocabulary.
+The unbalanced-panel vocabulary is {cmd:bal(full)}, {cmd:bal(pair)} and
+{cmd:bal(none)}, plus {cmd:unbalanced} - and its longhand
+{cmd:allowunbalanced} - for {cmd:bal(none)};
+{cmd:balance()} is {cmd:bal()} written out in full. {cmd:bal(pair)} balances
+each 2x2 comparison separately and is reported as {cmd:pair-balanced} in
+{cmd:e(panel_mode)}. See {it:{help csdid##opt_panel:Panel structure}} for what
+each mode does. Nothing else is accepted inside {cmd:bal()}.
 
 {phang}
 {cmd:dryrun} was an internal option in the legacy package. It is rejected with
@@ -767,8 +781,8 @@ exists after a run that returned zero.
 {title:Choosing the comparison group}
 
 {pstd}
-{bf:Never-treated} (the default) uses only units with {cmd:gvar() == 0}. It
-is the cleanest comparison: those units are never affected by the treatment,
+{bf:Never-treated} ({cmd:nevertreated}, or the legacy {cmd:never}) uses only
+units with {cmd:gvar() == 0}. It is the cleanest comparison: those units are never affected by the treatment,
 so parallel trends is required only against a group with no treatment
 dynamics. Its cost is statistical: if few units are never treated, standard
 errors are large, and if none exist, the group is empty. When there are no
@@ -804,7 +818,8 @@ and if the {bf:never-treated} group is one of them and the never-treated
 comparison group is in use, estimation stops with {cmd:r(459)} and
 
 {pmore}
-{cmd:The never-treated group is too small to serve as a reliable control.}
+{cmd:The never-treated group is too small to serve as a reliable comparison}
+{cmd:group.}
 
 {pstd}
 The remedy the message names is {cmd:notyet}, which does not depend on the size
@@ -815,8 +830,8 @@ covariates. The refusal is raised whether or not output is suppressed, so
 {pstd}
 On a balanced panel this measure equals the number of distinct units. On an
 unbalanced panel it is strictly smaller, so the guard is stricter there.
-Earlier builds of this package counted distinct units and therefore estimated
-in some cases that are now refused; see
+Version 1.82 counted distinct units and therefore estimated in some cases that
+are now refused; see
 {help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}.
 
 {marker remarks_base}{...}
@@ -898,6 +913,28 @@ ATT(g,t) is asymptotically linear in a unit-level score, and those scores are
 what {cmd:e(inffunc)} holds and what {cmd:saverif()} writes out. Aggregations
 combine the same scores, which is why an aggregated standard error is not a
 naive average of ATT(g,t) standard errors.
+
+{pstd}
+{bf:What the standard errors treat as random.} Units are draws from a
+population, and everything attached to a unit travels with it: its cohort,
+its covariates, its outcome path. Cohort membership is therefore random
+too - the standard errors account for not knowing which units would adopt
+when - while the target itself, built from population quantities like
+P(G=g), stays fixed. Nothing in the inference assumes effects are equal
+across cohorts, across periods, or across units with different
+covariates: treatment-effect heterogeneity in all three dimensions is
+permitted by construction, and the influence functions carry whatever
+heterogeneity the data contain.
+
+{pstd}
+One practical consequence deserves a plain statement: two estimators can
+print the same point estimate and different standard errors, and neither
+is necessarily wrong. A variance depends on what the procedure treats as
+random and on how it accounts for effect heterogeneity, and those
+conventions differ across commands even when the point estimates coincide
+exactly. Comparing standard errors across commands without knowing each
+one's conventions is not informative; comparing them within one command
+across specifications is.
 
 {pstd}
 The default is the multiplier bootstrap: draw Rademacher multipliers, one per
@@ -1102,17 +1139,15 @@ previously ran:
 {phang2}
 o {bf:Group size is measured as observations divided by the number of
 periods}, rather than as distinct units. On unbalanced panels this is stricter,
-so the never-treated-too-small refusal now fires in cases that earlier builds
-of this package estimated. Use {cmd:notyet}, which is the remedy the message
+so the never-treated-too-small refusal now fires in cases that Version 1.82
+estimated. Use {cmd:notyet}, which is the remedy the message
 recommends. See
 {help csdid##remarks_groupsize:When a group is too small} above.{p_end}
 
 {pstd}
 Legacy option spellings that still work, each with a message:
 {cmd:method(dripw)}, {cmd:method(stdipw)}, {cmd:asinr}, {cmd:never},
-{cmd:long}, {cmd:long2}, {cmd:allowunbalanced}, {cmd:balanceall},
-{cmd:balancepair},
-{cmd:performance(materialized)}, and the top-level bootstrap shorthand.
+{cmd:long}, {cmd:long2}, and the top-level bootstrap shorthand.
 {cmd:method(drimp)}, {cmd:method(aipw)}, and {cmd:dryrun} are rejected. Each is
 described under {help csdid##opt_legacy:Legacy compatibility} above; the
 option-by-option migration guide is online at
@@ -1135,8 +1170,8 @@ minimum wage, or {cmd:0} for never-treated counties.
 
 {hline}
 {pstd}Group-time average treatment effects, default settings throughout:
-doubly robust, never-treated controls, universal base period, 1,000 bootstrap
-iterations with simultaneous bands. Seed the bootstrap to make the run
+doubly robust, the not-yet-treated comparison group, universal base period,
+1,000 bootstrap iterations with simultaneous bands. Seed the bootstrap to make the run
 reproducible.{p_end}
 {phang2}{cmd:. csdid lemp, ivar(countyreal) time(year) gvar(first_treat) rseed(20200806)}{p_end}
 
@@ -1164,8 +1199,8 @@ same estimates; the nested form is preferred in new code.{p_end}
 {phang2}{cmd:. csdid lemp, ivar(countyreal) time(year) gvar(first_treat) rseed(20200806) agg(event)}{p_end}
 
 {hline}
-{pstd}Not-yet-treated comparison group, which uses the 2006 and 2007 cohorts
-as controls for the 2004 cohort while they are still untreated{p_end}
+{pstd}Not-yet-treated comparison group, which compares the 2004 cohort against
+the 2006 and 2007 cohorts while those are still untreated{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) notyet rseed(20200806)}{p_end}
 
 {hline}
@@ -1265,10 +1300,6 @@ cells tested {it:(conditional: pre-test computable)}{p_end}
 {synopt:{cmd:e(wald_pvalue)}}its p-value, rounded to five decimals
 {it:(conditional: pre-test computable)}{p_end}
 {synopt:{cmd:e(allow_unbalanced)}}1 if the unbalanced-panel path was used{p_end}
-{synopt:{cmd:e(store_all)}}1 if {cmd:storeall} was requested{p_end}
-{synopt:{cmd:e(lean)}}1 if lean storage was resolved{p_end}
-{synopt:{cmd:e(large_store)}}1 if the large matrices were copied into
-{cmd:e()} ({cmd:storeall}){p_end}
 {synopt:{cmd:e(fast_requested)}}1 if {cmd:fast} was typed {it:(diagnostic)}{p_end}
 {synopt:{cmd:e(fast_auto)}}1 if the kernel choice was automatic
 {it:(diagnostic)}{p_end}
@@ -1333,10 +1364,7 @@ none{p_end}
 {it:(diagnostic)}{p_end}
 {synopt:{cmd:e(fast_mode)}}{cmd:auto}, {cmd:on}, or {cmd:off}
 {it:(diagnostic)}{p_end}
-{synopt:{cmd:e(performance_mode)}}storage mode requested
-{it:(diagnostic)}{p_end}
-{synopt:{cmd:e(performance_resolved)}}storage mode used
-{it:(diagnostic)}{p_end}
+{synopt:{cmd:e(storage)}}{cmd:lean}, or {cmd:materialized} when {opt storeall} was requested{p_end}
 {synopt:{cmd:e(bootstrap_accelerator)}}{cmd:mata}, {cmd:plugin}, or
 {cmd:none} {it:(diagnostic)}{p_end}
 {synopt:{cmd:e(bootstrap_accelerator_status)}}why that path was taken
@@ -1404,9 +1432,9 @@ for profiling and support and may change or disappear in any release.
 {title:Methods and formulas}
 
 {pstd}
-{bf:The estimand.} With {it:C} denoting the comparison group -- the
-never-treated units under the default, or the units not yet treated as of
-period {it:t} under {cmd:notyet} -- and {it:b} the base period ({it:g - 1 - d}
+{bf:The estimand.} With {it:C} denoting the comparison group -- the units not
+yet treated as of period {it:t} under the default, or the never-treated units
+under {cmd:nevertreated} -- and {it:b} the base period ({it:g - 1 - d}
 under {cmd:anticipation(}{it:d}{cmd:)}, or {it:t - 1} for pre-treatment cells
 under a varying base period), conditional parallel trends identifies
 
@@ -1624,11 +1652,6 @@ University of Georgia{break}
 {p_end}
 
 {pstd}
-{cmd:csdid} 2.0.0 is a reimplementation of the estimator, sample handling and
-inference. It succeeds the 1.8x Stata {cmd:csdid} line and reuses none of its
-code.
-{p_end}
-{pstd}
 {bf:Fernando Rios-Avila}{break}
 Levy Economics Institute of Bard College{break}
 {browse "mailto:f.rios.a@gmail.com":f.rios.a@gmail.com}
@@ -1640,7 +1663,11 @@ Emory University{break}
 {browse "mailto:pedro.santanna@emory.edu":pedro.santanna@emory.edu}
 {p_end}
 
-
+{pstd}
+{cmd:csdid} 2.0.0 is a reimplementation of the estimator, sample handling and
+inference. It succeeds the 1.8x Stata {cmd:csdid} line and reuses none of its
+code.
+{p_end}
 
 {marker support}{...}
 {title:Support and updates}

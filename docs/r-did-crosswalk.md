@@ -77,8 +77,8 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `xformla` | `NULL` (`~1`) | the covariates after `depvar` in the varlist | none | `xformla = ~ x1 + x2` is `csdid y x1 x2, ...`. Factor-variable notation (`i.x`, `c.x##c.x`) is expanded before estimation. The intercept is always included, as in R. |
 | `data` | required | the dataset in memory | - | Restrict the sample with `if` / `in` rather than subsetting a data frame. |
 | `panel` | `TRUE` | `ivar()` specified or not | not specified | `panel = FALSE` (repeated cross sections) is `csdid` **without** `ivar()`. `e(panel_mode)` reports which mode ran. |
-| `allow_unbalanced_panel` | `FALSE` | `bal(full\|pair\|none)`; `allowunbalanced` (alias `allow_unbalanced`) is a deprecated spelling of `bal(none)` | `bal(full)` | `bal(full)` is R's `allow_unbalanced_panel = FALSE`: units not observed in every period are dropped once, before estimation, and csdid reports how many. `bal(none)` is R's `allow_unbalanced_panel = TRUE`: every unit is kept and the repeated-cross-section computation runs. `bal(pair)` has no R counterpart (legacy Version 1.82 per-comparison balancing). `e(panel_mode)` reports which ran. See [section 6](#6-where-the-two-deliberately-differ). |
-| `control_group` | `"nevertreated"` | `notyet` (alias `notyettreated`); `nevertreated` (legacy alias `never`) | **not-yet-treated** | **Deliberate divergence.** csdid defaults to not-yet-treated controls; `nevertreated` restores R's default. `e(control_group)` reports `nevertreated` or `notyettreated`. Specifying both errors. |
+| `allow_unbalanced_panel` | `FALSE` | `bal(full\|pair\|none)`; `unbalanced` is the documented synonym of `bal(none)`, and `allowunbalanced` / `allow_unbalanced` the R-style longhand carrying R's own argument name (all typed in full) | `bal(full)` | `bal(full)` is R's `allow_unbalanced_panel = FALSE`: units not observed in every period are dropped once, before estimation, and csdid reports how many. `bal(none)` is R's `allow_unbalanced_panel = TRUE`: every unit is kept and the repeated-cross-section computation runs. `bal(pair)` has no R counterpart (legacy Version 1.82 per-comparison balancing). `e(panel_mode)` reports which ran. See [section 6](#6-where-the-two-deliberately-differ). |
+| `control_group` | `"nevertreated"` | `notyet` (alias `notyettreated`); `nevertreated` (legacy alias `never`) | **not-yet-treated** | **Deliberate divergence.** csdid defaults to the not-yet-treated comparison group; `nevertreated` restores R's default. `e(control_group)` reports `nevertreated` or `notyettreated`. Specifying both errors. |
 | `anticipation` | `0` | `anticipation(#)` | `0` | Must be nonnegative. |
 | `weightsname` | `NULL` | `[iweight = varname]` | none | Stata weight syntax, normalized to R's `weightsname` contract. |
 | `fix_weights` | `NULL` | `fix_weights()` (alias `fixweights()`) | none | Accepted values: `varying`, `base` / `baseperiod` / `base_period`, `first` / `firstperiod` / `first_period`. `base` and `first` require `ivar()`, as in R. `e(fix_weights)` reports the canonical value. |
@@ -89,7 +89,7 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `clustervars` | `NULL` | `cluster(varname)`, `vce(cluster varname)`, or `wboot(cluster(varname))` | none (unit level) | R takes at most two variables and one of them must be `idname`; Stata takes the one non-unit clustering variable, which is the same thing. Must be numeric. `e(N_clusters)` reports the count. |
 | `est_method` | `"dr"` | `method(dr\|reg\|ipw)` | `dr` | Legacy aliases: `dripw` -> `dr`, `stdipw` -> `ipw`, both with a deprecation note. A user-supplied estimator function has no Stata equivalent. |
 | `base_period` | `"varying"` | `base_period()` / `baseperiod()`, or the bare keywords `varying` / `universal` | **universal** | **Deliberate divergence.** csdid defaults to a universal base period; `base_period(varying)` restores R's default. Post-treatment cells are identical either way; the pre-treatment cells differ. `e(base_period)` reports it. |
-| `faster_mode` | `TRUE` | `fast` / `nofast` (closest analogue, not a port of R's internals) | optimization allowed | Both are speed switches that leave the estimand alone, and both default to on, but they optimize different code: R reorganizes its data handling, Stata selects specialized Mata kernels. `nofast` is the way to ask for the unoptimized path, as `faster_mode = FALSE` is in R. `e(fast_used)` reports whether the optimized path actually engaged and `e(compute_path)` names it. |
+| `faster_mode` | `TRUE` | `fast` / `nofast` (closest analogue, not a port of R's internals) | optimization allowed | Both are speed switches that leave the estimand alone, and both optimize by default, but they optimize different code: Stata's default is `e(fast_mode)` = `auto` (`fast` forces it on, `nofast` off) while R's `faster_mode` defaults to `TRUE`, and R reorganizes its data handling, Stata selects specialized Mata kernels. `nofast` is the way to ask for the unoptimized path, as `faster_mode = FALSE` is in R. `e(fast_used)` reports whether the optimized path actually engaged and `e(compute_path)` names it. |
 | `print_details` | `FALSE` | prefix the command with `quietly` to suppress, run it plain to see diagnostics | diagnostics shown | Stata's `c(noisily)` gate replaces the argument; there is no `print_details()` option. |
 | `pl`, `cores` | `FALSE`, `1` | - | - | No parallel backend; the engine is single-threaded Mata. |
 | `compute_inffunc` | `TRUE` | - | always computed | No equivalent: influence functions are always computed and kept internal. `storeall` materializes them in `e()`; `saverif()` writes them to a dataset. |
@@ -103,9 +103,11 @@ Stata-only options on `csdid`, with no R counterpart:
 | `pscoretrim(#)` | Propensity-score trimming threshold passed to the doubly robust / IPW step (default `0.995`). |
 | `saverif(filename) [replace]` | Writes the influence functions to a dataset that `csdid_stats using` can re-aggregate later without re-estimating. |
 | `agg(event)` | Runs `csdid` and then the dynamic aggregation in one command, posting the event-study coefficients. Other aggregation types go through `csdid_stats`. |
-| `lean`, `storeall`, `performance(auto\|lean\|full)` | Storage policy for the large influence-function matrices: internal by default at every sample size; `storeall` (or `performance(full)`) materializes them in `e()`. Numbers are identical either way. |
+| `storeall` | Storage policy for the large influence-function matrices: internal at every sample size unless `storeall` materializes them in `e()`. Numbers are identical either way, and there is no option that asks for the default. |
 | `vce(analytical)`, `vce(cluster var)` | Stata-idiomatic spellings of `bstrap = FALSE` and `clustervars`. |
-| `long`, `long2`, `asinr`, `never`, `bal(unbal)` / `bal(all)`, `performance(materialized)`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
+| `unbalanced` | Documented synonym of `bal(none)`, accepted with no warning. |
+| `allowunbalanced`, `allow_unbalanced` | The same setting under R's own argument name, accepted as a supported longhand with no warning. |
+| `long`, `long2`, `asinr`, `never`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
 
 ---
 
@@ -228,13 +230,19 @@ states map onto two of its three settings:
 | csdid | R | What happens to an unbalanced `ivar()` panel |
 | --- | --- | --- |
 | `bal(full)` (**default**) | `allow_unbalanced_panel = FALSE` (default) | Units not observed in every period are dropped once, before estimation. Same sample as R; csdid additionally reports how many units and observations that removed, where R drops them silently. |
-| `bal(none)` | `allow_unbalanced_panel = TRUE` | Every unit is kept and the repeated-cross-section computation runs, as in R. |
+| `bal(none)`, or `unbalanced` (longhand `allowunbalanced`) | `allow_unbalanced_panel = TRUE` | Every unit is kept and the repeated-cross-section computation runs, as in R. |
 | `bal(pair)` | no counterpart | Each 2x2 comparison is balanced separately. This exists only to reproduce legacy Stata `csdid` Version 1.82, which did it silently. |
 
 So the *samples* agree with R by default; what differs is that Stata makes the
-choice an explicit option and says out loud what it did. `allowunbalanced` /
-`allow_unbalanced` are accepted as deprecated spellings of `bal(none)` and print
-a note naming the replacement. `e(panel_mode)` always tells you which of
+choice an explicit option and says out loud what it did. `allow_unbalanced_panel
+= TRUE` maps to `bal(none)`, whose documented synonym spelling is `unbalanced`.
+The R-style longhand `allowunbalanced` / `allow_unbalanced` is also accepted,
+silently, so `att_gt(..., allow_unbalanced_panel = TRUE)` transliterates word
+for word. All three are typed in full, as `balance_e()` is on the aggregation
+side; no abbreviation of them is an option. None of these is a deprecation.
+`balanceall`,
+`balancepair`, `bal(all)` and `bal(unbal)` are a different matter -- they have
+never been options in any release, and each is refused with return code 198. `e(panel_mode)` always tells you which of
 `panel`, `allow_unbalanced`, `pair-balanced`, or `repeated-cross-section`
 actually ran.
 
@@ -290,7 +298,7 @@ equivalent in this release:
 - `min_e` / `max_e` / `balance_e` echoed back as stored results (see 4.2).
 
 Conversely, these Stata features have no R equivalent: `saverif()` and
-`csdid_stats using`, `pscoretrim()`, `agg(event)`, the storage-policy options,
+`csdid_stats using`, `pscoretrim()`, `agg(event)`, `storeall`,
 `estat` posting of aggregated coefficients for `test` / `lincom`, and the
 diagnostic `e(profile)` / accelerator results.
 
@@ -302,10 +310,10 @@ Data: the Callaway and Sant'Anna county teen-employment panel - `did::mpdta` in
 R, `examples/data/mpdta.csv` in Stata (2,500 observations, 500 counties, 2003-2007,
 cohorts 2004 / 2006 / 2007 and never-treated).
 
-Specification: outcome `lemp`, covariate `lpop`, never-treated controls, doubly
-robust estimation, varying base period.
+Specification: outcome `lemp`, covariate `lpop`, the never-treated comparison
+group, doubly robust estimation, varying base period.
 
-Never-treated controls and a varying base period are R's defaults but not
+The never-treated comparison group and a varying base period are R's defaults but not
 csdid's (rows `control_group` and `base_period` of the section 2 table), so
 every Stata command below names them explicitly with `nevertreated` and
 `base_period(varying)`. Run the Stata commands exactly as printed and they
@@ -465,8 +473,9 @@ standard errors, on weighted, unbalanced, and `mpdta` fixtures.
 
 Related reading:
 
-- `help csdid` carries an abbreviated one-table version of section 2 for quick
-  lookup at the keyboard; this document is the complete two-way reference
+- `help csdid` documents every option, stored result and default from inside
+  Stata; it deliberately carries no R crosswalk, so this document is the only
+  two-way reference
 - `help csdid_stats`, `help csdid_estat`, `help csdid_plot`
 - `docs/legacy-migration-guide.md` - the Stata Version 1.82 -> 2.0 mapping,
   which is a different question from this document

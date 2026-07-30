@@ -14,9 +14,11 @@ rather than picking silently:
 | `bal(none)` | keep every unit and use the repeated-cross-section computation, with the standard-error accounting that goes with it. |
 | `bal(pair)` | balance each 2×2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did silently. |
 
+<div class="important" markdown="1">
 Dropping units changes the estimand, so `bal(full)` reports how many units and
 how many observations it removed. Changing an estimand is a legitimate choice;
 changing one silently is not, and that is the whole reason the report exists.
+</div>
 
 ## The data
 
@@ -39,8 +41,9 @@ keep if nyears == 11
 save "jel_unbal_base.dta", replace
 ```
 
-The JEL panel is balanced, so this creates the unbalancedness deliberately and
-reproducibly:
+As downloaded the JEL panel is only nearly balanced; the `keep if nyears == 11`
+step above makes it exactly balanced. So there is no unbalancedness left to
+demonstrate with, and the block below creates it deliberately and reproducibly:
 
 ```stata
 use "jel_unbal_base.dta", clear
@@ -80,13 +83,23 @@ because no county was removed. `e(N_units)` is the cross-sectional unit count,
 which is what the influence function and the standard errors are scaled by;
 `e(N)` remains the observation count, as it means everywhere in Stata.
 
-`allowunbalanced` and `allow_unbalanced` are accepted spellings of `bal(none)`
-and each prints a note naming the current one.
+`unbalanced` is a supported synonym of `bal(none)`, for when that reads better
+than a mode inside `bal()`. `allowunbalanced` and `allow_unbalanced` are the
+longhand form of the same thing — it is the name this setting carries in the
+reference implementation, so code written with that vocabulary runs here
+unchanged. None of them prints a warning or is deprecated.
+
+All three are typed in full. `unbal` is not an option, deliberately: it reads
+as `bal(unbal)`, which `bal()` does not accept either. Combining any of the
+three with a `bal()` that means something else is an error rather than a silent
+resolution.
 
 ## Which to use
 
+<div class="note" markdown="1">
 These are **different samples answering different questions**, so the choice is
 substantive rather than technical.
+</div>
 
 `bal(full)` keeps one fixed set of units behind every reported cell, which makes
 the estimand easy to state: the effect on units observed throughout. That is
@@ -105,20 +118,20 @@ instead. Consequences worth knowing:
   observations divided by periods, which on an unbalanced panel is smaller than
   the distinct-unit count
 
+<div class="tip" markdown="1">
 If a run refuses with "the never-treated group is too small", `notyet` enlarges
 the comparison group and is usually the fix. It is also the default, so you will
 only meet that refusal if you asked for `nevertreated`. See
 [comparison groups](comparison-groups.html).
+</div>
 
 ## `bal(pair)`
 
 Stata `csdid` Version 1.82 balanced each 2×2 comparison separately, keeping the
 units observed in both of that comparison's periods, and did so without saying
-anything. `bal(pair)` is the name reserved for that behaviour.
-
-`bal(pair)` is that behaviour, made explicit. Every unit stays in the sample;
-what varies is which units each individual comparison can use, so `e(N_units)`
-matches `bal(none)` while the estimates do not.
+anything. `bal(pair)` is that behaviour, made explicit and asked for. Every unit
+stays in the sample; what varies is which units each individual comparison can
+use, so `e(N_units)` matches `bal(none)` while the estimates do not.
 
 ```stata
 use "jel_unbalanced.dta", clear

@@ -29,15 +29,40 @@ program define f017_assert_log_contains
     assert `found'
 end
 
+program define f017_assert_log_omits
+    version 15
+    syntax using/, MESSAGE(string)
+
+    tempname fh
+    local body ""
+    file open `fh' using `"`using'"', read text
+    file read `fh' line
+    while r(eof) == 0 {
+        local clean = strtrim(`"`line'"')
+        if substr(`"`clean'"', 1, 2) == "> " {
+            local clean = strtrim(substr(`"`clean'"', 3, .))
+        }
+        local body `"`body' `clean'"'
+        file read `fh' line
+    }
+    file close `fh'
+    local compact_body = subinstr(`"`body'"', " ", "", .)
+    local compact_message = subinstr(`"`message'"', " ", "", .)
+    local found = strpos(`"`body'"', `"`message'"') > 0 | strpos(`"`compact_body'"', `"`compact_message'"') > 0
+    assert `found' == 0
+end
+
 confirm file "`root'/tests/fixtures/parity/f017/inputs/input.csv"
 confirm file "`root'/tests/fixtures/parity/f017/expected/r/events.csv"
 confirm file "`root'/tests/fixtures/parity/f017/expected/r/events.json"
 confirm file "`root'/tests/fixtures/parity/f017/metadata/manifest.json"
 
 import delimited using "`root'/tests/fixtures/parity/f017/expected/r/events.csv", clear varnames(1)
-assert _N == 7
-foreach key in legacy_bal_unbal legacy_bal_all legacy_allowunbalanced ///
-    legacy_balanceall legacy_long legacy_long2 legacy_asinr_noop {
+assert _N == 12
+foreach key in removed_balanceall removed_balancepair removed_bal_all ///
+    removed_bal_unbal removed_bal_unbalanced removed_bal_allow_unbalanced ///
+    accepted_unbalanced accepted_allowunbalanced accepted_allow_unbalanced ///
+    legacy_long legacy_long2 legacy_asinr_noop {
     quietly count if event_key == "`key'"
     assert r(N) == 1
 }
@@ -48,6 +73,9 @@ foreach key in legacy_bal_unbal legacy_bal_all legacy_allowunbalanced ///
 * reqsize 5, so R stop()s and so must csdid. Verified directly against R on
 * this exact fixture: att_gt() raises
 *   "The never-treated group is too small to serve as a reliable control."
+* What is asserted here is the refusal and its return code, not the wording:
+* csdid says "reliable comparison group" where R says "reliable control",
+* because comparison group is the vocabulary this package uses throughout.
 * The refusal is deliberately NOT gated on c(noisily) - R's stop() is not, and
 * control flow must not depend on `quietly' - so both spellings are asserted.
 * Every other estimation in this file therefore passes notyet, which is the
@@ -77,13 +105,13 @@ quietly csdid y, ivar(id) time(time) gvar(g) method(reg) notyet base_period(univ
 matrix Universal = e(attgt)
 
 * ---------------------------------------------------------------------------
-* Deprecated balance spellings resolve onto the bal() vocabulary.
+* The bal() vocabulary is full / pair / none, and nothing else.
 *
-* This fixture is deliberately unbalanced (three unit-periods removed), so
-* bal(none) and bal(full) are genuinely different estimands on it. Each
-* spelling is therefore checked against the mode it claims to resolve to, not
-* merely for a zero return code -- a run that quietly resolved every spelling
-* to the same mode would pass the weaker check.
+* This fixture is deliberately unbalanced (three unit-periods removed), so the
+* three modes are three genuinely different estimands on it. Each is therefore
+* checked against the answer it claims to produce, not merely for a zero return
+* code -- a build that quietly folded two modes together would pass the weaker
+* check.
 * ---------------------------------------------------------------------------
 * This also covers the two csdid-Python tests that PY020 previously recorded as
 * divergences: allow_unbalanced_panel=False is bal(full), which runs here and
@@ -115,23 +143,71 @@ matrix PairMode = e(attgt)
 assert mreldif(PairMode, Default) > 1e-8
 assert mreldif(PairMode, FullBalance) > 1e-8
 
-* Read the expectation table once and carry it in locals: each iteration
-* below replaces the data in memory with the input fixture, so the table
-* cannot be re-read from the dataset inside the loop.
+* ---------------------------------------------------------------------------
+* The development-era balance spellings are not options.
+*
+* balanceall, balancepair, bal(all), bal(unbal), bal(unbalanced) and
+* bal(allow_unbalanced) never appeared in a released csdid: they are absent
+* from the pinned Version 1.82 source, and 2.0.0 is the first release of this
+* rewrite. There is nothing to deprecate, so each is refused with the ordinary
+* rc 198 rather than accepted as an alias.
+*
+* This is asserted as a return code and NOT as a message, deliberately: an
+* unknown option has no message of its own, and pinning one here would be
+* pinning Stata's wording rather than csdid's contract.
+*
+* Read the expectation table once and carry it in locals: each iteration below
+* replaces the data in memory with the input fixture, so the table cannot be
+* re-read from the dataset inside the loop.
+* ---------------------------------------------------------------------------
 import delimited using "`root'/tests/fixtures/parity/f017/expected/r/events.csv", clear varnames(1) stringcols(_all)
-quietly keep if resolves_to != ""
-local n_bal = _N
-assert `n_bal' == 4
-forvalues i = 1/`n_bal' {
-    local opt`i'  = offending_option[`i']
-    local mode`i' = resolves_to[`i']
-    local msg`i'  = message_normalized[`i']
+preserve
+quietly keep if event_type == "error"
+local n_removed = _N
+assert `n_removed' == 6
+forvalues i = 1/`n_removed' {
+    local ropt`i' = offending_option[`i']
+    local rrc`i'  = return_code[`i']
+}
+restore
+quietly keep if event_type == "accepted"
+local n_accepted = _N
+assert `n_accepted' == 3
+forvalues i = 1/`n_accepted' {
+    local aopt`i' = offending_option[`i']
+    local amode`i' = bal_mode[`i']
 }
 
-forvalues i = 1/`n_bal' {
-    local opt  "`opt`i''"
-    local mode "`mode`i''"
-    local msg  "`msg`i''"
+forvalues i = 1/`n_removed' {
+    local opt "`ropt`i''"
+
+    import delimited using "`root'/tests/fixtures/parity/f017/inputs/input.csv", clear asdouble
+    capture csdid y, ivar(id) time(time) gvar(g) method(reg) notyet `opt' analytical base_period(varying)
+    local actual = _rc
+    assert `actual' == `rrc`i''
+    assert `actual' == 198
+}
+
+* ---------------------------------------------------------------------------
+* unbalanced is a supported spelling of bal(none), not a deprecation, and so is
+* the allowunbalanced longhand.
+*
+* unbalanced is the documented spelling; allowunbalanced / allow_unbalanced
+* carry the argument name the same setting has in the reference
+* implementation, so a do-file or a worked example written against that
+* vocabulary runs here unchanged. Three things are asserted of each, because
+* any one alone would pass on a build that got the other two wrong: it runs, it
+* produces bal(none) exactly rather than merely something finite, and it says
+* nothing while doing it. A synonym that printed a deprecation note would be a
+* deprecation, whatever the documentation called it.
+*
+* All three are typed in full: no prefix of them is an option, matching the
+* balance_e() rule on the aggregation side. test-f051.do asserts the prefix
+* refusals; `unbal` in particular would read as the refused bal(unbal) token.
+* ---------------------------------------------------------------------------
+forvalues i = 1/`n_accepted' {
+    local opt "`aopt`i''"
+    assert "`amode`i''" == "bal(none)"
 
     import delimited using "`root'/tests/fixtures/parity/f017/inputs/input.csv", clear asdouble
     capture log close f017event
@@ -140,17 +216,27 @@ forvalues i = 1/`n_bal' {
     local actual = _rc
     log close f017event
     assert `actual' == 0
+    assert "`e(panel_mode)'" == "allow_unbalanced"
+    matrix Synonym = e(attgt)
+    assert mreldif(Synonym, Default) < 1e-14
+    f017_assert_log_omits using "`evlog'", message("deprecated")
+    f017_assert_log_omits using "`evlog'", message("legacy compatibility")
+}
 
-    matrix Spelling = e(attgt)
-    if "`mode'" == "none" {
-        assert "`e(panel_mode)'" == "allow_unbalanced"
-        assert mreldif(Spelling, Default) < 1e-14
+* Agreeing with bal() is fine; disagreeing with it is an error rather than a
+* silent resolution to one of the two.
+foreach synonym in unbalanced allowunbalanced {
+    import delimited using "`root'/tests/fixtures/parity/f017/inputs/input.csv", clear asdouble
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) notyet `synonym' bal(none) analytical base_period(varying)
+    assert "`e(panel_mode)'" == "allow_unbalanced"
+    matrix Agree = e(attgt)
+    assert mreldif(Agree, Default) < 1e-14
+
+    foreach conflicting in full pair {
+        import delimited using "`root'/tests/fixtures/parity/f017/inputs/input.csv", clear asdouble
+        capture csdid y, ivar(id) time(time) gvar(g) method(reg) notyet `synonym' bal(`conflicting') analytical base_period(varying)
+        assert _rc == 198
     }
-    else {
-        assert "`e(panel_mode)'" == "panel"
-        assert mreldif(Spelling, FullBalance) < 1e-14
-    }
-    f017_assert_log_contains using "`evlog'", message("`msg'")
 }
 
 foreach option in long long2 {
@@ -182,3 +268,5 @@ assert "`e(panel_mode)'" == "allow_unbalanced"
 matrix Asinr = e(attgt)
 assert mreldif(Asinr, Default) < 1e-14
 f017_assert_log_contains using "`evlog'", message("`asinr_msg'")
+
+display as text "test-f017 passed"

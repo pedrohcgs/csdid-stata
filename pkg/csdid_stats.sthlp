@@ -12,7 +12,6 @@
 {viewerjumpto "Examples" "csdid_stats##examples"}{...}
 {viewerjumpto "Stored results" "csdid_stats##results"}{...}
 {viewerjumpto "Methods and formulas" "csdid_stats##methods"}{...}
-{viewerjumpto "Acknowledgments" "csdid_stats##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_stats##references"}{...}
 {viewerjumpto "Authors" "csdid_stats##authors"}{...}
 {title:Title}
@@ -59,7 +58,8 @@ through {it:max}{p_end}
 post-treatment data and truncate the event-time grid{p_end}
 {synopt:{opt min_e(#)}}synonym for the lower bound of {cmd:window()}{p_end}
 {synopt:{opt max_e(#)}}synonym for the upper bound of {cmd:window()}{p_end}
-{synopt:{opt balance_e(#)}}synonym for {cmd:balance()}{p_end}
+{synopt:{opt balance_e(#)}}{cmd:balance()} written under its
+cross-implementation name{p_end}
 
 {syntab:Sample}
 {synopt:{opt dropm:issing}}drop missing ATT(g,t) cells before aggregating{p_end}
@@ -197,8 +197,11 @@ an older version of {cmd:csdid} does not carry it, and {cmd:csdid_stats}
 then refuses with return code 498 rather than guessing.
 
 {phang}
-{opt min_e(#)}, {opt max_e(#)}, and {opt balance_e(#)} are alternative
-spellings of the two options above. They must be typed in full
+{opt min_e(#)}, {opt max_e(#)}, and {opt balance_e(#)} are the same three
+settings under the argument names the aggregation is usually written with
+outside Stata. They are current spellings, not deprecated ones: nothing is
+warned about and nothing is slated for removal, so code and worked examples
+carried over from that vocabulary run unchanged. They must be typed in full
 and may not be combined with the Stata spelling they duplicate:
 {cmd:min_e()} or {cmd:max_e()} together with {cmd:window()}, or
 {cmd:balance_e()} together with {cmd:balance()}, is an error. Repeating any one
@@ -557,15 +560,6 @@ unseeded or non-Rademacher draw, and any run where the accelerator cannot load
 -- uses Mata. {cmd:e(agg_boot_accelerator)} and
 {cmd:e(agg_boot_accel_status)} record which path ran; they are diagnostics and
 never change results.
-
-
-{marker acknowledgments}{...}
-{title:Acknowledgments}
-
-{phang}
-The R package {bf:did}, by Brantly Callaway and Pedro H. C. Sant'Anna, is the
-reference implementation of these methods. {cmd:csdid} derives from it and was
-constructed and benchmarked against {bf:did} version 2.5.1.{p_end}
 
 
 {marker references}{...}

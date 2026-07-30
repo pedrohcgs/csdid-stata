@@ -4,11 +4,13 @@ title: Base periods
 
 # Base periods: varying or universal
 
+<div class="note" markdown="1">
 Every ATT(g,t) is a difference between period *t* and a **base period** — the
 pre-treatment period the comparison is measured from. `base_period()` chooses
 which one, and it changes the pre-treatment estimates, the shape of an event
 study, and how many cells you get back. It does not change the post-treatment
 effects.
+</div>
 
 - **`universal`** (the default) compares every period with *g-1*.
 - **`varying`** compares each pre-treatment period with the one immediately
@@ -112,16 +114,20 @@ would compare unrelated cells.
 
 ## Which to use
 
+<div class="tip" markdown="1">
 Use **`varying`** to pre-test parallel trends. Each pre-treatment cell is its own
 one-period test, so a violation shows up in the period where it happens instead
 of being carried forward into every later cell. See
 [Pre-testing](pre-testing.html).
+</div>
 
+<div class="important" markdown="1">
 Use **`universal`** when you want a conventional event-study plot with a single
 normalized reference period, or when you are presenting cumulative pre-trends.
 Be aware that pre-treatment estimates are then serially correlated by
 construction — a single early deviation shifts every subsequent point — so a
 run of "significant" pre-treatment coefficients can come from one bad period.
+</div>
 
 Post-treatment conclusions do not depend on this choice.
 

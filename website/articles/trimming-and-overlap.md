@@ -9,8 +9,10 @@ propensity score — the estimated probability of belonging to the treated cohor
 A unit with a score near 1 gets an enormous weight, and a handful of such units
 can dominate the estimate and inflate its variance.
 
+<div class="note" markdown="1">
 That is an **overlap** problem: the data contain treated units with no
-comparable controls. `csdid` guards against it in two ways, both visible.
+comparable units to compare them against. `csdid` guards against it in two ways, both visible.
+</div>
 
 ## The data
 
@@ -94,13 +96,17 @@ number of extreme-weight units are driving the result. That is worth reporting,
 not hiding: it tells the reader the estimate rests on units with few
 counterparts.
 
+<div class="important" markdown="1">
 Trimming changes the estimand slightly — it reweights toward the region of
 common support. That is usually preferable to an estimate dominated by units
 that have no real comparison, but it is a choice, so state the value you used.
+</div>
 
 ## Avoiding the problem
 
+<div class="tip" markdown="1">
 Overlap is easier to keep than to repair.
+</div>
 
 - **Condition on fewer things.** Every covariate makes cohort membership easier
   to predict. Include what parallel trends plausibly needs, not everything

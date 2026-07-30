@@ -346,7 +346,7 @@ program define csdid_stats, eclass
     * Aggregation storage follows estimation storage. Full storage posted
     * e(inffunc)/e(unit_group), so the aggregation influence functions are
     * posted as e(agg_inffunc) exactly as before. Lean storage (the
-    * performance(auto) default at N_units >= 25,000, or performance(lean))
+    * default at every size unless storeall materializes the matrices)
     * keeps the estimation IF in the Mata cache, and the aggregation IF now
     * stays there too: every crossing of an n_units-row matrix into Stata's
     * classic-matrix layer is quadratic in n_units (measured per write or

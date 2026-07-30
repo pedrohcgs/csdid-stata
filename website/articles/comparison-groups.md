@@ -12,11 +12,13 @@ change both what you estimate and whether you can estimate it at all.
   which includes cohorts treated later.
 - **`nevertreated`** uses only units never treated anywhere in the sample.
 
+<div class="note" markdown="1">
 Not-yet-treated is the default because it uses more of the data, usually gives
 tighter standard errors, and does not depend on a never-treated group existing
 or being large enough to trust. R `did` and Stata `csdid` Version 1.82 both
 default to never-treated instead; this is a deliberate departure from both, and
 `nevertreated` restores their behaviour exactly.
+</div>
 
 ## The data
 
@@ -47,7 +49,7 @@ estat event
 had rather than leaving you to infer it from the options you happened to type:
 
 ```stata
-display "control group: " e(control_group)
+display "comparison group: " e(control_group)
 ```
 
 `notyet` and `notyettreated` are accepted spellings of the same thing, and
@@ -59,7 +61,7 @@ either states the default explicitly.
 use "jel_balanced.dta", clear
 csdid mrate, ivar(county_code) time(year) gvar(gvar) nevertreated rseed(20250101)
 estat event
-display "control group: " e(control_group)
+display "comparison group: " e(control_group)
 ```
 
 The two runs usually give similar answers when the never-treated group is large
@@ -87,13 +89,15 @@ latest-treated cohort, which is what R `did` does in the same situation.
 use "jel_balanced.dta", clear
 keep if gvar > 0
 csdid mrate, ivar(county_code) time(year) gvar(gvar) nevertreated rseed(20250101)
-display "control group: " e(control_group)
+display "comparison group: " e(control_group)
 ```
 
+<div class="important" markdown="1">
 Read that warning. The run succeeded, but not with the comparison group you
 asked for, and the number it returns is a not-yet-treated estimate wearing a
 never-treated label. If your design has no never-treated units, say `notyet` and
 mean it rather than relying on the fallback.
+</div>
 
 The last-treated cohort now serves as the comparison group for the earlier ones.
 It gets no ATT of its own — there is nothing left to compare it against — so it
@@ -101,11 +105,13 @@ is absent from the results table while still contributing as a control.
 
 ## Which to use
 
+<div class="tip" markdown="1">
 Keep the default, **not-yet-treated**, unless you have a reason not to. It uses
 more data and often gives tighter standard errors, at the cost of assuming
 parallel trends against later-treated cohorts too — including over periods where
 those cohorts may already be anticipating treatment. If anticipation is a
 concern, see [Anticipation](anticipation.html).
+</div>
 
 Prefer **`nevertreated`** when you have a large never-treated group you are
 willing to defend as comparable, and you would rather rest on one fixed

@@ -32,9 +32,8 @@ reports the *g-1* normalisation row. Use `base_period(varying)` when
 so a violation shows up in the period where it happens rather than being carried
 forward into every later cell.
 
-Both of these are deliberate departures from the reference implementation as
-well as from Version 1.82, and are recorded as such in
-`inst/spec/feature-matrix.csv`.
+Both of these are deliberate, documented departures from the reference
+implementation as well as from Version 1.82.
 
 **Standard errors are bootstrapped by default, with simultaneous confidence
 bands.** Version 1.82 reported pointwise analytical standard errors unless you asked
@@ -108,7 +107,7 @@ as Stata matrices, and `saverif()` writes the durable dataset that
 | `gvar()` with negative values | Errors. `gvar()` is 0 for never-treated units and 1 or more for treated cohorts |
 | `time()` below 1 | Errors. Cohorts and periods share one positive calendar-time axis; a monotone relabelling leaves every estimate unchanged |
 | `from()` | No longer supported. Use `window(# #)` on `estat event` for event-time windows |
-| `dryrun` | Rejected; it was an internal option |
+| `dryrun` | Rejected; it was never a documented option |
 
 ### New
 
@@ -148,8 +147,9 @@ numbers from one machine (Stata MP, Apple Silicon), so you can calibrate:
 - Aggregations never disturb stored results and are effectively instant at
   any size: `estat event` takes a fraction of a second after a 20,000-unit
   estimation and a few seconds after 400,000 units.
-- The multiplier bootstrap runs through a compiled plugin: 199 replications
-  on a 350,000-row panel add about two seconds.
+- The multiplier bootstrap is accelerated by a compiled plugin on macOS
+  (shipped with the package; Mata everywhere else, with identical results):
+  199 replications on a 350,000-row panel add about two seconds.
 - `saverif()` writes its dataset in about a second at 20,000 units, and cost
   scales linearly.
 
@@ -196,11 +196,10 @@ use the names in `help csdid`.
 
 ### Upgrading
 
-`docs/legacy-migration-guide.md` covers the migration in full, including how to
-compare Version 1.82 and 2.0.0 output on your own data.
+The migration guide in the repository (`docs/legacy-migration-guide.md`)
+covers the migration in full, including how to compare Version 1.82 and
+2.0.0 output on your own data.
 
 ---
 
-Development history before this release is in the git log. Verification
-evidence — the feature matrix, conformance profile, and parity reports — lives
-under `docs/`, `reports/` and `inst/spec/`.
+Development history before this release is in the git log.

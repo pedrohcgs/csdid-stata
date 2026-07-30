@@ -1,26 +1,12 @@
 # Provenance
 
-Status: frozen for conformance profile v1.
-
-## Workflow Source
-
-This repository adapts the goal-driven workflow structure from
-`meleantonio/didbjs-codex-goal` at observed HEAD
-`1c8f472ee896d1a13d049b458e2eedc7c59c1de9`.
-
-Reused conceptually: contract freeze before implementation, oracle review
-before implementation, numbered fixtures, feature matrix, tolerance registry,
-reference locks, and final-report discipline.
-
-Not reused: BJS-specific econometric content, R package implementation content,
-or parity fixtures from `didbjs`.
+Status: frozen for release 2.0.0.
 
 ## Reference Roles
 
 | Reference | Role | Observed ref |
 | --- | --- | --- |
 | `bcallaway11/did` | primary statistical and API oracle | GitHub HEAD `9aba07d054a798558ac9b551887f5cb592d8db10`; version 2.5.1 |
-| CRAN `did` 2.5.1 | optional archive if found | not visible in initial current/archive checks on 2026-06-22 |
 | `DrSquare/csdid` | Python deeper-test source | HEAD `555f28bc12fcafa9c099e6e5503a30a4c22fc89f` |
 | `pedrohcgs/csdid-stata` | legacy Stata behavior source | HEAD `fdbae25521a941314af8d84ec0c93fb0596daa8e` |
 | `pedrohcgs/JEL-DiD` | empirical acceptance suite | HEAD `50f4f183783d2344f85bc4f39bcbcc1b7eba6466` |
@@ -42,8 +28,8 @@ or parity fixtures from `didbjs`.
 - Python `csdid` includes an MIT `LICENSE` and `setup.py` uses `license="MIT"`;
   `setup.py` classifiers mention Apache, so upstream metadata is inconsistent.
   Treat MIT as binding until clarified.
-- Current Stata `csdid-stata` has no observed top-level license file in the
-  checkout.
+- The legacy Stata `csdid` (Version 1.82) carried no top-level license file;
+  this release ships `LICENSE` (MIT) at the repository root.
 - JEL-DiD is an empirical replication source; its generated artifacts are used
   as acceptance targets.
 - The optional bootstrap plugin is original clean-room C code. No source was
@@ -78,7 +64,7 @@ Implementation code remains clean-room by default:
 | Legacy Stata outputs | Generated from current Stata `csdid` | allowed as compatibility evidence |
 | JEL tables/figures | Generated or compared from JEL-DiD | release acceptance evidence |
 | Implementation code | New clean-room Stata ado/Mata | no source copying unless ledger updated |
-| Bootstrap plugin | New clean-room C implementation plus official Stata plugin SDK at build time | SDK files are checksum-pinned and excluded from the repository/bundle; compiled platform artifacts are release outputs |
+| Bootstrap plugin | New clean-room C implementation plus official Stata plugin SDK at build time | SDK files are checksum-pinned and excluded from the repository; the compiled macOS accelerator ships inside the package, other platforms use the Mata implementation |
 
 ## Future Ledger Entries
 
@@ -87,5 +73,4 @@ Every copied/adapted implementation fragment must add:
 - source repository, commit, path, and line range;
 - destination path and line range;
 - license basis;
-- reason clean-room reimplementation was not used;
-- reviewer approval before release.
+- reason clean-room reimplementation was not used.

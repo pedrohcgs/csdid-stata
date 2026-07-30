@@ -11,17 +11,18 @@ your favorite syntax, get "the" event study. Our main goal in this guide is
 to show, with simulations you can re-run line by line, that this is not the
 case, and to be precise about *when* it is not the case and *why*.
 
-The short version: on a balanced panel with equal-sized periods, these
-estimators mostly agree, and speed is the only visible difference. Take
+The short version: on a balanced panel with equal-sized periods, most of
+these estimators agree, and speed looks like the only difference — most,
+not all, as the first table below shows. Take
 anything away from that ideal — unequal sampling across periods, an
 unbalanced panel, repeated cross sections — and they quietly stop estimating
 the same parameter. Not with worse precision: with different targets. A
 target parameter is an estimand. It should be a fixed feature of the
 population, and it should not move because your sample did.
 
-Everything below uses one data-generating process, fixed effect sizes, and
-500 simulation draws per setting; seeds and scripts are in the replication
-appendix. We report bias against the *population* targets — never against a
+Everything below uses one data-generating process (1,000 units per draw,
+seven periods), fixed effect sizes, and 500 simulation draws per setting;
+the scripts and seeds are available from the authors. We report bias against the *population* targets — never against a
 sample-dependent quantity — along with the standard deviation across draws
 and the coverage of nominal 95% intervals.
 
@@ -81,13 +82,15 @@ Every command runs; most agree. One does not:
 | `flexdid` | +0.004 | 1.00 |
 | `lpdid` | **-0.13** | **0.53** |
 
-`lpdid` is off by 5% of the true effect on a perfectly balanced panel with
+`lpdid` is off by 6.5% of the true effect on a perfectly balanced panel with
 nothing exotic anywhere. This is not a bug, and it is not noise (it is the
 same at n = 4,000). It is the effective-sample-size weighting doing exactly
 what it does: later cohorts get less weight because earlier cohorts are no
 longer clean controls, so its event study averages a different mix of
-cohorts than the population has. You do not need missing data for the
-estimand question to matter.
+cohorts than the population has. (`flexdid`'s 1.00 in the coverage column
+is the opposite, milder anomaly: its intervals over-cover — conservative
+rather than wrong, and it recurs in every table it appears in.) You do not
+need missing data for the estimand question to matter.
 
 ### Unequal sampling across periods
 
@@ -100,7 +103,7 @@ equal cross-sections.
 
 | estimator | bias at e=0 | 95% coverage |
 | --- | ---: | ---: |
-| `csdid` (either `bal()` mode) | +0.003 | 0.95 |
+| `csdid` (any `bal()` mode) | +0.003 | 0.95 |
 | `jwdid` | -0.16 | 0.36 |
 | `did_imputation` | -0.17 | 0.38 |
 | `did_multiplegt_dyn` | -0.29 | 0.16 |
@@ -199,7 +202,7 @@ Its documentation points to `trends_nonparam()` as the remedy for
 time-invariant covariates: exact matching on their values, documented as
 requiring the covariates to be discrete (coarser than the unit). We tested
 that too. `trends_nonparam(x1)` does what it says: matching on the binary
-covariate removes its share of the bias (+0.87 falls to +0.66 at e=2),
+covariate removes its share of the bias (+0.88 falls to +0.66 at e=2),
 leaving the share owed to the continuous one. Passing the continuous
 covariate — `trends_nonparam(x1 x2)` — cannot work, and to the command's
 credit it prints an explanation (Design Restriction 1 is not satisfied).
@@ -233,7 +236,7 @@ Why prefer `dr` among the three csdid methods, when all three are clean
 here? Because correct specification is exactly what you do not get to
 assume. The doubly robust estimator (Sant'Anna and Zhao, 2020) is
 consistent if *either* the outcome model *or* the treatment-probability
-model is right — two chances instead of one, at no speed cost (§1) and, in
+model is right — two chances instead of one, at no speed cost (see Speed below) and, in
 these simulations, no precision cost either. Every other command in this
 comparison is an outcome-regression estimator with one chance.
 
@@ -268,25 +271,73 @@ treatment-probability model is still correct, `dr` because one correct
 model is all it needs. That second chance is not a luxury option — in this
 comparison, no other command has it at all.
 
-Second, the propensity score: we misspecified the treatment-probability
-model instead — cohorts differ in the *spread* of the continuous
-covariate, which a logit linear in X cannot represent — and nothing broke,
-`ipw` included. That null is worth explaining rather than hiding: the
-propensity-score error this design produces is orthogonal to the outcome
-trend, so the wrong weights have nothing to load on. A misspecification
-experiment only teaches you something when the error is aimed at the
-target, and building one where it genuinely is — without also breaking the
-outcome model — is a sharper design problem than the symmetric-sounding
-setup suggests. We would rather show you a null cell and say why it is
-null. A design where the propensity-score error does load on the trend is
-on the list, and it will appear here.
+Second, the propensity score. Our first attempt at this cell is worth
+reporting precisely because it failed: we made cohorts differ in the
+*spread* of the continuous covariate — a logit linear in X cannot
+represent that — and nothing broke, `ipw` included. The reason is
+instructive. A fitted logit projects the selection it can see onto the
+covariates you gave it, so the error a misspecification leaves behind is
+close to orthogonal to anything linear in those covariates — and our
+trend is linear in them. An error that is orthogonal to the trend has
+nothing to load on. A misspecification experiment only teaches you
+something when the error is aimed at the target.
+
+So we aimed it. In the redesigned cell, selection is driven by a latent
+index, and the covariate the researcher observes is a nonlinear
+(exponential) transform of that index — the same device as in Sant'Anna
+and Zhao (2020). Now the true propensity score is a logit in the *log* of
+the observed covariate, the fitted logit in the covariate itself is
+genuinely wrong, and because the observed covariate is skewed, the error
+loads on the trend. The outcome stays linear in what the researcher
+observes, so every outcome model remains correct — only the
+treatment-probability model is broken. Bias and coverage at e=1:
+
+| estimator | bias | coverage |
+| --- | ---: | ---: |
+| `csdid dr` | +0.001 | 0.95 |
+| `csdid ipw` | **-0.094** | 0.97 |
+| `csdid reg` | -0.001 | 0.95 |
+| `jwdid` | +0.001 | 0.92 |
+| `did_imputation` | +0.002 | 0.93 |
+| `flexdid` | -0.001 | 0.99 |
+| `did_multiplegt_dyn` | **+0.229** | **0.28** |
+| `lpdid` | **-0.112** | **0.66** |
+
+(As before, `did_multiplegt_dyn` and `lpdid` carry their
+correctly-specified-cell biases into this one.)
+
+The outcome-regression commands are fine here — a wrong propensity score
+is invisible to an estimator that never uses one. The action is inside
+`csdid`: `ipw`'s bias grows with the horizon (−0.04, −0.09, −0.14) and
+concentrates exactly where the propensity score does the most work — in
+the ATT(5,6) cell, where the never-treated are the only comparison left,
+`ipw` is off by −0.23 *and* pays more than twice `dr`'s standard error
+(0.35 against 0.16). The wrong weights cost it twice, in location and in
+spread; those wide intervals are also why its coverage does not collapse
+the way `reg`'s did in the outcome cell. `dr`, with one correct model in
+hand, pays neither price.
+
+One more thing happened in this cell, and we consider it a feature: in 36
+of the 500 draws, `csdid` refused to estimate the worst-overlap cell at
+all and printed the overlap violation it found. The reported `ipw` and
+`dr` rows condition on the draws that passed that check — which, if
+anything, flatters `ipw`, since the refused draws are the ones where its
+weights are most extreme. No other command in this comparison checks. Put
+the two sabotage cells side by side and the doubly robust case makes
+itself: break the outcome model and every rival breaks with `reg` while
+`dr` walks; break the propensity score and `ipw` drifts while `dr` walks
+again. Every other command is a one-model estimator that happens to live
+in the world where its model is the broken one or not. `dr` is the only
+one that gets to be wrong once for free.
 
 ## Speed
 
 Every cell below is the mean of 10 timed runs in a fresh Stata process with
 one discarded warmup, so nobody pays the one-time library load and nobody
-benefits from a warm cache. Standard deviations are in the replication log;
-none exceeds a few hundredths of a second at the sizes shown. Rows =
+benefits from a warm cache. Standard deviations across the timed runs never
+exceed a few hundredths of a second at the sizes shown. A dash marks a
+workload without a measured time; `flexdid` is timed in the
+repeated-cross-section table, where it is a native competitor. Rows =
 units x 10 periods, 4 cohorts, event-study estimation with clustered
 standard errors.
 
@@ -327,7 +378,7 @@ computing forty auditable ATT(g,t) cells rather than one regression.
 
 `csdid` `reg` 0.24s, `ipw` 0.44s, `dr` 0.46s — against `lpdid` 1.03s,
 `jwdid` 1.67s, `did_imputation` 4.50s, `did_multiplegt_dyn` 7.84s. The
-doubly robust estimator, which the next section argues you should want
+doubly robust estimator, which the previous section argued you should want
 anyway, is not a speed compromise: it is 2x faster than the fastest
 alternative with covariates.
 
@@ -353,8 +404,9 @@ the Wooldridge/imputation estimators are tighter — exactly as theory says.
 With unit-root errors (each unit's shocks accumulate, which is what much
 real panel data looks like), the ranking reverses and base-period
 differencing wins by the same margin. Every estimator remains unbiased in
-both settings; only the variances move. lpdid is biased in both, for the
-same weighting reason as above, which no error process fixes.
+both settings; only the variances move. `lpdid` is biased in both, for the
+same weighting reason as above, which no error process fixes — bias is also
+why it has no row in a table about precision.
 
 The general statement is in Chen, Sant'Anna, and Xie (2025): the efficient
 estimator for these designs depends on the covariance structure of the
@@ -380,22 +432,15 @@ balanced panel with three post-treatment event times:
 | `lpdid` pointwise | 0.444 |
 
 Reading three pointwise 95% intervals as if they jointly covered the path
-already costs 6 to 14 points of coverage; with the ten or fifteen event
-times of a typical application the arithmetic only gets worse. The uniform
+already costs 4 to 9 points of coverage among the unbiased estimators —
+`lpdid`'s 0.444 is mostly its bias, not its intervals — and with the ten or
+fifteen event times of a typical application the arithmetic only gets
+worse. The uniform
 band is the interval that means what readers think the plotted band means.
-
-## Simultaneous inference
-
-*(Band coverage results land here tonight.)* One structural fact needs no
-simulation: an event study is a family of estimates, and `csdid` is the
-only command in this comparison with uniform confidence bands over the
-whole path (`wboot`, the default). Reading pointwise intervals across ten
-event times as if they jointly covered the path is the most common way
-these figures get over-read.
 
 ## Reproducing everything
 
 Every table above is generated by a script with a fixed seed, package
 versions pinned to their current SSC releases, and population targets that
 are computed once, by hand, from the data-generating process — never
-re-derived from a draw. The appendix lists each script.
+re-derived from a draw. The scripts are available from the authors.

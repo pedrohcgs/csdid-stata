@@ -1,5 +1,5 @@
 {smcl}
-{* *! csdid_legacy 2.0.0 30jul2026}{...}
+{* *! version 2.0.0 30jul2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -11,9 +11,10 @@
 
 {title:Title}
 
-{phang}
-{bf:csdid_legacy} {hline 2} Utility and deprecated commands carried over from
-csdid Version 1.82
+{p2colset 5 21 23 2}{...}
+{p2col:{bf:csdid_legacy} {hline 2}}Utility and deprecated commands carried over
+from csdid Version 1.82{p_end}
+{p2colreset}{...}
 
 
 {marker supported}{...}
@@ -48,9 +49,8 @@ directly.
 {pstd}
 {bf:These four commands are deprecated and will be removed in a future release
 of csdid.} They ship so that existing do-files keep running, and each prints a
-notice when invoked. They are not covered by the numerical test suite that
-governs the rest of the package, so their results are not held to the same
-standard.
+notice when invoked. They are unsupported: they are kept only to ease migration
+away from csdid Version 1.82, and they should not be used in new work.
 {p_end}
 
 {synoptset 18 tabbed}{...}
@@ -110,22 +110,10 @@ surface and have no replacement.
 {title:Authors}
 
 {pstd}
-{bf:Fernando Rios-Avila}{break}
-Levy Economics Institute of Bard College{break}
-{browse "mailto:f.rios.a@gmail.com":f.rios.a@gmail.com}
-{p_end}
-
-{pstd}
-{bf:Pedro H.C. Sant'Anna}{break}
-Emory University{break}
-{browse "mailto:pedro.santanna@emory.edu":pedro.santanna@emory.edu}
-{p_end}
-
-{pstd}
-{bf:Brantly Callaway}{break}
-University of Georgia{break}
-{browse "mailto:brantly.callaway@uga.edu":brantly.callaway@uga.edu}
-{p_end}
+{cmd:csdid} is by Fernando Rios-Avila, Pedro H. C. Sant'Anna, and Brantly
+Callaway. Full affiliations and contact addresses, the acknowledgments, how to
+report a problem, and how to cite the package are in
+{help csdid##authors:help csdid}.
 
 
 {marker alsosee}{...}

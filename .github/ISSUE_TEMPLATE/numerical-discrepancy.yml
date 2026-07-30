@@ -12,7 +12,7 @@ body:
     attributes:
       label: csdid version
       description: Output from `csdid version`.
-      placeholder: "2.0.0-rc1"
+      placeholder: "2.0.0"
     validations:
       required: true
   - type: input

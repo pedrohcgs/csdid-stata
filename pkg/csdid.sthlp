@@ -69,6 +69,8 @@ periods and staggered treatment adoption (Callaway and Sant'Anna 2021){p_end}
 {synopt:{opth ivar(varname)}}panel unit identifier; omit for repeated cross
 sections{p_end}
 {synopt:{opth id(varname)}}synonym for {cmd:ivar()}{p_end}
+
+{syntab:Panel structure {help csdid##opt_panel:[+]}}
 {synopt:{opt rcs}}declare the data to be repeated cross sections, even when
 {cmd:ivar()} is supplied{p_end}
 {synopt:{opt bal(mode)}}panel balancing: {cmd:full}, {cmd:pair}, or
@@ -329,15 +331,15 @@ resolved choice is recorded in
 {opt base_period(rule)} chooses the period each ATT(g,t) differences against.
 
 {p2colset 12 26 28 2}{...}
-{p2col:{cmd:varying}}(the default) for post-treatment periods, {it:t >= g}, the
-base period is {it:g - 1 - anticipation}; for pre-treatment periods the base
-period is the period immediately before {it:t}. Pre-treatment estimates are
-then short-differences and are the natural placebo checks.{p_end}
-{p2col:{cmd:universal}}every ATT(g,t), pre and post, differences against the
-single base period {it:g - 1 - anticipation}. Pre-treatment estimates are then
-long-differences relative to a common reference period, and the reference
-period itself appears in {cmd:e(attgt)} with an estimate of exactly zero and a
-missing standard error.{p_end}
+{p2col:{cmd:varying}}for post-treatment periods, {it:t >= g}, the base period
+is {it:g - 1 - anticipation}; for pre-treatment periods the base period is the
+period immediately before {it:t}. Pre-treatment estimates are then
+short-differences and are the natural placebo checks.{p_end}
+{p2col:{cmd:universal}}(the default) every ATT(g,t), pre and post, differences
+against the single base period {it:g - 1 - anticipation}. Pre-treatment
+estimates are then long-differences relative to a common reference period, and
+the reference period itself appears in {cmd:e(attgt)} with an estimate of
+exactly zero and a missing standard error.{p_end}
 {p2colreset}{...}
 
 {pmore}
@@ -527,9 +529,11 @@ how many observations were dropped. Changing the estimand is acceptable;
 changing it silently is not. The resolved layout is in {cmd:e(panel_mode)}.
 
 {phang2}
-{cmd:bal(full)} is the default because it is what R's reference implementation
-does, and because it keeps one fixed sample behind every reported cell. If you
-would rather keep every observation, say {cmd:bal(none)}.
+{cmd:bal(full)} is the default because estimating on the units observed in
+every period is the comparison most users mean by a panel, and because it keeps
+one fixed sample behind every reported cell. The alternatives are one option
+away and are always disclosed in {cmd:e(panel_mode)}. If you would rather keep
+every observation, say {cmd:bal(none)}.
 {cmd:bal(pair)} reproduces the behaviour of Stata {cmd:csdid} Version 1.82,
 which balanced each comparison separately without saying so. Use it to
 reproduce a result computed with that version. {cmd:e(panel_mode)} reports
@@ -537,8 +541,7 @@ reproduce a result computed with that version. {cmd:e(panel_mode)} reports
 
 {phang}
 {opt rcs} declares that the data are repeated cross sections rather than a
-panel. It is the counterpart of the reference implementation's
-{cmd:panel = FALSE}.
+panel.
 
 {phang2}
 Without it, {cmd:csdid} infers the structure from {cmd:ivar()}: supplied means
@@ -585,8 +588,9 @@ layout. When {cmd:base_period()} is not otherwise given, they select
 {phang}
 {opt allowunbalanced} and {cmd:allow_unbalanced} are deprecated names for
 {cmd:bal(none)}; {opt balanceall} is a deprecated name for {cmd:bal(full)};
-{opt balancepair} is a deprecated name for {cmd:bal(pair)}, which is not
-implemented in this release and is refused. Each is accepted
+{opt balancepair} is a deprecated name for {cmd:bal(pair)}, which balances each
+2x2 comparison separately and is reported as {cmd:pair-balanced} in
+{cmd:e(panel_mode)}. Each is accepted
 with a note naming its replacement. Giving one of them together with a
 {cmd:bal()} that means something different is an error rather than a silent
 resolution.
@@ -820,16 +824,20 @@ in some cases that are now refused; see
 
 {pstd}
 Every ATT(g,t) is a difference in differences between period {it:t} and a base
-period. The default, {cmd:base_period(varying)}, uses {it:g - 1} for
-post-treatment cells and {it:t - 1} for pre-treatment cells; each
-pre-treatment estimate is then a one-period placebo, and the estimates are
-comparable in variance across event times.
-{cmd:base_period(universal)} uses {it:g - 1} throughout, so every
-pre-treatment estimate is a long difference from the same reference period.
-Universal base periods make an event-study plot read like a conventional one,
-with a normalized reference period, but the pre-treatment coefficients are
-then serially dependent by construction and their magnitudes grow mechanically
-with distance from the reference period.
+period. The default, {cmd:base_period(universal)}, uses the fixed period
+{it:g - 1} as the base for every cell, pre and post, and reports the
+{it:g - 1} normalisation row itself; every pre-treatment estimate is then a
+long difference from the same reference period. Universal base periods make an
+event-study plot read like a conventional one, with a normalized reference
+period, but the pre-treatment coefficients are then serially dependent by
+construction and their magnitudes grow mechanically with distance from the
+reference period.
+{cmd:base_period(varying)} instead uses the period immediately before each
+comparison: {it:g - 1} for post-treatment cells and {it:t - 1} for
+pre-treatment cells. Each pre-treatment estimate is then a one-period placebo
+and the estimates are comparable in variance across event times, which makes
+{cmd:varying} the better choice when the pre-treatment cells are being used to
+pre-test.
 
 {pstd}
 Either way, the post-treatment ATT(g,t) estimates are the same. With
@@ -965,10 +973,11 @@ The estimation engine is pure Mata. The package installs a precompiled Mata
 library, {cmd:lcsdid.mlib}, which is portable bytecode rather than a
 platform-specific binary; it holds exactly the code in {cmd:csdid.mata} and
 only removes the cost of compiling that source on the first call of each
-session. When a compiled bootstrap kernel is present in the ado path it is
-used only for explicitly seeded Rademacher draws, and the package's
-certification tests require it to be bit-identical to the Mata path, including
-the full random-number state.
+session. On macOS the package also installs a compiled bootstrap accelerator,
+which is used only for explicitly seeded Rademacher draws; its results are
+identical to the Mata path, including the full random-number state. Every
+other case -- every other platform, every unseeded or non-Rademacher draw, and
+any run where the accelerator cannot load -- uses Mata.
 {cmd:e(bootstrap_accelerator)} and {cmd:e(bootstrap_accelerator_status)}
 report which path ran. These are diagnostics; they never change results.
 
@@ -1126,7 +1135,7 @@ minimum wage, or {cmd:0} for never-treated counties.
 
 {hline}
 {pstd}Group-time average treatment effects, default settings throughout:
-doubly robust, never-treated controls, varying base period, 1,000 bootstrap
+doubly robust, never-treated controls, universal base period, 1,000 bootstrap
 iterations with simultaneous bands. Seed the bootstrap to make the run
 reproducible.{p_end}
 {phang2}{cmd:. csdid lemp, ivar(countyreal) time(year) gvar(first_treat) rseed(20200806)}{p_end}
@@ -1303,8 +1312,8 @@ cross sections{p_end}
 {synopt:{cmd:e(clustervar)}}name of the {cmd:cluster()} variable, empty if
 none{p_end}
 {synopt:{cmd:e(weightvar)}}internal weight variable, empty if unweighted{p_end}
-{synopt:{cmd:e(panel_mode)}}{cmd:panel}, {cmd:allow_unbalanced}, or
-{cmd:repeated-cross-section}{p_end}
+{synopt:{cmd:e(panel_mode)}}{cmd:panel}, {cmd:allow_unbalanced},
+{cmd:repeated-cross-section}, or {cmd:pair-balanced}{p_end}
 {synopt:{cmd:e(control_group)}}{cmd:nevertreated} or {cmd:notyettreated}{p_end}
 {synopt:{cmd:e(method)}}resolved estimator: {cmd:dr}, {cmd:reg}, or
 {cmd:ipw}{p_end}
@@ -1551,8 +1560,8 @@ and why.{p_end}
 {phang}
 The R package {bf:did}, by Brantly Callaway and Pedro H.C. Sant'Anna, is the
 reference implementation of these methods. {cmd:csdid} derives from it and was
-constructed and benchmarked against {bf:did} version 2.5.1: the estimators, the
-option defaults, and the sample rules follow it, and the group-time effects,
+constructed and benchmarked against {bf:did} version 2.5.1: the estimators and
+the sample rules follow it, and the group-time effects,
 their aggregations, and their standard errors are checked directly against it.
 {p_end}
 
@@ -1642,9 +1651,11 @@ Source, issue tracker, and release notes:
 
 {pstd}
 {cmd:csdid} requires Stata 14 or newer, the same floor as the SSC {cmd:csdid}
-it succeeds. The estimation engine is pure Mata and
-the package installs no platform-specific binaries, so it behaves identically
-on Windows, macOS, and Linux.
+it succeeds. The estimation engine is Mata and behaves identically on Windows,
+macOS, and Linux. On macOS the package also installs a compiled bootstrap
+accelerator, a universal binary covering both Intel and Apple-silicon machines;
+anywhere it is absent or cannot load, the bootstrap falls back to the Mata
+implementation with identical results.
 
 {pstd}
 When reporting a numerical problem, please include the output of
@@ -1662,8 +1673,9 @@ problem is worth more than any description of it.
 {pstd}
 {cmd:csdid} is released under the MIT License: use, modification and
 redistribution, including commercial use, are permitted provided the copyright
-notice and permission notice are retained. The full text ships with the package
-source as {cmd:LICENSE}.
+notice and permission notice are retained. The full text is in the
+{cmd:LICENSE} file at
+{browse "https://github.com/pedrohcgs/csdid-stata":github.com/pedrohcgs/csdid-stata}.
 {p_end}
 
 
@@ -1672,7 +1684,8 @@ source as {cmd:LICENSE}.
 
 {psee}
 Online:  {helpb csdid_postestimation:csdid postestimation},
-{helpb csdid_stats}, {helpb csdid_estat}, {helpb csdid_plot}
+{helpb csdid_stats}, {helpb csdid_estat}, {helpb csdid_plot},
+{helpb csdid_legacy:csdid legacy utilities}
 {p_end}
 
 {psee}

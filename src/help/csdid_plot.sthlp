@@ -19,6 +19,7 @@
 {viewerjumpto "Examples" "csdid_plot##examples"}{...}
 {viewerjumpto "Stored results" "csdid_plot##results"}{...}
 {viewerjumpto "Diagnostics" "csdid_plot##errors"}{...}
+{viewerjumpto "Acknowledgments" "csdid_plot##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_plot##references"}{...}
 {viewerjumpto "Authors" "csdid_plot##authors"}{...}
 {title:Title}
@@ -286,7 +287,7 @@ the variable carries no information. Use {cmd:series} for {cmd:attgt} and
 
 {phang}
 {bf:omitted rows.} The exported rows are exactly the rows of {cmd:e(attgt)} or
-{cmd:e(aggte)}: whatever window, {cmd:balance_e()}, or missing-value handling
+{cmd:e(aggte)}: whatever window, {cmd:balance()}, or missing-value handling
 you requested at the aggregation step is already reflected there. Nothing is
 padded, and no zero-variance placeholder rows are invented for event times that
 were not estimated.
@@ -346,8 +347,7 @@ write
 {pstd}
 {cmd:group()} keeps its legacy meaning (select treatment cohorts) and, unlike in
 some legacy paths, it is now honored on group-type aggregation plots rather than
-silently discarded. See {help csdid_postestimation} and
-{it:docs/legacy-migration-guide.md}, distributed with the package source.
+silently discarded. See {help csdid_postestimation} and {help csdid_legacy}.
 
 
 {marker examples}{...}
@@ -401,9 +401,11 @@ silently discarded. See {help csdid_postestimation} and
 {cmd:         legend(off)}{p_end}
 
 {pstd}
-The do-files in the {cmd:examples/} directory of the package source run the
-same workflow end to end, including on the Callaway and Sant'Anna county
-teen-employment data ({cmd:examples/06_mpdta_workflow.do}).
+The do-files in the {cmd:examples/} directory at
+{browse "https://github.com/pedrohcgs/csdid-stata"} run the same workflow end
+to end, including on the Callaway and Sant'Anna county teen-employment data
+({cmd:examples/06_mpdta_workflow.do}). They are not part of the net-install
+package.
 
 
 {marker results}{...}
@@ -510,6 +512,6 @@ produced them.
 {title:Also see}
 
 {psee}
-Online:  {helpb csdid}, {helpb csdid_postestimation}, {helpb csdid_stats},
-{helpb csdid_estat}, {helpb twoway}
+Online:  {helpb csdid}, {helpb csdid_postestimation:csdid postestimation},
+{helpb csdid_stats}, {helpb csdid_estat}, {helpb twoway}
 {p_end}

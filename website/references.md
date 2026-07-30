@@ -26,6 +26,14 @@ The semiparametric foundation for conditioning on covariates:
 > *Review of Economic Studies* 72 (1): 1–19.
 > [doi:10.1111/0034-6527.00321](https://doi.org/10.1111/0034-6527.00321)
 
+The efficiency theory for these designs — which estimator is tightest depends
+on the covariance structure of the outcomes, and none of the packaged
+estimators attains the bound in general:
+
+> Chen, Xiaohong, Pedro H. C. Sant'Anna, and Haitian Xie. 2025. "Efficient
+> Difference-in-Differences and Event Study Estimators."
+> [arXiv:2506.17729](https://arxiv.org/abs/2506.17729)
+
 ## Reviews
 
 Start here if you want the landscape rather than one estimator. The first

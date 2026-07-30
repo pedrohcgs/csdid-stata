@@ -11,6 +11,7 @@
 {viewerjumpto "Remarks" "csdid_estat##remarks"}{...}
 {viewerjumpto "Examples" "csdid_estat##examples"}{...}
 {viewerjumpto "Stored results" "csdid_estat##results"}{...}
+{viewerjumpto "Acknowledgments" "csdid_estat##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_estat##references"}{...}
 {viewerjumpto "Authors" "csdid_estat##authors"}{...}
 {title:Title}
@@ -77,8 +78,9 @@ used by {cmd:csdid}{p_end}
 {synopt:{opt dropm:issing}}drop missing ATT(g,t) cells before aggregating{p_end}
 
 {syntab:Export}
-{synopt:{opt sav:ing(filename)}}required file to write; {cmd:tidy} and
-{cmd:glance} only{p_end}
+{synopt:{opt sav:ing(filename)}}write the result just computed to
+{it:filename}; accepted by every subcommand, required by {cmd:tidy} and
+{cmd:glance}{p_end}
 {synopt:{opt replace}}overwrite {it:filename} if it exists{p_end}
 {synoptline}
 {p2colreset}{...}
@@ -86,9 +88,11 @@ used by {cmd:csdid}{p_end}
 {p 4 6 2}
 Every subcommand accepts {cmd:saving(}{it:filename}{cmd:)} and {cmd:replace},
 which write the result just computed to {it:filename} as a dataset instead of
-only printing it. {cmd:estat attgt} accepts nothing else, and says so with
-return code 198 rather than accepting an option and ignoring it.
-{cmd:window()} must be spelled in full.
+only printing it; on {cmd:tidy} and {cmd:glance}, which do nothing else,
+{cmd:saving()} is required. {cmd:estat attgt} accepts nothing else, and says so
+with return code 198 rather than accepting an option and ignoring it.
+{cmd:window()} must be spelled in full here; {helpb csdid_stats}, which is a
+separate command, does allow the abbreviation {cmd:win()}.
 {cmd:dropmissing} is accepted only on {cmd:event} and on the four
 {it:aggregation} subcommands, which are the subcommands that aggregate.
 {cmd:estat} may be used only after {cmd:csdid}; the aggregation itself is
@@ -338,12 +342,13 @@ level in force when the aggregation is computed. Because {cmd:estat} recomputes
 the aggregation whenever it is asked for one, the level you type is the level
 the band is computed at, on the first request and on every later one. After a
 seeded estimation, {cmd:estat event, level(90)} and then
-{cmd:estat event, level(99)} report two different critical values, and the
-second is the value a fresh estimation followed by
-{cmd:estat event, level(99)} reports -- measured, on the same data and seed,
-{cmd:e(crit_val)} 1.8781945 then 2.6979590, with the fresh run also giving
-2.6979590. A narrower or wider {cmd:window()} likewise recomputes the band over
-the event times that survive it.
+{cmd:estat event, level(99)} report two different critical values, each the one
+its own level implies, and repeating a request reproduces its critical value
+exactly no matter what other {cmd:estat} calls came in between. The value
+{cmd:estat event, level(99)} reports is the value a fresh run of the same
+seeded estimation followed by {cmd:estat event, level(99)} reports. A narrower
+or wider {cmd:window()} likewise recomputes the band over the event times that
+survive it.
 
 {pstd}
 Re-levelling is exact rather than approximate because the recomputation redraws
@@ -415,9 +420,9 @@ estimation command. What each one does after {cmd:csdid} follows from what
 {p2colset 8 32 34 2}{...}
 {p2col:{cmd:estat vce}}displays {cmd:e(V)}: the covariance matrix of the
 ATT(g,t) cells, or of the aggregated effects after {cmd:post}{p_end}
-{p2col:{cmd:estat summarize}}refuses:
-{it:e(sample) information not available}, because {cmd:csdid} does not set
-{cmd:e(sample)}{p_end}
+{p2col:{cmd:estat summarize}}summarizes the estimation sample: {cmd:csdid}
+marks {cmd:e(sample)}, so the standard subcommand works and reports the
+variables in the model over the observations {cmd:csdid} used{p_end}
 {p2col:{cmd:estat ic}}refuses: {cmd:csdid} is not likelihood based and stores no
 {cmd:e(ll)}{p_end}
 {p2col:{cmd:estat bootstrap}}refuses: {cmd:csdid}'s multiplier bootstrap is not
@@ -425,7 +430,7 @@ Stata's {helpb bootstrap} prefix and leaves none of its results{p_end}
 {p2colreset}{...}
 
 {pstd}
-The three refusals are Stata's own, not a csdid restriction, and they name the
+The two refusals are Stata's own, not a csdid restriction, and they name the
 result that is absent. A subcommand that is neither one of these nor one of
 {cmd:csdid}'s is refused with return code 498 and a list of the supported
 subcommands, rather than with Stata's generic "not valid" message.

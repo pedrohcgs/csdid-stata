@@ -12,6 +12,7 @@
 {viewerjumpto "Examples" "csdid_stats##examples"}{...}
 {viewerjumpto "Stored results" "csdid_stats##results"}{...}
 {viewerjumpto "Methods and formulas" "csdid_stats##methods"}{...}
+{viewerjumpto "Acknowledgments" "csdid_stats##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_stats##references"}{...}
 {viewerjumpto "Authors" "csdid_stats##authors"}{...}
 {title:Title}
@@ -75,7 +76,9 @@ used by {cmd:csdid}{p_end}
 
 {p 4 6 2}
 {cmd:csdid_stats} may be used after {cmd:csdid}, or with {cmd:using} after
-{cmd:csdid, saverif()}. The Stata-conventional {cmd:estat} forms of the same
+{cmd:csdid, saverif()}. On {cmd:csdid_stats}, {cmd:window()} may be abbreviated
+to {cmd:win()}; on {cmd:estat}, which is a separate command, it must be spelled
+in full. The Stata-conventional {cmd:estat} forms of the same
 aggregations are documented in {helpb csdid_estat}.{p_end}
 
 
@@ -545,9 +548,15 @@ probability; {cmd:pointwise} at estimation time asks for the pointwise quantile
 instead. See Callaway and Sant'Anna (2021, section 4.2).
 
 {pstd}
-The shipped engine is pure Mata. When a compiled accelerator is available it
-computes exactly the same draws from the same random-number state, and
-{cmd:e(agg_boot_accelerator)} records which path ran.
+The aggregation bootstrap is implemented in Mata. On macOS the package also
+installs a compiled accelerator, which is used only for explicitly seeded
+Rademacher draws; it computes exactly the same draws from the same
+random-number state, so its results are identical to the Mata path, including
+the full random-number state. Every other case -- every other platform, every
+unseeded or non-Rademacher draw, and any run where the accelerator cannot load
+-- uses Mata. {cmd:e(agg_boot_accelerator)} and
+{cmd:e(agg_boot_accel_status)} record which path ran; they are diagnostics and
+never change results.
 
 
 {marker acknowledgments}{...}

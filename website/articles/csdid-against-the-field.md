@@ -179,9 +179,21 @@ bias / coverage at e=0):
 | `did_multiplegt_dyn` | +0.032 | 0.92 |
 | `lpdid` | **-0.135** | **0.49** |
 
-Everyone who handles X correctly is fine (`did_multiplegt_dyn` drifts with
-the horizon — +0.20 by e=2 — which its `controls()` documentation does not
-lead us to expect, and which we flag rather than explain). And the same
+Everyone who handles X correctly is fine, with one instructive exception.
+`did_multiplegt_dyn` drifts with the horizon (+0.20 by e=2), and its own
+documentation explains why: its `controls()` residualizes the outcome's
+first differences on the *first differences* of the controls. That is a
+different identifying assumption — parallel trends of the residualized
+outcome, with one common coefficient — and for time-invariant covariates
+like ours it degenerates to unconditional parallel trends, because the
+first differences are zero. We verified both halves: on this design its
+estimates with and without `controls()` are numerically identical to the
+last digit (the option is inert), and on a design matching its own
+assumption — time-varying X with a common coefficient — it is essentially
+exact while the unadjusted estimator is badly biased. Different assumption,
+different domain; for the time-invariant covariates that dominate applied
+work, conditional parallel trends is the strictly weaker requirement, and
+it is the one `csdid` implements. And the same
 covariates change nothing about Part I's conclusion: rerunning the
 repeated-cross-section comparison with X included, `csdid dr` stays on
 target in both sampling regimes while the regression-style estimators

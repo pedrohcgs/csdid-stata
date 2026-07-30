@@ -146,7 +146,8 @@ not simulation:
 | `did_imputation` | no | no | no | no (`autosample` decides) | no |
 | `did_multiplegt_dyn` | no | no | no | no (imputes treatment paths) | no |
 | `lpdid` | no | no | no | no | no |
- `csdid` reports every ATT(g,t) cell with its standard
+
+`csdid` reports every ATT(g,t) cell with its standard
 error, states its aggregation weights in closed form, discloses the
 resolved sample in `e(panel_mode)`, and lets you pick the balancing rule
 (`bal()`) instead of picking one for you. Several of its competitors never
@@ -251,10 +252,12 @@ and it is not an exotic world. Bias and coverage at e=1:
 | `jwdid` | **+0.490** | **0.26** |
 | `did_imputation` | **+0.189** | **0.72** |
 | `flexdid` | **+0.327** | **0.93** |
+| `did_multiplegt_dyn` | **+0.303** | **0.22** |
+| `lpdid` | **-0.162** | **0.68** |
 
-(`did_multiplegt_dyn` and `lpdid` are omitted from this table for a fair
-reason: they were already biased in the correctly-specified cell above, so
-their rows here would confound two failures.)
+(`did_multiplegt_dyn` and `lpdid` arrive at this cell already carrying
+their correctly-specified-cell biases; the misspecification compounds on
+top.)
 
 Every outcome-regression command breaks together, and the bias grows with
 the horizon — `jwdid` reaches +0.67 by e=2, coverage 0.29. This is not a

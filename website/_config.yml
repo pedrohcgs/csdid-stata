@@ -8,5 +8,5 @@ defaults:
       path: ""
     values:
       layout: default
-url: https://pedrohcgs.github.io
-baseurl: /csdid-stata
+url: https://psantanna.com
+baseurl: /csdid

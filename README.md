@@ -340,7 +340,7 @@ worth more than any description of it.
 
 ## Authors
 
-Fernando Rios-Avila, Pedro H. C. Sant'Anna, and Brantly Callaway.
+Brantly Callaway, Fernando Rios-Avila, and Pedro H. C. Sant'Anna.
 
 The original Stata `csdid` was written by Fernando Rios-Avila; it brought these
 estimators to Stata users first and defined the command surface this version

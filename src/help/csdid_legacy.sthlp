@@ -110,8 +110,8 @@ surface and have no replacement.
 {title:Authors}
 
 {pstd}
-{cmd:csdid} is by Fernando Rios-Avila, Pedro H. C. Sant'Anna, and Brantly
-Callaway. Full affiliations and contact addresses, the acknowledgments, how to
+{cmd:csdid} is by Brantly Callaway, Fernando Rios-Avila, and Pedro H. C.
+Sant'Anna. Full affiliations and contact addresses, the acknowledgments, how to
 report a problem, and how to cite the package are in
 {help csdid##authors:help csdid}.
 

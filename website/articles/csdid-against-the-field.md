@@ -179,21 +179,31 @@ bias / coverage at e=0):
 | `did_multiplegt_dyn` | +0.032 | 0.92 |
 | `lpdid` | **-0.135** | **0.49** |
 
-Everyone who handles X correctly is fine, with one instructive exception.
-`did_multiplegt_dyn` drifts with the horizon (+0.20 by e=2), and its own
-documentation explains why: its `controls()` residualizes the outcome's
-first differences on the *first differences* of the controls. That is a
-different identifying assumption — parallel trends of the residualized
-outcome, with one common coefficient — and for time-invariant covariates
-like ours it degenerates to unconditional parallel trends, because the
-first differences are zero. We verified both halves: on this design its
-estimates with and without `controls()` are numerically identical to the
-last digit (the option is inert), and on a design matching its own
-assumption — time-varying X with a common coefficient — it is essentially
-exact while the unadjusted estimator is badly biased. Different assumption,
-different domain; for the time-invariant covariates that dominate applied
-work, conditional parallel trends is the strictly weaker requirement, and
-it is the one `csdid` implements. And the same
+Everyone who handles X correctly is fine, with one exception that deserves
+a close look. `did_multiplegt_dyn` drifts with the horizon (+0.20 by e=2),
+and its own documentation explains why: its `controls()` residualizes the
+outcome's first differences on the *first differences* of the controls,
+with one coefficient common to all groups and periods. Think about what
+that assumption buys you. For time-invariant covariates — gender, race,
+baseline earnings, most of what applied researchers actually condition on —
+the first differences are zero, the residualization does nothing, and the
+condition collapses to unconditional parallel trends. We verified this the
+hard way: on this design, its estimates with and without `controls(x1 x2)`
+are numerically identical to the last digit. The command accepts the
+option, runs without a word, and returns the unadjusted number — a
+researcher who typed the controls believing they had conditioned on them
+has not, and nothing in the output says so.
+
+And even on its intended domain — time-varying covariates, where we verify
+it does work — the assumption requires the covariate effect on trends to be
+linear with a single homogeneous coefficient. There is an irony here worth
+stating plainly: the entire point of this literature is that imposing
+homogeneity on treatment effects breaks TWFE, and this covariate scheme
+re-imposes exactly that kind of homogeneity one layer down. Conditional
+parallel trends as in Callaway and Sant'Anna (2021) asks for none of it:
+the trend may depend on X flexibly, heterogeneously, and `csdid`'s doubly
+robust estimator conditions on the covariates themselves — which is why its
+column of this table is clean. And the same
 covariates change nothing about Part I's conclusion: rerunning the
 repeated-cross-section comparison with X included, `csdid dr` stays on
 target in both sampling regimes while the regression-style estimators

@@ -1558,7 +1558,7 @@ and why.{p_end}
 
 
 {phang}
-The R package {bf:did}, by Brantly Callaway and Pedro H.C. Sant'Anna, is the
+The R package {bf:did}, by Brantly Callaway and Pedro H. C. Sant'Anna, is the
 reference implementation of these methods. {cmd:csdid} derives from it and was
 constructed and benchmarked against {bf:did} version 2.5.1: the estimators and
 the sample rules follow it, and the group-time effects,
@@ -1618,18 +1618,6 @@ two-period estimators, and this package for the implementation.
 {title:Authors}
 
 {pstd}
-{bf:Fernando Rios-Avila}{break}
-Levy Economics Institute of Bard College{break}
-{browse "mailto:f.rios.a@gmail.com":f.rios.a@gmail.com}
-{p_end}
-
-{pstd}
-{bf:Pedro H.C. Sant'Anna} (maintainer){break}
-Emory University{break}
-{browse "mailto:pedro.santanna@emory.edu":pedro.santanna@emory.edu}
-{p_end}
-
-{pstd}
 {bf:Brantly Callaway}{break}
 University of Georgia{break}
 {browse "mailto:brantly.callaway@uga.edu":brantly.callaway@uga.edu}
@@ -1640,6 +1628,18 @@ University of Georgia{break}
 inference. It succeeds the 1.8x Stata {cmd:csdid} line and reuses none of its
 code.
 {p_end}
+{pstd}
+{bf:Fernando Rios-Avila}{break}
+Levy Economics Institute of Bard College{break}
+{browse "mailto:f.rios.a@gmail.com":f.rios.a@gmail.com}
+{p_end}
+
+{pstd}
+{bf:Pedro H. C. Sant'Anna} (maintainer){break}
+Emory University{break}
+{browse "mailto:pedro.santanna@emory.edu":pedro.santanna@emory.edu}
+{p_end}
+
 
 
 {marker support}{...}

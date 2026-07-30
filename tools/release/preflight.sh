@@ -102,7 +102,11 @@ stata_do() {
 # Cheap, no external tooling. These catch the class of defect where the project
 # misdescribes itself: a manifest naming untracked files, a ledger row claiming
 # evidence it does not have, a version that disagrees with itself.
-run spec "contract schema (validate-contract)" python3 tools/validate-contract.py
+if [ -f tools/validate-contract.py ]; then
+  run spec "contract schema (validate-contract)" python3 tools/validate-contract.py
+else
+  record spec "contract schema (validate-contract)" "SKIPPED(dev-only, not shipped)"
+fi
 # Every upstream did test must be claimed by an inheritance map, and every map
 # must cite the pinned revision of the file it read. Without this a test added
 # upstream is simply never noticed: the whole Stata suite still passes.

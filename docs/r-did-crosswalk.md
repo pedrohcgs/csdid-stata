@@ -459,9 +459,7 @@ then run the R and Stata blocks in section 8 verbatim; print with
 `matrix list e(attgt), format(%20.10f)` on the Stata side.
 
 Broader evidence for the parity claims quoted here: the repository carries the
-parity test suite under `tests/`, built on frozen R fixtures, and
-`docs/parity-verification-playbook.md` describes how the fixtures are
-regenerated. Group-time and dynamic-aggregation estimates agree with R to
+parity test suite under `tests/`, built on frozen R fixtures. Group-time and dynamic-aggregation estimates agree with R to
 7e-15 under `method(dr)`, `method(ipw)`, and `method(reg)` with analytical
 standard errors, on weighted, unbalanced, and `mpdta` fixtures.
 
@@ -470,8 +468,7 @@ Related reading:
 - `help csdid` carries an abbreviated one-table version of section 2 for quick
   lookup at the keyboard; this document is the complete two-way reference
 - `help csdid_stats`, `help csdid_estat`, `help csdid_plot`
-- `docs/behavior-decisions.md` - the frozen decisions behind section 6
-- `docs/legacy-stata-compatibility.md`, `docs/legacy-migration-guide.md` - the
-  Stata Version 1.82 -> 2.0 mapping, which is a different question from this document
+- `docs/legacy-migration-guide.md` - the Stata Version 1.82 -> 2.0 mapping,
+  which is a different question from this document
 - `docs/stored-results-api.md` - stability guarantees for the `e()` results in
   section 4

@@ -464,7 +464,7 @@ only things it ever says on a run that succeeds.
 {title:Acknowledgments}
 
 {phang}
-The R package {bf:did}, by Brantly Callaway and Pedro H.C. Sant'Anna, is the
+The R package {bf:did}, by Brantly Callaway and Pedro H. C. Sant'Anna, is the
 reference implementation of these methods. {cmd:csdid} derives from it and was
 constructed and benchmarked against {bf:did} version 2.5.1.{p_end}
 
@@ -500,8 +500,8 @@ difference-in-differences? A synthesis of the recent econometrics literature.
 {title:Authors}
 
 {pstd}
-{cmd:csdid} is by Fernando Rios-Avila, Pedro H. C. Sant'Anna, and Brantly
-Callaway. Full affiliations and contact addresses, the acknowledgments, how to
+{cmd:csdid} is by Brantly Callaway, Fernando Rios-Avila, and Pedro H. C.
+Sant'Anna. Full affiliations and contact addresses, the acknowledgments, how to
 report a problem, and how to cite the package are in
 {help csdid##authors:help csdid}. Please report anything that looks numerically
 wrong with a reproducible example - the plot data are derived from

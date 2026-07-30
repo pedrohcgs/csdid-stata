@@ -194,8 +194,20 @@ option, runs without a word, and returns the unadjusted number — a
 researcher who typed the controls believing they had conditioned on them
 has not, and nothing in the output says so.
 
-And even on its intended domain — time-varying covariates, where we verify
-it does work — the assumption requires the covariate effect on trends to be
+Its documentation points to `trends_nonparam()` as the remedy for
+time-invariant covariates: exact matching on their values, documented as
+requiring the covariates to be discrete (coarser than the unit). We tested
+that too. `trends_nonparam(x1)` does what it says: matching on the binary
+covariate removes its share of the bias (+0.87 falls to +0.66 at e=2),
+leaving the share owed to the continuous one. And
+`trends_nonparam(x1 x2)` — passing the continuous covariate its own
+documentation excludes — runs without complaint and returns numbers
+identical, to the last digit, to leaving x2 out. Twice now on the same
+command, an option that cannot do what the user asked accepts the request
+and silently returns the unadjusted answer.
+
+And even on `controls()`'s intended domain — time-varying covariates,
+where we verify it does work — the assumption requires the covariate effect on trends to be
 linear with a single homogeneous coefficient. There is an irony here worth
 stating plainly: the entire point of this literature is that imposing
 homogeneity on treatment effects breaks TWFE, and this covariate scheme

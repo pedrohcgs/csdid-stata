@@ -199,12 +199,18 @@ time-invariant covariates: exact matching on their values, documented as
 requiring the covariates to be discrete (coarser than the unit). We tested
 that too. `trends_nonparam(x1)` does what it says: matching on the binary
 covariate removes its share of the bias (+0.87 falls to +0.66 at e=2),
-leaving the share owed to the continuous one. And
-`trends_nonparam(x1 x2)` — passing the continuous covariate its own
-documentation excludes — runs without complaint and returns numbers
-identical, to the last digit, to leaving x2 out. Twice now on the same
-command, an option that cannot do what the user asked accepts the request
-and silently returns the unadjusted answer.
+leaving the share owed to the continuous one. Passing the continuous
+covariate — `trends_nonparam(x1 x2)` — cannot work, and to the command's
+credit it prints an explanation (Design Restriction 1 is not satisfied).
+But it exits with return code zero and leaves the PREVIOUS command's
+results posted in `e()`. A script that checks the return code and then
+harvests the results — which is what scripts do — silently gets the
+previous run's numbers. We state this with confidence because our own
+first harvest did exactly that, and only a fresh-session check caught it.
+So the command's two covariate options fail in two different silent ways:
+`controls()` estimates and is silently unadjusted; `trends_nonparam()`
+with an unusable covariate refuses on screen but hands your script
+someone else's estimates.
 
 And even on `controls()`'s intended domain — time-varying covariates,
 where we verify it does work — the assumption requires the covariate effect on trends to be

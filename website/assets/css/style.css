@@ -46,7 +46,7 @@ pre code { background: none; padding: 0; font-size: 0.85rem; }
 table { border-collapse: collapse; margin: 1rem 0; font-size: 0.93rem; width: 100%; }
 th, td { border-bottom: 1px solid var(--rule); padding: 0.4rem 0.7rem; text-align: left; }
 th { color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--rule); }
-td:not(:first-child), th:not(:first-child) { text-align: right; }
+
 table td:first-child, table th:first-child { text-align: left; }
 blockquote {
   margin: 1rem 0; padding: 0.2rem 1rem; border-left: 3px solid var(--accent);

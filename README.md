@@ -68,9 +68,12 @@ with:
 csdid version
 ```
 
-Requires Stata 14 or newer. There are no platform-specific binaries and no
-external dependencies: the estimation engine is Mata and ships precompiled, so
-the same install works on Windows, macOS and Linux.
+Requires Stata 14 or newer. There are no external dependencies: the
+estimation engine is Mata and ships precompiled, so the same install works
+on Windows, macOS and Linux. On macOS the package also installs a small
+compiled accelerator (a universal binary) that speeds up the multiplier
+bootstrap; everywhere else — and on macOS if the accelerator cannot load —
+the bootstrap runs through the Mata implementation with identical results.
 
 ## A short example
 
@@ -157,8 +160,6 @@ restore
 
 Measured against **csdid Version 1.82** — the version SSC distributes today — on the
 same machine, same data, seven trials per workload with the first discarded.
-Full method and per-trial numbers in
-`reports/legacy-candidate-performance-certification.md`.
 
 | Workload | Version 1.82 | 2.0.0 | |
 | --- | ---: | ---: | ---: |
@@ -183,10 +184,15 @@ per-session compilation cost either.
 
 ## Unbalanced panels
 
-`csdid` detects an unbalanced `ivar()` panel and estimates it with the
-repeated-cross-section computation and the standard-error accounting that goes
-with it. Units are never silently dropped to force balance, because dropping
-them changes the estimand.
+`csdid` detects an unbalanced `ivar()` panel and makes the balancing rule an
+explicit, disclosed choice — `bal()` — rather than a silent one. The default,
+`bal(full)`, keeps only units observed in every period. `bal(none)` keeps
+every unit and estimates through the repeated-cross-section computation with
+the standard-error accounting that goes with it. `bal(pair)` balances each
+2×2 comparison separately, which is what Version 1.82 did without telling
+you. Whatever you choose (or let default), `e(panel_mode)` reports the
+resolved rule, and `e(N_units)` reports how many units contributed — the
+choice is never invisible.
 
 The JEL panel is nearly balanced, so this example **creates** the
 unbalancedness deliberately and reproducibly, deleting a seeded subset of
@@ -198,12 +204,17 @@ generate double u = runiform()
 drop if u < 0.15 & year >= 2012      // delete ~15% of later county-years
 
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
-display "panel mode: " e(panel_mode)
+display "panel mode: " e(panel_mode) ", units: " e(N_units)
+
+csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101) bal(none)
+display "panel mode: " e(panel_mode) ", units: " e(N_units)
 estat event
 ```
 
-`e(panel_mode)` reports `allow_unbalanced`, and `e(N_units)` reports how many
-counties contributed.
+The first run reports `panel` — the unbalanced units were dropped up front
+and the count says how many survived. The second reports `allow_unbalanced`
+with every county contributing. The two answer slightly different questions,
+and the point of `bal()` is that you pick which one you asked.
 
 ## Repeated cross sections
 
@@ -231,8 +242,10 @@ path.
 | Option | |
 | --- | --- |
 | `method(dr\|reg\|ipw)` | 2×2 estimator; default `dr` |
-| `notyet` | use not-yet-treated units as the comparison group |
-| `base_period(varying\|universal)` | pre-treatment base period; default `varying` |
+| `nevertreated` | compare against never-treated units only; the default uses all not-yet-treated |
+| `base_period(varying\|universal)` | pre-treatment base period; default `universal` |
+| `bal(full\|none\|pair)` | balancing rule for unbalanced `ivar()` panels; default `full` |
+| `rcs` | force the repeated-cross-section interpretation |
 | `anticipation(#)` | periods of anticipated treatment effect |
 | `[iw=varname]` | sampling weights |
 | `cluster(varname)` | cluster the influence function above the unit level |

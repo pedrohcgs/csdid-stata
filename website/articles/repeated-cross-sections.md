@@ -33,10 +33,6 @@ bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 ```
 
-```stata
-csdid mrate, time(year) gvar(gvar) rseed(20250101)
-```
-
 ## A worked example
 
 The JEL data are a panel, so this constructs a repeated cross section from it by
@@ -70,7 +66,7 @@ estat event
 
 `csdid` says plainly that it is not using `ivar()` as a panel identifier, and
 `e(idvar)` comes back empty while `e(panel_mode)` reads
-`repeated-cross-section`. This mirrors the reference implementation, which
+`repeated-cross-section`. This mirrors the R `did` implementation, which
 validates the identifier and then replaces it with a row number.
 
 The identifier is not wasted. It is exactly what you pass to `cluster()` if

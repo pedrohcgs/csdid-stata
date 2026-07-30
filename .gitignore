@@ -2,7 +2,7 @@ build/
 tools/plugin/_deps/
 *.log
 .DS_Store
-# release bundles built by tools/release/build-handoff-bundle.sh
+# locally built release bundles
 dist/
 # python bytecode
 __pycache__/

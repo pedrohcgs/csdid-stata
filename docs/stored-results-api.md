@@ -1,6 +1,6 @@
 # Stored Results API
 
-Status: frozen public API policy for `2.0.0-rc1`.
+Status: public API policy for `2.0.0`.
 
 ## Stable Public Results
 
@@ -12,9 +12,9 @@ The following results are intended to be stable across compatible releases:
 | `e(b)` | matrix | stable | Posted coefficient vector for nonbase ATT(g,t) estimates when available. |
 | `e(V)` | matrix | stable | Full posted covariance matrix aligned to `e(b)` when available. Analytical runs use influence-function covariance; clustered runs use cluster-summed influence functions; bootstrap runs use bootstrap-draw correlations rescaled to the reported SEs. |
 | `e(group_prob)` | matrix | stable | Treated-group probability and count metadata. |
-| `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` is requested. Large jobs may keep IFs in Mata cache. |
-| `e(unit_group)` | matrix | conditional stable | Stored only when `storeall` is requested. |
-| `e(cluster_vec)` | matrix | conditional stable | Stored when clustering is requested and large matrices are materialized. |
+| `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` (or the soft-deprecated `performance(full)`) is requested; otherwise the influence functions stay in the Mata cache at every sample size. |
+| `e(unit_group)` | matrix | conditional stable | Stored only when `storeall` (or the soft-deprecated `performance(full)`) is requested. |
+| `e(cluster_vec)` | matrix | conditional stable | Stored when clustering is requested and the stored matrices are materialized. |
 | `e(boot_attgt)` | matrix | stable when present | Bootstrap ATT(g,t) output when `wboot()` is requested. |
 | `e(boot_draws)` | matrix | diagnostic-adjacent | Present for bootstrap runs when stored. Draw ordering is not a portable reproducibility contract. |
 | `e(aggte)` | matrix | stable | Posted by `csdid_stats` and `estat` aggregation commands. |
@@ -69,8 +69,14 @@ used in analysis code.
 
 ## Storage Policy
 
-The default storage mode is automatic. Small jobs materialize the expected
-stored matrices for convenience. Large jobs avoid copying large influence
-function and unit-map matrices into `e()` unless the user requests `storeall`.
-This policy is part of the public API because it protects users from accidental
-memory blowups while preserving an explicit compatibility path.
+Storage is lean at every sample size. The large influence-function and unit-map
+matrices are held in the Mata cache and are not copied into `e()`, whether the
+job is small or large; there is no size threshold and no automatic switch.
+Requesting `storeall` (equivalently the soft-deprecated `performance(full)`)
+materializes those matrices in `e()`. Numbers are identical either way -- the choice affects only
+where the matrices live.
+
+This policy is part of the public API because one uniform rule means a workflow
+that works on a test extract behaves the same way on the full dataset, and
+because it protects users from accidental memory blowups while preserving an
+explicit compatibility path.

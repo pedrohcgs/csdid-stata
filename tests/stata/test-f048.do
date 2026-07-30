@@ -6,14 +6,10 @@ local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
-* These export lines write a RUN ARTEFACT, not an expectation. They used to
-* write into tests/fixtures/.../expected/new-stata/, where nothing ever read
-* them back -- the real comparison is against expected/r/, the R oracle. Sitting
-* under a directory called expected/ they looked like reviewed expectations,
-* they were committed, they dirtied the tree on every run, and they fed the
-* preflight digest. A garbage copy left behind by a failing run was later read
-* as evidence that a gate had passed while recording nonsense; it had not, it
-* had failed. Artefacts belong in build/.
+* These export lines write a RUN ARTEFACT, not an expectation. The real
+* comparison is against expected/r/, the R oracle. Run outputs must never sit
+* under expected/ where a stale copy could be mistaken for a reviewed
+* expectation or read as a pass. Artefacts belong in build/.
 capture mkdir "`root'/build"
 capture mkdir "`root'/build/test-artefacts"
 capture mkdir "`root'/build/test-artefacts/f048"

@@ -13,8 +13,9 @@ move, commands that are deprecated, and option spellings that have been renamed.
 
 ## Results that move
 
-Two omitted-option defaults changed. They are the only two changes that alter a
-number you were already getting.
+Two omitted-option defaults changed, and on unbalanced panels the balancing
+default changed too (see [Unbalanced panels](#unbalanced-panels) below).
+Those are the only changes that alter a number you were already getting.
 
 | | Version 1.82 | 2.0.0 | To keep the old behaviour |
 | --- | --- | --- | --- |
@@ -141,10 +142,11 @@ change: a silently substituted setting is a result you did not ask for.
 
 No external dependency. Version 1.82's SSC entry reads
 `Requires: Stata version 14 and drdid from SSC`; 2.0.0 needs nothing beyond
-Stata. And it is 5× to 28× faster on every workload measured, never slower.
+Stata. And it is 5× to 28× faster on every workload measured, never slower — the
+per-workload benchmark table is in the package README.
 
 ```stata
 capture erase "jel_upgrade.dta"
 ```
 
-Next: [comparison groups](comparison-groups.html).
+Back to [the guides](../index.html#guides).

@@ -13,6 +13,7 @@
 {viewerjumpto "Remarks" "csdid_postestimation##remarks"}{...}
 {viewerjumpto "Examples" "csdid_postestimation##examples"}{...}
 {viewerjumpto "Stored results" "csdid_postestimation##results"}{...}
+{viewerjumpto "Acknowledgments" "csdid_postestimation##acknowledgments"}{...}
 {viewerjumpto "References" "csdid_postestimation##references"}{...}
 {viewerjumpto "Authors" "csdid_postestimation##authors"}{...}
 {title:Title}
@@ -44,6 +45,10 @@ cohort{p_end}
 period{p_end}
 {synopt :{helpb csdid_estat##syntax:estat dynamic}}average effect by event
 time{p_end}
+{synopt :{helpb csdid_estat##syntax:estat tidy}}write a dataset of estimates,
+one row per ATT(g,t) cell or per aggregated effect{p_end}
+{synopt :{helpb csdid_estat##syntax:estat glance}}write a single-row dataset of
+model metadata{p_end}
 {synopt :{helpb csdid_stats}}aggregation with the full option set, including
 {cmd:balance()} and saved influence functions{p_end}
 {synopt :{helpb csdid_plot}}export plot-ready data for user-controlled

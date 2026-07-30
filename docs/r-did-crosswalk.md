@@ -77,8 +77,8 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `xformla` | `NULL` (`~1`) | the covariates after `depvar` in the varlist | none | `xformla = ~ x1 + x2` is `csdid y x1 x2, ...`. Factor-variable notation (`i.x`, `c.x##c.x`) is expanded before estimation. The intercept is always included, as in R. |
 | `data` | required | the dataset in memory | - | Restrict the sample with `if` / `in` rather than subsetting a data frame. |
 | `panel` | `TRUE` | `ivar()` specified or not | not specified | `panel = FALSE` (repeated cross sections) is `csdid` **without** `ivar()`. `e(panel_mode)` reports which mode ran. |
-| `allow_unbalanced_panel` | `FALSE` | `allowunbalanced` (alias `allow_unbalanced`) | see notes | **Deliberate divergence.** In Stata an unbalanced `ivar()` panel already uses R's unbalanced (repeated-cross-section) computation; the option is accepted as an explicit, no-op declaration and prints a note. See [section 6](#6-where-the-two-deliberately-differ). |
-| `control_group` | `"nevertreated"` | `notyet` (aliases `notyettreated`); `nevertreated` / `never` are accepted no-ops | `nevertreated` | `e(control_group)` reports `nevertreated` or `notyettreated`. Specifying both errors. |
+| `allow_unbalanced_panel` | `FALSE` | `bal(full\|pair\|none)`; `allowunbalanced` (alias `allow_unbalanced`) is a deprecated spelling of `bal(none)` | `bal(full)` | `bal(full)` is R's `allow_unbalanced_panel = FALSE`: units not observed in every period are dropped once, before estimation, and csdid reports how many. `bal(none)` is R's `allow_unbalanced_panel = TRUE`: every unit is kept and the repeated-cross-section computation runs. `bal(pair)` has no R counterpart (legacy Version 1.82 per-comparison balancing). `e(panel_mode)` reports which ran. See [section 6](#6-where-the-two-deliberately-differ). |
+| `control_group` | `"nevertreated"` | `notyet` (alias `notyettreated`); `nevertreated` (legacy alias `never`) | **not-yet-treated** | **Deliberate divergence.** csdid defaults to not-yet-treated controls; `nevertreated` restores R's default. `e(control_group)` reports `nevertreated` or `notyettreated`. Specifying both errors. |
 | `anticipation` | `0` | `anticipation(#)` | `0` | Must be nonnegative. |
 | `weightsname` | `NULL` | `[iweight = varname]` | none | Stata weight syntax, normalized to R's `weightsname` contract. |
 | `fix_weights` | `NULL` | `fix_weights()` (alias `fixweights()`) | none | Accepted values: `varying`, `base` / `baseperiod` / `base_period`, `first` / `firstperiod` / `first_period`. `base` and `first` require `ivar()`, as in R. `e(fix_weights)` reports the canonical value. |
@@ -88,7 +88,7 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `biters` | `1000` | `biters(#)`, `reps(#)`, `wboot(biters(#))`, or `wboot(reps(#))` | `1000` | All four spellings set the same thing; two spellings that disagree is an error. |
 | `clustervars` | `NULL` | `cluster(varname)`, `vce(cluster varname)`, or `wboot(cluster(varname))` | none (unit level) | R takes at most two variables and one of them must be `idname`; Stata takes the one non-unit clustering variable, which is the same thing. Must be numeric. `e(N_clusters)` reports the count. |
 | `est_method` | `"dr"` | `method(dr\|reg\|ipw)` | `dr` | Legacy aliases: `dripw` -> `dr`, `stdipw` -> `ipw`, both with a deprecation note. A user-supplied estimator function has no Stata equivalent. |
-| `base_period` | `"varying"` | `base_period()` / `baseperiod()`, or the bare keywords `varying` / `universal` | `varying` | `e(base_period)` reports it. |
+| `base_period` | `"varying"` | `base_period()` / `baseperiod()`, or the bare keywords `varying` / `universal` | **universal** | **Deliberate divergence.** csdid defaults to a universal base period; `base_period(varying)` restores R's default. Post-treatment cells are identical either way; the pre-treatment cells differ. `e(base_period)` reports it. |
 | `faster_mode` | `TRUE` | `fast` / `nofast` (closest analogue, not a port of R's internals) | optimization allowed | Both are speed switches that leave the estimand alone, and both default to on, but they optimize different code: R reorganizes its data handling, Stata selects specialized Mata kernels. `nofast` is the way to ask for the unoptimized path, as `faster_mode = FALSE` is in R. `e(fast_used)` reports whether the optimized path actually engaged and `e(compute_path)` names it. |
 | `print_details` | `FALSE` | prefix the command with `quietly` to suppress, run it plain to see diagnostics | diagnostics shown | Stata's `c(noisily)` gate replaces the argument; there is no `print_details()` option. |
 | `pl`, `cores` | `FALSE`, `1` | - | - | No parallel backend; the engine is single-threaded Mata. |
@@ -105,7 +105,7 @@ Stata-only options on `csdid`, with no R counterpart:
 | `agg(event)` | Runs `csdid` and then the dynamic aggregation in one command, posting the event-study coefficients. Other aggregation types go through `csdid_stats`. |
 | `lean`, `storeall`, `performance(auto\|lean\|full)` | Storage policy for the large influence-function matrices: internal by default at every sample size; `storeall` (or `performance(full)`) materializes them in `e()`. Numbers are identical either way. |
 | `vce(analytical)`, `vce(cluster var)` | Stata-idiomatic spellings of `bstrap = FALSE` and `clustervars`. |
-| `long`, `long2`, `asinr`, `never`, `bal()` / `balance()`, `performance(materialized)`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
+| `long`, `long2`, `asinr`, `never`, `bal(unbal)` / `bal(all)`, `performance(materialized)`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
 
 ---
 
@@ -173,7 +173,7 @@ calendar, and `ATT` for simple.
 | `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R returns both objects; Stata posts one. |
 | `n` | `e(N_units)` | `e(N)` is the number of observations, not units. |
 | `alp` | `e(level)` | `level = 100 * (1 - alp)`. |
-| `W`, `Wpval` | not implemented | The Wald pre-test statistic and its p-value are not computed. `csdid` does emit R's warnings when no usable pre-treatment cells exist. |
+| `W`, `Wpval` | `e(wald_stat)`, `e(wald_pvalue)` | The Wald pre-test of parallel trends on the pre-treatment cells, and its p-value. Stata also stores `e(wald_df)`, the degrees of freedom R computes on the fly. `csdid` emits R's warnings when no usable pre-treatment cells exist. |
 | `aggte` | `e(aggte)` after `csdid_stats` | |
 | `DIDparams` | the option macros | `e(cmdline)`, `e(method)`, `e(control_group)`, `e(base_period)`, `e(panel_mode)`, `e(fix_weights)`, `e(clustervar)`, `e(anticipation)`, `e(bstrap)`, `e(cband)`, `e(biters)`, `e(boot_seed)`, `e(pscoretrim)`. |
 
@@ -220,16 +220,23 @@ calendar, and `ATT` for simple.
 
 Each of these is a recorded decision, not an accident.
 
-**6.1 Unbalanced panels default to R's unbalanced computation.**
-R's `allow_unbalanced_panel` defaults to `FALSE`, which silently drops units not
-observed in every period. In Stata, an unbalanced `ivar()` panel is analyzed
-with R's *unbalanced* (repeated-cross-section) computation by default; no units
-are dropped for being unbalanced. `allowunbalanced` is accepted as an explicit
-declaration of that intent and prints a note; `bal()` / `balance()` are
-soft-deprecated legacy spellings that also map to it. `e(panel_mode)` always
-tells you which of `panel`, `allow_unbalanced`, or `repeated-cross-section`
-actually ran. Rationale and scope: decision D003 in `docs/behavior-decisions.md`.
-To reproduce R's default, balance the panel yourself before calling `csdid`.
+**6.1 The unbalanced-panel choice is one option with three settings, and it is
+disclosed.**
+R has a single switch, `allow_unbalanced_panel`. Stata has `bal()`, and R's two
+states map onto two of its three settings:
+
+| csdid | R | What happens to an unbalanced `ivar()` panel |
+| --- | --- | --- |
+| `bal(full)` (**default**) | `allow_unbalanced_panel = FALSE` (default) | Units not observed in every period are dropped once, before estimation. Same sample as R; csdid additionally reports how many units and observations that removed, where R drops them silently. |
+| `bal(none)` | `allow_unbalanced_panel = TRUE` | Every unit is kept and the repeated-cross-section computation runs, as in R. |
+| `bal(pair)` | no counterpart | Each 2x2 comparison is balanced separately. This exists only to reproduce legacy Stata `csdid` Version 1.82, which did it silently. |
+
+So the *samples* agree with R by default; what differs is that Stata makes the
+choice an explicit option and says out loud what it did. `allowunbalanced` /
+`allow_unbalanced` are accepted as deprecated spellings of `bal(none)` and print
+a note naming the replacement. `e(panel_mode)` always tells you which of
+`panel`, `allow_unbalanced`, `pair-balanced`, or `repeated-cross-section`
+actually ran.
 
 **6.2 Aggregation inference is inherited, not re-specifiable.**
 R's `aggte()` lets you flip `bstrap`, `biters`, and `cband` at the aggregation
@@ -254,10 +261,14 @@ leaves rendering to `twoway`. Styling options are rejected rather than ignored.
 R accepts any `idname` column type. Stata requires `ivar()`, `time()`, `gvar()`,
 and `cluster()` to be numeric and errors otherwise (`egen id = group(strid)`).
 
-**6.6 The bootstrap engine is pure Mata.**
-No compiled component is installed with the package. The multiplier bootstrap
-runs in Mata and reproduces R's random-number stream; `e(bootstrap_accelerator)`
-and `e(bootstrap_accelerator_status)` report which path ran.
+**6.6 The bootstrap has a compiled accelerator on macOS and a Mata engine
+everywhere else.**
+The package ships `csdid_bootstrap_macosx.plugin`, a universal binary used on
+macOS. Every other platform, and any run where the plugin cannot be loaded, uses
+the Mata implementation. The two paths return the same numbers and both
+reproduce R's random-number stream, so the accelerator is a speed decision and
+never an estimand decision. `e(bootstrap_accelerator)` and
+`e(bootstrap_accelerator_status)` report which path ran.
 
 Legacy-Stata-facing divergences (options that exist only to ease migration from
 Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in
@@ -274,7 +285,6 @@ equivalent in this release:
 - `compute_inffunc = FALSE` (point estimates only, no influence functions);
 - `pl` / `cores` parallel execution;
 - `print_details = TRUE` (use `quietly` / plain execution to control output);
-- the `W` / `Wpval` Wald pre-test of parallel trends on the `MP` object;
 - `conditional_did_pretest()`;
 - re-specifying `bstrap` / `biters` / `cband` inside `aggte()` (see 6.2);
 - `min_e` / `max_e` / `balance_e` echoed back as stored results (see 4.2).
@@ -295,6 +305,13 @@ cohorts 2004 / 2006 / 2007 and never-treated).
 Specification: outcome `lemp`, covariate `lpop`, never-treated controls, doubly
 robust estimation, varying base period.
 
+Never-treated controls and a varying base period are R's defaults but not
+csdid's (rows `control_group` and `base_period` of the section 2 table), so
+every Stata command below names them explicitly with `nevertreated` and
+`base_period(varying)`. Run the Stata commands exactly as printed and they
+reproduce the R numbers; drop those two options and you get csdid's defaults,
+which are a different specification, not a parity failure.
+
 ### 8.1 Analytical standard errors
 
 ```r
@@ -310,7 +327,8 @@ gp <- aggte(out, type = "group",   na.rm = TRUE)
 
 ```stata
 import delimited using "examples/data/mpdta.csv", clear asdouble varnames(1)
-csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) vce(analytical)
+csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) ///
+    nevertreated base_period(varying) vce(analytical)
 csdid_stats event, dropmissing
 csdid_stats group, dropmissing
 ```
@@ -374,7 +392,7 @@ outb <- att_gt(yname = "lemp", tname = "year", idname = "countyreal",
 
 ```stata
 csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) ///
-    wboot(reps(1000) rseed(20260726))
+    nevertreated base_period(varying) wboot(reps(1000) rseed(20260726))
 ```
 
 | g | t | R bootstrap `se` | Stata bootstrap `se` |
@@ -440,8 +458,8 @@ then run the R and Stata blocks in section 8 verbatim; print with
 `sprintf("%.10f", ...)` on the R side and
 `matrix list e(attgt), format(%20.10f)` on the Stata side.
 
-Broader evidence for the parity claims quoted here: the package ships a
-57-test certification suite (all passing) built on frozen R fixtures, and
+Broader evidence for the parity claims quoted here: the repository carries the
+parity test suite under `tests/`, built on frozen R fixtures, and
 `docs/parity-verification-playbook.md` describes how the fixtures are
 regenerated. Group-time and dynamic-aggregation estimates agree with R to
 7e-15 under `method(dr)`, `method(ipw)`, and `method(reg)` with analytical

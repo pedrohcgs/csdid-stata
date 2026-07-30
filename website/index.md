@@ -13,8 +13,11 @@ designs with staggered treatment timing, following
 net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main") replace
 ```
 
-Stata 14 or newer. The engine is pure Mata and ships precompiled — no
-platform-specific binaries, nothing else to install.
+Stata 14 or newer, nothing else to install. The engine is Mata and ships
+precompiled; on macOS the install also includes a small compiled accelerator
+for the multiplier bootstrap (identical results either way — everywhere
+else, and whenever the accelerator cannot load, the bootstrap runs in
+Mata).
 
 ## Guides
 {: #guides}

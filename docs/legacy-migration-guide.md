@@ -20,13 +20,15 @@ frozen behavior decision records a narrower divergence.
 
 ## Defaults
 
-New Stata estimator and sample defaults match R `did` 2.5.1, with the
-owner-directed D003 unbalanced-panel rule: when `ivar()` is supplied and the
-panel is actually unbalanced, the port uses the repeated-cross-section
-computation path while preserving standard-error accounting. It does not
-reproduce legacy Stata's silent pair-balanced unit dropping.
+New Stata estimator and sample defaults match R `did` 2.5.1, including for
+unbalanced panels: when `ivar()` is supplied and the panel is actually
+unbalanced, the default `bal(full)` drops the units not observed in every
+period, once, and reports what it removed -- the same sample R takes. It does
+not reproduce legacy Stata's silent pair-balanced unit dropping, which is now
+available only on request as `bal(pair)`. See the fuller statement of the three
+`bal()` settings below.
 
-### Breaking change: how group size is measured (F-014)
+### Breaking change: how group size is measured
 
 `csdid` refuses to run when the never-treated group is too small to be a
 credible control, and warns about any small group. The size threshold is
@@ -78,7 +80,7 @@ Stata `csdid` Version 1.82, and they are the only two that can move a number:
 | base period | universal | varying | `base_period(varying)` |
 
 State either option explicitly and csdid and R agree to machine precision. Both
-are recorded as approved divergences F051-DIV001 and F051-DIV002.
+are recorded as documented divergences.
 
 The remaining defaults follow R: the method is `dr`, the confidence level is 95,
 and omitted inference is the multiplier bootstrap with simultaneous confidence
@@ -94,26 +96,26 @@ that version.
 
 ## Legacy Option Mapping
 
-| Legacy surface | v1 behavior | Evidence |
-| --- | --- | --- |
-| `method(dripw)` | Accepted with warning; canonical method is `dr`. | F010, F045, F046 |
-| `method(stdipw)` | Accepted with warning; canonical method is `ipw`. | F010, F045, F046 |
-| `asinr` | Accepted with warning as a no-op; R-compatible not-yet controls are governed by `notyet`. | F017, F045, F046 |
-| `wboot(wtype(rademacher))` | Accepted as the R-compatible multiplier path. | F035, F046 |
-| `wboot(wbtype(mammen))`, `wboot(wtype(gaussian))`, `wboot(wtype(normal))` | Unsupported in this R-parity port and now fail loudly rather than being silently coerced to rademacher. | F035, F046 |
-| `wboot reps(#) seed(#)`, `wboot reps(#) rseed(#)` | Accepted as Stata-style shorthand for `wboot(reps(#) seed(#))` and `wboot(reps(#) rseed(#))`; top-level `reps()`, `biters()`, `seed()`, and `rseed()` are also accepted with default bootstrap inference. | F035, F051 |
-| `allowunbalanced`, `allow_unbalanced` | Accepted for readability; this is already the default for actually unbalanced `ivar()` data. `allow_unbalanced` remains as the R-parity spelling. | F016, F017, F045, F051 |
-| `storeall`, `store_all` | Preferred full stored-result opt-in for users who need large matrices in `e()`. `store_all` remains as the R-parity spelling. | F049, F051 |
-| `bal(full)`, `balance(full)`, `bal(unbal)` | Soft-deprecated warning aliases for `allowunbalanced`; they do not restore legacy unit dropping. | F016, F017, F045 |
-| `long`, `long2` | Accepted with a strong deprecation warning; when `baseperiod()` is omitted they use `baseperiod(universal)` to preserve legacy/JEL event-study layout. | F017, F036, F045, JEL |
-| `id(idvar)` | Accepted as a Stata-style alias for `ivar(idvar)`; conflicting `id()` and `ivar()` values are rejected. | F036, F051 |
-| `notyettreated`, `nevertreated` | Accepted as readable control-group aliases; `notyettreated` maps to `notyet`, and `nevertreated` records the R default control group. | F008, F036, F051 |
-| `vce(cluster clustvar)` | Accepted as Stata-style syntax for `cluster(clustvar)`; conflicting `vce(cluster ...)` and `cluster()` values are rejected. | F015, F036, F051 |
-| `dryrun` | Rejected as an internal legacy option. | F036, F045 |
-| `agg(event)` | Accepted as an immediate wrapper over verified dynamic aggregation, with legacy `r(table)` and posted coefficient matrices. Other immediate `agg()` types still use `csdid_stats`. | F003-F006, F025, F036 |
-| `csdid_stats event`, `csdid_stats, type(event)` | Accepted as aliases for dynamic aggregation. | F006, F025, F051 |
-| `estat dynamic`, `estat simple`, `estat group`, `estat calendar` | Accepted as conventional postestimation aggregation replay forms backed by `csdid_stats`. | F003-F006, F027, F051 |
-| graph styling options | Cosmetic only; parity is checked on plot data before graph rendering. | F028, F040-F044 |
+| Legacy surface | v1 behavior |
+| --- | --- |
+| `method(dripw)` | Accepted with warning; canonical method is `dr`. |
+| `method(stdipw)` | Accepted with warning; canonical method is `ipw`. |
+| `asinr` | Accepted with warning as a no-op; R-compatible not-yet controls are governed by `notyet`. |
+| `wboot(wtype(rademacher))` | Accepted as the R-compatible multiplier path. |
+| `wboot(wbtype(mammen))`, `wboot(wtype(gaussian))`, `wboot(wtype(normal))` | Unsupported in this R-parity port and now fail loudly rather than being silently coerced to rademacher. |
+| `wboot reps(#) seed(#)`, `wboot reps(#) rseed(#)` | Accepted as Stata-style shorthand for `wboot(reps(#) seed(#))` and `wboot(reps(#) rseed(#))`; top-level `reps()`, `biters()`, `seed()`, and `rseed()` are also accepted with default bootstrap inference. |
+| `allowunbalanced`, `allow_unbalanced` | Accepted as a deprecated spelling of `bal(none)`, which keeps every unit and uses the repeated-cross-section computation. It is not the default: an unbalanced `ivar()` panel is balanced with `bal(full)` unless you ask otherwise. |
+| `storeall`, `store_all` | Preferred full stored-result opt-in for users who need large matrices in `e()`. `store_all` remains as the R-parity spelling. |
+| `bal(full)`, `balance(full)`, `bal(unbal)` | `bal(full)` is the default and drops units not observed in every period; `balance()` is an accepted spelling of `bal()`; `bal(unbal)` is a deprecated spelling of `bal(none)`. None of them restores legacy per-comparison unit dropping -- that is `bal(pair)`. |
+| `long`, `long2` | Accepted with a strong deprecation warning; when `baseperiod()` is omitted they use `baseperiod(universal)` to preserve legacy/JEL event-study layout. |
+| `id(idvar)` | Accepted as a Stata-style alias for `ivar(idvar)`; conflicting `id()` and `ivar()` values are rejected. |
+| `notyettreated`, `nevertreated` | Accepted as readable control-group aliases; `notyettreated` maps to `notyet`, and `nevertreated` selects never-treated controls, which is R's default and not csdid's. |
+| `vce(cluster clustvar)` | Accepted as Stata-style syntax for `cluster(clustvar)`; conflicting `vce(cluster ...)` and `cluster()` values are rejected. |
+| `dryrun` | Rejected as an internal legacy option. |
+| `agg(event)` | Accepted as an immediate wrapper over verified dynamic aggregation, with legacy `r(table)` and posted coefficient matrices. Other immediate `agg()` types still use `csdid_stats`. |
+| `csdid_stats event`, `csdid_stats, type(event)` | Accepted as aliases for dynamic aggregation. |
+| `estat dynamic`, `estat simple`, `estat group`, `estat calendar` | Accepted as conventional postestimation aggregation replay forms backed by `csdid_stats`. |
+| graph styling options | Cosmetic only; parity is checked on plot data before graph rendering. |
 
 Every retained legacy alias must be opt-in, emit a deprecation or compatibility
 warning, record canonical behavior in stored results when applicable, and avoid
@@ -121,28 +123,22 @@ changing R-parity defaults.
 
 ## What To Compare
 
-Use the fixture matrix as the migration map:
+Use the test suite under `tests/` as the migration map. It pins, among
+other things:
 
-- F045 compares old default divergences and proves that rejected legacy defaults
-  cannot silently govern v1 behavior.
-- F046 freezes retained legacy warning text and canonical behavior.
-- F016 proves the owner-directed unbalanced-panel default.
-- F017 proves soft-deprecated balancing aliases and strongly deprecated legacy
-  long options.
-- F035 proves the current bootstrap option-surface mapping.
-- F036 proves the immediate `agg(event)` wrapper used by JEL-DiD.
-- F051 proves release-facing Stata-style aliases, bootstrap shorthand,
-  postestimation aggregation aliases, and default user-workflow diagnostics.
-- F040-F044 and JEL001-JEL018 govern JEL-DiD empirical replication.
+- the old default divergences, proving that rejected legacy defaults cannot
+  silently govern current behavior;
+- the retained legacy warning text and the canonical behavior each alias maps
+  to;
+- the three `bal()` settings for unbalanced panels;
+- the soft-deprecated balancing aliases and the strongly deprecated legacy
+  `long` / `long2` options;
+- the bootstrap option-surface mapping;
+- the immediate `agg(event)` wrapper;
+- the Stata-style aliases, bootstrap shorthand, postestimation aggregation
+  aliases, and default user-workflow diagnostics;
+- plot-data parity and the JEL-DiD empirical replication.
 
 Do not compare new Stata output to legacy Stata as the statistical oracle.
 Legacy Stata can explain migration hazards, but R `did` 2.5.1 controls the
 target behavior.
-
-## Release Limitations
-
-This guide does not claim full release parity by itself. Rows that remain
-`contract-frozen` in `inst/spec/feature-matrix.csv` are still incomplete. The
-hardening goal remains blocked until all mandatory R, Python, JEL,
-documentation, benchmark, and engineering gates reach an allowed terminal
-status.

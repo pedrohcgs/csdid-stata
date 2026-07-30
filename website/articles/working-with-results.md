@@ -5,12 +5,15 @@ title: Working with results
 # Working with results
 
 <div class="note" markdown="1">
-Everything `csdid` computes is available programmatically: as tidy data for
-tables, as matrices for your own calculations, and as plot-ready data so the
-graph stays yours.
+Everything `csdid` computes is available programmatically, as tidy data for
+tables, as matrices for your own calculations, and as plot-ready data (so that
+the graph stays yours).
 </div>
 
 ## The data
+
+Let's build the sample once and estimate once (we re-use that run throughout the
+page), since everything below reads the same set of results.
 
 ```stata
 import delimited using ///
@@ -37,13 +40,15 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) cluster(stfips) rseed(20250
 ## Results as a dataset
 
 Add `saving()` to any `estat` subcommand and it writes what it computed to a
-dataset instead of only printing it. This is how Stata spells "put this in a
-file" — the same option `margins`, `simulate` and `graph` take — so there is no
-separate export command to learn.
+dataset instead of only printing it. `saving()` is the same option that
+`margins`, `simulate` and `graph` take, so there is no separate export command to
+learn. We use it for anything that has to end up in a paper, on the grounds that
+a dataset is easier to check, and easier to re-run, than a log file.
 
-`estat attgt, saving()` gives one row per ATT(g,t) cell, with the estimate, its
-standard error, the test statistic, the p-value, and both the reported and the
-pointwise confidence limits:
+`estat attgt, saving()` gives one row per ATT(g,t) cell. Each row carries the
+estimate, its standard error, the test statistic, the p-value, and both the
+reported and the pointwise confidence limits (everything the printed table shows,
+and a little more besides):
 
 ```stata
 estat attgt, saving("attgt_cells.dta") replace
@@ -55,8 +60,8 @@ restore
 capture erase "attgt_cells.dta"
 ```
 
-Every aggregation exports itself the same way, and the file holds that
-aggregation rather than the cells:
+Every aggregation exports itself in the same way. The file then holds that
+aggregation rather than the underlying cells:
 
 ```stata
 estat event, saving("eventstudy.dta") replace
@@ -76,9 +81,10 @@ restore
 capture erase "overall.dta"
 ```
 
-Because `saving()` sits on the subcommand, options that shape the result go
-there too and are reflected in the file — `estat event, window(-3 3)
-saving(w.dta)` saves the windowed event study, not the full one.
+Because `saving()` sits on the subcommand, the options that shape a result go
+there too. The file then matches the table you have just read, so that
+`estat event, window(-3 3) saving(w.dta)` saves the windowed event study and not
+the full one.
 
 ## Stored results
 
@@ -99,8 +105,8 @@ display "clusters     : " e(N_clusters)
 display "pre-test W   : " e(wald_stat) "  p = " e(wald_pvalue)
 ```
 
-`e(attgt)` is the estimate matrix — cohort, period, and then the estimate and
-its standard error:
+`e(attgt)` is the estimate matrix, holding cohort, period, the estimate and its
+standard error (in that order):
 
 ```stata
 matrix A = e(attgt)
@@ -109,10 +115,10 @@ matrix list A
 
 ## Influence functions
 
-The influence function — one column per ATT(g,t) cell, one row per unit — is
-what standard errors, uniform bands and clustered inference are built from.
-It stays internal by default; ask for it with `storeall` when you want to do
-your own inference:
+The influence function has one column per ATT(g,t) cell and one row per unit.
+The standard errors, the uniform bands and the clustered inference are all built
+from it. It stays internal by default because it is a large object, so you ask
+for it with `storeall` when you want to do your own inference:
 
 ```stata
 use "jel_results.dta", clear
@@ -123,18 +129,22 @@ mata: printf("columns are mean-zero to %g\n", max(abs(mean(st_matrix("IF")))))
 ```
 
 <div class="tip" markdown="1">
-For a version that survives the session — and feeds `csdid_stats using` for
-later aggregation — write it to a dataset instead with `saverif()`.
+For a version that survives the session, and that feeds `csdid_stats using` for
+later aggregation, write it to a dataset instead with `saverif()`.
 </div>
 
-Each column is mean-zero by construction. With it you can compute standard
-errors for aggregations `csdid` does not provide, or feed a sensitivity
-analysis.
+Each column is mean-zero by construction, which is what the printed maximum
+above confirms. Note that the option changes what is stored and leaves what is
+estimated alone, so the numbers you report are the same either way. With the
+influence function in hand you can compute standard errors for aggregations
+that `csdid`
+does not provide, or feed a sensitivity analysis of your own (we do exactly this
+when a referee asks for a weighting we have not implemented).
 
 ## Plot-ready data
 
-`csdid_plot` exports what a graph needs rather than drawing one, so styling
-stays under your control:
+`csdid_plot` exports what a graph needs instead of drawing one, so the styling
+stays under your control.
 
 ```stata
 use "jel_results.dta", clear
@@ -157,11 +167,11 @@ the bounds `ci_low` and `ci_high`, plus `group`, `time`, `event_time`,
 `series` (Pre/Post), `x_label` and `significant`.
 
 <div class="important" markdown="1">
-Note the estimate column is
-`estimate`, not `att` — `csdid_plot` renames it on export. Because the bounds come from the same
-run as the estimates, a simultaneous band stays simultaneous — building the
-interval yourself from a standard error would silently turn it into a pointwise
-one. See [Inference](inference.html).
+Note that the estimate column is `estimate` rather than `att`, since
+`csdid_plot` renames it on export. Because the bounds come from the same run as
+the estimates, a simultaneous band stays simultaneous. Build the interval
+yourself out of a standard error and it silently becomes a pointwise one.
+See [Inference](inference.html).
 </div>
 
 ## Replaying without re-estimating
@@ -177,6 +187,9 @@ estat group
 estat calendar
 estat simple
 ```
+
+Nothing is re-estimated. That is four aggregations from one estimation, and the
+bootstrap ran once.
 
 ```stata
 capture erase "jel_results.dta"

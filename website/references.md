@@ -6,7 +6,7 @@ title: References
 
 ## The estimator
 
-The method `csdid` implements, and the one to cite when you use it:
+The method `csdid` implements, and the paper to cite for it:
 
 > Callaway, Brantly, and Pedro H. C. Sant'Anna. 2021. "Difference-in-Differences
 > with Multiple Time Periods." *Journal of Econometrics* 225 (2): 200–230.
@@ -26,19 +26,24 @@ The semiparametric foundation for conditioning on covariates:
 > *Review of Economic Studies* 72 (1): 1–19.
 > [doi:10.1111/0034-6527.00321](https://doi.org/10.1111/0034-6527.00321)
 
-The efficiency theory for these designs — which estimator is tightest depends
-on the covariance structure of the outcomes, and none of the packaged
-estimators attains the bound in general:
+The efficiency theory for these designs, which shows that the tightest
+estimator depends on the covariance structure of the outcomes:
 
 > Chen, Xiaohong, Pedro H. C. Sant'Anna, and Haitian Xie. 2025. "Efficient
 > Difference-in-Differences and Event Study Estimators."
 > [arXiv:2506.17729](https://arxiv.org/abs/2506.17729)
 
+None of the estimators `csdid` offers attains that bound outside special cases.
+Thus `method(dr)` is a sensible default, and it is not an efficient estimator in
+general.
+
 ## Reviews
 
-Start here if you want the landscape rather than one estimator. The first
-provides the organizing framework for DiD designs and their estimators; every
-example on this site uses its replication data.
+These two reviews cover the DiD literature more broadly than any single
+estimator does, and either is a reasonable place to start. The first gives the
+organizing framework for DiD designs and the estimators built on them, and
+every example on this site uses its replication data. The second surveys the
+recent econometrics literature and the estimators it has produced.
 
 > Baker, Andrew, Brantly Callaway, Scott Cunningham, Andrew Goodman-Bacon, and
 > Pedro H. C. Sant'Anna. 2026. "Difference-in-Differences Designs: A
@@ -52,8 +57,10 @@ example on this site uses its replication data.
 
 ## Two-way fixed effects under staggered timing
 
-Why a TWFE coefficient is not the average treatment effect on the treated when
-timing is staggered and effects are heterogeneous. See
+These papers show why a TWFE coefficient is not the average treatment effect on
+the treated when timing is staggered and effects are heterogeneous, and they
+differ in how they decompose the resulting bias into comparisons that are and
+are not valid. We work through the argument in
 [Why not two-way fixed effects](articles/why-not-twfe.html).
 
 > Goodman-Bacon, Andrew. 2021. "Difference-in-Differences with Variation in
@@ -73,9 +80,10 @@ timing is staggered and effects are heterogeneous. See
 ## Citing csdid
 
 <div class="tip" markdown="1">
-Cite **both** the method and the software. For the method, Callaway and
-Sant'Anna (2021) above, plus Sant'Anna and Zhao (2020) if you use `method(dr)`.
-For the software, cite the version you ran — report it with `csdid version`:
+We ask that you cite *both* the method and the software: for the method,
+Callaway and Sant'Anna (2021) above, plus Sant'Anna and Zhao (2020) if you use
+`method(dr)`; for the software, cite the version you ran, which `csdid version`
+reports for you:
 </div>
 
 ```

@@ -4,12 +4,13 @@ title: Upgrading from Version 1.82
 
 # Upgrading from csdid Version 1.82
 
-Throughout, **Version 1.82** means the release SSC distributes via
-`ssc install csdid`, dated 2025-10-05.
+Throughout this page, *Version 1.82* means the release that SSC distributes via
+`ssc install csdid` (dated 2025-10-05).
 
-The command surface is deliberately unchanged, so most do-files run as they are.
-This page covers the three things that can need your attention: results that
-move, commands that are deprecated, and option spellings that have been renamed.
+The command surface is deliberately unchanged, so most do-files run exactly as
+they are and we expect the upgrade to be uneventful. However, three things can
+need your attention: results that move, commands that are deprecated, and option
+spellings that have been renamed.
 
 ## Results that move
 
@@ -19,24 +20,26 @@ default changed too (see [Unbalanced panels](#unbalanced-panels) below).
 Those are the only changes that alter a number you were already getting.
 </div>
 
-| | Version 1.82 | 2.0.0 | To keep the old behaviour |
+| | Version 1.82 | 2.0.0 | To keep the old behavior |
 | --- | --- | --- | --- |
 | comparison group | never-treated | not-yet-treated | `nevertreated` |
 | base period | varying | universal | `base_period(varying)` |
 
 Both are also departures from R `did` 2.5.1, which shares Version 1.82's two
 defaults. State either option explicitly and `csdid` and R agree to machine
-precision.
+precision, which is a check we run before every release.
 
 <div class="note" markdown="1">
-A third change is about inference rather than the estimand: standard errors are
-now the multiplier bootstrap with simultaneous confidence bands by default,
-where Version 1.82 reported pointwise analytical standard errors. Point
-estimates are unaffected. `analytical` restores the old standard errors.
+A third change concerns inference and leaves the estimand alone: standard errors
+are now the multiplier bootstrap with simultaneous confidence bands by default,
+where Version 1.82 reported pointwise analytical standard errors, though the point
+estimates are unaffected by this (the change is in the standard errors alone) and
+`analytical` restores the old ones for anyone who wants them back.
 </div>
 
-To reproduce a Version 1.82 run, state all three explicitly. Load the county
-mortality panel used throughout this site:
+To reproduce a Version 1.82 run, state all three options explicitly (none of them
+is implied by the others). Let's load
+the county mortality panel used throughout this site:
 
 ```stata
 import delimited using ///
@@ -61,8 +64,8 @@ display "base period:   " e(base_period)
 estat event
 ```
 
-Those three options give you Version 1.82's estimand and Version 1.82's standard
-errors. Drop them and you get the 2.0.0 defaults:
+Those three options give you Version 1.82's estimand together with Version 1.82's
+standard errors. Drop them and you get the 2.0.0 defaults instead:
 
 ```stata
 use "jel_upgrade.dta", clear
@@ -74,9 +77,9 @@ estat event
 
 ## Unbalanced panels
 
-Version 1.82 dropped the units missing from either period of each 2×2
-comparison, silently. `csdid` 2.0.0 makes the choice explicit with `bal()` and
-reports whatever it drops:
+Version 1.82 dropped the units missing from either period of each 2×2 comparison,
+and it did so silently (without a message of any kind). `csdid` 2.0.0 makes the choice explicit with `bal()` and
+reports whatever it drops (units and observations both):
 
 | | |
 | --- | --- |
@@ -91,7 +94,8 @@ result from that version can be reproduced here by asking for it.
 
 ## Deprecated commands
 
-These still ship and still run, so nothing breaks. Each prints a notice.
+These still ship and still run, so nothing in an old do-file breaks, though each
+of them now prints a notice (a notice, not an error) saying what to use instead.
 
 | Deprecated | Use instead |
 | --- | --- |
@@ -100,19 +104,21 @@ These still ship and still run, so nothing breaks. Each prints a notice.
 | `dipt` | never documented; no replacement |
 | `tsvmat` | never documented; no replacement |
 
-`csgvar` is **not** deprecated. It builds the `gvar()` cohort variable from a
+`csgvar` is *not* deprecated, since it builds the `gvar()` cohort variable from a
 treatment indicator and is fully supported.
 
-The saved-RIF workflow itself is also still supported: `csdid_stats using`
-*filename* reads a saved RIF file. Only the table-building command is
-deprecated.
+The saved-RIF workflow itself is also still supported, in that `csdid_stats using`
+*filename* reads a saved RIF file, and only the table-building command around it
+is deprecated.
 
-`help csdid_legacy` documents all of this inside Stata.
+`help csdid_legacy` documents all of this inside Stata (offline), so you don't have to
+keep this page open beside you.
 
 ## Renamed options
 
-Every Version 1.82 spelling below is accepted and says what to use instead, so
-you find out from running your do-file rather than from reading this page.
+Every Version 1.82 spelling below is accepted and says what to use instead, so you
+find out by running your do-file. Nothing on the list will stop a do-file from
+running.
 
 | Old (warns) | Current |
 | --- | --- |
@@ -124,8 +130,9 @@ you find out from running your do-file rather than from reading this page.
 
 ## Spellings that are not renames
 
-These are alternative names for current options. They are not deprecated,
-nothing warns, and there is nothing to change in a do-file that uses them.
+These are alternative names for current options, so they are not deprecated,
+nothing warns, and there is nothing at all to change in a do-file that uses
+them.
 
 | Spelling | Same as |
 | --- | --- |
@@ -139,9 +146,9 @@ nothing warns, and there is nothing to change in a do-file that uses them.
 
 ## Spellings that were never options
 
-You may have seen these somewhere. They have never been options in any
-release: they are not in Version 1.82, and 2.0.0 is the first release of the
-rewrite. csdid refuses them the way it refuses any name it does not know.
+You may have seen these somewhere, but they have never been options in any
+release. They are not in Version 1.82, and 2.0.0 is the first release of the
+rewrite. csdid refuses them the way it refuses any other name it does not know.
 
 | Not an option | Type instead |
 | --- | --- |
@@ -152,8 +159,10 @@ rewrite. csdid refuses them the way it refuses any name it does not know.
 
 ## Options that now refuse
 
-Version 1.82 accepted these and quietly did something else. Refusing is the
-change: a silently substituted setting is a result you did not ask for.
+Version 1.82 accepted these and then did something else instead. Refusing them is
+the change we made, on the grounds that a silently substituted setting is a result
+you did not ask for and would not know you had. We would rather stop a run than
+return a number we cannot vouch for.
 
 | Option | What happens now |
 | --- | --- |
@@ -166,10 +175,10 @@ change: a silently substituted setting is a result you did not ask for.
 
 ## What you gain
 
-No external dependency. Version 1.82's SSC entry reads
-`Requires: Stata version 14 and drdid from SSC`; 2.0.0 needs nothing beyond
-Stata. And it is 5× to 28× faster on every workload measured, never slower — the
-per-workload benchmark table is in the package README, and the gains by
+There is no external dependency (no drdid, and nothing else). Version 1.82's SSC
+entry reads `Requires: Stata version 14 and drdid from SSC`, while 2.0.0 needs
+nothing beyond Stata itself. It is also 5× to 28× faster on every workload we measured, and never
+slower, with the per-workload benchmark table in the package README; the gains by
 sample size, periods, cohorts, and sampling scheme (16× to 208×) are on
 [their own page](speed-vs-182.html).
 

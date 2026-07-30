@@ -5,37 +5,42 @@ title: Code appendix
 # Code appendix
 
 Every number in [How csdid compares](articles/csdid-against-the-field.html)
-comes from one of the scripts on this page. They are reproduced in full.
-Four things were changed for publication: the file paths were shortened so
+comes from one of the scripts on this page, and they are reproduced in full.
+We changed four things for publication: the file paths were shortened so
 that everything runs from a single folder, a two-line run header was added
 at the top of each script, a handful of copy-pasted header comments were
 corrected to describe what that script actually runs, and one inert block of
-dead code was removed from `simdgp.do`. Nothing else moved &mdash; every
+dead code (never reached at run time) was removed from `simdgp.do`. Nothing
+else moved, and every
 seed, parameter, regime, package option and line of executed logic is what
 produced the published tables.
 
 The protocol is the same in every arm:
 
-- **One population.** `simdgp.do` builds it. Cohorts are assigned
-  deterministically, a quarter of units each, so the target does not re-roll
-  from replication to replication.
+- **One population.** `simdgp.do` builds it, and the cohorts are assigned
+  deterministically, a quarter of units each (not drawn at random),
+  so that the target does not re-roll from replication to replication.
 - **Targets computed by hand from the data-generating process**, never
   re-derived from a draw: ATT(g, g+h) = (g&minus;2) + 0.5h, so the
   event-study truths are exactly 2.0, 2.5 and 3.0.
-- **Fixed seeds.** Replication *r* uses seed 90000 + *r* everywhere, so the
-  same draw is handed to every package and the arms line up replication by
-  replication. The bootstrap arm uses 70000 + *r*.
-- **500 draws** per setting, 1,000 units and seven periods per draw.
+- **Fixed seeds.** Replication *r* uses seed 90000 + *r* everywhere (in every
+  regime and for every package), so the same draw is handed to every package
+  and the arms line up replication by replication. The bootstrap arm uses
+  70000 + *r*.
+- **500 draws** per setting, with 1,000 units and seven periods in each
+  draw.
 - **Rival packages at their current SSC releases**, each invoked as its own
-  documentation prescribes. Where a package does not claim to support a
-  setting, the attempt is still made and whatever it returns is recorded,
-  including nothing.
+  documentation prescribes (we did not tune any of them). Where a package
+  does not claim to support a setting, we still make the attempt and record
+  whatever it returns, including nothing.
 - **csdid from source**, `src/ado` and `src/mata` pushed onto the adopath,
-  never an installed copy.
+  never an installed copy (so the published tables track the source tree).
 
 To run them, put the files in one folder with the csdid source tree in
 `../src`, and give each driver a unit count, a replication count and an
-output file.
+output file (in that order). The scripts do not install anything, so a
+package that is not already on your machine will simply be recorded as
+missing.
 
 <p class="fold-controls">
 <button type="button" onclick="foldAll(true)">Expand all</button>
@@ -51,7 +56,7 @@ function foldAll(open) {
 
 ## The population and the harness
 
-Every arm below draws from the same population and is scored against the same targets. These three files are what the drivers load.
+Every arm below draws from the same population and is scored against the same targets, and these three files are what the drivers load. None of them is run on its own.
 
 <details class="code-fold">
 <summary><code>simdgp.do</code> &mdash; the population: one DGP, one set of targets, every sampling regime and misspecification design</summary>
@@ -539,7 +544,7 @@ foreach reg in balanced unbalanced rcs {
 
 ## Reliability arms
 
-One population, one set of targets, and only the way the sample arrives changes. Each driver writes one row per (regime, package, replication, horizon), so nothing is aggregated before it can be inspected.
+These arms hold the population and the targets fixed and change only the way the sample arrives, and each driver writes one row per (regime, package, replication, horizon), so that nothing is aggregated before it can be inspected (one CSV per arm).
 
 <details class="code-fold">
 <summary><code>simmc.do</code> &mdash; Reliability I: the four sampling regimes (balanced, period-varying missingness, unbalanced, repeated cross sections), full package roster</summary>
@@ -908,7 +913,7 @@ display "MCDONE `outfile'"</code></pre>
 
 ## Misspecification
 
-The covariates are real and parallel trends is conditional. These arms break the outcome model, then the propensity score, and record what each estimator does about it.
+In these arms the covariates matter and parallel trends holds only conditionally, so we break the outcome model first and the propensity score second (one model at a time), and record what each estimator does about it. Neither cell is a worst case, and each of them breaks one model in one specific way.
 
 <details class="code-fold">
 <summary><code>simmc_dr.do</code> &mdash; the three misspecification cells: both models right, outcome model wrong, propensity score wrong</summary>
@@ -1064,7 +1069,7 @@ display "MCDONE `outfile'"</code></pre>
 
 ## Precision and bands
 
-What changes when the error process is not iid, and whether an interval read across the whole event-study path covers at its nominal level.
+These two arms ask what changes when the error process is not iid, and whether an interval read across the whole event-study path covers at its nominal level (joint coverage, not pointwise).
 
 <details class="code-fold">
 <summary><code>simmc_ur.do</code> &mdash; the error-process arm: within-unit random-walk errors, where base-period differencing is the efficient construction</summary>
@@ -1187,7 +1192,7 @@ display "MCDONE"</code></pre>
 
 ## Speed
 
-Timing, with the warmup discarded. The runners hold the data, the clustering and the inference request fixed across packages, and record anything a package refuses rather than substituting something cheaper.
+The timing runs discard a warmup trial, hold the data, the clustering and the inference request fixed across packages, and record anything a package refuses rather than substituting something cheaper for it. We report wall-clock seconds (the median over the timed trials). They do not separate the estimator from the input and output around it.
 
 <details class="code-fold">
 <summary><code>dgp.do</code> &mdash; the benchmark DGP and the three panel structures used by the timing grid</summary>
@@ -2259,7 +2264,7 @@ foreach n in 12500 25000 50000 {
 
 ## Analysis
 
-One script turns the raw per-replication CSVs into the bias and coverage tables in the guide.
+One script turns the raw per-replication CSVs into the bias and coverage tables in the guide, and it reads nothing except those CSVs (no Stata state and no saved estimates carry over), so the tables can be rebuilt from the recorded draws alone.
 
 <details class="code-fold">
 <summary><code>mcsum.py</code> &mdash; the analyzer: bias, SD, RMSE, mean standard error and 95% coverage against the fixed population targets</summary>

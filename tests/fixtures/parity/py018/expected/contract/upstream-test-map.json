@@ -1,0 +1,34 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_percell_failure.py",
+    "source_sha256": "e15c0c8cde82b8d035fa285f344be7735b775e15d5b0b9fc4dd2159c5f05fe8e",
+    "source_test": "test_collinear_covariates_no_crash",
+    "mapped_scenario": "collinear_covariates_no_crash",
+    "assertion_family": "no crash; no warning; finite ATT/SE parity",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_percell_failure.py",
+    "source_sha256": "e15c0c8cde82b8d035fa285f344be7735b775e15d5b0b9fc4dd2159c5f05fe8e",
+    "source_test": "test_tiny_group_warns_not_crashes",
+    "mapped_scenario": "tiny_group_no_crash",
+    "assertion_family": "no crash; small-group warning; at least one viable group has finite ATT/SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_percell_failure.py",
+    "source_sha256": "e15c0c8cde82b8d035fa285f344be7735b775e15d5b0b9fc4dd2159c5f05fe8e",
+    "source_test": "test_failed_cells_are_nan",
+    "mapped_scenario": "tiny_group_no_crash",
+    "assertion_family": "viable group 2006 has no missing ATT/SE values",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_percell_failure.py",
+    "source_sha256": "e15c0c8cde82b8d035fa285f344be7735b775e15d5b0b9fc4dd2159c5f05fe8e",
+    "source_test": "test_normal_data_unaffected",
+    "mapped_scenario": "normal_data_unaffected",
+    "assertion_family": "normal panel has no missing ATT/SE values",
+    "coverage_status": "mapped"
+  }
+]

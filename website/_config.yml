@@ -1,0 +1,12 @@
+title: csdid
+description: Difference-in-Differences with Multiple Time Periods, in Stata
+markdown: kramdown
+exclude:
+  - README.md
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+url: https://psantanna.com
+baseurl: /csdid

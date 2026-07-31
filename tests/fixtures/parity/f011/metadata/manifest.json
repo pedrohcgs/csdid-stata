@@ -1,0 +1,85 @@
+{
+  "matrix_id": "F011",
+  "fixture_family": "covariates",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D001",
+  "tolerance_ids": "TOL001",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 9
+    },
+    {
+      "path": "inputs/sparse-factor.csv",
+      "rows": 240,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f011/generate.R",
+      "path": "tools/parity/generators/f011/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {
+    "seed_sparse_factor": 11
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/covariate-grid.csv",
+      "schema": "attgt-covariate-grid"
+    },
+    {
+      "path": "expected/r/dense-factor-dummy-grid.csv",
+      "schema": "attgt-dense-factor-dummy-grid"
+    },
+    {
+      "path": "expected/r/sparse-factor-grid.csv",
+      "schema": "attgt-sparse-factor-grid"
+    },
+    {
+      "path": "expected/r/sparse-factor-events.csv",
+      "schema": "warning-event-counts"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/covariate-grid.csv",
+      "expected": "expected/r/covariate-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "est_method", "group", "time"]
+    },
+    {
+      "actual": "Stata dense factor/manual-dummy ATT(g,t)",
+      "expected": "expected/r/dense-factor-dummy-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["panel_mode", "covariate_spec", "method", "group", "time"]
+    },
+    {
+      "actual": "Stata sparse factor ATT(g,t)",
+      "expected": "expected/r/sparse-factor-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["panel_mode", "covariate_spec", "group", "time"]
+    },
+    {
+      "actual": "Stata sparse factor singular-warning counts",
+      "expected": "expected/r/sparse-factor-events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["panel_mode", "covariate_spec", "event_key"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Panel and true repeated-cross-section dr/reg/ipw fixture for numeric time-varying covariates, factor-variable expansion, numeric interactions, and squared transformed covariate terms. It also inherits RT019 dense and sparse factor boundaries: dense factor variables must match manually expanded dummies, while rank-deficient sparse factor variables/manual dummies emit R-style singular warnings and preserve missing ATT/SE cells. Broader nuisance-model and DRDID boundary coverage remains covered by F010/F033."
+}

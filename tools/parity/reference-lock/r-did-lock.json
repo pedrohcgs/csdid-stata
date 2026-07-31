@@ -1,0 +1,63 @@
+{
+  "status": "frozen",
+  "source": "https://github.com/bcallaway11/did",
+  "observed_on": "2026-06-22",
+  "commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "tree": "9130f75aa275cf6f19626d91431677dd437fd61d",
+  "git_archive_sha256": "3414f42ccde446ea43f253506bb9fae846c488dbb1a9ecb42f6a6307cc2df098",
+  "tracked_file_manifest_sha256": "e9e6be614ceb326d231012f5385a999bc15d84f99f492bbdb1d55a2ce754cf17",
+  "description_sha256": "393741980b3e9a33bac42e2b1e990e25ff6bb94131bcc2dafdc66c8171a449c2",
+  "namespace_sha256": "dd0ca6151c06a4d3d9967349a2b71522584a444f42b1825befd715ad79f4a58d",
+  "package": "did",
+  "version": "2.5.1",
+  "license": "GPL-3",
+  "r_dependency": "R >= 4.1.0",
+  "observed_local_r_version": "4.6.0",
+  "rng_kind": ["Mersenne-Twister", "Inversion", "Rejection"],
+  "install_command": "R CMD INSTALL /path/to/pinned/did-checkout",
+  "dependency_floor": {
+    "BMisc": ">= 1.4.4",
+    "DRDID": ">= 1.3.0",
+    "data.table": ">= 1.15.4",
+    "dreamerr": ">= 1.4.0",
+    "testthat": ">= 3.0.0"
+  },
+  "imports": [
+    "BMisc",
+    "Matrix",
+    "pbapply",
+    "ggplot2",
+    "DRDID",
+    "generics",
+    "methods",
+    "tidyr",
+    "fastglm",
+    "data.table",
+    "dreamerr"
+  ],
+  "suggests": [
+    "rmarkdown",
+    "plm",
+    "here",
+    "knitr",
+    "covr",
+    "backports",
+    "broom",
+    "testthat",
+    "withr",
+    "remotes",
+    "callr"
+  ],
+  "cran_archive_note": "Initial checks on 2026-06-22 did not find did_2.5.1.tar.gz in CRAN current or archive paths; this GitHub commit is the v1 source.",
+  "mapped_test_files": 30,
+  "test_directory": "tests/testthat",
+  "role": "primary statistical oracle",
+  "fixture_generation_requirements": {
+    "record_r_version": true,
+    "record_package_versions": true,
+    "record_rng_seed": true,
+    "record_rng_kind": true,
+    "record_generator_hash": true,
+    "record_output_hashes": true
+  }
+}

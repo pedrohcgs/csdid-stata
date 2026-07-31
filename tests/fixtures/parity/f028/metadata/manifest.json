@@ -1,0 +1,103 @@
+{
+  "matrix_id": "F028",
+  "fixture_family": "plot-data",
+  "normative_source": "R did 2.5.1 ggdid plot-data formulas",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D015"],
+  "tolerance_ids": ["TOL005", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f028/generate.R",
+      "path": "tools/parity/generators/f028/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/plot-data-attgt.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-attgt-group3.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-aggte-dynamic.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-aggte-group.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/plot-data-aggte-calendar.csv",
+      "schema": "plot-data"
+    },
+    {
+      "path": "expected/r/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/new-stata/plot-schema.json",
+      "schema": "plot-data-schema"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_plot ATT(g,t)",
+      "expected": "expected/r/plot-data-attgt.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "group", "time"]
+    },
+    {
+      "actual": "Stata csdid_plot ATT(g,t) group 3",
+      "expected": "expected/r/plot-data-attgt-group3.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "group", "time"]
+    },
+    {
+      "actual": "Stata csdid_plot dynamic aggregation",
+      "expected": "expected/r/plot-data-aggte-dynamic.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "x"]
+    },
+    {
+      "actual": "Stata csdid_plot group aggregation",
+      "expected": "expected/r/plot-data-aggte-group.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "x"]
+    },
+    {
+      "actual": "Stata csdid_plot calendar aggregation",
+      "expected": "expected/r/plot-data-aggte-calendar.csv",
+      "tolerance_id": "TOL005",
+      "key_columns": ["plot_type", "x"]
+    },
+    {
+      "actual": "Stata csdid_plot simple aggregation error",
+      "expected": "expected/r/events.json",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Partial plot-data fixture for ATT(g,t), ATT(g,t) group filtering, and dynamic/group/calendar aggregation plot data. Rendering, graph styling, inherited R/Python plotting tests, and JEL figures remain incomplete."
+}

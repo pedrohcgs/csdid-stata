@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} — csdid{% else %}csdid — Difference-in-Differences with Multiple Time Periods{% endif %}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a class="brand" href="{{ '/' | relative_url }}">csdid</a>
+      <span class="links">
+        <a href="{{ '/getting-started.html' | relative_url }}">Getting started</a>
+        <a href="{{ '/guides.html' | relative_url }}">Guides</a>
+        <a href="{{ '/articles/csdid-against-the-field.html' | relative_url }}">Comparisons</a>
+        <a href="{{ '/articles/speed-vs-182.html' | relative_url }}">vs 1.82</a>
+        <a href="https://github.com/pedrohcgs/csdid-stata/blob/main/NEWS.md">News</a>
+        <a href="https://github.com/pedrohcgs/csdid-stata">GitHub</a>
+      </span>
+    </nav>
+  </header>
+  <main class="content">
+    {{ content }}
+  </main>
+  <footer class="site-footer">
+    <p>csdid 2.0.0 &middot; Callaway &amp; Sant'Anna (2021) in Stata &middot;
+    verified against the R <code>did</code> package &middot;
+    <a href="https://github.com/pedrohcgs/csdid-stata">source and issues</a></p>
+  </footer>
+</body>
+</html>

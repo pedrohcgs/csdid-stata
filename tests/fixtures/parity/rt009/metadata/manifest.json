@@ -1,0 +1,58 @@
+{
+  "matrix_id": "RT009",
+  "fixture_family": "r-conditional-did-pretest",
+  "normative_source": "R did 2.5.1 tests/testthat/test-conditional-did-pretest.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": "EXACT",
+  "inputs": [],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt009/generate.R",
+      "path": "tools/parity/generators/rt009/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Approved R-only conditional pretest helper divergence registry",
+      "expected": "expected/contract/approved-divergence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "divergence_id"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "The R source exercises a standalone conditional_did_pretest()/MP.TEST helper surface that is outside the frozen Stata public command profile."
+  },
+  "scope_note": "RT009 records all three R did test-conditional-did-pretest.R blocks as approved divergences because they directly test the standalone conditional_did_pretest()/MP.TEST helper surface and its internal precompute/bootstrap-scale paths. The Stata port has no public conditional_did_pretest or MP.TEST surface; public bootstrap and pre-period behavior remain verified through csdid/csdid_stats/csdid_estat inference rows."
+}

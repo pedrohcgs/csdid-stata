@@ -1,0 +1,65 @@
+[
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "panel point-estimate methods",
+    "mapped_scenario": "panel-methods",
+    "assertion_family": "dr/reg/ipw panel ATT(g,t) point estimates are finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "two-period aggregation point estimates",
+    "mapped_scenario": "two-period-aggregations",
+    "assertion_family": "simple/group/dynamic/calendar two-period aggregation overall ATT is finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "no-covariate point estimates",
+    "mapped_scenario": "no-covariates",
+    "assertion_family": "dr/reg no-covariate panel ATT(g,t) point estimates are finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "repeated-cross-section point estimates",
+    "mapped_scenario": "repeated-cross-section",
+    "assertion_family": "dr/reg/ipw repeated-cross-section ATT(g,t) point estimates are finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "unbalanced panel point estimates",
+    "mapped_scenario": "allow_unbalanced",
+    "assertion_family": "unbalanced ivar data follows the R-compatible allow_unbalanced path with finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "not-yet-treated and no-never point estimates",
+    "mapped_scenario": "notyettreated",
+    "assertion_family": "not-yet-treated controls work with and without never-treated units",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/att_gt_point_estimate_tests.Rmd",
+    "source_sha256": "b89b726f4f3fbb78b2d5408712b7454116113ff46e5d8599837653ee6e4fff3c",
+    "source_test": "legacy Rmd has no testthat expectations",
+    "mapped_scenario": "legacy-rmd-form",
+    "assertion_family": "R source is a legacy Rmd document, not a testthat file with formal expectations",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT030-DIV001"
+  }
+]

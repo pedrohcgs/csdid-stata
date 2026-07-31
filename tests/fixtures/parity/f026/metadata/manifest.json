@@ -1,0 +1,48 @@
+{
+  "matrix_id": "F026",
+  "fixture_family": "stored-results",
+  "normative_source": "R did 2.5.1 output semantics mapped to Stata e()",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D009", "D014"],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 192,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f026/generate.R",
+      "path": "tools/parity/generators/f026/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/new-stata/ereturn.json",
+      "schema": "ereturn"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "live Stata e()",
+      "expected": "expected/new-stata/ereturn.json",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "name"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Exact stored-result contract for ATT(g,t), influence-function, group-probability, unit-group, clustered metadata, repeated-cross-section metadata, simple aggregation, and the stored-result postestimation surfaces covered by F026. Plot-data behavior remains F028."
+}

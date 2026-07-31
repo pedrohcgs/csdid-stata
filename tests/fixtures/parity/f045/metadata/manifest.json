@@ -1,0 +1,80 @@
+{
+  "matrix_id": "F045",
+  "fixture_family": "legacy-default-divergences",
+  "normative_source": "D005/D008 legacy Stata compatibility policy; R did 2.5.1 defaults plus owner-directed D003 unbalanced-panel default",
+  "source_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
+  "decision_refs": ["D003", "D005", "D008", "D011", "D013"],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/balanced.csv",
+      "rows": 240,
+      "columns": 7
+    },
+    {
+      "path": "inputs/unbalanced.csv",
+      "rows": 237,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f045/generate.R",
+      "path": "tools/parity/generators/f045/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/new-stata/defaults.csv",
+      "schema": "legacy-default-snapshot"
+    },
+    {
+      "path": "expected/new-stata/defaults.json",
+      "schema": "legacy-default-snapshot"
+    },
+    {
+      "path": "expected/new-stata/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/new-stata/events.json",
+      "schema": "error-warning-events"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata default snapshot",
+      "expected": "expected/new-stata/defaults.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Stata captured legacy-default events",
+      "expected": "expected/new-stata/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    },
+    {
+      "actual": "Default versus explicit R-default matrices",
+      "expected": "live Stata matrix equality",
+      "tolerance_id": "TOL001",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {
+    "status": "unsupported-by-design",
+    "reason": "Old Stata defaults that silently used pair-balanced/full-balanced unbalanced-panel behavior or internal dryrun are not retained as defaults. bal()/balance() is a first-class option with three settings (full, pair, none), and allowunbalanced is a supported silent synonym of bal(none); dryrun remains unsupported."
+  },
+  "scope_note": "F045 freezes legacy default divergences as an executable migration gate: balanced estimator/sample defaults match explicit R defaults, unbalanced ivar() defaults to the allow_unbalanced path required by D003, omitted ivar() defaults to repeated cross sections, bal()/balance() is an opt-in three-setting option and allowunbalanced its supported synonym for bal(none), asinr is an opt-in no-op warning, long/long2 are strong opt-in warnings that use baseperiod(universal) when baseperiod() is omitted, and method/dripw/stdipw aliases are opt-in canonical mappings. Internal dryrun returns an explicit unsupported-by-design error."
+}

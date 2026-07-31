@@ -1,0 +1,101 @@
+[
+  {
+    "source_file": "tests/testthat/test-jel_replication.R",
+    "source_sha256": "7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054",
+    "source_test": "JEL Table 7: 2x2 CS-DiD point estimates match",
+    "mapped_scenario": "jel009 (jel-table7-artifact-contract)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-jel_replication.R",
+    "source_sha256": "7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054",
+    "source_test": "JEL 2xT: event study ATT(g,t) point estimates match",
+    "mapped_scenario": "jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-jel_replication.R",
+    "source_sha256": "7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054",
+    "source_test": "JEL 2xT: event study with covariates matches across methods",
+    "mapped_scenario": "jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-jel_replication.R",
+    "source_sha256": "7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054",
+    "source_test": "JEL GxT: staggered event study without covariates matches",
+    "mapped_scenario": "jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-jel_replication.R",
+    "source_sha256": "7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054",
+    "source_test": "JEL GxT: staggered event study with DR covariates matches",
+    "mapped_scenario": "jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-jel_replication.R",
+    "source_sha256": "7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054",
+    "source_test": "JEL: faster_mode matches regular mode",
+    "mapped_scenario": "n/a -- csdid has a single engine",
+    "assertion_family": "engine-invariance",
+    "coverage_status": "mapping",
+    "divergence_id": "JEL-MAP001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_jel_replication.py",
+    "source_sha256": "0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32",
+    "source_test": "test_jel_table7_2x2",
+    "mapped_scenario": "jel009 (jel-table7-artifact-contract)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_jel_replication.py",
+    "source_sha256": "0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32",
+    "source_test": "test_jel_2xt_event_study",
+    "mapped_scenario": "jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_jel_replication.py",
+    "source_sha256": "0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32",
+    "source_test": "test_jel_2xt_with_covariates",
+    "mapped_scenario": "jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_jel_replication.py",
+    "source_sha256": "0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32",
+    "source_test": "test_jel_gxt_no_covs",
+    "mapped_scenario": "jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_jel_replication.py",
+    "source_sha256": "0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32",
+    "source_test": "test_jel_gxt_dr_covs",
+    "mapped_scenario": "jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",
+    "assertion_family": "published-article-values",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

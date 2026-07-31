@@ -1,0 +1,3 @@
+"scenario","input","data_seed","balanced_clusters","k","group","time","att","se_r","target_sum","target_mean","rel_sum_mean_gap","cluster_vector_n","inffunc_n","n_clusters","source_biters"
+"unbalanced_cluster_sum_target","clustered-unbalanced.csv",101,FALSE,1,2,2,0.853296503776488,0.209248330882616,0.211264766731733,0.273598010828821,0.227827840956369,140,140,40,5000
+"balanced_cluster_sum_equals_mean","clustered-balanced.csv",202,TRUE,1,2,2,0.731712929011311,0.268424186007815,0.251084779038304,0.251084779038304,0,160,160,40,5000

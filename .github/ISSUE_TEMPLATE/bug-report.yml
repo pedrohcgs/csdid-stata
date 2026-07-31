@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a supported command failure, bad diagnostic, or broken postestimation behavior.
+title: "[bug]: "
+labels: ["bug", "needs-reprex"]
+body:
+  - type: input
+    id: csdid-version
+    attributes:
+      label: csdid version
+      placeholder: "Output from csdid version"
+    validations:
+      required: true
+  - type: input
+    id: stata-version
+    attributes:
+      label: Stata version and edition
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command that failed
+      render: stata
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Full Stata log
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Minimal reproducible data
+      description: Attach data or provide code that creates the data.
+    validations:
+      required: true

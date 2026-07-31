@@ -1,0 +1,5 @@
+"event_key","return_code","event_type","offending_option","message_normalized","canonical_behavior"
+"method_dripw_warning",0,"warning","method(dripw)","csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)","method=dr"
+"method_stdipw_warning",0,"warning","method(stdipw)","csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)","method=ipw"
+"asinr_warning",0,"warning","asinr","csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet","no-op"
+"wboot_mammen_error",498,"error","wboot(wbtype(mammen))","wboot() currently supports only R-compatible rademacher multipliers","unsupported multiplier"

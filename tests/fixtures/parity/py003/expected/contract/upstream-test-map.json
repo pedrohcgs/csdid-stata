@@ -1,0 +1,848 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_att_gt_dr_and_reg[dr]",
+    "mapped_scenario": "basic-covariate-panel",
+    "assertion_family": "ATT(g,t) first post-treatment effect is near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_att_gt_dr_and_reg[reg]",
+    "mapped_scenario": "basic-covariate-panel",
+    "assertion_family": "ATT(g,t) first post-treatment effect is near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_att_gt_ipw[dr]",
+    "mapped_scenario": "basic-no-covariate-panel",
+    "assertion_family": "DR and IPW work without covariates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_att_gt_ipw[ipw]",
+    "mapped_scenario": "basic-no-covariate-panel",
+    "assertion_family": "DR and IPW work without covariates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_case[simple]",
+    "mapped_scenario": "two-period-aggregation",
+    "assertion_family": "two-period aggregation is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_case[dynamic]",
+    "mapped_scenario": "two-period-aggregation",
+    "assertion_family": "two-period aggregation is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_case[group]",
+    "mapped_scenario": "two-period-aggregation",
+    "assertion_family": "two-period aggregation is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_case[calendar]",
+    "mapped_scenario": "two-period-aggregation",
+    "assertion_family": "two-period aggregation is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_no_covariates[dr]",
+    "mapped_scenario": "no-covariates",
+    "assertion_family": "no-covariate ATT(g,t) is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_no_covariates[reg]",
+    "mapped_scenario": "no-covariates",
+    "assertion_family": "no-covariate ATT(g,t) is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_repeated_cross_section[dr]",
+    "mapped_scenario": "repeated-cross-section",
+    "assertion_family": "repeated-cross-section ATT(g,t) is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_repeated_cross_section[reg]",
+    "mapped_scenario": "repeated-cross-section",
+    "assertion_family": "repeated-cross-section ATT(g,t) is finite and near the simulated unit effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_ipw_repeated_cross_sections[dr]",
+    "mapped_scenario": "ipw-repeated-cross-section",
+    "assertion_family": "DR and IPW repeated-cross-section estimators are finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_ipw_repeated_cross_sections[ipw]",
+    "mapped_scenario": "ipw-repeated-cross-section",
+    "assertion_family": "DR and IPW repeated-cross-section estimators are finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_rc_dynamic_effects",
+    "mapped_scenario": "rc-dynamic-effects",
+    "assertion_family": "dynamic event-time effect recovers the exposure-varying DGP",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_unbalanced_panel",
+    "mapped_scenario": "allow_unbalanced",
+    "assertion_family": "unbalanced ivar data is routed through the R-compatible repeated-cross-section path",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_notyettreated_rc",
+    "mapped_scenario": "notyettreated-rc",
+    "assertion_family": "not-yet-treated repeated-cross-section control group is finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_notyettreated_no_nevertreated",
+    "mapped_scenario": "notyettreated-no-never",
+    "assertion_family": "not-yet-treated control works with no never-treated cohort",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_nevertreated_coerces_no_nevertreated",
+    "mapped_scenario": "nevertreated-fallback-no-never",
+    "assertion_family": "nevertreated control with no never-treated cohort warns and falls back to the latest cohort",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_aggregation_dynamic",
+    "mapped_scenario": "dynamic-aggregation",
+    "assertion_family": "dynamic aggregation recovers the exposure-varying DGP",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_aggregation_balance_e",
+    "mapped_scenario": "dynamic-balance-e",
+    "assertion_family": "balance_e dynamic aggregation never increases the number of event-time rows",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_unequally_spaced_groups",
+    "mapped_scenario": "unequally-spaced-groups",
+    "assertion_family": "dynamic aggregation supports unequally spaced time periods and cohorts",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_first_period_treatment",
+    "mapped_scenario": "first-period-treated-warning",
+    "assertion_family": "first-period treated units are dropped with a warning",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_min_max_exposures",
+    "mapped_scenario": "dynamic-min-max-window",
+    "assertion_family": "dynamic min_e/max_e windowing keeps the requested exposure window",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_significance_level",
+    "mapped_scenario": "level-and-cband",
+    "assertion_family": "level and confidence-band metadata are coherent",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_malformed_data_bad_idname",
+    "mapped_scenario": "bad-idname-error",
+    "assertion_family": "invalid id variable fails clearly",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_sampling_weights",
+    "mapped_scenario": "unit-weight-equivalence",
+    "assertion_family": "unit weights match the unweighted subset result",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_clustered_se",
+    "mapped_scenario": "clustered-se",
+    "assertion_family": "numeric cluster standard errors are finite and recorded",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_anticipation[anticipation=1]",
+    "mapped_scenario": "anticipation-dynamic",
+    "assertion_family": "anticipation shifts dynamic event-time effects",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_anticipation[anticipation=0]",
+    "mapped_scenario": "anticipation-dynamic",
+    "assertion_family": "anticipation shifts dynamic event-time effects",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_varying_vs_universal_base[varying]",
+    "mapped_scenario": "varying-vs-universal-base",
+    "assertion_family": "varying and universal base-period dynamic aggregation are finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_varying_vs_universal_base[universal]",
+    "mapped_scenario": "varying-vs-universal-base",
+    "assertion_family": "varying and universal base-period dynamic aggregation are finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_small_groups[dr]",
+    "mapped_scenario": "small-groups",
+    "assertion_family": "small treated groups warn but other cohorts remain estimable",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_small_groups[reg]",
+    "mapped_scenario": "small-groups",
+    "assertion_family": "small treated groups warn but other cohorts remain estimable",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_column_naming_gname[attgt]",
+    "mapped_scenario": "reserved-column-names",
+    "assertion_family": "user columns named like API arguments remain usable",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_column_naming_gname[simple]",
+    "mapped_scenario": "reserved-column-names",
+    "assertion_family": "user columns named like API arguments remain usable",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_column_naming_gname[dynamic]",
+    "mapped_scenario": "reserved-column-names",
+    "assertion_family": "user columns named like API arguments remain usable",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_custom_est_method",
+    "mapped_scenario": "python-callable-estimator-only",
+    "assertion_family": "Python callable est_method has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY003-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_panel",
+    "mapped_scenario": "fast-mode-panel",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_rcs",
+    "mapped_scenario": "fast-mode-rcs",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_unbalanced",
+    "mapped_scenario": "fast-mode-unbalanced",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_filtered",
+    "mapped_scenario": "fast-mode-filtered",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_time_indexing_rc",
+    "mapped_scenario": "fast-mode-time_indexing_rc",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_time_indexing_panel",
+    "mapped_scenario": "fast-mode-time_indexing_panel",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_time_indexing_nonconsec",
+    "mapped_scenario": "fast-mode-time_indexing_nonconsec",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFasterMode.test_time_indexing_universal",
+    "mapped_scenario": "fast-mode-time_indexing_universal",
+    "assertion_family": "requested fast path matches the standard path on public ATT(g,t) results",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_fix_weights_options[none]",
+    "mapped_scenario": "fixweights-options",
+    "assertion_family": "fix_weights modes produce finite ATT(g,t) estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_fix_weights_options[varying]",
+    "mapped_scenario": "fixweights-options",
+    "assertion_family": "fix_weights modes produce finite ATT(g,t) estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_fix_weights_options[base_period]",
+    "mapped_scenario": "fixweights-options",
+    "assertion_family": "fix_weights modes produce finite ATT(g,t) estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_fix_weights_options[first_period]",
+    "mapped_scenario": "fixweights-options",
+    "assertion_family": "fix_weights modes produce finite ATT(g,t) estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_time_invariant[varying]",
+    "mapped_scenario": "fixweights-time-invariant",
+    "assertion_family": "time-invariant weights match default point estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_time_invariant[base_period]",
+    "mapped_scenario": "fixweights-time-invariant",
+    "assertion_family": "time-invariant weights match default point estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_time_invariant[first_period]",
+    "mapped_scenario": "fixweights-time-invariant",
+    "assertion_family": "time-invariant weights match default point estimates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_tv_weights_match",
+    "mapped_scenario": "fixweights-tv-difference",
+    "assertion_family": "fix_weights public behavior matches the Python/R contract",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_nyt_tv_weights",
+    "mapped_scenario": "fixweights-notyettreated",
+    "assertion_family": "fix_weights public behavior matches the Python/R contract",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_rc_tv_weights",
+    "mapped_scenario": "fixweights-rc-varying",
+    "assertion_family": "fix_weights public behavior matches the Python/R contract",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_validation[invalid]",
+    "mapped_scenario": "fixweights-invalid",
+    "assertion_family": "fix_weights public behavior matches the Python/R contract",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_validation[rc_fixed]",
+    "mapped_scenario": "fixweights-rc-fixed-error",
+    "assertion_family": "fix_weights public behavior matches the Python/R contract",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestFixWeights.test_unbalanced",
+    "mapped_scenario": "fixweights-unbalanced",
+    "assertion_family": "fix_weights public behavior matches the Python/R contract",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestIFConsistency.test_balanced",
+    "mapped_scenario": "if-consistency-balanced",
+    "assertion_family": "requested fast path preserves influence-function summaries",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestIFConsistency.test_notyettreated",
+    "mapped_scenario": "if-consistency-notyettreated",
+    "assertion_family": "requested fast path preserves influence-function summaries",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestIFConsistency.test_rc",
+    "mapped_scenario": "if-consistency-rc",
+    "assertion_family": "requested fast path preserves influence-function summaries",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestIFConsistency.test_unbalanced",
+    "mapped_scenario": "if-consistency-unbalanced",
+    "assertion_family": "requested fast path preserves influence-function summaries",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "TestIFConsistency.test_no_covariates",
+    "mapped_scenario": "if-consistency-no_covariates",
+    "assertion_family": "requested fast path preserves influence-function summaries",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_basic_estimation_all_methods[dr]",
+    "mapped_scenario": "param-basic-all-methods",
+    "assertion_family": "all methods produce finite covariate ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_no_covariates_all_methods[dr]",
+    "mapped_scenario": "param-no-covariates-all-methods",
+    "assertion_family": "all methods produce finite no-covariate ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_repeated_cross_section_all_methods[dr]",
+    "mapped_scenario": "param-rc-all-methods",
+    "assertion_family": "all methods produce finite repeated-cross-section ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_notyettreated_all_methods[dr]",
+    "mapped_scenario": "param-notyettreated-all-methods",
+    "assertion_family": "all methods produce finite not-yet-treated ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_anticipation_all_methods[dr]",
+    "mapped_scenario": "param-anticipation-all-methods",
+    "assertion_family": "all methods produce finite dynamic anticipation aggregation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_column_naming_variations[dr]",
+    "mapped_scenario": "param-column-variations",
+    "assertion_family": "all methods accept user column names that overlap API terms",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[dr,simple]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[dr,dynamic]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[dr,group]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[dr,calendar]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_basic_estimation_all_methods[reg]",
+    "mapped_scenario": "param-basic-all-methods",
+    "assertion_family": "all methods produce finite covariate ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_no_covariates_all_methods[reg]",
+    "mapped_scenario": "param-no-covariates-all-methods",
+    "assertion_family": "all methods produce finite no-covariate ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_repeated_cross_section_all_methods[reg]",
+    "mapped_scenario": "param-rc-all-methods",
+    "assertion_family": "all methods produce finite repeated-cross-section ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_notyettreated_all_methods[reg]",
+    "mapped_scenario": "param-notyettreated-all-methods",
+    "assertion_family": "all methods produce finite not-yet-treated ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_anticipation_all_methods[reg]",
+    "mapped_scenario": "param-anticipation-all-methods",
+    "assertion_family": "all methods produce finite dynamic anticipation aggregation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_column_naming_variations[reg]",
+    "mapped_scenario": "param-column-variations",
+    "assertion_family": "all methods accept user column names that overlap API terms",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[reg,simple]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[reg,dynamic]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[reg,group]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[reg,calendar]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_basic_estimation_all_methods[ipw]",
+    "mapped_scenario": "param-basic-all-methods",
+    "assertion_family": "all methods produce finite covariate ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_no_covariates_all_methods[ipw]",
+    "mapped_scenario": "param-no-covariates-all-methods",
+    "assertion_family": "all methods produce finite no-covariate ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_repeated_cross_section_all_methods[ipw]",
+    "mapped_scenario": "param-rc-all-methods",
+    "assertion_family": "all methods produce finite repeated-cross-section ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_notyettreated_all_methods[ipw]",
+    "mapped_scenario": "param-notyettreated-all-methods",
+    "assertion_family": "all methods produce finite not-yet-treated ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_anticipation_all_methods[ipw]",
+    "mapped_scenario": "param-anticipation-all-methods",
+    "assertion_family": "all methods produce finite dynamic anticipation aggregation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_column_naming_variations[ipw]",
+    "mapped_scenario": "param-column-variations",
+    "assertion_family": "all methods accept user column names that overlap API terms",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[ipw,simple]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[ipw,dynamic]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[ipw,group]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_att_gt.py",
+    "source_sha256": "65d153387ad39131aa5a9f5f87abf9ae8081bf562cc26ff3bf390b953ea154fe",
+    "source_test": "test_two_period_all_methods[ipw,calendar]",
+    "mapped_scenario": "param-two-period-all-methods",
+    "assertion_family": "all methods support all aggregation types in two-period data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,74 @@
+{
+  "comparison_plan": [
+    {
+      "actual": "Committed JEL artifact audit",
+      "expected": "expected/contract/artifact-audit.csv",
+      "key_columns": [
+        "role",
+        "relative_path"
+      ],
+      "tolerance_id": "EXACT"
+    },
+    {
+      "actual": "Full JEL reproduction report",
+      "expected": "expected/contract/full-reproduction-evidence.csv",
+      "key_columns": [
+        "artifact_id"
+      ],
+      "tolerance_id": "EXACT"
+    }
+  ],
+  "decision_refs": [
+    "D006",
+    "D013",
+    "D014",
+    "D015"
+  ],
+  "expected_outputs": [
+    {
+      "path": "expected/contract/artifact-audit.csv",
+      "schema": "jel-artifact-audit"
+    },
+    {
+      "path": "expected/contract/full-reproduction-evidence.csv",
+      "schema": "jel-full-reproduction-evidence"
+    },
+    {
+      "path": "expected/contract/figure-pdf-audit.csv",
+      "schema": "jel-figure-pdf-audit"
+    }
+  ],
+  "fixture_family": "jel-figure3-artifact-contract",
+  "full_reproduction_evidence": {
+    "analysis_gate": "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh --analyze-existing",
+    "artifact_id": "JEL012",
+    "artifact_type": "figure",
+    "comparison_csv": "build/jel-full-reproduction/outputs/artifact-comparison.csv",
+    "full_gate": "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh",
+    "report": "reports/jel-full-reproduction-result.md",
+    "semantic_audit_csv": "build/jel-full-reproduction/outputs/stata-figure-semantic-audit.csv",
+    "status": "pass"
+  },
+  "generators": [
+    {
+      "command": "python3 tools/parity/generators/jel/generate.py",
+      "path": "tools/parity/generators/jel/generate.py",
+      "runtime": "Python"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "expected/contract/artifact-audit.csv",
+      "schema": "jel-artifact-audit"
+    }
+  ],
+  "matrix_id": "JEL012",
+  "normative_source": "JEL-DiD committed scripts and artifacts",
+  "rng": null,
+  "scope_note": "This fixture records committed artifact availability and links the artifact to the opt-in full JEL reproduction report. The report is the authoritative proof that the new Stata package regenerates and semantically compares the full JEL R/Stata pipelines.",
+  "source_commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466",
+  "tolerance_ids": [
+    "TOL004",
+    "TOL006"
+  ]
+}

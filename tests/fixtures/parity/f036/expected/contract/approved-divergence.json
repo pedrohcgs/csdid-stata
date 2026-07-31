@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "F036-DIV001",
+    "surface": "legacy-stata-option-surface",
+    "reason": "Some legacy Stata convenience options have no R did 2.5.1 analogue or are intentionally routed through newer postestimation commands. They are frozen as retained, soft-deprecated, explicitly rejected, or not-yet wrapper behavior rather than implemented as silent legacy behavior.",
+    "accepted_behavior": "The option inventory must classify all current csdid/csdid_stats/csdid_estat/csdid_plot surfaces, preserve retained R-compatible options, warn for soft-deprecated aliases, and return explicit diagnostics for unsupported legacy or styling options."
+  }
+]

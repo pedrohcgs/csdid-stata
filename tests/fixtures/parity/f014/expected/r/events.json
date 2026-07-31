@@ -1,0 +1,9 @@
+[
+  {
+    "event_key": "invalid_reps",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "wboot(reps(0))",
+    "message_normalized": "wboot() reps() must be a positive integer"
+  }
+]

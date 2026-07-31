@@ -1,0 +1,5 @@
+"scenario","input","id_mode","fast","biters","stata_seed","iqr_rtol","sd_rtol"
+"panel_between_bootstrap","panel-between-11.csv","panel",FALSE,3000,20260701,0.15,0.06
+"panel_within_bootstrap","panel-within-11.csv","panel",FALSE,3000,20260702,0.15,0.06
+"rcs_910_regular_bootstrap","rcs-910.csv","omitted",FALSE,5000,20260703,0.12,
+"rcs_910_fast_bootstrap","rcs-910.csv","omitted",TRUE,5000,20260704,0.12,

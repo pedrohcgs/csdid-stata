@@ -1,0 +1,6 @@
+"scenario","input_file","seed","method","control_group","base_period","r_panel","stata_ivar","expected_panel_mode","covariates","weighted","unbalanced","n_obs","n_units"
+"rand_101_panel_dr_never_varying_cov_w","rand_101_panel_dr_never_varying_cov_w.csv",101,"dr","nevertreated","varying",TRUE,TRUE,"panel","numeric",1,FALSE,320,64
+"rand_202_panel_ipw_notyet_universal_nocov","rand_202_panel_ipw_notyet_universal_nocov.csv",202,"ipw","notyettreated","universal",TRUE,TRUE,"panel","none",0,FALSE,320,64
+"rand_303_rc_reg_never_varying_cov_w","rand_303_rc_reg_never_varying_cov_w.csv",303,"reg","nevertreated","varying",FALSE,FALSE,"repeated-cross-section","numeric",1,FALSE,320,64
+"rand_404_unbalanced_default_dr_never_varying_cov_w","rand_404_unbalanced_default_dr_never_varying_cov_w.csv",404,"dr","nevertreated","varying",TRUE,TRUE,"allow_unbalanced","numeric",1,TRUE,308,64
+"rand_505_rc_ipw_notyet_universal_cov","rand_505_rc_ipw_notyet_universal_cov.csv",505,"ipw","notyettreated","universal",FALSE,FALSE,"repeated-cross-section","numeric",0,FALSE,320,64

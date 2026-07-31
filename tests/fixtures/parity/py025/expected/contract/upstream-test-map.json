@@ -1,0 +1,956 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_all_types_have_positive_overall_se",
+    "mapped_scenario": "test-inference.do aggregation SEs",
+    "assertion_family": "aggregation-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_calendar_per_time_and_overall",
+    "mapped_scenario": "test-aggte-comprehensive.do calendar",
+    "assertion_family": "aggregation-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_cband_crit_val_exceeds_pointwise",
+    "mapped_scenario": "test-f025.do e(crit_val) vs e(point_crit_val)",
+    "assertion_family": "uniform-band-critical-value",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_dynamic_balance_e_bounds_event_times",
+    "mapped_scenario": "test-f017.do balanced event sample",
+    "assertion_family": "event-window-bounds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_dynamic_event_times_and_overall",
+    "mapped_scenario": "test-aggte-comprehensive.do dynamic",
+    "assertion_family": "aggregation-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_dynamic_max_e_window",
+    "mapped_scenario": "test-f025.do window() upper bound",
+    "assertion_family": "event-window-bounds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_dynamic_min_e_window",
+    "mapped_scenario": "test-f025.do window() lower bound",
+    "assertion_family": "event-window-bounds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_get_agg_inf_func_adds_weight_if",
+    "mapped_scenario": "py019 ref_aggte.csv SE vs R (estimated-weight term)",
+    "assertion_family": "aggregation-influence-function",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_get_agg_inf_func_weighted_combination",
+    "mapped_scenario": "py019 ref_aggte.csv SE vs R",
+    "assertion_family": "aggregation-influence-function",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_get_se_analytic_formula",
+    "mapped_scenario": "py019 ref_aggte.csv SE vs R",
+    "assertion_family": "aggregation-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_group_per_group_and_overall",
+    "mapped_scenario": "test-aggte-comprehensive.do group",
+    "assertion_family": "aggregation-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_invalid_type_raises",
+    "mapped_scenario": "test-f036.do csdid_stats type() refusal",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_simple_overall_matches_weighted_average",
+    "mapped_scenario": "test-aggte-comprehensive.do simple",
+    "assertion_family": "aggregation-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_aggte.py",
+    "source_sha256": "40d729296c68f0b58e199601519b31b5f35ab451a2f372020febdd34f697f6c2",
+    "source_test": "test_wif_mean_zero_columns",
+    "mapped_scenario": "py019 ref_aggte.csv SE vs R (aggregated IF not exported)",
+    "assertion_family": "aggregation-influence-function",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_design_singular_ipw_checks_ps_fullsample",
+    "mapped_scenario": "test_percell_failure.do ipw full-sample propensity",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_design_singular_panel_control_singular",
+    "mapped_scenario": "test-f011.do singular control design",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_design_singular_panel_full_rank",
+    "mapped_scenario": "test-f011.do panel full rank",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_design_singular_rc_full_rank",
+    "mapped_scenario": "test-f011.do repeated cross-section full rank",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_design_singular_rc_tiny_treated_post_fails",
+    "mapped_scenario": "test_percell_failure.do tiny treated-post cell",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_lpi_anticipation_shifts",
+    "mapped_scenario": "test-f009.do anticipation shifts the base period",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_lpi_basic",
+    "mapped_scenario": "test_unit_inheritance.do varying base period",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_lpi_no_pretreatment_returns_none",
+    "mapped_scenario": "test_unit_inheritance.do no pre-treatment cell",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_overlap_all_treated_violates",
+    "mapped_scenario": "test-f040.do overlap violation warning",
+    "assertion_family": "overlap-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_overlap_balanced_ok",
+    "mapped_scenario": "test-overlap-guard-cache.do balanced design",
+    "assertion_family": "overlap-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_overlap_empty_no_violation",
+    "mapped_scenario": "test-overlap-guard-cache.do empty cell",
+    "assertion_family": "overlap-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_overlap_threshold_is_0999",
+    "mapped_scenario": "test-f040.do 0.999 propensity threshold",
+    "assertion_family": "overlap-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_plan_cell_post_no_pretreatment_breaks",
+    "mapped_scenario": "test_unit_inheritance.do no pre-treatment cell",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_plan_cell_post_period_uses_last_pretreatment",
+    "mapped_scenario": "rt031 varying base period",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_plan_cell_pre_period_estimate",
+    "mapped_scenario": "rt031 varying base period",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_plan_cell_universal_base_zero",
+    "mapped_scenario": "rt031 universal base period",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_plan_cell_universal_no_pretreatment_breaks",
+    "mapped_scenario": "test_unit_inheritance.do no pre-treatment cell",
+    "assertion_family": "base-period-selection",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_rcond_collinear_fails",
+    "mapped_scenario": "test-f011.do collinear design warns and skips the cell",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_rcond_full_rank_passes",
+    "mapped_scenario": "test-f011.do full-rank design",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_rcond_no_control_fails",
+    "mapped_scenario": "test_percell_failure.do cell with no controls",
+    "assertion_family": "singular-design-guard",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_select_estimators_callable",
+    "mapped_scenario": "n/a -- csdid takes no callable estimator; method() is dr, reg or ipw and anything else is rejected (rc 198)",
+    "assertion_family": "estimator-dispatch",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_select_estimators_dr",
+    "mapped_scenario": "test-att_gt.do method(dr)",
+    "assertion_family": "estimator-dispatch",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_select_estimators_ipw",
+    "mapped_scenario": "test-att_gt.do method(ipw)",
+    "assertion_family": "estimator-dispatch",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_attgt_shared.py",
+    "source_sha256": "52e861c800debd0dacd5991af45521f2d9e9dc19e90c734aa403e41c79640338",
+    "source_test": "test_select_estimators_reg",
+    "mapped_scenario": "test-att_gt.do method(reg)",
+    "assertion_family": "estimator-dispatch",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_compute_attgt.py",
+    "source_sha256": "d4930bdbd5c8db5a5428b6ab252c9a111d598804f6784d8f890487c8977aa356",
+    "source_test": "test_constant_te_recovered_and_post_flag",
+    "mapped_scenario": "rt031 recovers the true effect of 3",
+    "assertion_family": "attgt-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_compute_attgt.py",
+    "source_sha256": "d4930bdbd5c8db5a5428b6ab252c9a111d598804f6784d8f890487c8977aa356",
+    "source_test": "test_faster_equals_standard",
+    "mapped_scenario": "test-f032.do fast and standard paths agree",
+    "assertion_family": "fast-path-equivalence",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_compute_attgt.py",
+    "source_sha256": "d4930bdbd5c8db5a5428b6ab252c9a111d598804f6784d8f890487c8977aa356",
+    "source_test": "test_faster_equals_standard_fix_weights_varying",
+    "mapped_scenario": "py019 ref_fixweights.csv varying, both paths",
+    "assertion_family": "fast-path-equivalence",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_compute_attgt.py",
+    "source_sha256": "d4930bdbd5c8db5a5428b6ab252c9a111d598804f6784d8f890487c8977aa356",
+    "source_test": "test_inffunc_overall_mean_zero",
+    "mapped_scenario": "test_unit_inheritance.do e(inffunc) columns mean-zero",
+    "assertion_family": "influence-function-mean-zero",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_default_weights_path_succeeds_all_estimators",
+    "mapped_scenario": "test-att_gt.do unweighted dr/reg/ipw",
+    "assertion_family": "estimator-dispatch",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_drdid_panel_att_closed_form",
+    "mapped_scenario": "py019 ref_attgt.csv panel dr ATT vs R",
+    "assertion_family": "attgt-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_drdid_panel_if_closed_form",
+    "mapped_scenario": "rt008 e(inffunc) element-wise vs R",
+    "assertion_family": "influence-function-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_drdid_panel_if_fd_with_covariates",
+    "mapped_scenario": "rt008 e(inffunc) with covariates vs R",
+    "assertion_family": "influence-function-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_drdid_rc_att_closed_form",
+    "mapped_scenario": "py019 sim/ref_gaps.csv rc ATT vs R",
+    "assertion_family": "attgt-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_drdid_rc_if_closed_form",
+    "mapped_scenario": "py006 e(inffunc) element-wise vs R",
+    "assertion_family": "influence-function-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_ipw_panel_att_closed_form",
+    "mapped_scenario": "py019 ref_attgt.csv panel ipw ATT vs R",
+    "assertion_family": "attgt-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_ipw_panel_if_closed_form",
+    "mapped_scenario": "rt008 e(inffunc) element-wise vs R",
+    "assertion_family": "influence-function-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_ipw_rc_att_closed_form",
+    "mapped_scenario": "py019 sim/ref_gaps.csv rc ipw ATT vs R",
+    "assertion_family": "attgt-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_ipw_rc_if_closed_form",
+    "mapped_scenario": "py006 e(inffunc) element-wise vs R",
+    "assertion_family": "influence-function-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_panel_dr_equals_ipw_intercept_only",
+    "mapped_scenario": "test_unit_inheritance.do dr equals ipw with no covariates, panel",
+    "assertion_family": "estimator-equivalence",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_panel_if_mean_zero",
+    "mapped_scenario": "test_unit_inheritance.do e(inffunc) columns mean-zero, panel",
+    "assertion_family": "influence-function-mean-zero",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_panel_negative_weight_raises",
+    "mapped_scenario": "test-robustness-guards.do negative weights rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_panel_trim_default_is_active",
+    "mapped_scenario": "test-f033.do default pscoretrim(.995)",
+    "assertion_family": "pscore-trimming",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_panel_weight_scale_invariance",
+    "mapped_scenario": "test_unit_inheritance.do rescaling iweights leaves ATT unchanged",
+    "assertion_family": "weight-scale-invariance",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_panel_weighted_att_matches_closed_form",
+    "mapped_scenario": "py019 ref_fixweights.csv weighted ATT vs R",
+    "assertion_family": "attgt-value-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_rc_dr_equals_ipw_intercept_only",
+    "mapped_scenario": "test_unit_inheritance.do dr equals ipw with no covariates, rc",
+    "assertion_family": "estimator-equivalence",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_rc_if_mean_zero",
+    "mapped_scenario": "test_unit_inheritance.do e(inffunc) columns mean-zero, rc",
+    "assertion_family": "influence-function-mean-zero",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_rc_negative_weight_raises",
+    "mapped_scenario": "test-robustness-guards.do negative weights rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_rc_trim_default_is_active",
+    "mapped_scenario": "test-f033.do default pscoretrim(.995)",
+    "assertion_family": "pscore-trimming",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_trim_pscore_clamp_upper",
+    "mapped_scenario": "test-f051.do propensity clamped at the trim bound",
+    "assertion_family": "pscore-trimming",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_trim_pscore_controls_threshold",
+    "mapped_scenario": "test-f033.do pscoretrim() threshold",
+    "assertion_family": "pscore-trimming",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_trim_pscore_mixed_only_controls_affected",
+    "mapped_scenario": "test-f051.do only controls affected",
+    "assertion_family": "pscore-trimming",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_drdid.py",
+    "source_sha256": "72c6b0047bc17ff5c300a63c2436a35fda475b93ddc4006755b8291856cd75a6",
+    "source_test": "test_trim_pscore_treated_never_trimmed",
+    "mapped_scenario": "test-f051.do treated units never trimmed",
+    "assertion_family": "pscore-trimming",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mb_division_by_n",
+    "mapped_scenario": "test-f015.do bootstrap scaling",
+    "assertion_family": "bootstrap-scaling",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mb_n1_abs_equals_a_exactly",
+    "mapped_scenario": "test-f015.do Mallows multiplier draw",
+    "assertion_family": "multiplier-draw",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mb_n2_lattice_values",
+    "mapped_scenario": "test-f015.do Mallows multiplier draw",
+    "assertion_family": "multiplier-draw",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mb_rademacher_variance",
+    "mapped_scenario": "test-f015.do multiplier variance",
+    "assertion_family": "multiplier-draw",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mb_seed_path_independent_of_global",
+    "mapped_scenario": "test-f015.do rseed() independent of set seed",
+    "assertion_family": "bootstrap-reproducibility",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mb_serial_reproducible_under_global_seed",
+    "mapped_scenario": "test-f015.do rseed() reproducibility",
+    "assertion_family": "bootstrap-reproducibility",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_all_degenerate_returns_nan",
+    "mapped_scenario": "test_percell_failure.do all cells degenerate",
+    "assertion_family": "degenerate-cell",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_clustered_se_uses_cluster_sums",
+    "mapped_scenario": "test-inference.do clustered SE vs R",
+    "assertion_family": "clustered-inference",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_clustervar_equal_idname_collapses_to_none",
+    "mapped_scenario": "test-cluster-analytic.do cluster() equal to ivar()",
+    "assertion_family": "clustered-inference",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_degenerate_column_gives_nan_se",
+    "mapped_scenario": "test_percell_failure.do degenerate cell SE missing",
+    "assertion_family": "degenerate-cell",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_missing_clustervar_warns_and_falls_back",
+    "mapped_scenario": "test-aggte-clustervars-override.do fallback warning",
+    "assertion_family": "clustered-inference",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_multiple_clustervars_rejected",
+    "mapped_scenario": "test-error-handling.do cluster() takes one variable",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_se_positive_and_crit_exceeds_pointwise",
+    "mapped_scenario": "test-f025.do e(crit_val) vs e(point_crit_val)",
+    "assertion_family": "uniform-band-critical-value",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_se_scales_with_if_magnitude",
+    "mapped_scenario": "test-bootstrap-plugin.do SE scaling",
+    "assertion_family": "bootstrap-scaling",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_mboot_time_varying_cluster_raises",
+    "mapped_scenario": "test-error-handling.do time-varying cluster rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_parallel_path_correct_variance_not_collapsed",
+    "mapped_scenario": "n/a -- csdid has no parallel bootstrap",
+    "assertion_family": "parallel-bootstrap",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_parallel_path_reproducible_under_seed",
+    "mapped_scenario": "n/a -- csdid has no parallel bootstrap; rseed() reproducibility is covered for the serial path by test-f015.do",
+    "assertion_family": "parallel-bootstrap",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_parallel_path_row_count_equals_biters",
+    "mapped_scenario": "n/a -- csdid has no parallel bootstrap; there is no cores() option (rc 198) and the multiplier loop is serial in Mata",
+    "assertion_family": "parallel-bootstrap",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_run_multiplier_bootstrap_shape_and_scaling",
+    "mapped_scenario": "test-bootstrap-plugin.do draw shape",
+    "assertion_family": "bootstrap-scaling",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_mboot.py",
+    "source_sha256": "ec5d0051937b36cd7fc2da8128d9420b9f4682c012a39c4d09b665da4324965b",
+    "source_test": "test_serial_vs_parallel_branch_selection",
+    "mapped_scenario": "n/a -- csdid has no parallel branch to select",
+    "assertion_family": "parallel-bootstrap",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_anticipation_text_in_dropped_first_period_warning",
+    "mapped_scenario": "test-f026.do anticipation wording in the dropped-period message",
+    "assertion_family": "diagnostic-message",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_constant_weights_no_tv_warning",
+    "mapped_scenario": "test-f012.do no message when weights are constant",
+    "assertion_family": "diagnostic-message",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_strictly_numeric_bool_false",
+    "mapped_scenario": "n/a -- Python helper; Stata has no boolean column type",
+    "assertion_family": "internal-helper",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_strictly_numeric_int_true",
+    "mapped_scenario": "n/a -- Python helper that type-introspects a pandas column. Stata variables are numeric or string by construction; the user-visible consequence is covered by the string time() refusal",
+    "assertion_family": "internal-helper",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_strictly_numeric_string_false",
+    "mapped_scenario": "n/a -- Python helper; the user-visible consequence is the string time() refusal",
+    "assertion_family": "internal-helper",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY025-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_time_varying_weights_warning",
+    "mapped_scenario": "test-f012.do time-varying weights message",
+    "assertion_family": "diagnostic-message",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_accepts_positive_weights",
+    "mapped_scenario": "test-robustness-guards.do positive weights accepted",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_normal_returns_none_clustervar",
+    "mapped_scenario": "test-inference.do unclustered run",
+    "assertion_family": "clustered-inference",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_panel_requires_idname",
+    "mapped_scenario": "test_unit_inheritance.do panel path requires ivar()",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_duplicate_id_time",
+    "mapped_scenario": "test-f024.do duplicate (id, time) rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_invalid_control_group",
+    "mapped_scenario": "test-error-handling.do control group refusal",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_multiple_clustervars",
+    "mapped_scenario": "test-error-handling.do cluster() takes one variable",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_negative_anticipation",
+    "mapped_scenario": "test-f026.do anticipation() must be non-negative",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_negative_gname",
+    "mapped_scenario": "test-f022.do negative gvar() rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_negative_weights",
+    "mapped_scenario": "test-robustness-guards.do negative weights rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_nonnumeric_time",
+    "mapped_scenario": "test_unit_inheritance.do string time() rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_nonpositive_mean_weights",
+    "mapped_scenario": "test-robustness-guards.do zero-mean weights rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_reversible_treatment",
+    "mapped_scenario": "test-error-handling.do reversible treatment rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_rejects_time_varying_cluster",
+    "mapped_scenario": "test-error-handling.do time-varying cluster rejected",
+    "assertion_family": "option-refusal",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_unit_preprocess.py",
+    "source_sha256": "78990229aec9ce0543dbf96a6ffda242e716018dde0b09269f1efcc78cc63c1d",
+    "source_test": "test_validate_unwraps_single_clustervar",
+    "mapped_scenario": "test-inference.do cluster(cluster)",
+    "assertion_family": "clustered-inference",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

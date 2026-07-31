@@ -1,0 +1,13 @@
+"group","time","event_time","att","se","control_group","base_period","est_method","weight_var","covariates","panel_mode","clustervar","n_clusters","sample_n","inffunc_col"
+2,2,0,0.339811277326796,0.119165177778761,"nevertreated","varying","dr","none","none","allow_unbalanced","cl",6,48,1
+2,2,0,0.339811277326799,0.119165177778761,"nevertreated","varying","reg","none","none","allow_unbalanced","cl",6,48,1
+2,2,0,0.339811277326801,0.11916517777876,"nevertreated","varying","ipw","none","none","allow_unbalanced","cl",6,48,1
+2,2,0,0.331897635399304,0.116825703761795,"nevertreated","varying","dr","wt","none","allow_unbalanced","cl",6,48,1
+2,2,0,0.331897635399305,0.116825703761795,"nevertreated","varying","reg","wt","none","allow_unbalanced","cl",6,48,1
+2,2,0,0.331897635399304,0.116825703761795,"nevertreated","varying","ipw","wt","none","allow_unbalanced","cl",6,48,1
+2,2,0,0.336391616724823,0.0337476746611702,"nevertreated","varying","dr","none","x1_x2","allow_unbalanced","cl",6,48,1
+2,2,0,0.533758531386937,0.0766366639171474,"nevertreated","varying","reg","none","x1_x2","allow_unbalanced","cl",6,48,1
+2,2,0,0.361131747269431,0.100396223790619,"nevertreated","varying","ipw","none","x1_x2","allow_unbalanced","cl",6,48,1
+2,2,0,0.341559354893139,0.0331599160588103,"nevertreated","varying","dr","wt","x1_x2","allow_unbalanced","cl",6,48,1
+2,2,0,0.535233710546198,0.0755289078836352,"nevertreated","varying","reg","wt","x1_x2","allow_unbalanced","cl",6,48,1
+2,2,0,0.358602082954079,0.0983251950808025,"nevertreated","varying","ipw","wt","x1_x2","allow_unbalanced","cl",6,48,1

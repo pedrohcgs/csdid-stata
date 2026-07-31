@@ -1,0 +1,10 @@
+[
+  {
+    "divergence_id": "PY006-DIV001",
+    "source_file": "csdid/test_csdid/test_compute_inffunc.py",
+    "source_tests": "test_point_estimates_match; test_se_is_nan_without_inffunc; test_aggte_blocked_without_inffunc; test_faster_without_inffunc",
+    "decision_ref": "D004",
+    "reason": "Python exposes an internal compute_inffunc=False construction path for point-estimates-only runs. The Stata public command surface intentionally maintains influence functions for standard errors, saved RIF artifacts, and csdid_stats/csdid_estat postestimation, and has no option to produce a no-IF object.",
+    "replacement_coverage": "The PY006 gate verifies that the default Stata public command computes e(inffunc), finite SEs, and aggregation postestimation, and rejects a compute_inffunc() option as unsupported. F032/PY009 cover public fast/requested-fast equivalence."
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "matrix_id": "F038",
+  "fixture_family": "python-user-bug-regressions",
+  "normative_source": "R did test-user_bug_fixes.R and Python csdid test_user_bug_fixes.py",
+  "source_commit": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+  "decision_refs": ["D001", "D004"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/t1.csv",
+      "rows": 240,
+      "columns": 6
+    },
+    {
+      "path": "inputs/missing-cov.csv",
+      "rows": 240,
+      "columns": 6
+    },
+    {
+      "path": "inputs/fewer-periods.csv",
+      "rows": 360,
+      "columns": 5
+    },
+    {
+      "path": "inputs/zero-pre.csv",
+      "rows": 400,
+      "columns": 5
+    },
+    {
+      "path": "inputs/anticipation.csv",
+      "rows": 600,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f038/generate.R",
+      "path": "tools/parity/generators/f038/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte"
+    },
+    {
+      "path": "expected/r/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/r/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/aggte.csv",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "type", "seq"]
+    },
+    {
+      "actual": "Stata captured validation events",
+      "expected": "expected/r/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Approved-divergence F038/PY023 user-regression evidence for harmless t1 columns, missing-covariate complete-case panel unit dropping, fewer observed periods than treatment groups with aggregations, zero pre-treatment outcomes, missing formula variables, and anticipation-window treatment-group coercion. F038-DIV001 records inherited user-bug residuals covered by RT028, PY020, and PY023 dedicated gates rather than duplicated here."
+}

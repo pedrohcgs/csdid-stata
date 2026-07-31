@@ -1,0 +1,29 @@
+scenario,coverage_status,expected_behavior
+factor_not_dropped,mapped,"factor covariates materially change ATT(g,t)"
+factor_fast_panel,mapped,fast request with factor covariates matches standard panel path
+factor_fast_rc,mapped,fast request with factor covariates matches standard repeated-cross-section path
+mixed_factor_numeric,mapped,factor plus numeric covariates produce finite public estimates
+clustered_bootstrap_se_reasonable,mapped,clustered bootstrap SEs are positive and not inflated
+python-mboot-helper-only,approved-divergence,Python multiprocessing chunk helper has no Stata command analogue
+python-mboot-helper-only,approved-divergence,Python chunked multiplier helper has no Stata command analogue
+late_cohort_anticipation,mapped,late cohorts respect anticipation/coercion public behavior
+first_period_treated_drop,mapped,first-period treated units are dropped from estimated groups
+boolean_outcome,mapped,numeric 0/1 outcome is accepted as a Stata boolean analogue
+bad_formula,mapped,missing covariate is rejected
+intercept_formula,mapped,intercept-only public command succeeds
+balance_full_runs,mapped,bal(full) runs on an unbalanced panel
+balance_full_drops_units,mapped,bal(full) drops units not observed in every period and reports how many
+unbalanced_switches_to_rc,mapped,unbalanced ivar() routes to repeated-cross-section computation
+balanced_stays_panel,mapped,balanced ivar() data stays on panel path
+uniform_missing_periods,mapped,equal row counts with missing periods are still unbalanced
+last_cohort_coerced,mapped,last cohort is recoded to controls when no never-treated group exists
+analytical_cluster_se_public,mapped,public clustered analytical SE uses cluster-sum scaling
+python-results-dict-alias-only,approved-divergence,Python results dict legacy alias has no Stata object analogue
+python-results-dict-alias-only,approved-divergence,Python summary dataframe alias handling has no Stata object analogue
+universal_base_nan,mapped,universal base cell SE is missing
+varying_base_finite_se,mapped,varying base has finite SEs
+deterministic_zero_if_r_behavior,approved-divergence,Python deterministic zero-IF expectation diverges from R did 2.5.1
+string_id_rejected,mapped,string id variable is rejected
+numeric_id_ok,mapped,numeric id variable is accepted
+numeric_storage_id_ok,mapped,Stata numeric storage classes are accepted as the nullable-int analogue
+python-bool-id-dtype-only,approved-divergence,Python boolean id dtype has no Stata logical-type analogue

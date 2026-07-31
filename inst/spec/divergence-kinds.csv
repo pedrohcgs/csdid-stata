@@ -1,0 +1,57 @@
+divergence_id,divergence_kind,summary
+F033-DIV001,stata-surface,Raw DRDID function API is not a csdid command surface
+F034-DIV001,stata-surface,Saved-RIF dataset is a Stata extension with no R object analogue
+F035-DIV001,internal-api,Raw exported multiplier draw matrices are an R internal
+F035-DIV002,test-placement,Aggregation bootstrap postprocessing is covered by RT018 instead
+F036-DIV001,stata-surface,Legacy Stata convenience options with no R analogue
+F037-DIV001,test-placement,Python-only stochastic grid expansion is covered elsewhere
+F038-DIV001,test-placement,Inherited user-regression breadth is covered by its own fixtures
+F051-DIV001,behavioral-default,csdid defaults to base_period(universal); R defaults to varying
+F051-DIV002,behavioral-default,csdid defaults to not-yet-treated controls; R defaults to never-treated
+PY003-DIV001,language-surface,Callable est_method object has no Stata callback surface
+PY006-DIV001,stata-surface,compute_inffunc=False point-estimates-only path is not exposed
+PY010-DIV001,language-surface,matplotlib styling controls are not statistical output
+PY010-DIV002,upstream-conflict,Python raises where R warns; R governs parity decisions
+PY013-DIV001,stata-surface,compute_inffunc toggle is not a public Stata option
+PY020-DIV001,internal-api,Private multiprocessing bootstrap helper shapes
+PY020-DIV003,language-surface,Python results-dictionary key alias is not a Stata artefact
+PY020-DIV004,language-surface,No distinct Stata logical dtype for id variables
+PY020-DIV005,upstream-conflict,Python expects finite SEs where R returns missing; R governs
+PY025-DIV001,internal-api,Python-internal assertions with no csdid surface
+RT001-DIV001,stata-surface,Aggregation-level cluster override is restricted for safety
+RT002-DIV001,stata-surface,Aggregation-level influence functions are not exposed
+RT002-DIV002,stata-surface,Aggregation-level bootstrap bands are not exposed
+RT005-DIV001,language-surface,Function-valued est_method callbacks have no Stata analogue
+RT005-DIV002,language-surface,Custom-estimator callback validation has no Stata analogue
+RT006-DIV002,internal-api,Non-exported run_multiplier_bootstrap and parallel chunking
+RT008-DIV001,stata-surface,compute_inffunc=FALSE MP object path is not exposed
+RT009-DIV001,stata-surface,No standalone conditional_did_pretest command or MP.TEST object
+RT011-DIV001,language-surface,R argument shapes and internal column names Stata cannot express
+RT011-DIV002,internal-api,R-only helpers and mutable S3 object internals
+RT011-DIV003,stata-surface,Owner-directed Stata messaging and preprocessing choices
+RT012-DIV001,language-surface,NA injection through a custom estimator callback
+RT013-DIV001,language-surface,ggplot label/theme/reference-line controls are graph styling
+RT014-DIV001,internal-api,Mutation of internal DIDparams slots on saved S3 objects
+RT014-DIV002,language-surface,Arbitrary estimator callback function
+RT015-DIV001,upstream-version,Comparison against a historical did 2.1.2 install
+RT018-DIV001,internal-api,Direct calls to the internal mboot() helper
+RT019-DIV001,internal-api,R model.matrix objects and per-cell design-matrix output
+RT019-DIV002,internal-api,R faster_mode versus R slow-path formula slicing
+RT019-DIV003,language-surface,poly() data-dependent formula basis
+RT019-DIV004,language-surface,log() evaluated inside xformla
+RT019-DIV005,language-surface,Matrix-valued formula terms such as I(cbind(...))
+RT019-DIV006,language-surface,Declared-but-empty factor levels after subsetting
+RT020-DIV001,language-surface,data.frame versus data.table object mutation
+RT021-DIV001,stata-surface,No conditional_did_pretest command or MP.TEST object
+RT021-DIV002,stata-surface,No public trimmer helper command
+RT021-DIV003,internal-api,get_wide_data is an internal data.table helper
+RT022-DIV001,internal-api,Non-exported overlap/rcond guard helpers
+RT022-DIV002,internal-api,Internal did.disable_check_cache option
+RT023-DIV001,internal-api,Conditional-pretest helper internals
+RT024-DIV001,internal-api,Non-exported helper and fastglm implementation identity
+RT024-DIV002,language-surface,No numeric Inf for treatment timing in Stata
+RT024-DIV003,internal-api,Non-exported preprocessing helper
+RT025-DIV001,internal-api,Hidden did.disable_precompute/get_wide_data legacy path
+RT028-DIV001,language-surface,Custom function-valued estimator in a skipped upstream branch
+RT029-DIV001,upstream-not-a-test,Legacy executable script rather than testthat expectations
+RT030-DIV001,upstream-not-a-test,Legacy exploratory R Markdown rather than testthat expectations

@@ -1,0 +1,119 @@
+[
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "global design slice is bit-identical to per-subset model.matrix for numeric formulae",
+    "mapped_scenario": "r-model-matrix-internal-only",
+    "assertion_family": "R model.matrix global/per-cell slice identity is an internal R helper invariant",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "slow path matches faster_mode for numeric / transform formulae",
+    "mapped_scenario": "numeric-interaction-square-covariate-grid",
+    "assertion_family": "Stata public covariate grid matches R ATT(g,t) and SE values for numeric, interaction, and squared covariates across dr/reg/ipw panel paths",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "RC-path (positional global slice) matches faster_mode",
+    "mapped_scenario": "repeated-cross-section-numeric-covariate-grid",
+    "assertion_family": "Stata repeated-cross-section covariate grid matches R ATT(g,t) and SE values for numeric covariates across dr/reg/ipw paths",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "unbalanced panel (positional global slice) matches faster_mode for factor / transform formulae",
+    "mapped_scenario": "r-unbalanced-faster-mode-formula-internal-only",
+    "assertion_family": "R allow_unbalanced_panel plus faster_mode formula-slicing identity is an internal R path comparison",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV002"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "RC-path matches faster_mode for factor / data-dependent-basis formulae",
+    "mapped_scenario": "r-poly-data-dependent-basis-internal-only",
+    "assertion_family": "R faster_mode comparison for poly/data-dependent basis has no public Stata formula-language analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV002"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "transform / factor formulae match faster_mode under universal base, notyettreated, anticipation",
+    "mapped_scenario": "r-faster-mode-cross-option-formula-internal-only",
+    "assertion_family": "R faster_mode comparison under not-yet-treated, universal-base, and anticipation formula internals has no separate public Stata path analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV002"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "global basis is reparameterization-invariant: ~poly(X, 2) equals ~X + I(X^2)",
+    "mapped_scenario": "r-poly-reparameterization-internal-only",
+    "assertion_family": "R poly() global-basis reparameterization is an R formula/model.matrix invariant; Stata verifies raw squared-covariate public results",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV003"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "a factor covariate equals manually-expanded dummies EXACTLY (dense levels)",
+    "mapped_scenario": "dense-factor-equals-manual-dummies",
+    "assertion_family": "Stata factor variables and manually expanded dummy variables produce identical ATT(g,t) and SE values for dense levels across dr/reg/ipw panel and repeated-cross-section paths",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "transform formulae that evaluate to NaN drop those rows instead of crashing",
+    "mapped_scenario": "r-log-nonfinite-formula-internal-only",
+    "assertion_family": "R formula-time log() non-finite row dropping has no direct Stata varlist-expression analogue; users precompute transformed covariates before csdid",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV004"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "matrix-valued transformed formula terms drop non-finite rows row-wise",
+    "mapped_scenario": "r-matrix-valued-formula-internal-only",
+    "assertion_family": "R matrix-valued cbind() formula terms have no Stata csdid varlist analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV005"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "a globally-empty factor level is dropped instead of NA-failing every cell",
+    "mapped_scenario": "r-empty-factor-level-internal-only",
+    "assertion_family": "R factor objects can retain globally empty levels; Stata factor-variable expansion is based on observed levels",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT019-DIV006"
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "a sparse factor (level absent from some cells) matches manual dummies, incl. warnings",
+    "mapped_scenario": "panel-sparse-factor-equals-manual-dummy",
+    "assertion_family": "Stata rank-deficient panel sparse factor and manual-dummy specifications have matching missing ATT/SE patterns and singular-warning counts",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-modelmatrix-hoist.R",
+    "source_sha256": "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a",
+    "source_test": "RC sparse factor (level absent from some cells) matches manual dummies, incl. warnings",
+    "mapped_scenario": "rc-sparse-factor-equals-manual-dummy",
+    "assertion_family": "Stata rank-deficient repeated-cross-section sparse factor and manual-dummy specifications have matching missing ATT/SE patterns and singular-warning counts",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

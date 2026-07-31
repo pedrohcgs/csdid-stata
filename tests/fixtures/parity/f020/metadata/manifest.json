@@ -1,0 +1,57 @@
+{
+  "matrix_id": "F020",
+  "fixture_family": "no-never-treated",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D010", "D011"],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 160,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f020/generate.R",
+      "path": "tools/parity/generators/f020/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/sample-mask.csv",
+      "schema": "sample-mask"
+    },
+    {
+      "path": "expected/r/control-grid.csv",
+      "schema": "control-grid"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/sample-mask.csv",
+      "expected": "expected/r/sample-mask.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "rowid"
+    },
+    {
+      "actual": "expected/new-stata/control-grid.csv",
+      "expected": "expected/r/control-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["control_group", "group", "time"]
+    }
+  ],
+  "approved_divergence": {}
+}

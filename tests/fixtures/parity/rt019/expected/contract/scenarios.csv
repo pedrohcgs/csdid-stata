@@ -1,0 +1,6 @@
+"scenario","input","expected_behavior"
+"numeric-interaction-square-covariate-grid","input.csv","Panel numeric, interaction, and squared covariate ATT(g,t)/SE values match R for dr/reg/ipw"
+"repeated-cross-section-numeric-covariate-grid","input.csv","Repeated-cross-section numeric covariate ATT(g,t)/SE values match R for dr/reg/ipw"
+"dense-factor-equals-manual-dummies","input.csv","Dense Stata factor-variable and manual-dummy covariates give identical ATT(g,t)/SE values and match R"
+"panel-sparse-factor-equals-manual-dummy","sparse-factor.csv","Panel sparse factor and manual dummy specifications share missing ATT/SE patterns and singular-warning counts"
+"rc-sparse-factor-equals-manual-dummy","sparse-factor.csv","Repeated-cross-section sparse factor and manual dummy specifications share missing ATT/SE patterns and singular-warning counts"

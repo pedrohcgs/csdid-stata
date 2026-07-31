@@ -1,0 +1,47 @@
+{
+  "matrix_id": "F018",
+  "fixture_family": "true-repeated-cross-sections",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D001",
+  "tolerance_ids": ["TOL001", "TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f018/generate.R",
+      "path": "tools/parity/generators/f018/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    }
+  ],
+  "approved_divergence": {}
+}

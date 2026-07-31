@@ -1,0 +1,79 @@
+[
+  {
+    "scenario": "overlap_failure",
+    "event_key": "overlap_condition_violated",
+    "event_type": "warning",
+    "expected_count": 4,
+    "message_normalized": "overlap condition violated for group"
+  },
+  {
+    "scenario": "overlap_failure",
+    "event_key": "wald_missing_zero_variance",
+    "event_type": "warning",
+    "expected_count": 1,
+    "message_normalized": "missing or zero variance"
+  },
+  {
+    "scenario": "singular_notyet_reg",
+    "event_key": "singular_control_matrix",
+    "event_type": "warning",
+    "expected_count": 4,
+    "message_normalized": "singular or numerically ill-conditioned"
+  },
+  {
+    "scenario": "singular_notyet_dr",
+    "event_key": "singular_control_matrix",
+    "event_type": "warning",
+    "expected_count": 4,
+    "message_normalized": "singular or numerically ill-conditioned"
+  },
+  {
+    "scenario": "collinear_covariates_no_crash",
+    "event_key": "any_warning",
+    "event_type": "warning",
+    "expected_count": 0,
+    "message_normalized": ""
+  },
+  {
+    "scenario": "small_comparison_notyet_dr",
+    "event_key": "small_group_warning",
+    "event_type": "warning",
+    "expected_count": 1,
+    "message_normalized": "very few observations"
+  },
+  {
+    "scenario": "small_comparison_notyet_reg",
+    "event_key": "small_group_warning",
+    "event_type": "warning",
+    "expected_count": 1,
+    "message_normalized": "very few observations"
+  },
+  {
+    "scenario": "small_comparison_notyet_ipw",
+    "event_key": "small_group_warning",
+    "event_type": "warning",
+    "expected_count": 1,
+    "message_normalized": "very few observations"
+  },
+  {
+    "scenario": "small_comparison_notyet_dr",
+    "event_key": "overlap_condition_violated",
+    "event_type": "warning",
+    "expected_count": 4,
+    "message_normalized": "overlap condition violated for group"
+  },
+  {
+    "scenario": "small_comparison_notyet_reg",
+    "event_key": "singular_control_matrix",
+    "event_type": "warning",
+    "expected_count": 4,
+    "message_normalized": "singular or numerically ill-conditioned"
+  },
+  {
+    "scenario": "small_comparison_notyet_ipw",
+    "event_key": "overlap_condition_violated",
+    "event_type": "warning",
+    "expected_count": 4,
+    "message_normalized": "overlap condition violated for group"
+  }
+]

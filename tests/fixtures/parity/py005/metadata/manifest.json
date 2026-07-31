@@ -1,0 +1,90 @@
+{
+  "matrix_id": "PY005",
+  "fixture_family": "python-clustered-bootstrap-behavior",
+  "normative_source": "Python csdid csdid/test_csdid/test_clustered.py subordinate to R did 2.5.1 clustered multiplier-bootstrap behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D013"
+  ],
+  "tolerance_ids": [
+    "TOL003",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/clustered-data.csv",
+      "rows": 200,
+      "columns": 6
+    },
+    {
+      "path": "inputs/time-varying-cluster.csv",
+      "rows": 80,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py005/generate.py",
+      "path": "tools/parity/generators/py005/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 42,
+    "kind": "numpy.random.seed",
+    "bootstrap_draw_parity": false
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "clustered-bootstrap-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata clustered bootstrap finite-SE behavior",
+      "expected": "mapped Python clustered run assertion",
+      "tolerance_id": "TOL003",
+      "key_columns": [
+        "source_test"
+      ]
+    },
+    {
+      "actual": "Stata clustered/no-cluster bootstrap SE contrasts",
+      "expected": "mapped Python contrast assertions",
+      "tolerance_id": "TOL003",
+      "key_columns": [
+        "scenario"
+      ]
+    },
+    {
+      "actual": "Stata time-varying cluster rejection",
+      "expected": "mapped Python validation assertion",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY005 maps all five Python test_clustered.py assertions: clustered multiplier bootstrap runs with positive valid SEs, clustered and unclustered bootstrap SEs differ, unit-level clustering is close to no-cluster bootstrap, and time-varying cluster variables are rejected."
+}

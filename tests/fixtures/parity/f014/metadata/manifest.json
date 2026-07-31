@@ -1,0 +1,87 @@
+{
+  "matrix_id": "F014",
+  "fixture_family": "bootstrap-and-simultaneous-bands",
+  "normative_source": "R did 2.5.1 multiplier bootstrap",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D013"],
+  "tolerance_ids": ["TOL003", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f014/generate.R",
+      "path": "tools/parity/generators/f014/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20250622,
+    "biters": 399,
+    "distribution": "BMisc multiplier_bootstrap rademacher multipliers",
+    "exact_draw_parity": false,
+    "reason": "Stata implementation now mirrors BMisc/R's seeded rademacher draw stream for the public seed path; stochastic SEs remain smoke-checked for this fixture.",
+    "cluster_seed": 20250623,
+    "cluster_biters": 199
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/bootstrap-attgt.csv",
+      "schema": "bootstrap-attgt"
+    },
+    {
+      "path": "expected/r/bootstrap-cluster-attgt.csv",
+      "schema": "bootstrap-cluster-attgt"
+    },
+    {
+      "path": "expected/r/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/r/events.json",
+      "schema": "error-warning-events"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata e(boot_attgt) metadata and deterministic baseline",
+      "expected": "expected/r/bootstrap-attgt.csv",
+      "tolerance_id": "TOL003",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "Stata clustered e(boot_attgt) metadata and deterministic baseline",
+      "expected": "expected/r/bootstrap-cluster-attgt.csv",
+      "tolerance_id": "TOL003",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "Stata captured validation events",
+      "expected": "expected/r/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": [
+    {
+      "scope": "seeded_multiplier_draw_stream",
+      "reason": "The public seed path now mirrors BMisc/R's rademacher draw stream, while F014 remains a smoke fixture for stochastic bootstrap SEs rather than a full raw-draw export fixture.",
+      "accepted_behavior": "Stata must match deterministic ATT(g,t), analytical SEs, clustered analytical SEs, metadata, critical-value ordering, confidence-interval algebra, and the F035 seeded BMisc/R multiplier-stream probe."
+    }
+  ],
+  "scope_note": "Approved-divergence ATT(g,t) multiplier-bootstrap smoke for one balanced-panel method(reg) design, with both unclustered and clustered cluster-summed influence-function paths. Stata implements the same influence-function accumulation/scaling and records seed, reps, distribution, cluster, and cband metadata; F035 guards the exact seeded BMisc/R rademacher multiplier stream. PY005/PY015 cover inherited Python clustered bootstrap smoke, RT017 covers inherited R ATT(g,t) cluster-sum bootstrap stress, and aggregation bootstrap plus inherited RT018 postprocess stress remain tracked separately."
+}

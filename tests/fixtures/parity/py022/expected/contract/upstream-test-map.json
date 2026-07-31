@@ -1,0 +1,130 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_summ_attgt_returns_dataframe",
+    "mapped_scenario": "MP",
+    "assertion_family": "tidy export nonempty with group/time/estimate columns",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_mp_result_has_expected_keys",
+    "mapped_scenario": "MP",
+    "assertion_family": "stored ATT(g,t), IF, DIDparams-like e() metadata",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_att_values_are_finite",
+    "mapped_scenario": "MP",
+    "assertion_family": "ATT(g,t) estimates finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_se_values_are_positive",
+    "mapped_scenario": "MP",
+    "assertion_family": "SE values positive where ATT is finite",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_has_expected_keys[simple]",
+    "mapped_scenario": "aggte_simple",
+    "assertion_family": "overall/effect aggregation metadata exists",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_has_expected_keys[dynamic]",
+    "mapped_scenario": "aggte_dynamic",
+    "assertion_family": "overall/effect aggregation metadata exists",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_has_expected_keys[group]",
+    "mapped_scenario": "aggte_group",
+    "assertion_family": "overall/effect aggregation metadata exists",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_has_expected_keys[calendar]",
+    "mapped_scenario": "aggte_calendar",
+    "assertion_family": "overall/effect aggregation metadata exists",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_dynamic_has_event_times",
+    "mapped_scenario": "aggte_dynamic",
+    "assertion_family": "dynamic egt values present",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_group_has_group_ids",
+    "mapped_scenario": "aggte_group",
+    "assertion_family": "group egt values present",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_aggte_calendar_has_periods",
+    "mapped_scenario": "aggte_calendar",
+    "assertion_family": "calendar egt values present",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_nobs_from_didparams",
+    "mapped_scenario": "MP",
+    "assertion_family": "nobs metadata positive integer",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_nobs_matches_data",
+    "mapped_scenario": "MP",
+    "assertion_family": "nobs equals unique id count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_summ_attgt_across_methods[dr]",
+    "mapped_scenario": "method_dr",
+    "assertion_family": "cross-method tidy export nonempty",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_summ_attgt_across_methods[reg]",
+    "mapped_scenario": "method_reg",
+    "assertion_family": "cross-method tidy export nonempty",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_tidy.py",
+    "source_sha256": "006ac8aeb138a660153baa5c157f61e8016ebd5cc04583c7c8aa9c29c09a9502",
+    "source_test": "test_summ_attgt_across_methods[ipw]",
+    "mapped_scenario": "method_ipw",
+    "assertion_family": "cross-method tidy export nonempty",
+    "coverage_status": "mapped"
+  }
+]

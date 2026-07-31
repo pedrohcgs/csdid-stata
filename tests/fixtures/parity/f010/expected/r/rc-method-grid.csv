@@ -1,0 +1,4 @@
+"method","group","time","event_time","att","se","control_group","base_period","panel_mode"
+"dr",2,2,0,0.912499999999998,0.23902080573434,"nevertreated","varying","repeated-cross-section"
+"reg",2,2,0,0.9125,0.23902080573434,"nevertreated","varying","repeated-cross-section"
+"ipw",2,2,0,0.912499999999999,0.23902080573434,"nevertreated","varying","repeated-cross-section"

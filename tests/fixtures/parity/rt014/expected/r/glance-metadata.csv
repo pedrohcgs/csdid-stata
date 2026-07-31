@@ -1,0 +1,11 @@
+"object","source","nrow","nobs","ngroup","ntime","control_group","est_method","has_type","type","any_missing"
+"MP_slow","slow",1,4010,3,4,"nevertreated","dr",0,,0
+"MP_fast","fast",1,4010,3,4,"nevertreated","dr",0,,0
+"aggte_simple_slow","slow",1,4010,3,4,"nevertreated","dr",1,"simple",0
+"aggte_simple_fast","fast",1,4010,3,4,"nevertreated","dr",1,"simple",0
+"aggte_dynamic_slow","slow",1,4010,3,4,"nevertreated","dr",1,"dynamic",0
+"aggte_dynamic_fast","fast",1,4010,3,4,"nevertreated","dr",1,"dynamic",0
+"aggte_group_slow","slow",1,4010,3,4,"nevertreated","dr",1,"group",0
+"aggte_group_fast","fast",1,4010,3,4,"nevertreated","dr",1,"group",0
+"aggte_calendar_slow","slow",1,4010,3,4,"nevertreated","dr",1,"calendar",0
+"aggte_calendar_fast","fast",1,4010,3,4,"nevertreated","dr",1,"calendar",0

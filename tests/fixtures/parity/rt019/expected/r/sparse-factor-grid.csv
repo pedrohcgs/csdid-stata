@@ -1,0 +1,9 @@
+"panel_mode","covariate_spec","group","time","event_time","att","se","att_missing","se_missing"
+"panel","factor",2,2,0,,,1,1
+"panel","factor",2,3,1,,,1,1
+"panel","dummy",2,2,0,,,1,1
+"panel","dummy",2,3,1,,,1,1
+"repeated-cross-section","factor",2,2,0,,,1,1
+"repeated-cross-section","factor",2,3,1,,,1,1
+"repeated-cross-section","dummy",2,2,0,,,1,1
+"repeated-cross-section","dummy",2,3,1,,,1,1

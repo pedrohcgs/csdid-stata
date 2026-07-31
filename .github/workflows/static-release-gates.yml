@@ -1,0 +1,30 @@
+name: Static release gates
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  static-release-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install shell tools
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+      - name: Meta gates
+        run: |
+          # the contract checker is a development-workstream tool and does
+          # not ship in this tree; the shipped gates are tests/meta/*.sh
+          for f in tests/meta/*.sh; do bash "$f"; done
+      - name: Compile release Python tools
+        run: |
+          python3 -m py_compile tools/release/*.py tools/bench/*.py tools/jel/*.py
+      - name: Parse shell release tools
+        run: |
+          bash -n tools/release/*.sh
+          bash -n tools/plugin/*.sh
+      - name: Whitespace check
+        run: git diff --check

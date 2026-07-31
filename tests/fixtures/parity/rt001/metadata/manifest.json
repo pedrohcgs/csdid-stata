@@ -1,0 +1,80 @@
+{
+  "matrix_id": "RT001",
+  "fixture_family": "r-aggte-clustervars-override",
+  "normative_source": "R did 2.5.1 tests/testthat/test-aggte-clustervars-override.R",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D004", "D013", "D014"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/two-cluster.csv",
+      "rows": 600,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt001/generate.R",
+      "path": "tools/parity/generators/rt001/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 11
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/r/analytic-overrides.csv",
+      "schema": "aggte-cluster-override-grid"
+    },
+    {
+      "path": "expected/r/relations.csv",
+      "schema": "aggte-cluster-override-relations"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_stats cluster override analytical output",
+      "expected": "expected/r/analytic-overrides.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "agg_type", "request"]
+    },
+    {
+      "actual": "Stata safe cluster-override relations",
+      "expected": "expected/r/relations.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "relation"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT001 maps inherited clustering, same-cluster override, and mismatched-cluster refusal. Unsafe fallback from unavailable aggregation clusters is recorded as RT001-DIV001, along with the R aggregation bootstrap override subtest."
+}

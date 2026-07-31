@@ -1,0 +1,8 @@
+[
+  {
+    "scenario": "overlap-cache",
+    "event_key": "overlap_condition_violated",
+    "expected_count": 6,
+    "message_normalized": "overlap condition violated for group"
+  }
+]

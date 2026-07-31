@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT028-DIV001",
+    "source_tests": "repeated cross sections small groups with covariates",
+    "reason": "The R source branch calls a custom function-valued estimator, DRDID::drdid_rc1, in repeated-cross-section mode and then calls skip() because the branch is a known upstream bug. The Stata port has no public custom-estimator callback surface.",
+    "accepted_behavior": "Public repeated-cross-section covariate small-group and failure behavior remains covered by PY018/F038-style public gates; RT028 maps the remaining public user-bug behavior through csdid commands."
+  }
+]

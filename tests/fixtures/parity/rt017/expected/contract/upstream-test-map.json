@@ -1,0 +1,29 @@
+[
+  {
+    "source_file": "tests/testthat/test-mboot-cluster.R",
+    "source_sha256": "13955d5d8c5998432833c209351f16c2c197b7e4f88bdc0ce51a842f6e923258",
+    "source_test": "clustered mboot SE matches the cluster-sum (Remark 10) for UNBALANCED clusters",
+    "mapped_scenario": "unbalanced_cluster_sum_target",
+    "assertion_family": "cluster_vector aligns with influence-function rows, cluster-sum and cluster-mean differ, and reported clustered bootstrap SE tracks the cluster-sum target",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-mboot-cluster.R",
+    "source_sha256": "13955d5d8c5998432833c209351f16c2c197b7e4f88bdc0ce51a842f6e923258",
+    "source_test": "clustered mboot SE is unchanged for BALANCED clusters (cluster-sum == cluster-mean)",
+    "mapped_scenario": "balanced_cluster_sum_equals_mean",
+    "assertion_family": "cluster_vector aligns with influence-function rows, balanced cluster-sum equals cluster-mean, and reported clustered bootstrap SE tracks the common target",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-mboot-cluster.R",
+    "source_sha256": "13955d5d8c5998432833c209351f16c2c197b7e4f88bdc0ce51a842f6e923258",
+    "source_test": "clustering validation is preserved (at most one cluster variable beyond idname)",
+    "mapped_scenario": "reject_multiple_non_id_cluster_variables",
+    "assertion_family": "multiple cluster variables beyond idname are rejected",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

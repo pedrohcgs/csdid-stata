@@ -1,0 +1,4 @@
+"group","time","event_time","att","se","control_group","base_period","est_method","panel_mode","sample_n","inffunc_col"
+4,2,-2,,,"nevertreated","varying","reg","allow_unbalanced",90,1
+4,3,-1,9.99200722162641e-16,,"nevertreated","varying","reg","allow_unbalanced",90,2
+4,4,0,-0.218460657683959,0.36778686916534,"nevertreated","varying","reg","allow_unbalanced",90,3

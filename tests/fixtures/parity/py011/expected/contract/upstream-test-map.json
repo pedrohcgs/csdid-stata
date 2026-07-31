@@ -1,0 +1,154 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_didparams_has_expected_keys",
+    "mapped_scenario": "MP",
+    "assertion_family": "DIDparams keys n/nG/nT/control_group/est_method",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_didparams_values_are_reasonable",
+    "mapped_scenario": "MP",
+    "assertion_family": "positive n/nG/nT and valid control/method",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_nobs_matches_unique_ids",
+    "mapped_scenario": "MP",
+    "assertion_family": "n equals unique id count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_ngroup_matches_treatment_groups",
+    "mapped_scenario": "MP",
+    "assertion_family": "nG equals treated group count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_ntime_matches_time_periods",
+    "mapped_scenario": "MP",
+    "assertion_family": "nT equals time-period count",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_has_didparams[simple]",
+    "mapped_scenario": "aggte_simple",
+    "assertion_family": "DIDparams keys exist",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_has_didparams[dynamic]",
+    "mapped_scenario": "aggte_dynamic",
+    "assertion_family": "DIDparams keys exist",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_has_didparams[group]",
+    "mapped_scenario": "aggte_group",
+    "assertion_family": "DIDparams keys exist",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_has_didparams[calendar]",
+    "mapped_scenario": "aggte_calendar",
+    "assertion_family": "DIDparams keys exist",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_didparams_not_null[simple]",
+    "mapped_scenario": "aggte_simple",
+    "assertion_family": "DIDparams values nonmissing",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_didparams_not_null[dynamic]",
+    "mapped_scenario": "aggte_dynamic",
+    "assertion_family": "DIDparams values nonmissing",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_didparams_not_null[group]",
+    "mapped_scenario": "aggte_group",
+    "assertion_family": "DIDparams values nonmissing",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_didparams_not_null[calendar]",
+    "mapped_scenario": "aggte_calendar",
+    "assertion_family": "DIDparams values nonmissing",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_aggte_and_mp_nobs_agree",
+    "mapped_scenario": "aggte_all",
+    "assertion_family": "aggregation nobs equals MP nobs",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_glance_faster_mode",
+    "mapped_scenario": "fast",
+    "assertion_family": "fast request returns metadata and finite ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_glance_faster_mode_agreement",
+    "mapped_scenario": "fast",
+    "assertion_family": "fast request agrees with standard metadata and ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_didparams_consistent_across_methods[dr]",
+    "mapped_scenario": "method_dr",
+    "assertion_family": "DIDparams est_method and positive counts",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_didparams_consistent_across_methods[reg]",
+    "mapped_scenario": "method_reg",
+    "assertion_family": "DIDparams est_method and positive counts",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_glance.py",
+    "source_sha256": "b750928e7c29d052194ac74ad22e928f3b153ef9d843350f422d67e40386d2ae",
+    "source_test": "test_didparams_consistent_across_methods[ipw]",
+    "mapped_scenario": "method_ipw",
+    "assertion_family": "DIDparams est_method and positive counts",
+    "coverage_status": "mapped"
+  }
+]

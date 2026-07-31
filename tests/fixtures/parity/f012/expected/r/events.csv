@@ -1,0 +1,4 @@
+"event_key","condition_type","expected_count","message_substring"
+"time_varying_weight_message","message",1,"Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells). Use the 'fix_weights' argument to control this behavior. See ?att_gt for details."
+"time_invariant_weight_no_message","message",0,"Time-varying weights detected"
+"fixed_weight_reference_drop","warning",6,"Some units not observed in first_period (period 1) for group 3 in time period 2. These units are excluded."

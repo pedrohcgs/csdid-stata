@@ -1,0 +1,2 @@
+role,artifact_type,relative_path,exists,bytes,sha256,text_sha256,pdf_header
+r,r-master-script,scripts/R/00_master_did_jel.R,1,1026,ccd0bab8298e46179a35b4524f04baab9ad7eec48c8607363259901594618e18,ccd0bab8298e46179a35b4524f04baab9ad7eec48c8607363259901594618e18,

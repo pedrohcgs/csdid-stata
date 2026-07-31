@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "F037-DIV001",
+    "surface": "python-deep-parametric-grid-residuals",
+    "reason": "The F037 fixture freezes the R-anchored analytical combination grid for method/control/base, method/panel, method/anticipation, and method/aggregation axes. Python-only stochastic bootstrap combinations and exhaustive integration-grid expansion are inherited surfaces already tracked by PY017/PY003-style gates rather than this compact R-anchored feature row.",
+    "accepted_behavior": "Stata must match R did 2.5.1 ATT(g,t) and aggregation values for the frozen analytical grid; broader Python parameterization inheritance remains covered by PY017 and related Python gates."
+  }
+]

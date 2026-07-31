@@ -1,0 +1,245 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_produces_valid_att_gt[dr]",
+    "mapped_scenario": "single_treated_dr",
+    "assertion_family": "finite ATT(g,t) with a single treated group",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_produces_valid_att_gt[reg]",
+    "mapped_scenario": "single_treated_reg",
+    "assertion_family": "finite ATT(g,t) with a single treated group",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_produces_valid_att_gt[ipw]",
+    "mapped_scenario": "single_treated_ipw",
+    "assertion_family": "finite ATT(g,t) with a single treated group",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_aggte_types[simple]",
+    "mapped_scenario": "single_treated_agg_simple",
+    "assertion_family": "nonmissing aggregation overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_aggte_types[dynamic]",
+    "mapped_scenario": "single_treated_agg_dynamic",
+    "assertion_family": "nonmissing aggregation overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_aggte_types[group]",
+    "mapped_scenario": "single_treated_agg_group",
+    "assertion_family": "nonmissing aggregation overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_treated_group_aggte_types[calendar]",
+    "mapped_scenario": "single_treated_agg_calendar",
+    "assertion_family": "nonmissing aggregation overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_two_period_data_with_universal_base_period[dr]",
+    "mapped_scenario": "two_period_universal_dr",
+    "assertion_family": "finite two-period universal-base ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_two_period_data_with_universal_base_period[reg]",
+    "mapped_scenario": "two_period_universal_reg",
+    "assertion_family": "finite two-period universal-base ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_two_period_data_with_universal_base_period[ipw]",
+    "mapped_scenario": "two_period_universal_ipw",
+    "assertion_family": "finite two-period universal-base ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_no_nevertreated_works_with_notyettreated",
+    "mapped_scenario": "no_never_notyet",
+    "assertion_family": "not-yet-treated run with no never-treated group succeeds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_no_nevertreated_coerces_with_nevertreated",
+    "mapped_scenario": "no_never_default_warning",
+    "assertion_family": "default nevertreated branch warns/coerces and returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_groups_treated_in_first_period_are_dropped",
+    "mapped_scenario": "first_period_warning",
+    "assertion_family": "first-period-treated units warn and are dropped",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_non_consecutive_time_periods[dr]",
+    "mapped_scenario": "nonconsecutive_time_dr",
+    "assertion_family": "nonconsecutive time values run and dynamic aggregation exists",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_non_consecutive_time_periods[reg]",
+    "mapped_scenario": "nonconsecutive_time_reg",
+    "assertion_family": "nonconsecutive time values run and dynamic aggregation exists",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_non_consecutive_time_periods[ipw]",
+    "mapped_scenario": "nonconsecutive_time_ipw",
+    "assertion_family": "nonconsecutive time values run and dynamic aggregation exists",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_non_consecutive_group_values[dr]",
+    "mapped_scenario": "nonconsecutive_group_dr",
+    "assertion_family": "nonconsecutive group values estimate multiple groups",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_non_consecutive_group_values[reg]",
+    "mapped_scenario": "nonconsecutive_group_reg",
+    "assertion_family": "nonconsecutive group values estimate multiple groups",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_non_consecutive_group_values[ipw]",
+    "mapped_scenario": "nonconsecutive_group_ipw",
+    "assertion_family": "nonconsecutive group values estimate multiple groups",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_allow_unbalanced_panel_with_balanced_data",
+    "mapped_scenario": "balanced_allow_default",
+    "assertion_family": "balanced panel public default returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_allow_unbalanced_panel_with_truly_unbalanced_data",
+    "mapped_scenario": "unbalanced_allow_default",
+    "assertion_family": "unbalanced ivar public default routes to repeated cross sections and returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_post_treatment_period[dr]",
+    "mapped_scenario": "single_post_dr",
+    "assertion_family": "finite post-treatment ATT(g,t) with one post-treatment period",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_post_treatment_period[reg]",
+    "mapped_scenario": "single_post_reg",
+    "assertion_family": "finite post-treatment ATT(g,t) with one post-treatment period",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_single_post_treatment_period[ipw]",
+    "mapped_scenario": "single_post_ipw",
+    "assertion_family": "finite post-treatment ATT(g,t) with one post-treatment period",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_unbalanced_data_rcs_works[dr]",
+    "mapped_scenario": "unbalanced_rcs_dr",
+    "assertion_family": "repeated-cross-section unbalanced data returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_unbalanced_data_rcs_works[reg]",
+    "mapped_scenario": "unbalanced_rcs_reg",
+    "assertion_family": "repeated-cross-section unbalanced data returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_edge_cases.py",
+    "source_sha256": "c8ca36c53ceb2a42599e9cd4a55ad97d870ae76ebb4d0d512f8259d4be8b173f",
+    "source_test": "test_unbalanced_data_rcs_works[ipw]",
+    "mapped_scenario": "unbalanced_rcs_ipw",
+    "assertion_family": "repeated-cross-section unbalanced data returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

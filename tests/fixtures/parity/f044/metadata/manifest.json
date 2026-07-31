@@ -1,0 +1,62 @@
+{
+  "matrix_id": "F044",
+  "fixture_family": "jel-all-artifact-inventory",
+  "normative_source": "JEL-DiD all-artifact release gate D006",
+  "source_commit": "50f4f183783d2344f85bc4f39bcbcc1b7eba6466",
+  "decision_refs": ["D006", "D013", "D014", "D015"],
+  "tolerance_ids": ["TOL004", "TOL005", "TOL006"],
+  "inputs": [
+    {
+      "path": "expected/contract/jel-artifact-inventory.csv",
+      "rows": 18,
+      "columns": 11
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f044/generate.R",
+      "path": "tools/parity/generators/f044/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/jel-artifact-inventory.csv",
+      "schema": "jel-artifact-inventory"
+    },
+    {
+      "path": "expected/contract/full-reproduction-evidence.csv",
+      "schema": "jel-full-reproduction-evidence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "JEL reference artifact availability",
+      "expected": "expected/contract/jel-artifact-inventory.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "artifact_id"
+    },
+    {
+      "actual": "Full JEL reproduction report",
+      "expected": "expected/contract/full-reproduction-evidence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "artifact_id"
+    }
+  ],
+  "full_reproduction_evidence": {
+    "status": "pass",
+    "report": "reports/jel-full-reproduction-result.md",
+    "reason": "F044 is terminal because the opt-in full JEL R/Stata master reproduction gate completes both masters, passes against regenerated R did 2.5.1, and records historical R artifact drift separately for release-owner evidence disposition."
+  },
+  "scope_note": "F044 confirms all JEL001-JEL018 artifacts are mapped and present in the reference checkout, records the opt-in full reproduction evidence, and pairs with tests/fixtures/jel artifact audits. Rendered Stata PDF byte/pixel drift is governed by the semantic audit in reports/jel-full-reproduction-result.md."
+}

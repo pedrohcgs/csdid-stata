@@ -1,0 +1,74 @@
+[
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "inference with balanced panel data and aggregations",
+    "mapped_scenario": "panel-current-inference",
+    "assertion_family": "Stata verifies current panel ATT(g,t) SEs, IF dimensions, and dynamic/group/calendar aggregation SEs for dr/reg/ipw",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "inference with clustering",
+    "mapped_scenario": "panel-cluster-current-inference",
+    "assertion_family": "Stata verifies current clustered panel ATT(g,t) SEs, cluster metadata, and clustered aggregation SEs",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "same inference with unbalanced panel and panel data",
+    "mapped_scenario": "balanced-panel-unbalanced-flag-equivalence",
+    "assertion_family": "Stata verifies balanced-panel public path and influence-function availability; R-only allow_unbalanced_panel flag equality has no separate Stata option",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "inference with repeated cross sections",
+    "mapped_scenario": "rc-current-inference",
+    "assertion_family": "Stata verifies current repeated-cross-section ATT(g,t) SEs, IF dimensions, and dynamic/group/calendar aggregation SEs for dr/reg/ipw",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "inference with repeated cross sections and clustering",
+    "mapped_scenario": "rc-cluster-current-inference",
+    "assertion_family": "Stata verifies current clustered repeated-cross-section ATT(g,t) SEs, cluster metadata, and clustered aggregation SEs",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "historical did 2.1.2 install and exact object comparison",
+    "mapped_scenario": "r-2-1-2-history-only",
+    "assertion_family": "R source installs and compares against did 2.1.2; Stata has no public surface for R package-version regression",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT015-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "inference with unbalanced panel",
+    "mapped_scenario": "unbal_{dr,reg,ipw}",
+    "assertion_family": "attgt-att-se-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-inference.R",
+    "source_sha256": "3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f",
+    "source_test": "inference with unbalanced panel and clustering",
+    "mapped_scenario": "unbal_cluster_{dr,reg,ipw}",
+    "assertion_family": "attgt-att-se-vs-r",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

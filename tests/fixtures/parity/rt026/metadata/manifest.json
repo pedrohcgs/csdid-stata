@@ -1,0 +1,91 @@
+{
+  "matrix_id": "RT026",
+  "fixture_family": "r-tidy-output",
+  "normative_source": "R did 2.5.1 tests/testthat/test-tidy.R",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/mpdta.csv",
+      "rows": 2500,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt026/generate.R",
+      "path": "tools/parity/generators/rt026/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 1234
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/r/tidy-attgt.csv",
+      "schema": "tidy-attgt"
+    },
+    {
+      "path": "expected/r/tidy-aggte-dynamic.csv",
+      "schema": "tidy-aggte-dynamic"
+    },
+    {
+      "path": "expected/r/tidy-aggte-group.csv",
+      "schema": "tidy-aggte-group"
+    },
+    {
+      "path": "expected/r/tidy-aggte-calendar.csv",
+      "schema": "tidy-aggte-calendar"
+    },
+    {
+      "path": "expected/r/tidy-aggte-simple.csv",
+      "schema": "tidy-aggte-simple"
+    },
+    {
+      "path": "expected/r/nobs.csv",
+      "schema": "nobs-output"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata tidy ATT(g,t)",
+      "expected": "expected/r/tidy-attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["term", "group", "time"]
+    },
+    {
+      "actual": "Stata tidy aggregation exports",
+      "expected": "expected/r/tidy-aggte-*.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["type", "term"]
+    },
+    {
+      "actual": "Stata nobs metadata",
+      "expected": "expected/r/nobs.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "object"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT026 maps all tidy/nobs tests in tests/testthat/test-tidy.R to Stata-normalized tidy export columns, statistic and p-value formulas, p-value bounds, and unique-unit nobs metadata for MP and simple/group/calendar/dynamic aggregation on mpdta."
+}

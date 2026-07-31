@@ -1,0 +1,416 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_simple_valid_overall_att",
+    "mapped_scenario": "simple-valid-overall-att",
+    "assertion_family": "simple overall ATT is finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_simple_valid_se",
+    "mapped_scenario": "simple-valid-se",
+    "assertion_family": "simple overall SE is positive and finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_simple_no_egt",
+    "mapped_scenario": "simple-no-egt",
+    "assertion_family": "simple aggregation has no event/group/calendar egt component",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_returns_event_times",
+    "mapped_scenario": "dynamic-event-times",
+    "assertion_family": "dynamic aggregation has pre and post event times",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_event_times_sorted",
+    "mapped_scenario": "dynamic-sorted",
+    "assertion_family": "dynamic event times are sorted",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_overall_att",
+    "mapped_scenario": "dynamic-overall-att",
+    "assertion_family": "dynamic overall ATT is finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_min_e_filters",
+    "mapped_scenario": "dynamic-min-e",
+    "assertion_family": "dynamic min_e filters event times",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_max_e_filters",
+    "mapped_scenario": "dynamic-max-e",
+    "assertion_family": "dynamic max_e filters event times",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_min_max_together",
+    "mapped_scenario": "dynamic-min-max",
+    "assertion_family": "dynamic min_e/max_e jointly filter event times",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_balance_e",
+    "mapped_scenario": "dynamic-balance-e",
+    "assertion_family": "dynamic balance_e does not increase event-count",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_positive_se",
+    "mapped_scenario": "dynamic-positive-se",
+    "assertion_family": "dynamic SEs are positive where ATT is nonmissing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_group_returns_per_group",
+    "mapped_scenario": "group-per-group",
+    "assertion_family": "group aggregation returns treatment-group rows",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_group_overall_att",
+    "mapped_scenario": "group-overall-att",
+    "assertion_family": "group overall ATT is finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_group_positive_se",
+    "mapped_scenario": "group-positive-se",
+    "assertion_family": "group SEs are positive where ATT is nonmissing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_returns_periods",
+    "mapped_scenario": "calendar-periods",
+    "assertion_family": "calendar aggregation returns period rows",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_overall_att",
+    "mapped_scenario": "calendar-overall-att",
+    "assertion_family": "calendar overall ATT is finite and near one",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_positive_se",
+    "mapped_scenario": "calendar-positive-se",
+    "assertion_family": "calendar SEs are positive where ATT is nonmissing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_post_treatment_only",
+    "mapped_scenario": "calendar-post-treatment-only",
+    "assertion_family": "calendar rows are post-treatment periods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_na_rm_drops_na_and_proceeds",
+    "mapped_scenario": "na-rm-drops-na",
+    "assertion_family": "na_rm drops injected missing ATT and returns finite overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_preserves_overridden_settings",
+    "mapped_scenario": "preserves-overridden-settings",
+    "assertion_family": "aggregation preserves analytical/level settings through public metadata",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_return_dict[simple]",
+    "mapped_scenario": "return-dict-simple",
+    "assertion_family": "simple returns public aggregation result matrix",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_have_didparams[simple]",
+    "mapped_scenario": "didparams-simple",
+    "assertion_family": "simple exposes public aggregation metadata",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_return_dict[dynamic]",
+    "mapped_scenario": "return-dict-dynamic",
+    "assertion_family": "dynamic returns public aggregation result matrix",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_have_didparams[dynamic]",
+    "mapped_scenario": "didparams-dynamic",
+    "assertion_family": "dynamic exposes public aggregation metadata",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_return_dict[group]",
+    "mapped_scenario": "return-dict-group",
+    "assertion_family": "group returns public aggregation result matrix",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_have_didparams[group]",
+    "mapped_scenario": "didparams-group",
+    "assertion_family": "group exposes public aggregation metadata",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_return_dict[calendar]",
+    "mapped_scenario": "return-dict-calendar",
+    "assertion_family": "calendar returns public aggregation result matrix",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_all_types_have_didparams[calendar]",
+    "mapped_scenario": "didparams-calendar",
+    "assertion_family": "calendar exposes public aggregation metadata",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_simple_valid_across_methods[dr]",
+    "mapped_scenario": "simple-across-methods-dr",
+    "assertion_family": "simple aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_valid_across_methods[dr]",
+    "mapped_scenario": "dynamic-across-methods-dr",
+    "assertion_family": "dynamic aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_group_valid_across_methods[dr]",
+    "mapped_scenario": "group-across-methods-dr",
+    "assertion_family": "group aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_valid_across_methods[dr]",
+    "mapped_scenario": "calendar-across-methods-dr",
+    "assertion_family": "calendar aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_balance_e_across_methods[dr]",
+    "mapped_scenario": "balance-e-across-methods-dr",
+    "assertion_family": "balance_e filters across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_na_rm_across_methods[dr]",
+    "mapped_scenario": "na-rm-across-methods-dr",
+    "assertion_family": "na_rm works across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_simple_valid_across_methods[reg]",
+    "mapped_scenario": "simple-across-methods-reg",
+    "assertion_family": "simple aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_valid_across_methods[reg]",
+    "mapped_scenario": "dynamic-across-methods-reg",
+    "assertion_family": "dynamic aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_group_valid_across_methods[reg]",
+    "mapped_scenario": "group-across-methods-reg",
+    "assertion_family": "group aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_valid_across_methods[reg]",
+    "mapped_scenario": "calendar-across-methods-reg",
+    "assertion_family": "calendar aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_balance_e_across_methods[reg]",
+    "mapped_scenario": "balance-e-across-methods-reg",
+    "assertion_family": "balance_e filters across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_na_rm_across_methods[reg]",
+    "mapped_scenario": "na-rm-across-methods-reg",
+    "assertion_family": "na_rm works across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_simple_valid_across_methods[ipw]",
+    "mapped_scenario": "simple-across-methods-ipw",
+    "assertion_family": "simple aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_dynamic_valid_across_methods[ipw]",
+    "mapped_scenario": "dynamic-across-methods-ipw",
+    "assertion_family": "dynamic aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_group_valid_across_methods[ipw]",
+    "mapped_scenario": "group-across-methods-ipw",
+    "assertion_family": "group aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_calendar_valid_across_methods[ipw]",
+    "mapped_scenario": "calendar-across-methods-ipw",
+    "assertion_family": "calendar aggregation valid across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_balance_e_across_methods[ipw]",
+    "mapped_scenario": "balance-e-across-methods-ipw",
+    "assertion_family": "balance_e filters across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_aggte_comprehensive.py",
+    "source_sha256": "0b8e87470662850acd90d96c449dfb1f51f7bd48393ad0864aa082ad693701df",
+    "source_test": "test_na_rm_across_methods[ipw]",
+    "mapped_scenario": "na-rm-across-methods-ipw",
+    "assertion_family": "na_rm works across methods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

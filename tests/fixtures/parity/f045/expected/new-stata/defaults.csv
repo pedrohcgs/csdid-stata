@@ -1,0 +1,8 @@
+"scenario","input","panel_mode","method_requested","method","control_group","base_period","bootstrap","cband","level","expected_relation"
+"balanced_default","balanced.csv","panel","dr","dr","nevertreated","varying",1,1,95,"baseline"
+"balanced_explicit_r_defaults","balanced.csv","panel","dr","dr","nevertreated","varying",1,1,95,"same-as-balanced-default"
+"unbalanced_default","unbalanced.csv","allow_unbalanced","dr","dr","nevertreated","varying",1,1,95,"r-compatible-unbalanced-default"
+"rc_omitted_ivar_default","balanced.csv","repeated-cross-section","dr","dr","nevertreated","varying",1,1,95,"r-compatible-repeated-cross-section-default"
+"asinr_noop","balanced.csv","panel","dr","dr","nevertreated","varying",1,1,95,"same-as-balanced-default"
+"method_dripw_alias","balanced.csv","panel","dripw","dr","nevertreated","varying",1,1,95,"same-as-method-dr"
+"method_stdipw_alias","balanced.csv","panel","stdipw","ipw","nevertreated","varying",1,1,95,"same-as-method-ipw"

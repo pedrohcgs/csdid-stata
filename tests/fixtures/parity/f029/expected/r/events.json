@@ -1,0 +1,107 @@
+[
+  {
+    "event_key": "invalid_method",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "method(bad)",
+    "message_normalized": "method() must be one of dr, reg, or ipw"
+  },
+  {
+    "event_key": "invalid_base_period",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "base_period(Universal)",
+    "message_normalized": "baseperiod() must be varying or universal"
+  },
+  {
+    "event_key": "invalid_fix_weights",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "fix_weights(bad)",
+    "message_normalized": "fixweights() must be one of varying, base, or first"
+  },
+  {
+    "event_key": "fix_weights_requires_panel",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "fix_weights(first_period)",
+    "message_normalized": "fixweights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported"
+  },
+  {
+    "event_key": "negative_anticipation",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "anticipation(-1)",
+    "message_normalized": "anticipation() must be nonnegative"
+  },
+  {
+    "event_key": "negative_iweight",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "iweight",
+    "message_normalized": "iweights must be nonnegative"
+  },
+  {
+    "event_key": "duplicate_unit_time",
+    "return_code": 459,
+    "event_type": "error",
+    "offending_option": "ivar-time",
+    "message_normalized": "The value of ivar() must be unique within time(). Some units are observed more than once in a period."
+  },
+  {
+    "event_key": "unsupported_option",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "foo",
+    "message_normalized": "unsupported option(s): foo"
+  },
+  {
+    "event_key": "csdid_stats_no_prior",
+    "return_code": 301,
+    "event_type": "error",
+    "offending_option": "prior-results",
+    "message_normalized": "csdid_stats requires prior csdid results or a saved RIF file"
+  },
+  {
+    "event_key": "csdid_stats_invalid_type",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "type(bad)",
+    "message_normalized": "type() must be one of simple, group, dynamic/event, or calendar"
+  },
+  {
+    "event_key": "csdid_estat_no_prior",
+    "return_code": 301,
+    "event_type": "error",
+    "offending_option": "prior-results",
+    "message_normalized": "csdid_estat requires prior csdid results"
+  },
+  {
+    "event_key": "csdid_estat_tidy_requires_saving",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "tidy",
+    "message_normalized": "tidy requires saving(filename)"
+  },
+  {
+    "event_key": "csdid_plot_requires_saving",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "saving()",
+    "message_normalized": "csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace"
+  },
+  {
+    "event_key": "csdid_plot_simple_unavailable",
+    "return_code": 498,
+    "event_type": "error",
+    "offending_option": "type(simple)",
+    "message_normalized": "Plot method not available for this type of aggregation"
+  },
+  {
+    "event_key": "no_observations",
+    "return_code": 2000,
+    "event_type": "error",
+    "offending_option": "sample",
+    "message_normalized": "no observations"
+  }
+]

@@ -1,0 +1,4 @@
+scenario,input,seed,balanced_clusters,n_clusters,biters,stata_seed
+clustered_mboot_unbalanced,clustered-unbalanced.csv,101,False,40,399,20251501
+clustered_mboot_balanced,clustered-balanced.csv,202,True,40,399,20251502
+reject_multiple_bootstrap_cluster_variables,clustered-invalid.csv,303,False,40,17,20251503

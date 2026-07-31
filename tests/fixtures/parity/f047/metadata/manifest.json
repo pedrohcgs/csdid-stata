@@ -1,0 +1,93 @@
+{
+  "matrix_id": "F047",
+  "fixture_family": "seeded-randomized-differential",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D003"],
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/all-inputs.csv",
+      "rows": 1588,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rand_101_panel_dr_never_varying_cov_w.csv",
+      "rows": 320,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rand_202_panel_ipw_notyet_universal_nocov.csv",
+      "rows": 320,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rand_303_rc_reg_never_varying_cov_w.csv",
+      "rows": 320,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rand_404_unbalanced_default_dr_never_varying_cov_w.csv",
+      "rows": 308,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rand_505_rc_ipw_notyet_universal_cov.csv",
+      "rows": 320,
+      "columns": 9
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f047/generate.R",
+      "path": "tools/parity/generators/f047/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": [101, 202, 303, 404, 505],
+    "kind": "Mersenne-Twister",
+    "draws": "scenario-local generated panels",
+    "distribution": "normal and uniform"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/scenarios.csv",
+      "schema": "randomized-scenarios"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "build/test-artefacts/f047/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "build/test-artefacts/f047/aggte.csv",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "agg_type", "seq"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Seeded small-panel randomized differential gate across balanced panel, true repeated-cross-section, and unbalanced-ivar-default-to-RC paths; dr/reg/ipw; nevertreated/notyettreated controls; varying/universal base periods; covariate/no-covariate and weighted/unweighted cells. The gate compares ATT(g,t) and simple/dynamic aggregation to R did 2.5.1 under TOL002. It is a release smoke differential test, not a replacement for exhaustive inherited R/Python suites."
+}

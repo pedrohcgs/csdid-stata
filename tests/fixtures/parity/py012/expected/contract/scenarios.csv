@@ -1,0 +1,2 @@
+scenario,methods,agg_types,bootstrap_reps,bootstrap_ratio_min,bootstrap_ratio_max,overall_att_target,overall_att_abs_tol,method_att_abs_tol
+python_inference,dr;reg;ipw,dynamic;group;calendar,49,0.3,3.0,1.0,0.5,0.3

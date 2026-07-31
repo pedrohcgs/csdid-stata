@@ -1,0 +1,29 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_analytical_cluster_se.py",
+    "source_sha256": "ecc53965a392860c01430282bb766dca041a86329b7d3ffcbbb3493c8fa8fb29",
+    "source_test": "test_analytical_clustered_se_runs",
+    "mapped_scenario": "analytical_clustered_se_runs",
+    "assertion_family": "analytical clustered SEs run without bootstrap and finite SEs are positive",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_analytical_cluster_se.py",
+    "source_sha256": "ecc53965a392860c01430282bb766dca041a86329b7d3ffcbbb3493c8fa8fb29",
+    "source_test": "test_analytical_clustered_se_matches_bootstrap",
+    "mapped_scenario": "analytical_clustered_se_matches_bootstrap",
+    "assertion_family": "clustered analytical SEs and clustered bootstrap SEs broadly agree",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_analytical_cluster_se.py",
+    "source_sha256": "ecc53965a392860c01430282bb766dca041a86329b7d3ffcbbb3493c8fa8fb29",
+    "source_test": "test_aggte_with_analytical_clustered_se",
+    "mapped_scenario": "aggte_simple_with_analytical_clustered_se",
+    "assertion_family": "simple aggregation works and returns positive clustered analytical SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "event_key": "seed_with_analytical",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "analytical rseed(123)",
+    "message_normalized": "reps(), biters(), seed(), and rseed() require bootstrap inference; omit vce(analytical)"
+  },
+  {
+    "event_key": "invalid_reps_negative",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "wboot(reps(-2))",
+    "message_normalized": "wboot() reps() must be a positive integer"
+  },
+  {
+    "event_key": "invalid_reps_fractional",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "wboot(reps(1.5))",
+    "message_normalized": "wboot() reps() must be a positive integer"
+  },
+  {
+    "event_key": "invalid_seed_zero",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "wboot(rseed(0))",
+    "message_normalized": "wboot() rseed() must be a positive integer"
+  },
+  {
+    "event_key": "invalid_wtype",
+    "return_code": 498,
+    "event_type": "error",
+    "offending_option": "wboot(wtype(foo))",
+    "message_normalized": "wboot() currently supports only R-compatible rademacher multipliers"
+  },
+  {
+    "event_key": "wboot_cluster_mismatch",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "cluster(cl)+wboot(cluster(cl2))",
+    "message_normalized": "wboot(cluster()) must match cluster() when both are supplied"
+  },
+  {
+    "event_key": "wboot_cluster_multiple",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "wboot(cluster(cl cl2))",
+    "message_normalized": "wboot(cluster()) accepts one numeric cluster variable"
+  }
+]

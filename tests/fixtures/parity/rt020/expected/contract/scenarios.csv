@@ -1,0 +1,5 @@
+"scenario","input","fast","panel_mode"
+"panel_regular","panel.csv",FALSE,"panel"
+"panel_fast","panel.csv",TRUE,"panel"
+"repeated_cross_section_regular","repeated-cross-section.csv",FALSE,"allow_unbalanced"
+"repeated_cross_section_fast","repeated-cross-section.csv",TRUE,"allow_unbalanced"

@@ -1,0 +1,74 @@
+{
+  "matrix_id": "F037",
+  "fixture_family": "python-parametric-combinations",
+  "normative_source": "Python csdid test_parametric_combinations.py deep grid, anchored to R did 2.5.1 expected values",
+  "source_commit": "0a96e5e21e880cbbc703b8ff77bee8b207debc2a5ff9865b86e37ee45c123028",
+  "decision_refs": ["D001", "D004"],
+  "tolerance_ids": ["TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 450,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f037/generate.R",
+      "path": "tools/parity/generators/f037/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/scenarios.csv",
+      "schema": "parametric-scenarios"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/aggte.csv",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "type", "seq"]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Approved-divergence F037/PY017 parametric-combination evidence for method x control-group x base-period, method x panel, method x anticipation, and method x aggte-type analytical grids with one numeric covariate. F037-DIV001 records that Python-only stochastic bootstrap combinations and exhaustive integration-grid expansion are inherited surfaces covered by PY017/PY003-style gates rather than this compact R-anchored feature row."
+}

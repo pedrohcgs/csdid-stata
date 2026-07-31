@@ -1,0 +1,58 @@
+{
+  "matrix_id": "F013",
+  "fixture_family": "analytical-inference",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D014"],
+  "tolerance_ids": "TOL002",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f013/generate.R",
+      "path": "tools/parity/generators/f013/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/inffunc-summary.csv",
+      "schema": "inffunc-summary"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/attgt.csv",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/inffunc-summary.csv",
+      "expected": "expected/r/inffunc-summary.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time", "inffunc_col"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Analytical ATT(g,t) SE and influence-function dimension/summary parity for balanced panel no-covariate, balanced panel numeric-covariate dr, and true repeated-cross-section no-covariate slices; multiplier bootstrap and clustered inference remain F014/F015."
+}

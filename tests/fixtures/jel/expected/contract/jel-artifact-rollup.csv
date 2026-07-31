@@ -1,0 +1,19 @@
+artifact_id,artifact_name,artifact_type,fixture_path,stata_test_file,r_artifact,stata_artifact,audit_status,parity_verified,evidence_report
+JEL001,R master script,r-master-script,tests/fixtures/jel/jel001,tests/stata/jel/test-artifact-contract.do,scripts/R/00_master_did_jel.R,,recorded,1,reports/jel-full-reproduction-result.md
+JEL002,Stata master script,stata-master-script,tests/fixtures/jel/jel002,tests/stata/jel/test-artifact-contract.do,,scripts/Stata/00_stata_master_did_jel.do,recorded,1,reports/jel-full-reproduction-result.md
+JEL003,table1,table,tests/fixtures/jel/jel003,tests/stata/jel/test-artifact-contract.do,tables/table1_R.tex,tables/table1_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL004,table2,table,tests/fixtures/jel/jel004,tests/stata/jel/test-artifact-contract.do,tables/table2_R.tex,tables/table2_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL005,table3,table,tests/fixtures/jel/jel005,tests/stata/jel/test-artifact-contract.do,tables/table3_R.tex,tables/table3_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL006,table4,table,tests/fixtures/jel/jel006,tests/stata/jel/test-artifact-contract.do,tables/table4_R.tex,tables/table4_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL007,table5,table,tests/fixtures/jel/jel007,tests/stata/jel/test-artifact-contract.do,tables/table5_R.tex,tables/table5_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL008,table6,table,tests/fixtures/jel/jel008,tests/stata/jel/test-artifact-contract.do,tables/table6_R.tex,tables/table6_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL009,table7,table,tests/fixtures/jel/jel009,tests/stata/jel/test-artifact-contract.do,tables/table7_R.tex,tables/table7_stata.tex,recorded,1,reports/jel-full-reproduction-result.md
+JEL010,figure1,figure,tests/fixtures/jel/jel010,tests/stata/jel/test-artifact-contract.do,figures/figure1_R.pdf,figures/figure1_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL011,figure2,figure,tests/fixtures/jel/jel011,tests/stata/jel/test-artifact-contract.do,figures/figure2_R.pdf,figures/figure2_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL012,figure3,figure,tests/fixtures/jel/jel012,tests/stata/jel/test-artifact-contract.do,figures/figure3_R.pdf,figures/figure3_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL013,figure4,figure,tests/fixtures/jel/jel013,tests/stata/jel/test-artifact-contract.do,figures/figure4_R.pdf,figures/figure4_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL014,figure5,figure,tests/fixtures/jel/jel014,tests/stata/jel/test-artifact-contract.do,figures/figure5_R.pdf,figures/figure5_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL015,figure6,figure,tests/fixtures/jel/jel015,tests/stata/jel/test-artifact-contract.do,figures/figure6_R.pdf,figures/figure6_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL016,figure7,figure,tests/fixtures/jel/jel016,tests/stata/jel/test-artifact-contract.do,figures/figure7_R.pdf,figures/figure7_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL017,figure8,figure,tests/fixtures/jel/jel017,tests/stata/jel/test-artifact-contract.do,figures/figure8_R.pdf,figures/figure8_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md
+JEL018,figure9,figure,tests/fixtures/jel/jel018,tests/stata/jel/test-artifact-contract.do,figures/figure9_R.pdf,figures/figure9_stata.pdf,recorded,1,reports/jel-full-reproduction-result.md

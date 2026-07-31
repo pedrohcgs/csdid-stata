@@ -1,0 +1,146 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_attgt_returns_figure",
+    "mapped_scenario": "attgt_plot_data",
+    "assertion_family": "matplotlib Figure creation mapped to Stata plot-data file creation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_attgt_with_single_group",
+    "mapped_scenario": "attgt_single_group_plot_data",
+    "assertion_family": "group argument mapped to Stata group() plot-data filter",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_dynamic",
+    "mapped_scenario": "aggte_dynamic_plot_data",
+    "assertion_family": "dynamic Axes creation mapped to dynamic plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_group",
+    "mapped_scenario": "aggte_group_plot_data",
+    "assertion_family": "group Axes creation mapped to group plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_calendar",
+    "mapped_scenario": "aggte_calendar_plot_data",
+    "assertion_family": "calendar Axes creation mapped to calendar plot-data export",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_attgt_with_custom_labels",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib label/title rendering options have no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_attgt_invalid_group_raises",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "Python raises for invalid groups, while R did warns and the Stata port follows the R-like warning/all-groups behavior",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV002"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_custom_labels",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib label/theme rendering options have no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_no_theming",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming toggle has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_no_ref_line",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib reference-line toggle has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_all_types_theming[dynamic-True]",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming parameterization has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_all_types_theming[dynamic-False]",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming parameterization has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_all_types_theming[group-True]",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming parameterization has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_all_types_theming[group-False]",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming parameterization has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_all_types_theming[calendar-True]",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming parameterization has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_ggdid.py",
+    "source_sha256": "75cc08b6418c85f2b4c73d05fa3affc239e9ee2e463165c932e899b6236f4376",
+    "source_test": "test_plot_aggte_all_types_theming[calendar-False]",
+    "mapped_scenario": "python-rendered-graph-api",
+    "assertion_family": "matplotlib theming parameterization has no Stata plot-data analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "PY010-DIV001"
+  }
+]

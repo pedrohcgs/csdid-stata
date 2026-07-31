@@ -1,0 +1,89 @@
+{
+  "matrix_id": "PY013",
+  "fixture_family": "python-integration-public-pipeline",
+  "normative_source": "Python csdid csdid/test_csdid/test_integration.py subordinate to R did 2.5.1 public command behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D014"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/panel-data.csv",
+      "rows": 500,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py013/generate.py",
+      "path": "tools/parity/generators/py013/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 42,
+    "kind": "numpy.random.seed",
+    "draws": "randn"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "integration-scenario"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public csdid/csdid_stats pipeline",
+      "expected": "source-test-map mapped scenarios",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    },
+    {
+      "actual": "Stata simple aggregation overall ATT",
+      "expected": "positive_threshold",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "scenario"
+      ]
+    }
+  ],
+  "approved_divergence": {
+    "id": "PY013-DIV001",
+    "source_test": "test_fast_mode_consistency",
+    "reason": "Python-only internal compute_inffunc=False construction path has no public Stata command analogue."
+  },
+  "scope_note": "PY013 maps four of five Python integration tests to public Stata command-surface assertions and records one approved divergence for the Python-only internal compute_inffunc=False path. Public fast/requested-fast equivalence remains covered by F032 and PY009."
+}

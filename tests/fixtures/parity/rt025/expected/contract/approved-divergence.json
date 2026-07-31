@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT025-DIV001",
+    "source_tests": "panel precompute is bit-identical to the original get_wide_data path; panel precompute also bit-identical for factor / transform covariates; panel precompute also bit-identical with time-varying sampling weights; panel precompute bit-identical with fix_weights base_period/first_period; RC/unbalanced precompute is bit-identical to the legacy subset path; RC/unbalanced precompute bit-identical with fix_weights base/first, incl. dropped units",
+    "reason": "The first six R slowpath-precompute tests compare the hidden did.disable_precompute/get_wide_data legacy path against R's precompute path. Stata has no public option or object surface for R's internal precompute escape hatch.",
+    "accepted_behavior": "Stata verifies the public invariants from this file: requested-fast optimized equality against explicit nofast for repeated-cross-section and unbalanced inputs, and input-row-order invariance. Broader fast/nofast behavior remains covered by F032, PY009, RT020, and RT024-style gates."
+  }
+]

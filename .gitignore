@@ -1,1 +1,8 @@
-tmp
+build/
+tools/plugin/_deps/
+*.log
+.DS_Store
+# locally built release bundles
+dist/
+# python bytecode
+__pycache__/

@@ -1,0 +1,66 @@
+{
+  "matrix_id": "F046",
+  "fixture_family": "legacy-deprecation-warnings",
+  "normative_source": "Legacy Stata compatibility policy; R did 2.5.1 remains the behavioral oracle",
+  "source_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
+  "decision_refs": ["D008", "D009", "D013"],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f046/generate.R",
+      "path": "tools/parity/generators/f046/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/new-stata/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/new-stata/events.json",
+      "schema": "error-warning-events"
+    },
+    {
+      "path": "expected/new-stata/migration-checklist.csv",
+      "schema": "legacy-migration-checklist"
+    },
+    {
+      "path": "expected/new-stata/migration-checklist.json",
+      "schema": "legacy-migration-checklist"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata captured deprecation warnings",
+      "expected": "expected/new-stata/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    },
+    {
+      "actual": "Migration guide checklist",
+      "expected": "expected/new-stata/migration-checklist.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "surface"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "F046 verifies stable soft-deprecation warning text for retained legacy aliases method(dripw), method(stdipw), asinr, accepted rademacher multiplier spelling, and unsupported non-rademacher multiplier diagnostics. It also binds the migration guide checklist to long/long2 universal-base event-study compatibility, F045 legacy-default evidence, F016/F017 unbalanced and soft-deprecated balance-alias evidence, F035 bootstrap option evidence, and F040-F044/JEL release blockers."
+}

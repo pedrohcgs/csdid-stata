@@ -1,0 +1,2 @@
+scenario,expected_att_rows,positive_threshold,methods,aggregation_types
+python_integration_public_pipeline,8,0.3,dr;ipw;reg,simple;group;dynamic;calendar

@@ -1,0 +1,5 @@
+"control_group","group","time","event_time","att","se","base_period","est_method","panel_mode","sample_n","inffunc_col"
+"nevertreated",3,2,-1,0,,"varying","reg","panel",40,1
+"nevertreated",3,3,0,0.7,,"varying","reg","panel",40,2
+"notyettreated",3,2,-1,0,,"varying","reg","panel",40,1
+"notyettreated",3,3,0,0.7,,"varying","reg","panel",40,2

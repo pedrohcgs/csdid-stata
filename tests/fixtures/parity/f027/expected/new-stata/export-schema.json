@@ -1,0 +1,17 @@
+{
+  "matrix_id": "F027",
+  "fixture_family": "exportable-tables",
+  "tables": {
+    "tidy_attgt": ["term", "group", "time", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "point_conf_low", "point_conf_high"],
+    "glance_attgt": ["nobs", "ngroup", "ntime", "control_group", "est_method"],
+    "tidy_aggte_simple": ["type", "term", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "point_conf_low", "point_conf_high"],
+    "glance_aggte_simple": ["type", "nobs", "ngroup", "ntime", "control_group", "est_method"],
+    "tidy_aggte_group": ["type", "term", "group", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "point_conf_low", "point_conf_high"],
+    "glance_aggte_group": ["type", "nobs", "ngroup", "ntime", "control_group", "est_method"],
+    "tidy_aggte_calendar": ["type", "time", "term", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "point_conf_low", "point_conf_high"],
+    "glance_aggte_calendar": ["type", "nobs", "ngroup", "ntime", "control_group", "est_method"],
+    "tidy_aggte_dynamic": ["type", "term", "event_time", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "point_conf_low", "point_conf_high"],
+    "glance_aggte_dynamic": ["type", "nobs", "ngroup", "ntime", "control_group", "est_method"]
+  },
+  "scope_note": "Partial tidy/glance table export for ATT(g,t) and simple, group, calendar, and dynamic aggregation. Inherited R/Python tidy/glance tests and richer table exporters remain incomplete."
+}

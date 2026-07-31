@@ -1,0 +1,12 @@
+[
+  {
+    "analysis_gate": "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh --analyze-existing",
+    "artifact_id": "JEL012",
+    "artifact_type": "figure",
+    "comparison_csv": "build/jel-full-reproduction/outputs/artifact-comparison.csv",
+    "full_gate": "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh",
+    "report": "reports/jel-full-reproduction-result.md",
+    "semantic_audit_csv": "build/jel-full-reproduction/outputs/stata-figure-semantic-audit.csv",
+    "status": "pass"
+  }
+]

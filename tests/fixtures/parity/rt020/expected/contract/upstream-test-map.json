@@ -1,0 +1,74 @@
+[
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "panel_regular",
+    "assertion_family": "active dataset names, values, and row order are unchanged after estimation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "panel_regular",
+    "assertion_family": "R data.table object-class mutation check has no separate Stata object-class analogue; active Stata dataset mutation safety is verified by mode",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT020-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "repeated_cross_section_regular",
+    "assertion_family": "active dataset names, values, and row order are unchanged after estimation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "repeated_cross_section_regular",
+    "assertion_family": "R data.table object-class mutation check has no separate Stata object-class analogue; active Stata dataset mutation safety is verified by mode",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT020-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "panel_fast",
+    "assertion_family": "active dataset names, values, and row order are unchanged after estimation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "panel_fast",
+    "assertion_family": "R data.table object-class mutation check has no separate Stata object-class analogue; active Stata dataset mutation safety is verified by mode",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT020-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "repeated_cross_section_fast",
+    "assertion_family": "active dataset names, values, and row order are unchanged after estimation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-mutation-safety.R",
+    "source_sha256": "f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb",
+    "source_test": "att_gt does not mutate caller data in either implementation",
+    "mapped_scenario": "repeated_cross_section_fast",
+    "assertion_family": "R data.table object-class mutation check has no separate Stata object-class analogue; active Stata dataset mutation safety is verified by mode",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT020-DIV001"
+  }
+]

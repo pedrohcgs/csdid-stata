@@ -1,0 +1,37 @@
+scenario,family,expected_behavior
+mpdta_nev_dr,attgt,"ATT(g,t) and SE match R reference"
+mpdta_nyt_dr,attgt,"ATT(g,t) and SE match R reference"
+mpdta_nev_reg_cov,attgt,"ATT(g,t) and SE match R reference"
+mpdta_nev_ipw,attgt,"ATT(g,t) and SE match R reference"
+sim_nev_dr,attgt,"ATT(g,t) and SE match R reference"
+mpdta_nev_dr,aggte-overall,overall aggregation ATT and SE match R reference
+mpdta_nyt_dr,aggte-overall,overall aggregation ATT and SE match R reference
+mpdta_nev_reg_cov,aggte-overall,overall aggregation ATT and SE match R reference
+mpdta_nev_ipw,aggte-overall,overall aggregation ATT and SE match R reference
+sim_nev_dr,aggte-overall,overall aggregation ATT and SE match R reference
+mpdta_nev_dr/group,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_dr/dynamic,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_dr/calendar,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nyt_dr/group,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nyt_dr/dynamic,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nyt_dr/calendar,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_reg_cov/group,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_reg_cov/dynamic,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_reg_cov/calendar,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_ipw/group,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_ipw/dynamic,aggte-egt,event/group/calendar aggregation rows match R reference
+mpdta_nev_ipw/calendar,aggte-egt,event/group/calendar aggregation rows match R reference
+sim_nev_dr/group,aggte-egt,event/group/calendar aggregation rows match R reference
+sim_nev_dr/dynamic,aggte-egt,event/group/calendar aggregation rows match R reference
+sim_nev_dr/calendar,aggte-egt,event/group/calendar aggregation rows match R reference
+none,fix-weights,"ATT(g,t) under fix_weights mode matches R reference"
+base_period,fix-weights,"ATT(g,t) under fix_weights mode matches R reference"
+first_period,fix-weights,"ATT(g,t) under fix_weights mode matches R reference"
+varying,fix-weights,"ATT(g,t) under fix_weights mode matches R reference"
+standard,factor-covariate,"factor-covariate ATT(g,t) and SE match R reference"
+fast,factor-covariate,"factor-covariate ATT(g,t) and SE match R reference"
+rc,gap-scenarios,"gap-scenario ATT(g,t) and SE match R reference"
+universal,gap-scenarios,"gap-scenario ATT(g,t) and SE match R reference"
+anticipation1,gap-scenarios,"gap-scenario ATT(g,t) and SE match R reference"
+weighted,gap-scenarios,"gap-scenario ATT(g,t) and SE match R reference"
+clustered,gap-scenarios,"gap-scenario ATT(g,t) and SE match R reference"

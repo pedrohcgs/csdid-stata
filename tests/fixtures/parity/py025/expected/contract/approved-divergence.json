@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "PY025-DIV001",
+    "summary": "Python-internal assertions with no csdid surface",
+    "rationale": "Eight of the 106 unit tests assert something csdid cannot express. Four target the parallel multiplier bootstrap: csdid has no cores() option (rc 198) and runs the multiplier loop serially in Mata, so there is no parallel branch to select, seed or compare. Three target a Python type-introspection helper over pandas columns; Stata variables are numeric or string by construction and the user-visible consequence -- rejecting a string time() -- is asserted directly. One targets a callable est_method, which csdid does not accept: method() is dr, reg or ipw and anything else is rejected (rc 198).",
+    "owner_decision": "recorded as inapplicable rather than left unmapped"
+  }
+]

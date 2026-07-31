@@ -6,74 +6,57 @@ title: csdid
 
 # `csdid`
 
-<p class="tagline">Difference-in-differences with multiple time periods,
-following Callaway and Sant'Anna (2021), written for Stata by the authors
-of the method.</p>
+<p class="tagline">A Stata package for difference-in-differences with staggered treatment adoption, from the authors of Callaway and Sant'Anna (2021).</p>
 
-Group-time average treatment effects ATT(g,t) under staggered adoption,
-with doubly robust estimation, covariates, sampling weights, unbalanced
-panels, repeated cross sections, and simultaneous confidence bands. The
-command estimates every cell the design supports. Aggregation is left to
-you, so the summary you report is one you asked for rather than an
-average taken over weights you never chose. The output reports the
-aggregation you name and no other.
+`csdid` estimates group-time average treatment effects, ATT(g,t), and the event studies and summaries built from them. It covers the designs applied researchers actually face: staggered adoption across many cohorts, block designs where every treated unit adopts at once, covariates through doubly robust estimation, sampling weights, unbalanced panels, repeated cross sections, anticipation windows, and simultaneous confidence bands over the whole event-study path. Every cell it estimates can be inspected, and every decision it makes along the way is reported.
 
 <!-- norun -->
 ```stata
 net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main") replace
 ```
 
-<p class="meta-line">version 2.0.0 &nbsp;·&nbsp; Stata 14 or newer &nbsp;·&nbsp; no dependencies &nbsp;·&nbsp; MIT</p>
+<p class="meta-line">version 2.0.0 &nbsp;&middot;&nbsp; Stata 14 or newer &nbsp;&middot;&nbsp; no dependencies &nbsp;&middot;&nbsp; MIT</p>
 
 </div>
 
 <div class="cards">
 <div class="card" markdown="1">
-### The estimand does not move with the sample
+### What it is built for
 
-An estimand is a population quantity. `csdid` weights cohorts by the
-population shares P(G=g). The other commands weight by the observations
-each wave happened to contribute. Make the survey waves unequal in size,
-change nothing else, and coverage for those commands falls to
-2–38%, while `csdid` stays at 95%.
+Staggered adoption is the hard case, and block adoption is the easy special case of it. Either way, the target is a population quantity, and it should not change because the sample arrived in a different shape. In our simulations, making survey waves unequal (and changing nothing else) drops the other commands' coverage to 2&ndash;38%. `csdid` stays at 95%.
 
 [The evidence](articles/csdid-against-the-field.html)
 </div>
 <div class="card" markdown="1">
 ### Doubly robust by default
 
-The default estimator is consistent if *either* the outcome model *or*
-the treatment-probability model is right. Break the outcome model and
-every one-model command in the comparison drifts by +0.19 to +0.49,
-while `csdid dr` reads −0.06 with coverage at the nominal level; break
-the propensity score instead and `dr` again tracks the target. In each of
-those two cells we broke exactly one of the two models.
+The default estimator is consistent when either the outcome model or the treatment-probability model is correct. In our experiments, breaking the outcome model biases every one-model command by +0.30 to +0.49 while `csdid dr` reads &minus;0.06 with nominal coverage; breaking the propensity score instead leaves `dr` on target again. Note that double robustness protects against one wrong model, and not against both being wrong at once.
 
 [Misspecification, measured](articles/csdid-against-the-field.html)
 </div>
 <div class="card" markdown="1">
-### What the output contains
+### We compared, so you do not have to guess
 
-Every ATT(g,t) cell comes with its own standard error. The aggregation
-weights are available in closed form, and the balancing rule you chose
-(or defaulted to) is reported in `e(panel_mode)`. Overlap failures are
-printed, never absorbed into the estimate. A cell the data cannot
-support comes back as a refusal.
+We ran `csdid` against five other Stata commands on one population with known truths. The differences that matter are the ones that are easy to miss: targets that move with the sampling, covariate assumptions that restrict more than their option names suggest, and standard errors that differ across commands even where the point estimates agree exactly. We would not compare estimates across estimators unless you know how each one behaves; the guide is our attempt to make that knowledge available.
 
-[The transparency scorecard](articles/csdid-against-the-field.html)
+[How csdid compares](articles/csdid-against-the-field.html)
 </div>
 <div class="card" markdown="1">
-### Timings against the SSC version
+### Fast enough that care is free
 
-On every workload we measured, this version runs 5–28× faster than csdid
-Version 1.82, and it is never slower. These are wall-clock times on our
-hardware, and they say nothing about the accuracy of either version. A
-million-row event study with clustered standard errors finishes in under
-two seconds.
+A million-row event study with clustered standard errors finishes in 1.8 seconds with analytical standard errors (2.4 seconds at the bootstrap default), and every workload we measured runs 4.9&times; to 28&times; faster than the SSC version. Those are wall-clock times on our hardware. They say nothing about the accuracy of either version.
 
 [The benchmarks](articles/csdid-against-the-field.html)
 </div>
 </div>
+
+## Transparency is the point
+
+We built `csdid` so that its output can be taken apart. Every ATT(g,t) comes with its own standard error, the aggregation weights are available in closed form, the sample decisions are stored in `e()`, overlap failures are reported as refusals and not as numbers, and every simulation in the comparison guide can be recomputed from a seed with the scripts in the [code appendix](code-appendix.html). We see the choice of an estimator as a conversation between empirical researchers and econometricians, and that conversation goes better when both sides can recompute the numbers in front of them. None of this replaces judgment about the identifying assumptions in your application.
+
+## Also in R and Python
+
+The same estimators, from the same team, are available as [`did` for R](https://github.com/bcallaway11/did) and [`csdid` for Python](https://github.com/DrSquare/csdid) (`pip install csdid`). The three implementations agree to machine precision once the same options are set; two omitted-option defaults differ deliberately in Stata, and `NEWS.md` documents both.
 
 ## In one screen
 
@@ -84,20 +67,12 @@ estat event                                     // the event study, uniform band
 estat group                                     // one effect per cohort
 ```
 
-Covariates go right after the outcome, the comparison group is
-not-yet-treated units by default (`nevertreated` switches to the
-never-treated units only), and inference is a multiplier bootstrap with
-simultaneous bands (`analytical` gives pointwise analytical standard
-errors instead). Every example on this site runs from a clean Stata
-session, on a fixed and dated copy of the data. The numbers printed here
-are the numbers the same lines produce for you. Note that where a result
-depends on a random draw, the seed that produced it is shown in the code.
+Covariates go right after the outcome. The comparison group is not-yet-treated units by default (`nevertreated` switches). Inference is a multiplier bootstrap with simultaneous bands (`analytical` gives pointwise analytical standard errors). Every example on this site runs from a clean Stata session, on a fixed, dated copy of the data.
 
 ## Guides
 {: #guides}
 
-The three guides below are where we would start, and the full set is on
-the [guides page](guides.html).
+Three places to start; the full set is on the [guides page](guides.html).
 
 | | |
 | --- | --- |
@@ -109,5 +84,4 @@ the [guides page](guides.html).
 
 ## Reference
 
-From inside Stata: `help csdid`, `help csdid_postestimation`,
-`help csdid_estat`, `help csdid_stats`, `help csdid_plot`.
+From inside Stata: `help csdid`, `help csdid_postestimation`, `help csdid_estat`, `help csdid_stats`, `help csdid_plot`.

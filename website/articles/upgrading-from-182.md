@@ -177,7 +177,7 @@ return a number we cannot vouch for.
 
 There is no external dependency (no drdid, and nothing else). Version 1.82's SSC
 entry reads `Requires: Stata version 14 and drdid from SSC`, while 2.0.0 needs
-nothing beyond Stata itself. It is also 5× to 28× faster on every workload we measured, and never
+nothing beyond Stata itself. It is also 4.9× to 28× faster on every workload we measured, and never
 slower, with the per-workload benchmark table in the package README; the gains by
 sample size, periods, cohorts, and sampling scheme (16× to 208×) are on
 [their own page](speed-vs-182.html).

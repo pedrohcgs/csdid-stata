@@ -182,7 +182,7 @@ same machine, same data, seven trials per workload with the first discarded.
 | Event study, clustered + bands | 12.64s | 2.57s | **4.9x** |
 | Large panel, weighted DR | 28.88s | 2.07s | **13.9x** |
 
-Between **5x and 28x**, and never slower. Peak memory is lower on every
+Between **4.9x and 28x**, and never slower. Peak memory is lower on every
 workload. The engine is Mata throughout and ships precompiled, so there is no
 per-session compilation cost either.
 

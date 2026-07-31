@@ -7,9 +7,12 @@ title: "Speed against Version 1.82"
 Version 1.82 is the `csdid` that SSC distributes today. The
 [upgrading guide](upgrading-from-182.html) covers what changed in the
 estimates; this page reports how long each version takes to produce them.
-Our protocol is the median of 7 timed trials with one discarded warmup,
-with each version invoked in its own syntax in its own fresh Stata
-process, on identical data with one covariate. To keep the comparison
+Our protocol is the median of 7 timed trials for 2.0.0 with one discarded
+warmup; for Version 1.82 the trial count steps down (7, then 5, 3, 2) as
+projected cost grows, and a cell projected past 120 seconds per call is
+skipped and recorded. Each version is invoked in its own syntax in its own
+fresh Stata process, on identical data with one covariate, at seed 20260729
+throughout. To keep the comparison
 about speed alone, we pin 2.0.0 to Version 1.82's defaults in every cell
 (never-treated comparison group, varying base
 period, and pair balancing on unbalanced panels), so that both versions
@@ -84,7 +87,7 @@ there is the smallest on this page: 5x at one end of the comparison and
 ## Where the workload gains were certified
 
 The per-workload comparison at fixed size (analytical, bootstrap,
-weighted, clustered, and event-study variants, 5x to 28x) ships in the
+weighted, clustered, and event-study variants, 4.9x to 28x) ships in the
 package README with per-trial records, and it was produced by a
 seven-trial A/B harness run against an installed copy of Version 1.82 at
 its released commit. This page extends that comparison across sizes and

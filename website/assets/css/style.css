@@ -107,7 +107,8 @@ img { max-width: 100%; }
 .hero h1 code { background: none; padding: 0; font-size: 1em; color: var(--navy); }
 .hero .tagline {
   font-size: 1.3rem; line-height: 1.5; color: var(--text);
-  max-width: 38rem; margin: 0.2rem 0 0.9rem;
+  /* tracks the content column so it cannot drift when --maxw changes */
+  max-width: calc(var(--maxw) * 0.95); margin: 0.2rem 0 0.9rem;
 }
 .hero pre { margin: 1.1rem 0 0.5rem; background: #fff; }
 .meta-line {

@@ -113,7 +113,8 @@ available for everyone, so the estimator pools observations from both periods
 instead (this is the repeated-cross-section computation). Two consequences are
 worth knowing:
 
-- it is *slower*, by roughly 2–4×, because each cell fits more regressions on
+- it is *slower* than `bal(full)` by roughly 4–6× at these sizes (and roughly
+  2× slower than `bal(pair)`), because each cell fits more regressions on
   more rows
 - the guard on small cohorts is *stricter*, because cohort size is measured as
   observations divided by periods, which on an unbalanced panel is smaller than

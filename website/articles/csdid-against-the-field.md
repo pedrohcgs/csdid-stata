@@ -58,7 +58,8 @@ before treatment). `jwdid` and `did_imputation` instead fit unit and time
 fixed effects on *all* untreated observations and impute Y(0) from the fit,
 and on a balanced panel those two produce identical point estimates (with
 and without covariates; we verified agreement to six decimals with each
-command's documented covariate specification). `flexdid`'s default
+command's documented covariate specification, on one draw of n = 50,000,
+seed 4242; the script is in the code appendix). `flexdid`'s default
 specification joins them. One domain note before any table: `flexdid`
 implements Deb, Norton, Wooldridge and Zabel (2025), whose title scopes the
 estimator to repeated cross sections, so this guide compares it there, and
@@ -67,8 +68,9 @@ only there.
 Identical point estimates are not identical inference. When effects vary
 with covariates, `did_imputation`'s standard errors are deliberately
 conservative under that heterogeneity, while `jwdid` reports conventional
-regression inference (on one of our draws the gap grew from 11% at event
-time 0 to 55% at event time 2). The two commands run the same estimator
+regression inference (on that same draw of n = 50,000 at seed 4242, the gap
+grew from 11% at event time 0 to 55% at event time 2). The two commands run
+the same estimator
 under two inference philosophies, so a practitioner comparing printed
 standard errors across them would conclude that they disagree, at the very
 point where their point estimates agree to every decimal we checked in
@@ -76,7 +78,8 @@ these runs.
 
 The same lesson holds on the differencing side. On designs where `csdid`
 and `did_multiplegt_dyn` produce identical point estimates, their standard
-errors differ by roughly 8%, because the inference conventions differ in
+errors differ by roughly 8&ndash;10% (one draw, seed 31415, same appendix),
+because the inference conventions differ in
 what they treat as random; ours follows Callaway and Sant'Anna (2021) in
 treating cohort membership as sampled, so the estimated cohort shares
 contribute uncertainty. Pooling every pre-period buys efficiency when
@@ -120,12 +123,13 @@ A dash marks a cell without a measured time, and the note says why.
 
 The commands' own defaults differ in how much inference they buy. These two
 columns are the same `csdid` estimation run twice: once with pointwise
-analytical standard errors, and once with the shipped default of 999
-multiplier-bootstrap draws with simultaneous confidence bands (the macOS
-accelerator that ships with the package is active; every other platform
-computes identical numbers in Mata).
+analytical standard errors, and once with the default inference (timed here
+at 999 multiplier-bootstrap draws with simultaneous confidence bands; the
+shipped default is 1,000, and the difference in cost is one draw in a
+thousand). The macOS accelerator that ships with the package is active;
+every other platform computes identical numbers in Mata.
 
-| n (T=10, G=4) | rows | analytical | full default: 999 draws + uniform bands |
+| n (T=10, G=4) | rows | analytical | default inference: 999 draws + uniform bands |
 | --- | ---: | ---: | ---: |
 | 100 | 1,000 | 0.01 | 0.04 |
 | 1,000 | 10,000 | 0.04 | 0.07 |
@@ -199,7 +203,8 @@ gap is 11x, and `did_imputation`'s is 19x). In long panels the difference
 is large enough to constrain how many specifications a researcher can
 afford to run. Cohorts are milder for everyone: from G=3 to G=18 at 200,000
 rows, `csdid` goes 0.45s to 1.52s (there are simply more cells to estimate
-and report), and it stays about 4x ahead of the field throughout.
+and report), and it stays about 4x ahead of `jwdid` and `did_imputation`
+throughout (`lpdid` is closer at high G).
 
 Aggregation is not in these numbers because `estat event` takes a fraction
 of a second after any of these estimations (a table would add nothing). The
@@ -223,13 +228,13 @@ design, and all of them except `lpdid` agree with the target.
 
 | estimator | bias at e=0 | 95% coverage |
 | --- | ---: | ---: |
-| `csdid` | +0.005 | 0.96 |
-| `jwdid` | +0.005 | 0.96 |
-| `did_imputation` | +0.005 | 0.96 |
-| `did_multiplegt_dyn` | +0.005 | 0.95 |
-| `lpdid` | **-0.13** | **0.53** |
+| `csdid` | +0.004 | 0.97 |
+| `jwdid` | +0.004 | 0.96 |
+| `did_imputation` | +0.004 | 0.96 |
+| `did_multiplegt_dyn` | +0.004 | 0.94 |
+| `lpdid` | **-0.13** | **0.52** |
 
-`lpdid` is off by 6.5% of the true effect on a perfectly balanced panel
+`lpdid` is off by 6.3% of the true effect on a perfectly balanced panel
 (with nothing exotic in it). The number is neither a bug nor sampling
 noise (the bias is the same at n = 4,000). It is what effective-sample-size
 weighting does: later cohorts get less weight (because earlier cohorts are
@@ -281,8 +286,9 @@ observation-weighted commands). The estimated
 event study does not simply shift up or down; its shape bends toward
 whatever the sampling did, so a reader would see effects "growing" that do
 not grow. `csdid` reports 0.004 and 0.001 bias at those event times, with
-nominal coverage, and its individual ATT(g,t) cells are within 0.02 of
-their known truths in every one of the settings we ran.
+nominal coverage, and its individual ATT(g,t) cells are within 0.022 of
+their known truths in every one of the settings in this part of the
+guide.
 
 `did_multiplegt_dyn` does not claim repeated cross-section support and
 returns nothing here, and `lpdid` refuses to run at all. We prefer the
@@ -335,7 +341,7 @@ The first table takes a balanced panel with every model correctly specified
 | `csdid ipw` | +0.004 | 0.95 |
 | `csdid reg` | -0.001 | 0.95 |
 | `jwdid` | +0.001 | 0.95 |
-| `did_imputation` | +0.000 | 0.96 |
+| `did_imputation` | +0.001 | 0.95 |
 | `did_multiplegt_dyn` | **+0.119** | **0.61** |
 | `lpdid` | **-0.139** | **0.46** |
 
@@ -369,7 +375,8 @@ confirm that it works. Those terms are narrow, though, and they are not the
 terms that most applied covariate stories satisfy. The documentation offers
 `trends_nonparam()`, which does exact matching on discrete covariates, as
 the route for time-invariant characteristics; matching on our binary
-covariate removes its share of the drift (+0.88 falls to +0.66 at e=2), and
+covariate removes its share of the drift (+0.88 falls to +0.66 at e=2, over
+100 replications), and
 continuous covariates are outside that option's scope. Conditional parallel
 trends as in Callaway and Sant'Anna (2021) asks for none of this, since the
 trend may depend on the covariates flexibly and heterogeneously, and
@@ -406,7 +413,7 @@ coverage at e=1 are as follows.
 | `csdid ipw` | -0.054 | 0.93 |
 | `csdid reg` | **+0.300** | **0.46** |
 | `jwdid` | **+0.490** | **0.26** |
-| `did_imputation` | **+0.189** | **0.72** |
+| `did_imputation` | **+0.490** | **0.28** |
 | `did_multiplegt_dyn` | **+0.303** | **0.22** |
 | `lpdid` | **-0.162** | **0.68** |
 
@@ -455,7 +462,7 @@ Bias and coverage at e=1 are as follows.
 | `csdid ipw` | **-0.094** | 0.97 |
 | `csdid reg` | -0.001 | 0.95 |
 | `jwdid` | +0.001 | 0.92 |
-| `did_imputation` | +0.002 | 0.93 |
+| `did_imputation` | +0.001 | 0.92 |
 | `did_multiplegt_dyn` | **+0.229** | **0.28** |
 | `lpdid` | **-0.112** | **0.66** |
 

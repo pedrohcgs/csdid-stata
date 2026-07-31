@@ -5,42 +5,46 @@ title: Code appendix
 # Code appendix
 
 Every number in [How csdid compares](articles/csdid-against-the-field.html)
-comes from one of the scripts on this page, and they are reproduced in full.
-We changed four things for publication: the file paths were shortened so
+comes from one of the scripts on this page. They are reproduced in full.
+Five things were changed for publication: the file paths were shortened so
 that everything runs from a single folder, a two-line run header was added
-at the top of each script, a handful of copy-pasted header comments were
-corrected to describe what that script actually runs, and one inert block of
-dead code (never reached at run time) was removed from `simdgp.do`. Nothing
-else moved, and every
-seed, parameter, regime, package option and line of executed logic is what
-produced the published tables.
+at the top of each script, a handful of copy-pasted or superseded header
+comments were corrected to describe what that script actually runs, one
+inert block of dead code was removed from `simdgp.do`, and
+`scalebench_f.sh` lost the loop that made it wait for our other benchmark
+tiers to finish before starting. That loop decided *when* the script began,
+never what it measured. Nothing else moved &mdash; every seed, parameter,
+regime, package option and line of executed logic is what produced the
+published tables.
+
+The Version 1.82 comparison needs one thing this folder cannot carry: a
+checkout of Version 1.82 itself, which `scalebench_f_cell.do` expects at
+`../csdid-182` (the released commit `fdbae255`), and which requires `drdid`
+1.91 or later on the adopath. That script checks for both and stops rather
+than installing anything.
 
 The protocol is the same in every arm:
 
-- **One population.** `simdgp.do` builds it, and the cohorts are assigned
-  deterministically, a quarter of units each (not drawn at random),
-  so that the target does not re-roll from replication to replication.
+- **One population.** `simdgp.do` builds it. Cohorts are assigned
+  deterministically, a quarter of units each, so the target does not re-roll
+  from replication to replication.
 - **Targets computed by hand from the data-generating process**, never
   re-derived from a draw: ATT(g, g+h) = (g&minus;2) + 0.5h, so the
   event-study truths are exactly 2.0, 2.5 and 3.0.
-- **Fixed seeds.** Replication *r* uses seed 90000 + *r* everywhere (in every
-  regime and for every package), so the same draw is handed to every package
-  and the arms line up replication by replication. The bootstrap arm uses
-  70000 + *r*.
-- **500 draws** per setting, with 1,000 units and seven periods in each
-  draw.
+- **Fixed seeds.** Replication *r* uses seed 90000 + *r* everywhere, so the
+  same draw is handed to every package and the arms line up replication by
+  replication. The bootstrap arm uses 70000 + *r*.
+- **500 draws** per setting, 1,000 units and seven periods per draw.
 - **Rival packages at their current SSC releases**, each invoked as its own
-  documentation prescribes (we did not tune any of them). Where a package
-  does not claim to support a setting, we still make the attempt and record
-  whatever it returns, including nothing.
+  documentation prescribes. Where a package does not claim to support a
+  setting, the attempt is still made and whatever it returns is recorded,
+  including nothing.
 - **csdid from source**, `src/ado` and `src/mata` pushed onto the adopath,
-  never an installed copy (so the published tables track the source tree).
+  never an installed copy.
 
 To run them, put the files in one folder with the csdid source tree in
 `../src`, and give each driver a unit count, a replication count and an
-output file (in that order). The scripts do not install anything, so a
-package that is not already on your machine will simply be recorded as
-missing.
+output file.
 
 <p class="fold-controls">
 <button type="button" onclick="foldAll(true)">Expand all</button>
@@ -56,7 +60,7 @@ function foldAll(open) {
 
 ## The population and the harness
 
-Every arm below draws from the same population and is scored against the same targets, and these three files are what the drivers load. None of them is run on its own.
+Every arm below draws from the same population and is scored against the same targets. These three files are what the drivers load.
 
 <details class="code-fold">
 <summary><code>simdgp.do</code> &mdash; the population: one DGP, one set of targets, every sampling regime and misspecification design</summary>
@@ -263,7 +267,7 @@ end</code></pre>
 </details>
 
 <details class="code-fold">
-<summary><code>simrun3.do</code> &mdash; the estimator harness: one program per package, all six harvested into the same 3x2 matrix</summary>
+<summary><code>simrun3.do</code> &mdash; the estimator harness: one program per package, each invoked at its own documented covariate specification, all harvested into the same 3x2 matrix</summary>
 <pre><code>* Run from the bench/ folder of the replication package. Not run on its
 * own: the drivers load it with -do-.  It defines sim_est3.
 * One estimator, one regime -&gt; matrix R (3x2): h=0,1,2 estimate and SE.
@@ -403,14 +407,13 @@ program define sim_est3, rclass
     else if "`pkg'" == "bjs" {
         if inlist("`regime'", "rcs", "rcsvar") {
             if "`cov'" != "" {
-                * time-invariant covariates enter the imputation model through
-                * time interactions, as the did_imputation help prescribes:
-                * dummies via fe() (gender-by-period FE), continuous via
-                * controls() as explicit x*t variables
-                capture drop __x2t
-                quietly generate double __x2t = x2 * time
+                * covariates exactly as the did_imputation help prescribes:
+                * binary (gender-like) via fe() interacted with period
+                * dummies; continuous time-invariant via timecontrols(),
+                * which enters i.t#c.x2 with an unrestricted coefficient
+                * per period
                 capture did_imputation y id time gvar_miss, horizons(0/2) ///
-                    fe(gvar time x1#time) controls(x2 __x2t)
+                    fe(gvar time x1#time) timecontrols(x2)
             }
             else {
                 capture did_imputation y id time gvar_miss, horizons(0/2) fe(gvar time)
@@ -418,10 +421,11 @@ program define sim_est3, rclass
         }
         else {
             if "`cov'" != "" {
-                capture drop __x2t
-                quietly generate double __x2t = x2 * time
+                * same help-prescribed path as the repeated-cross-section
+                * branch: fe() for the binary covariate's period
+                * interactions, timecontrols() for the continuous one
                 capture did_imputation y id time gvar_miss, horizons(0/2) autosample ///
-                    fe(id time x1#time) controls(__x2t)
+                    fe(id time x1#time) timecontrols(x2)
             }
             else capture did_imputation y id time gvar_miss, horizons(0/2) autosample
         }
@@ -542,9 +546,212 @@ foreach reg in balanced unbalanced rcs {
 </details>
 
 
+## The command map
+
+These are the controlled experiments behind the claims about what each command computes. Each one is built so that two candidate answers give visibly different numbers, and the command's output picks between them.
+
+<details class="code-fold">
+<summary><code>wts.do</code> &mdash; which weights each command puts on a cohort: one lopsided design where equal, size and effective-sample-size weighting give visibly different answers</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do wts.do
+local root ".."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+local B "."
+quietly do "`B'/runners.do"
+
+* Deliberately lopsided: cohort 3 is SMALL with a BIG effect, cohort 4 is LARGE
+* with a SMALL effect. Any two weighting schemes then give visibly different
+* event-study numbers, so the pooled estimate identifies the weights.
+clear
+set seed 99
+quietly set obs 1100
+generate long id = _n
+generate int gvar = cond(id &lt;= 100, 3, cond(id &lt;= 1000, 4, 0))
+quietly expand 7
+quietly bysort id: generate int time = _n
+quietly generate double eff = cond(gvar==3, 2.0, 0.5)
+quietly generate double y = id*0.0005 + time*0.3 + rnormal()*0.10
+quietly replace y = y + eff if gvar&gt;0 &amp; time&gt;=gvar
+quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+quietly generate int gvar_miss = gvar
+quietly replace gvar_miss = . if gvar==0
+quietly generate int cl = mod(id,20)+1
+tempfile d
+quietly save "`d'", replace
+
+quietly count if gvar==3 &amp; time==1
+local n3 = r(N)
+quietly count if gvar==4 &amp; time==1
+local n4 = r(N)
+di "SETUP cohort3 units=`n3' effect=2.0   cohort4 units=`n4' effect=0.5"
+di "SETUP equal-weight h0   = " %7.4f (2.0+0.5)/2
+di "SETUP size-weight h0    = " %7.4f (`n3'*2.0 + `n4'*0.5)/(`n3'+`n4')
+
+* csdid ATT(g,t) then its own event aggregation
+use "`d'", clear
+quietly csdid y, ivar(id) time(time) gvar(gvar) analytical base_period(varying) bal(none)
+matrix A = e(attgt)
+forvalues r = 1/`=rowsof(A)' {
+    if A[`r',1] == A[`r',2] di "  csdid ATT(g=" A[`r',1] ",e=0) = " %7.4f A[`r',4]
+}
+quietly estat event, window(0 0)
+matrix E = e(aggte)
+di "AGG csdid  event h0 = " %7.4f E[1,2]
+
+use "`d'", clear
+quietly bench_jwdid, horizons(0) cluster(cl)
+matrix E = r(ES)
+di "AGG jwdid  event h0 = " %7.4f E[1,2]
+
+use "`d'", clear
+quietly bench_dcdh, horizons(0) cluster(cl)
+matrix E = r(ES)
+di "AGG dcdh   event h0 = " %7.4f E[1,2]
+
+use "`d'", clear
+capture bench_bjs, horizons(0) cluster(cl)
+if !_rc {
+    matrix E = r(ES)
+    di "AGG bjs    event h0 = " %7.4f E[1,2]
+}
+use "`d'", clear
+capture bench_lpdid, horizons(0) cluster(cl)
+if !_rc {
+    matrix E = r(ES)
+    di "AGG lpdid  event h0 = " %7.4f E[1,2]
+}</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>wts2.do</code> &mdash; the same identification repeated at three cohort-size splits, so the weight is read off the movement and not off one number</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do wts2.do
+local root ".."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+local B "."
+quietly do "`B'/runners.do"
+capture program drop wtest
+program define wtest
+    args n3 n4
+    clear
+    set seed 99
+    local tot = `n3' + `n4' + 100
+    quietly set obs `tot'
+    generate long id = _n
+    generate int gvar = cond(id &lt;= `n3', 3, cond(id &lt;= `n3'+`n4', 4, 0))
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double eff = cond(gvar==3, 2.0, 0.5)
+    quietly generate double y = id*0.0005 + time*0.3 + rnormal()*0.10
+    quietly replace y = y + eff if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly generate int cl = mod(id,20)+1
+    tempfile d
+    quietly save "`d'", replace
+    local eqw = (2.0+0.5)/2
+    local szw = (`n3'*2.0 + `n4'*0.5)/(`n3'+`n4')
+    di "W n3=`n3' n4=`n4'  equal=" %6.4f `eqw' "  size=" %6.4f `szw'
+    foreach pkg in csdid jwdid bjs dcdh lpdid {
+        use "`d'", clear
+        if "`pkg'" == "csdid" {
+            quietly csdid y, ivar(id) time(time) gvar(gvar) analytical base_period(varying) bal(none)
+            quietly estat event, window(0 0)
+            matrix E = e(aggte)
+            di "W    csdid = " %6.4f E[1,2]
+        }
+        else {
+            capture bench_`pkg', horizons(0) cluster(cl)
+            if !_rc {
+                matrix E = r(ES)
+                di "W    `pkg' = " %6.4f E[1,2]
+            }
+        }
+    }
+end
+wtest 100 900
+wtest 500 500
+wtest 900 100</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>mech.do</code> &mdash; what makes the pooling estimators differ from base-period differencing: a one-pre-period design where they cannot differ, and a balanced/unbalanced pair at two seeds</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do mech.do
+local root ".."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+local B "."
+quietly do "`B'/dgp.do"
+quietly do "`B'/runners.do"
+
+* TEST A. One pre-period only (T=2, g=2). A fitted-FE imputation has exactly one
+* untreated period to learn from, so it CANNOT differ from single-base
+* differencing. If jwdid/bjs then equal csdid, the balanced-panel gap is the
+* pre-period pooling and nothing else.
+capture program drop mechA
+program define mechA
+    quietly bench_dgp, design(dynamic) n(3000) t(2) seed(77) cohorts(1)
+    quietly keep if gvar == 2 | gvar == 0
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar == 0
+    tempfile d
+    quietly save "`d'", replace
+    use "`d'", clear
+    quietly csdid y, ivar(id) time(time) gvar(gvar) analytical base_period(varying) notyet bal(none)
+    matrix A = e(attgt)
+    di "MECH A  csdid  = " %10.6f A[1,4]
+    foreach pkg in jwdid bjs {
+        use "`d'", clear
+        capture bench_`pkg', horizons(0) cluster(cl)
+        if _rc == 0 &amp; r(ok) == 1 {
+            matrix E = r(ES)
+            di "MECH A  `pkg'  = " %10.6f E[1,2]
+        }
+        else di "MECH A  `pkg'  FAILED"
+    }
+end
+mechA
+
+* TEST B. Does jwdid == bjs exactly on a BALANCED panel at a second seed, and
+* do they come apart under unbalancedness at that seed too?
+capture program drop mechB
+program define mechB
+    args struct seed
+    quietly bench_dgp, design(dynamic) n(3000) t(7) seed(`seed') cohorts(2)
+    quietly keep if gvar == 3 | gvar == 0
+    if "`struct'" == "unbalanced" {
+        set seed `=`seed'+5'
+        quietly generate double du = runiform()
+        quietly drop if du &lt; 0.15
+        drop du
+    }
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar == 0
+    tempfile d
+    quietly save "`d'", replace
+    local out ""
+    foreach pkg in jwdid bjs {
+        use "`d'", clear
+        capture bench_`pkg', horizons(1) cluster(cl)
+        matrix E = r(ES)
+        local out "`out'  `pkg'=" + string(E[1,2],"%9.6f")
+    }
+    di "MECH B  `struct' seed=`seed' `out'"
+end
+mechB balanced 101
+mechB unbalanced 101
+mechB balanced 202
+mechB unbalanced 202</code></pre>
+</details>
+
+
 ## Reliability arms
 
-These arms hold the population and the targets fixed and change only the way the sample arrives, and each driver writes one row per (regime, package, replication, horizon), so that nothing is aggregated before it can be inspected (one CSV per arm).
+One population, one set of targets, and only the way the sample arrives changes. Each driver writes one row per (regime, package, replication, horizon), so nothing is aggregated before it can be inspected.
 
 <details class="code-fold">
 <summary><code>simmc.do</code> &mdash; Reliability I: the four sampling regimes (balanced, period-varying missingness, unbalanced, repeated cross sections), full package roster</summary>
@@ -913,7 +1120,7 @@ display "MCDONE `outfile'"</code></pre>
 
 ## Misspecification
 
-In these arms the covariates matter and parallel trends holds only conditionally, so we break the outcome model first and the propensity score second (one model at a time), and record what each estimator does about it. Neither cell is a worst case, and each of them breaks one model in one specific way.
+The covariates are real and parallel trends is conditional. These arms break the outcome model, then the propensity score, and record what each estimator does about it.
 
 <details class="code-fold">
 <summary><code>simmc_dr.do</code> &mdash; the three misspecification cells: both models right, outcome model wrong, propensity score wrong</summary>
@@ -1066,10 +1273,128 @@ file close out
 display "MCDONE `outfile'"</code></pre>
 </details>
 
+<details class="code-fold">
+<summary><code>tnptest.do</code> &mdash; how much of did_multiplegt_dyn's covariate drift trends_nonparam() removes, over 100 replications</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do tnptest.do
+local root ".."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+local B "."
+quietly do "`B'/simdgp.do"
+capture file close out
+file open out using "`B'/tnptest.csv", write replace text
+file write out "variant,rep,h,est" _n
+forvalues r = 1/100 {
+    quietly sim_dgp, n(1000) seed(`=90000+`r'') regime(balanced) cov
+    foreach v in tnp_x1 tnp_both {
+        local opt = cond("`v'"=="tnp_x1", "trends_nonparam(x1)", "trends_nonparam(x1 x2)")
+        capture quietly did_multiplegt_dyn y id time treated, effects(3) `opt' graphoptions(nodraw)
+        if _rc == 0 {
+            forvalues h = 0/2 {
+                local e = string(e(Effect_`=`h'+1'), "%18.0g")
+                file write out "`v',`r',`h',`e'" _n
+            }
+        }
+        else file write out "`v',`r',0,FAILRC`=_rc'" _n
+    }
+}
+file close out
+display "TNP done"</code></pre>
+</details>
+
+
+## Inference comparisons
+
+Two designs where commands agree on the point estimate and disagree on the standard error, so the difference that remains is the inference convention and nothing else. Both are single draws at a stated seed, not replication studies.
+
+<details class="code-fold">
+<summary><code>hetx.do</code> &mdash; jwdid and did_imputation on one draw with covariate-varying effects: identical point estimates, standard errors that are not (seed 4242, n = 50,000)</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do hetx.do
+adopath ++ "../src/ado"
+adopath ++ "../src/mata"
+clear
+set seed 4242
+set obs 50000
+gen id = _n
+gen gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, cond(mod(_n,4)==2, 4, 5)))
+gen byte x1 = runiform() &lt; cond(gvar==0, .35, .15+.10*gvar)
+gen double x2 = rnormal() + cond(gvar==0, -0.5, 0.4*(gvar-4))
+gen double mu = rnormal()
+expand 7
+bysort id: gen time = _n
+gen double y = mu + 0.3*time + 0.4*x1 + 0.6*x2 + (0.35*x1 + 0.45*x2)*time + rnormal()
+* effects vary with cohort, event time, AND x2
+gen double h = time - gvar
+replace y = y + (gvar-2) + 0.5*h + 0.8*x2*(h+1) if gvar&gt;0 &amp; time&gt;=gvar
+* analytic treated-average truths at ES(h): cohorts 3,4,5 equal shares,
+* E[x2|g] = -0.4, 0, +0.4  =&gt;  X-term averages 0.8*mean(E[x2|g])*(h+1) = 0
+* per-cohort truths differ, the equal-weight cohort average is:
+forvalues hh = 0/2 {
+    local tr`hh' = ((1+2+3)/3) + 0.5*`hh'
+    di "HX truth ES(`hh') = " %6.4f `tr`hh'' "   (cohort truths differ by ±0.32*(h+1) through x2)"
+}
+csdid y x1 x2, ivar(id) time(time) gvar(gvar) analytical
+estat event, window(0 2)
+matrix E = e(aggte)
+di "HX csdid dr : ES0=" %6.4f E[1,2] " ES1=" %6.4f E[2,2] " ES2=" %6.4f E[3,2]
+capture drop gvar_miss
+gen gvar_miss = gvar
+replace gvar_miss = . if gvar==0
+did_imputation y id time gvar_miss, horizons(0/2) autosample fe(id time x1#time) timecontrols(x2)
+matrix B = r(table)
+di "HX bjs      : ES0=" %6.4f B[1,1] " ES1=" %6.4f B[1,2] " ES2=" %6.4f B[1,3]
+* cell-level check for one cohort with nonzero E[x2|g]: cohort 5, h=0: truth 3 + 0.8*0.4*1 = 3.32
+matrix A = e(Nt)
+matrix C = e(b)
+jwdid y x1 x2, ivar(id) tvar(time) gvar(gvar)
+estat event
+matrix J = r(table)
+local cn : colnames J
+di "HX jwdid cols: `cn'"
+di "HX jwdid    : ES0=" %8.6f J[1,1] " ES1=" %8.6f J[1,2] " ES2=" %8.6f J[1,3]
+di "HX bjs again: ES0=" %8.6f B[1,1] " ES1=" %8.6f B[1,2] " ES2=" %8.6f B[1,3]
+did_imputation y id time gvar_miss, horizons(0/2) autosample fe(id time x1#time) timecontrols(x2) cluster(id)
+matrix B2 = r(table)
+di "HXSE bjs   cluster(id): se0=" %8.6f B2[2,1] " se1=" %8.6f B2[2,2] " se2=" %8.6f B2[2,3]
+jwdid y x1 x2, ivar(id) tvar(time) gvar(gvar) cluster(id)
+estat event
+matrix J2 = r(table)
+di "HXSE jwdid cluster(id): se0=" %8.6f J2[2,1] " se1=" %8.6f J2[2,2] " se2=" %8.6f J2[2,3]</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>dcdhse.do</code> &mdash; csdid and did_multiplegt_dyn on a design where their point estimates coincide, so only the inference convention separates them (seed 31415)</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do dcdhse.do
+adopath ++ "../src/ado"
+adopath ++ "../src/mata"
+clear
+set seed 31415
+set obs 20000
+gen id = _n
+gen gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, cond(mod(_n,4)==2, 4, 5)))
+gen double mu = rnormal()
+expand 7
+bysort id: gen time = _n
+gen double y = mu + 0.3*time + rnormal()
+replace y = y + (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
+gen byte D = (gvar&gt;0 &amp; time&gt;=gvar)
+csdid y, ivar(id) time(time) gvar(gvar) analytical
+estat event, window(0 2)
+matrix E = e(aggte)
+di "DC csdid : e0=" %7.4f E[1,2] " (se " %6.4f E[1,3] ")  e1=" %7.4f E[2,2] " (se " %6.4f E[2,3] ")  e2=" %7.4f E[3,2] " (se " %6.4f E[3,3] ")"
+did_multiplegt_dyn y id time D, effects(3) graph_off
+matrix M = e(estimates)
+matrix V = e(variances)
+di "DC dcdh  : e0=" %7.4f M[1,1] " (se " %6.4f sqrt(V[1,1]) ")  e1=" %7.4f M[2,1] " (se " %6.4f sqrt(V[2,1]) ")  e2=" %7.4f M[3,1] " (se " %6.4f sqrt(V[3,1]) ")"</code></pre>
+</details>
+
 
 ## Precision and bands
 
-These two arms ask what changes when the error process is not iid, and whether an interval read across the whole event-study path covers at its nominal level (joint coverage, not pointwise).
+What changes when the error process is not iid, and whether an interval read across the whole event-study path covers at its nominal level.
 
 <details class="code-fold">
 <summary><code>simmc_ur.do</code> &mdash; the error-process arm: within-unit random-walk errors, where base-period differencing is the efficient construction</summary>
@@ -1192,7 +1517,7 @@ display "MCDONE"</code></pre>
 
 ## Speed
 
-The timing runs discard a warmup trial, hold the data, the clustering and the inference request fixed across packages, and record anything a package refuses rather than substituting something cheaper for it. We report wall-clock seconds (the median over the timed trials). They do not separate the estimator from the input and output around it.
+Timing, with the warmup discarded. The runners hold the data, the clustering and the inference request fixed across packages, and record anything a package refuses rather than substituting something cheaper.
 
 <details class="code-fold">
 <summary><code>dgp.do</code> &mdash; the benchmark DGP and the three panel structures used by the timing grid</summary>
@@ -1824,26 +2149,35 @@ end</code></pre>
 </details>
 
 <details class="code-fold">
-<summary><code>scalebench.do</code> &mdash; the four-tier scaling grid: unbalanced ladder, repeated-cross-section ladder, periods scan, cohorts scan</summary>
+<summary><code>scalebench.do</code> &mdash; the five-tier scaling grid: unbalanced ladder, repeated-cross-section ladder, periods scan, cohorts scan, and the cost of the default inference</summary>
 <pre><code>* Run from the bench/ folder of the replication package, with the csdid
 * source tree in ../src.  Usage:  stata-mp -b do scalebench.do A
 * ---------------------------------------------------------------------------
 * scalebench.do -- extended speed-benchmark grid for the comparison article.
 *
-*   stata-mp -b do scalebench.do &lt;A|B|C|D&gt; [smoke]
+*   stata-mp -b do scalebench.do &lt;A|B|C|D|E&gt; [smoke]
 *
-* Four scans, each runnable on its own so the tiers can be sequenced:
+* Five scans, each runnable on its own so the tiers can be sequenced:
 *
 *   A  UNBALANCED LADDER   n_units in {1e3, 1e4, 1e5}, T=10, G=4, 15% MCAR
 *                          csdid bal(full) and bal(none), jwdid,
 *                          did_imputation, lpdid
 *   B  RCS LADDER          n_per_period in {1e3, 1e4, 1e5}, T=10, G=4
-*                          csdid rcs, flexdid, jwdid, did_imputation
+*                          csdid rcs, flexdid, jwdid, did_imputation,
+*                          each WITHOUT and WITH the covariate (pkg suffix
+*                          _cov).
 *   C  PERIODS SCAN        n_units=1e4, T in {5,10,20,40}, G=4, balanced
 *   D  COHORTS SCAN        n_units=1e4, T=20, G in {3,6,12,18}, balanced
+*   E  DEFAULT'S TRUE COST balanced ladder at the published sizes
+*                          n_units in {1e2, 1e3, 1e4, 1e5}, T=10, G=4, timing
+*                          csdid as published (analytical) against csdid at its
+*                          SHIPPED DEFAULT inference: the multiplier bootstrap
+*                          with simultaneous bands. The article's claim that
+*                          the full default stays in the same league is a
+*                          measurement, not an assertion.
 *
-* PROTOCOL (the same one behind the published tables)
-* ---------------------------------------------------
+* PROTOCOL (the one behind the published tables)
+* ----------------------------------------------
 * Same dgp.do (bench_dgp / bench_structure), same runners.do, same
 * validate.do, same seed 20260729, same design(dynamic), same cluster
 * variable cl (= mod(id,50)+1, 50 clusters), same horizons(5) event study,
@@ -1852,24 +2186,21 @@ end</code></pre>
 * package per dataset, then TRIALS timed calls on a freshly reloaded copy of
 * the same dataset.
 *
-* Two documented differences from the published tables, both recorded
-* rather than hidden:
+* What each published cell is:
 *
-*   statistic   The published tables report the MEAN of 10 reps. bench_time
-*               returns the MEDIAN of its trials. Trials are set to 10 here
-*               so the sample is the same size, and min/max go in the note
-*               column so the spread is visible. At the published sizes the
-*               sd never exceeded a few hundredths of a second, so median
-*               and mean agree to well under 1%.
+*   statistic   the MEDIAN of 10 timed trials, after one discarded warmup
+*               per package per dataset. min and max go into the note column
+*               of every row, so the spread behind each median is visible
+*               without re-running anything. At these sizes the spread never
+*               exceeded a few hundredths of a second.
 *
-*   process     The published tables ran ONE Stata process per cell. This
-*               driver runs one process per TIER. The warmup is still
-*               discarded per package per dataset, so no package inherits a
-*               warm cache from another; what is not reproduced is crash
-*               isolation. Every call is therefore capture-guarded and a
-*               failure is written as a row, not raised. If a tier dies,
-*               re-run the survivors with the optional 3rd/4th args (see
-*               ONLYN/ONLYPKG below).
+*   process     one Stata process per TIER, not per cell. The warmup is
+*               still discarded per package per dataset, so no package
+*               inherits a warm cache from another; what a per-cell process
+*               would add is crash isolation. Every call is therefore
+*               capture-guarded and a failure is written as a row rather
+*               than raised. If a tier dies, re-run the survivors with the
+*               optional 3rd/4th args (see ONLYN/ONLYPKG below).
 *
 * CELL LABELLING
 * --------------
@@ -1879,6 +2210,15 @@ end</code></pre>
 * observation its own id), so rows = n_per_period x T. For the unbalanced
 * ladder rows ~ 0.85 x n_units x T after the 15% MCAR deletion.
 *
+* COVARIATES
+* ----------
+* A package label ending in _cov is the same package on the same dataset with
+* covariates(x) added -- x is the single unit-level covariate bench_dgp already
+* carries, and each runner handles it the way the published with-covariates
+* cells did:
+* csdid and jwdid and flexdid take it as a regressor list, did_imputation as
+* controls().
+*
 * CSV: scan, n_units, T, cohorts, rows, pkg, median_seconds, trials, ok, note
 * appended to scalebench-results.csv (smoke runs go to scalebench-smoke.csv).
 *
@@ -1886,8 +2226,8 @@ end</code></pre>
 * ---------------------------------------------------------------------------
 args tier smoke onlyn onlypkg
 
-if !inlist("`tier'", "A", "B", "C", "D") {
-    display as error "usage: do scalebench.do &lt;A|B|C|D&gt; [smoke] [only_n] [only_pkg]"
+if !inlist("`tier'", "A", "B", "C", "D", "E") {
+    display as error "usage: do scalebench.do &lt;A|B|C|D|E&gt; [smoke] [only_n] [only_pkg]"
     exit 198
 }
 local issmoke = ("`smoke'" != "" &amp; "`smoke'" != "0" &amp; "`smoke'" != ".")
@@ -1906,6 +2246,14 @@ global SB_CSV "`B'/scalebench-results.csv"
 if `issmoke' global SB_CSV "`B'/scalebench-smoke.csv"
 global SB_ONLYN  "`onlyn'"
 global SB_ONLYPKG "`onlypkg'"
+
+* Bootstrap draws for the tier-E shipped-default column. 999 matches the reps
+* every other bootstrap in this harness uses; csdid's own default is 1000, a
+* 0.1% difference in cost. The smoke drops to 99 purely to exercise mechanics,
+* and the count is written into every row's note so no timing can be mistaken
+* for a 999-draw number.
+global SB_BOOTREPS 999
+if `issmoke' global SB_BOOTREPS 99
 
 set more off
 set rmsg off
@@ -1953,6 +2301,104 @@ program define bench_csdidbf, rclass
     capture quietly estat event, window(0 `horizons')
     if _rc {
         return local note "csdid shipped default bal(full); estat event rc=`=_rc'"
+        exit
+    }
+    matrix A = e(aggte)
+    matrix ES = J(`horizons' + 1, 3, .)
+    forvalues k = 1/`horizons' {
+        if `k' &gt; rowsof(A) continue
+        matrix ES[`k', 1] = A[`k', 1]
+        matrix ES[`k', 2] = A[`k', 2]
+        matrix ES[`k', 3] = A[`k', 3]
+    }
+    return matrix ES = ES
+end
+
+capture program drop bench_csdidpair
+program define bench_csdidpair, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) METHod(string)]
+    if "`mode'" == "" local mode "pointwise"
+
+    local inf "analytical"
+    if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
+    if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
+
+    * bal(pair): balance each 2x2 separately, Version 1.82's estimand.
+    local meth_opt = cond("`method'" == "", "", "method(`method')")
+    timer clear 99
+    timer on 99
+    capture noisily csdid y `covariates', ivar(id) time(time) gvar(gvar) ///
+        notyet cluster(`cluster') bal(pair) `inf' `meth_opt'
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    return scalar secs = r(t99)
+    return scalar ok = (`rc' == 0)
+    return local note "csdid bal(pair), per-comparison balancing"
+    if `rc' exit
+
+    * extraction only; the timer is already off, so nothing here can move a
+    * reported number
+    capture quietly estat event, window(0 `horizons')
+    if _rc {
+        return local note "csdid bal(pair), per-comparison balancing; estat event rc=`=_rc'"
+        exit
+    }
+    matrix A = e(aggte)
+    matrix ES = J(`horizons' + 1, 3, .)
+    forvalues k = 1/`horizons' {
+        if `k' &gt; rowsof(A) continue
+        matrix ES[`k', 1] = A[`k', 1]
+        matrix ES[`k', 2] = A[`k', 2]
+        matrix ES[`k', 3] = A[`k', 3]
+    }
+    return matrix ES = ES
+end
+
+* bench_csdidboot  csdid at its SHIPPED DEFAULT INFERENCE: the multiplier
+*                  bootstrap with SIMULTANEOUS bands. csdid's own message is
+*                  explicit that "omitting both uses the bootstrap, the
+*                  default", at biters 1000; reps are pinned at $SB_BOOTREPS
+*                  (999) so the draw count matches every other bootstrap in
+*                  this harness and the seed is fixed. wboot() WITHOUT
+*                  pointwise is the uniform-band path, which is the same thing
+*                  bench_csdid calls mode(bands). bal() is left at its default
+*                  too -- tier E is balanced, so that selects the same rows as
+*                  the published bal(none) column. On this machine the macOS
+*                  bootstrap accelerator plugin ships with the package and is
+*                  active; e(bootstrap_accelerator) is read back after the
+*                  timed call and written into the note, so the configuration
+*                  is recorded rather than assumed.
+capture program drop bench_csdidboot
+program define bench_csdidboot, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) METHod(string)]
+    local reps = 999
+    if "$SB_BOOTREPS" != "" local reps = $SB_BOOTREPS
+    local meth_opt = cond("`method'" == "", "", "method(`method')")
+
+    timer clear 99
+    timer on 99
+    capture noisily csdid y `covariates', ivar(id) time(time) gvar(gvar) ///
+        notyet cluster(`cluster') wboot(reps(`reps') rseed(20260729)) `meth_opt'
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    local secs = r(t99)
+
+    local acc "`e(bootstrap_accelerator)'"
+    local accst "`e(bootstrap_accelerator_status)'"
+    local accsec = .
+    capture local accsec = e(bootstrap_accelerator_seconds)
+    local accstr = trim(string(`accsec', "%12.4f"))
+
+    return scalar secs = `secs'
+    return scalar ok = (`rc' == 0)
+    return local note "shipped-default inference: wboot reps(`reps') rseed(20260729) simultaneous bands; accelerator=`acc'/`accst' accel_secs=`accstr'"
+    if `rc' exit
+
+    capture quietly estat event, window(0 `horizons')
+    if _rc {
+        return local note "shipped-default inference: wboot reps(`reps') simultaneous bands; accelerator=`acc'/`accst'; estat event rc=`=_rc'"
         exit
     }
     matrix A = e(aggte)
@@ -2056,20 +2502,39 @@ program define sb_cell
     foreach pkg of local pkgs {
         if "$SB_ONLYPKG" != "" &amp; "$SB_ONLYPKG" != "`pkg'" continue
 
+        * a _cov suffix is the same package with the DGP's covariate added
+        local base "`pkg'"
+        local copt ""
+        local covnote "cov=none"
+        if substr("`pkg'", -4, 4) == "_cov" {
+            local base = substr("`pkg'", 1, length("`pkg'") - 4)
+            local copt "covariates(x)"
+            local covnote "cov=x"
+        }
+
         * package label -&gt; runner program, plus the structure the runner needs
-        local runner "`pkg'"
+        local runner "`base'"
         local sopt ""
         local extra ""
-        if "`pkg'" == "csdid_balfull" {
+        if "`base'" == "csdid_balfull" {
             local runner "csdidbf"
             local extra "bal(full) is the shipped default; drops units not observed in every period"
         }
-        if "`pkg'" == "csdid_balnone" {
+        if "`base'" == "csdid_balpair" {
+            local runner "csdidpair"
+            local extra "bal(pair): per-comparison balancing, Version 1.82's estimand"
+        }
+        if "`base'" == "csdid_balnone" {
             local runner "csdid"
             local extra "bal(none); same rows as the rivals"
         }
-        if "`pkg'" == "did_imputation" local runner "bjs"
-        if "`pkg'" == "jwdid" &amp; "`structure'" == "rcs" local runner "jwdidrcs"
+        if "`base'" == "csdid_analytical" {
+            local runner "csdid"
+            local extra "as published in the speed tables: analytical clustered SEs"
+        }
+        if "`base'" == "csdid_boot999" local runner "csdidboot"
+        if "`base'" == "did_imputation" local runner "bjs"
+        if "`base'" == "jwdid" &amp; "`structure'" == "rcs" local runner "jwdidrcs"
         if "`runner'" == "csdid" &amp; "`structure'" == "rcs" local sopt "structure(rcs)"
 
         local med = .
@@ -2079,7 +2544,7 @@ program define sb_cell
         local rnote ""
 
         capture noisily bench_time, pkg(`runner') data("`d'") horizons(`h') ///
-            cluster(cl) trials(`trials') `sopt'
+            cluster(cl) trials(`trials') `copt' `sopt'
         local rc = _rc
         if `rc' {
             local rnote "harness error rc=`rc'"
@@ -2095,7 +2560,7 @@ program define sb_cell
         local medstr = trim(string(`med', "%14.4f"))
         local lostr  = trim(string(`lo',  "%14.4f"))
         local histr  = trim(string(`hi',  "%14.4f"))
-        local note "H=`h'; G_real=`greal'; nevertreated=`nevpct'%; min=`lostr'; max=`histr'"
+        local note "H=`h'; G_real=`greal'; nevertreated=`nevpct'%; `covnote'; min=`lostr'; max=`histr'"
         if "`extra'" != "" local note "`note'; `extra'"
         if "`rnote'" != "" local note "`note'; `rnote'"
 
@@ -2123,19 +2588,26 @@ if "`tier'" == "A" {
     if `issmoke' local ns "200"
     foreach n of local ns {
         sb_cell, scan(A_unbal) n(`n') t(10) g(4) structure(unbalanced) trials(`trials') ///
-            pkgs(csdid_balfull csdid_balnone jwdid did_imputation lpdid)
+            pkgs(csdid_balfull csdid_balpair csdid_balnone jwdid did_imputation lpdid)
     }
 }
 
 * ---- B. repeated cross sections: n_units = observations per period, T=10,
 *         G=4 -- the structure behind the published RCS table.
 *         Rows = n x T: 10k / 100k / 1M.
+*
+*         Every package runs twice per size: without and with the covariate.
+*         The published RCS table prints a dash for jwdid-with-covariates; a
+*         live functional check has since confirmed jwdid runs on RCS data
+*         with covariates and returns estat event cleanly, so the dash was a
+*         missing measurement, not a package limitation. It is measured here.
 if "`tier'" == "B" {
     local ns "1000 10000 100000"
     if `issmoke' local ns "200"
     foreach n of local ns {
         sb_cell, scan(B_rcs) n(`n') t(10) g(4) structure(rcs) trials(`trials') ///
-            pkgs(csdid flexdid jwdid did_imputation)
+            pkgs(csdid flexdid jwdid did_imputation ///
+                 csdid_cov flexdid_cov jwdid_cov did_imputation_cov)
     }
 }
 
@@ -2172,7 +2644,319 @@ if "`tier'" == "D" {
     }
 }
 
+* ---- E. the default's true cost: the published balanced ladder (rows 1k /
+*         10k / 100k / 1M), two configurations of the same command on the same
+*         data -- csdid as the speed tables report it (analytical, clustered)
+*         and csdid at its shipped default inference (999 multiplier bootstrap
+*         draws, simultaneous bands, clustered), each followed by the same
+*         estat event window. The gap between the two columns IS the price of
+*         the default, measured rather than asserted.
+if "`tier'" == "E" {
+    local ns "100 1000 10000 100000"
+    if `issmoke' local ns "200"
+    foreach n of local ns {
+        sb_cell, scan(E_default) n(`n') t(10) g(4) structure(balanced) trials(`trials') ///
+            pkgs(csdid_analytical csdid_boot999)
+    }
+}
+
 display as text "SB DONE tier=`tier' smoke=`issmoke'"</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>scalebench_f_cell.do</code> &mdash; one Version 1.82 vs 2.0.0 cell in its own Stata process, because the two versions share a command name and cannot share an adopath</summary>
+<pre><code>* Run from the bench/ folder of the replication package, with the csdid
+* source tree in ../src.  Usage:  stata-mp -b do scalebench_f_cell.do csdid_182 F_n 1000 10 4 balanced 7 out.csv
+* ---------------------------------------------------------------------------
+* Tier F, ONE cell, ONE implementation, ONE Stata process.
+*
+*   stata-mp -b do scalebench_f_cell.do &lt;impl&gt; &lt;scan&gt; &lt;n&gt; &lt;t&gt; &lt;g&gt; &lt;structure&gt; &lt;trials&gt; &lt;csv&gt;
+*     impl = csdid_182 | csdid_200
+*
+* Why this is a separate file rather than a tier inside scalebench.do:
+* 1.82 and 2.0 are both called `csdid`. They cannot coexist on one adopath,
+* and a program already loaded in a session does not reload when the path
+* changes, so each implementation must be timed in a fresh process.
+*
+* WORKLOAD (same in both versions, each written in its own syntax):
+*
+*   1.82  csdid y x, ivar(id) time(time) gvar(gvar) method(dripw)
+*                    cluster(cl) agg(event)
+*   2.0   csdid y x, ivar(id) time(time) gvar(gvar) method(dr) analytical
+*                    cluster(cl) agg(event) nevertreated base_period(varying)
+*
+* The pinning matters: 1.82's defaults are never-treated controls and a
+* varying base period, 2.0's are not-yet-treated and universal, so 2.0 must be
+* pinned to 1.82's defaults or the two stop computing the same thing and the
+* ratio stops meaning anything. 1.82 has no
+* `analytical` option because analytical IS its default, and its doubly robust
+* estimator is spelled `dripw` where 2.0 spells it `dr`.
+*
+* Scheme handling:
+*   unbalanced  2.0 gets bal(pair). 1.82 balances each 2x2 separately and has
+*               no bal() option at all; bal(pair) is that mode, so this is a
+*               true like-for-like rather than an approximation.
+*   rcs         1.82 has no rcs option; its repeated-cross-section route is to
+*               OMIT ivar(). 2.0 has an explicit rcs option. Whether 1.82
+*               actually completes is determined by running it, not assumed.
+*
+* NOTE: tier F's csdid_200 column is NOT comparable to tier E's csdid_analytical
+* column. Tier E times the shipped defaults (notyet, universal base period);
+* tier F pins 2.0 to 1.82's defaults so the A/B is like-for-like. Different
+* estimand, different work, different number.
+* ---------------------------------------------------------------------------
+* REQUIREMENTS: a checkout of csdid Version 1.82 at ../csdid-182, pinned to
+* its released commit fdbae255, and drdid 1.91 or later on the adopath. Both
+* are checked below and neither is installed by this script.
+args impl scan n t g structure trials csv
+
+if !inlist("`impl'", "csdid_182", "csdid_200") {
+    display as error "impl must be csdid_182 or csdid_200"
+    exit 198
+}
+
+local root ".."
+local legacy "../csdid-182"
+local B "."
+
+* ---- adopath: exactly one implementation is reachable, and it is asserted
+if "`impl'" == "csdid_200" {
+    adopath ++ "`root'/src/ado"
+    adopath ++ "`root'/src/mata"
+}
+else {
+    adopath ++ "`legacy'/codes"
+    * 1.82 refuses to run without drdid &gt;= 1.91. This checks for it and errors
+    * rather than installing.
+    capture which drdid
+    if _rc {
+        display as error "legacy baseline requires drdid on the Stata adopath"
+        exit 499
+    }
+}
+findfile csdid.ado
+local resolved = subinstr("`r(fn)'", "\\", "/", .)
+if "`impl'" == "csdid_200" {
+    assert strpos("`resolved'", "`root'/src/ado/csdid.ado") &gt; 0
+}
+else {
+    assert strpos("`resolved'", "`legacy'/codes/csdid.ado") &gt; 0
+}
+display as text "F RESOLVED `impl' -&gt; `resolved'"
+
+quietly do "`B'/dgp.do"
+quietly do "`B'/validate.do"
+quietly do "`B'/time.do"
+
+* ---- the two runners. Same shape as runners.do so bench_time drives them.
+* The scheme travels in a GLOBAL, not in the structure() option: bench_time
+* forwards structure() only when pkg is literally "csdid", so a runner under
+* any other name never sees it. Without the global, 2.0 would run the RCS cell
+* at its default bal(full) and the unbalanced cell without bal(pair), which
+* would report a speed win taken on a smaller sample.
+capture program drop bench_c182
+program define bench_c182, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string)]
+    if "$F_STRUCT" != "" local structure "$F_STRUCT"
+    local iv "ivar(id)"
+    if "`structure'" == "rcs" local iv ""
+    timer clear 99
+    timer on 99
+    capture noisily csdid y `covariates', `iv' time(time) gvar(gvar) ///
+        method(dripw) cluster(`cluster') agg(event)
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    return scalar secs = r(t99)
+    return scalar ok = (`rc' == 0)
+    return local note "1.82 method(dripw) agg(event) clustered; analytical is its default"
+    if `rc' return local note "1.82 method(dripw) agg(event) clustered; FAILED rc=`rc'"
+end
+
+capture program drop bench_c200
+program define bench_c200, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string)]
+    if "$F_STRUCT" != "" local structure "$F_STRUCT"
+    * pinned to 1.82's defaults so the comparison is like-for-like
+    local cpin "nevertreated base_period(varying)"
+    if "`structure'" == "unbalanced" local cpin "`cpin' bal(pair)"
+    if "`structure'" == "rcs"        local cpin "`cpin' rcs"
+    timer clear 99
+    timer on 99
+    capture noisily csdid y `covariates', ivar(id) time(time) gvar(gvar) ///
+        method(dr) analytical cluster(`cluster') agg(event) `cpin'
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    return scalar secs = r(t99)
+    return scalar ok = (`rc' == 0)
+    return local note "2.0 method(dr) analytical agg(event) clustered; pinned `cpin'"
+    if `rc' return local note "2.0 method(dr) analytical agg(event) clustered; pinned `cpin'; FAILED rc=`rc'"
+end
+
+* ---- one CSV row, same schema as scalebench.do
+capture program drop f_write
+program define f_write
+    syntax , SCAN(string) N(integer) T(integer) G(integer) ROWS(real) ///
+        PKG(string) MED(string) TRIALS(integer) OK(integer) [NOTE(string)]
+    local note = subinstr("`note'", ",", ";", .)
+    local note = subinstr("`note'", `"""', "", .)
+    tempname fh
+    capture confirm file "$F_CSV"
+    if _rc {
+        file open `fh' using "$F_CSV", write text replace
+        file write `fh' "scan,n_units,T,cohorts,rows,pkg,median_seconds,trials,ok,note" _n
+        file close `fh'
+    }
+    file open `fh' using "$F_CSV", write text append
+    file write `fh' "`scan',`n',`t',`g',`=`rows'',`pkg',`med',`trials',`ok',`note'" _n
+    file close `fh'
+end
+
+global F_CSV "`csv'"
+global F_STRUCT "`structure'"
+
+* ---- data: the scalebench primitives, the published DGP, the published seed
+quietly bench_dgp, design(dynamic) n(`n') t(`t') seed(20260729) cohorts(`g')
+quietly bench_structure, structure(`structure') seed(20260729)
+local rows = _N
+quietly levelsof gvar if gvar &gt; 0, local(gs)
+local greal : word count `gs'
+quietly count if gvar == 0
+local nevpct = round(100 * r(N) / `rows', 0.1)
+local first_g = floor(`t' / 3) + 1
+local hmax = `t' - `first_g'
+local h = min(5, `hmax')
+if `h' &lt; 1 local h = 1
+
+capture bench_validate, quiet
+if _rc {
+    f_write, scan(`scan') n(`n') t(`t') g(`g') rows(`rows') pkg(`impl') ///
+        med(.) trials(`trials') ok(0) note(dataset rejected by bench_validate)
+    exit
+}
+
+tempfile d
+quietly save "`d'", replace
+
+local runner = cond("`impl'" == "csdid_182", "c182", "c200")
+local med = .
+local lo = .
+local hi = .
+local ok = 0
+local rnote ""
+capture noisily bench_time, pkg(`runner') data("`d'") horizons(`h') ///
+    cluster(cl) covariates(x) trials(`trials') structure(`structure')
+local rc = _rc
+if `rc' {
+    local rnote "harness error rc=`rc'"
+}
+else {
+    capture local ok = r(ok)
+    capture local med = r(med)
+    capture local lo = r(lo)
+    capture local hi = r(hi)
+    local rnote "`r(note)'"
+}
+
+local medstr = trim(string(`med', "%14.4f"))
+local lostr  = trim(string(`lo',  "%14.4f"))
+local histr  = trim(string(`hi',  "%14.4f"))
+local note "H=`h'; G_real=`greal'; nevertreated=`nevpct'%; scheme=`structure'; cov=x; min=`lostr'; max=`histr'; `rnote'"
+
+f_write, scan(`scan') n(`n') t(`t') g(`g') rows(`rows') pkg(`impl') ///
+    med(`medstr') trials(`trials') ok(`ok') note(`note')
+display as text "F ROW `scan' `impl' n=`n' T=`t' G=`g' rows=`rows' med=`medstr' ok=`ok' trials=`trials'"</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>scalebench_f.sh</code> &mdash; the Version 1.82 comparison launcher: the trial-count policy and the 120-second skip rule that decide how many times each legacy cell is timed</summary>
+<pre><code>#!/usr/bin/env bash
+# Run from the bench/ folder of the replication package.
+# Usage:  bash scalebench_f.sh
+# ---------------------------------------------------------------------------
+# Tier F: csdid 1.82 against csdid 2.0, one fresh Stata process per (cell,
+# implementation) because the two versions are both called `csdid` and cannot
+# share an adopath.
+#
+# Appends a progress line per sub-scan.
+#
+# TRIALS POLICY (stated per row in the CSV's trials column):
+#   csdid_200  7 trials everywhere, never reduced.
+#   csdid_182  7 / 5 / 3 / 2 as its projected per-call cost crosses 3s / 10s /
+#              30s / 120s, and SKIPPED above 120s with a recorded row.
+# The projection is L200(T,G) x (0.7 + 0.00126 n) / 0.952 / 1.21, fitted to the
+# smoke: legacy is linear in n over 2k-100k rows (1.19s / 2.01s / 3.31s /
+# 13.27s at n = 200 / 1000 / 2000 / 10000, T=10, G=4), and the 1.21 calibrates
+# the fit's 21% over-prediction at n=10000. Each launch also carries a hard
+# timeout so a projection that is wrong cannot run away with the wall clock.
+# ---------------------------------------------------------------------------
+set -u
+B="."
+STATA=/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp
+CSV="$B/scalebench-results.csv"
+PROG="$B/scalebench-progress.txt"
+cd "$B"
+
+echo "TIER F start $(date +%H:%M)" &gt;&gt; "$PROG"
+
+skip_row () { # scan n t g rows pkg note
+  printf '%s,%s,%s,%s,%s,%s,.,0,0,%s\n' "$1" "$2" "$3" "$4" "$5" "$6" "$7" &gt;&gt; "$CSV"
+}
+
+run_cell () { # impl scan n t g structure trials cap
+  local impl=$1 scan=$2 n=$3 t=$4 g=$5 st=$6 tr=$7 cap=$8
+  timeout "$cap" "$STATA" -b do scalebench_f_cell.do "$impl" "$scan" "$n" "$t" "$g" "$st" "$tr" "$CSV" &gt;/dev/null 2&gt;&amp;1
+  local rc=$?
+  if [ $rc -ne 0 ]; then
+    local rows=$((n * t))
+    skip_row "$scan" "$n" "$t" "$g" "$rows" "$impl" "launch failed or exceeded the ${cap}s cap; rc=$rc"
+  fi
+}
+
+# csdid_200 first in every cell, so a legacy overrun never costs us the 2.0 row.
+pair () { # scan n t g structure legacy_trials legacy_cap
+  run_cell csdid_200 "$1" "$2" "$3" "$4" "$5" 7 900
+  run_cell csdid_182 "$1" "$2" "$3" "$4" "$5" "$6" "$7"
+}
+
+# ---- F_n: the n ladder, T=10, G=4, balanced
+pair F_n   1000  10 4 balanced 7 300
+pair F_n   5000  10 4 balanced 5 400
+pair F_n  20000  10 4 balanced 3 600
+pair F_n  50000  10 4 balanced 2 900
+# 2.0 always runs the 1M-row rung; legacy only if the MEASURED 500k rung
+# projects under the 120s cap (rows double, so the projection is ~2.05x).
+run_cell csdid_200 F_n 100000 10 4 balanced 7 1200
+L50=$(awk -F, '$1=="F_n" &amp;&amp; $2=="50000" &amp;&amp; $6=="csdid_182" {print $7}' "$CSV" | tail -1)
+if [ -n "${L50:-}" ] &amp;&amp; awk "BEGIN{exit !($L50 &gt; 0 &amp;&amp; $L50 * 2.05 &lt;= 120)}"; then
+  run_cell csdid_182 F_n 100000 10 4 balanced 2 1200
+else
+  skip_row F_n 100000 10 4 1000000 csdid_182 \
+    "skipped by the 120s cap; projection basis: measured 500k legacy call ${L50:-NA}s x 2.05 rows"
+fi
+echo "F_n done $(date +%H:%M)" &gt;&gt; "$PROG"
+
+# ---- F_T: periods scan, n=5000, G=4, balanced
+pair F_T 5000  5 4 balanced 7 300
+pair F_T 5000 10 4 balanced 5 400
+pair F_T 5000 20 4 balanced 3 600
+pair F_T 5000 40 4 balanced 2 900
+echo "F_T done $(date +%H:%M)" &gt;&gt; "$PROG"
+
+# ---- F_G: cohorts scan, n=5000, T=20, balanced
+pair F_G 5000 20  3 balanced 3 600
+pair F_G 5000 20  6 balanced 3 700
+pair F_G 5000 20 12 balanced 2 900
+echo "F_G done $(date +%H:%M)" &gt;&gt; "$PROG"
+
+# ---- F_scheme: n=10000, T=10, G=4, three sampling schemes
+pair F_scheme 10000 10 4 balanced   3 600
+pair F_scheme 10000 10 4 unbalanced 3 600
+pair F_scheme 10000 10 4 rcs        3 600
+echo "F_scheme done $(date +%H:%M)" &gt;&gt; "$PROG"
+
+echo "TIER F DONE $(date +%H:%M) rows=$(wc -l &lt; "$CSV")" &gt;&gt; "$PROG"</code></pre>
 </details>
 
 <details class="code-fold">
@@ -2264,15 +3048,26 @@ foreach n in 12500 25000 50000 {
 
 ## Analysis
 
-One script turns the raw per-replication CSVs into the bias and coverage tables in the guide, and it reads nothing except those CSVs (no Stata state and no saved estimates carry over), so the tables can be rebuilt from the recorded draws alone.
+These scripts turn the raw per-replication and per-cell CSVs into the tables in the guide. Nothing here estimates anything; each one only summarises a file the arms above wrote.
 
 <details class="code-fold">
-<summary><code>mcsum.py</code> &mdash; the analyzer: bias, SD, RMSE, mean standard error and 95% coverage against the fixed population targets</summary>
+<summary><code>mcsum.py</code> &mdash; the analyzer: bias, SD, RMSE, mean standard error and 95% coverage against the fixed population targets, per event time, per ATT(g,t) cell, with the count of replications each command could and could not estimate</summary>
 <pre><code>#!/usr/bin/env python3
 # Run from the bench/ folder of the replication package.
 # Usage:  python3 mcsum.py &lt;results.csv&gt;
 """Monte Carlo summary: bias/SD/RMSE/coverage against FIXED population
-targets. Truth is never re-derived from the draws."""
+targets. Truth is never re-derived from the draws.
+
+Reads one row per (regime, package, rep, horizon) from a simulation CSV and
+prints, for each event-study horizon and for the post-treatment average,
+the bias against the population target, the spread across draws, the mean
+reported standard error, and the coverage of nominal 95% intervals.
+
+Horizon codes: 0/1/2 are event times, 99 is the post-treatment average, and
+any code &gt;= 1000 is a group-time cell packed as 1000*g + t.
+
+Usage:  mcsum.py FILE.csv
+"""
 import csv, math, sys, collections
 
 ES_TRUTH = {0: 2.0, 1: 2.5, 2: 3.0}
@@ -2281,10 +3076,14 @@ def cell_truth(code):                              # code = 1000*g + t
     g, t = divmod(code, 1000)
     return (g - 2) + 0.5 * (t - g)
 
-PKG = {"csdid": "csdid bal(none)", "csdidpair": "csdid bal(pair)", "jwdid": "jwdid",
-       "bjs": "did_imputation", "dcdh": "did_multiplegt_dyn", "lpdid": "lpdid"}
-ORDER = ["csdid", "csdidpair", "jwdid", "bjs", "dcdh", "lpdid"]
-REGIMES = ["balanced", "varmiss", "unbalanced", "rcs", "rcsvar", "bal_ok", "bal_owrong", "bal_pwrong", "unitroot", "bands"]
+PKG = {"csdid": "csdid bal(none)", "csdidpair": "csdid bal(pair)",
+       "csdid_dr": "csdid dr", "csdid_ipw": "csdid ipw", "csdid_reg": "csdid reg",
+       "jwdid": "jwdid", "bjs": "did_imputation", "dcdh": "did_multiplegt_dyn",
+       "lpdid": "lpdid", "flexdid": "flexdid", "csdid_band": "csdid uniform band"}
+ORDER = ["csdid", "csdidpair", "csdid_dr", "csdid_ipw", "csdid_reg",
+         "jwdid", "bjs", "dcdh", "lpdid", "flexdid", "csdid_band"]
+REGIMES = ["balanced", "varmiss", "unbalanced", "rcs", "rcsvar",
+           "bal_ok", "bal_owrong", "bal_pwrong", "bal_ps2", "unitroot", "bands"]
 
 def num(x):
     try:
@@ -2293,19 +3092,34 @@ def num(x):
     except Exception:
         return None
 
-def table(rows, hsel, truth, label):
-    print(f"\n== {label}   truth = {truth:.4f} ==")
+def order_key(pkg):
+    return (ORDER.index(pkg), pkg) if pkg in ORDER else (len(ORDER), pkg)
+
+def label(pkg):
+    return PKG.get(pkg, pkg)
+
+def regimes_in(rows):
+    seen = {r["regime"] for r in rows}
+    out = [g for g in REGIMES if g in seen]
+    out += sorted(seen - set(out))
+    return out
+
+def pkgs_in(rows):
+    return sorted({r["pkg"] for r in rows}, key=order_key)
+
+def table(rows, hsel, truth, lab, regs, pkgs):
+    print(f"\n== {lab}   truth = {truth:.4f} ==")
     print(f"  {'regime':&lt;11}{'estimator':&lt;20}{'reps':&gt;5}{'bias':&gt;9}{'sd':&gt;8}"
           f"{'rmse':&gt;8}{'meanSE':&gt;8}{'cover95':&gt;8}")
-    for regime in REGIMES:
-        for pkg in ORDER:
+    for regime in regs:
+        for pkg in pkgs:
             v = [(num(r["est"]), num(r["se"])) for r in rows
                  if r["regime"] == regime and r["pkg"] == pkg and int(r["h"]) == hsel]
             ok = [(e, s) for e, s in v if e is not None]
             if not v:
                 continue
             if not ok:
-                print(f"  {regime:&lt;11}{PKG[pkg]:&lt;20}    - unsupported/empty")
+                print(f"  {regime:&lt;11}{label(pkg):&lt;20}    - unsupported/empty")
                 continue
             n = len(ok)
             est = [e for e, _ in ok]
@@ -2317,35 +3131,253 @@ def table(rows, hsel, truth, label):
             cov = [1 if abs(e - truth) &lt;= 1.959964 * s else 0
                    for e, s in ok if s is not None and s &gt; 0]
             cvr = sum(cov) / len(cov) if cov else float("nan")
-            print(f"  {regime:&lt;11}{PKG[pkg]:&lt;20}{n:&gt;5}{m-truth:&gt;+9.4f}{sd:&gt;8.4f}"
+            print(f"  {regime:&lt;11}{label(pkg):&lt;20}{n:&gt;5}{m-truth:&gt;+9.4f}{sd:&gt;8.4f}"
                   f"{rmse:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
+
+def usable(rows, regs, pkgs):
+    """Replications that produced a usable estimate, per regime and package.
+
+    A replication is attempted if any row exists for it and usable if the
+    event-study estimate is non-missing. The difference is the count of
+    draws the command declined to estimate (for csdid under a broken
+    propensity score, the overlap check that refuses the cell)."""
+    print("\n== usable replications (attempted / usable / declined) ==")
+    print(f"  {'regime':&lt;11}{'estimator':&lt;20}{'attempt':&gt;8}{'usable':&gt;8}{'declined':&gt;9}")
+    att = collections.defaultdict(set)
+    use = collections.defaultdict(set)
+    for r in rows:
+        if int(r["h"]) not in (0, 1, 2):
+            continue
+        key = (r["regime"], r["pkg"])
+        att[key].add(int(r["rep"]))
+        if num(r["est"]) is not None:
+            use[key].add(int(r["rep"]))
+    for regime in regs:
+        for pkg in pkgs:
+            key = (regime, pkg)
+            if key not in att:
+                continue
+            a, u = len(att[key]), len(use[key])
+            print(f"  {regime:&lt;11}{label(pkg):&lt;20}{a:&gt;8}{u:&gt;8}{a-u:&gt;9}")
+
+def cells(rows, regs, pkgs):
+    """Cell-level block: every ATT(g,t) cell with its mean reported SE.
+
+    The mean SE column is what makes two estimators on the same cell
+    comparable in spread, not only in location."""
+    print("\n== ATT(g,t) cells: bias and mean reported SE ==")
+    print(f"  {'regime':&lt;11}{'estimator':&lt;20}{'cell':&gt;12}{'reps':&gt;6}"
+          f"{'truth':&gt;8}{'bias':&gt;9}{'sd':&gt;8}{'meanSE':&gt;8}{'cover95':&gt;8}")
+    acc = collections.defaultdict(list)
+    for r in rows:
+        h = int(r["h"])
+        if h &gt;= 1000:
+            e, s = num(r["est"]), num(r["se"])
+            if e is not None:
+                acc[(r["regime"], r["pkg"], h)].append((e, s))
+    for regime in regs:
+        for pkg in pkgs:
+            codes = sorted(c for (g, p, c) in acc if g == regime and p == pkg)
+            for code in codes:
+                v = acc[(regime, pkg, code)]
+                g, t = divmod(code, 1000)
+                truth = cell_truth(code)
+                n = len(v)
+                est = [e for e, _ in v]
+                m = sum(est) / n
+                sd = math.sqrt(sum((e - m) ** 2 for e in est) / (n - 1)) if n &gt; 1 else float("nan")
+                ses = [s for _, s in v if s is not None]
+                mse = sum(ses) / len(ses) if ses else float("nan")
+                cov = [1 if abs(e - truth) &lt;= 1.959964 * s else 0
+                       for e, s in v if s is not None and s &gt; 0]
+                cvr = sum(cov) / len(cov) if cov else float("nan")
+                print(f"  {regime:&lt;11}{label(pkg):&lt;20}{f'ATT({g},{t})':&gt;12}{n:&gt;6}"
+                      f"{truth:&gt;8.3f}{m-truth:&gt;+9.4f}{sd:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
+
+def worst_cells(rows, regs, pkgs):
+    print("\n== ATT(g,t) cells: worst |bias| over the post grid ==")
+    acc = collections.defaultdict(list)
+    for r in rows:
+        h = int(r["h"])
+        if h &gt;= 1000 and num(r["est"]) is not None:
+            acc[(r["regime"], r["pkg"], h)].append(float(r["est"]))
+    worst = collections.defaultdict(lambda: (0.0, None))
+    for (regime, pkg, code), v in acc.items():
+        b = abs(sum(v) / len(v) - cell_truth(code))
+        if b &gt; worst[(regime, pkg)][0]:
+            worst[(regime, pkg)] = (b, code)
+    for regime in regs:
+        for pkg in pkgs:
+            if (regime, pkg) in worst:
+                b, code = worst[(regime, pkg)]
+                g, t = divmod(code, 1000)
+                print(f"  {regime:&lt;11}{label(pkg):&lt;20}max|bias|={b:.4f} at ATT({g},{t})")
 
 def main(path):
     rows = list(csv.DictReader(open(path)))
     print(f"rows: {len(rows)}   reps: {max(int(r['rep']) for r in rows)}")
+    regs, pkgs = regimes_in(rows), pkgs_in(rows)
     for h in (0, 1, 2):
-        table(rows, h, ES_TRUTH[h], f"event study ES({h})")
-    table(rows, 99, POST_AVG_TRUTH, "post-treatment average (window 0-2)")
-    # csdid ATT(g,t) cells: max |bias| across the post grid, per regime/mode
-    print("\n== csdid ATT(g,t) cells: worst |bias| over the post grid ==")
-    cells = collections.defaultdict(list)
-    for r in rows:
-        h = int(r["h"])
-        if h &gt;= 1000 and num(r["est"]) is not None:
-            cells[(r["regime"], r["pkg"], h)].append(float(r["est"]))
-    worst = collections.defaultdict(lambda: (0.0, None))
-    for (regime, pkg, code), v in cells.items():
-        b = abs(sum(v) / len(v) - cell_truth(code))
-        if b &gt; worst[(regime, pkg)][0]:
-            worst[(regime, pkg)] = (b, code)
-    for regime in REGIMES:
-        for pkg in ORDER:
-            if (regime, pkg) in worst:
-                b, code = worst[(regime, pkg)]
-                g, t = divmod(code, 1000)
-                print(f"  {regime:&lt;11}{PKG[pkg]:&lt;20}max|bias|={b:.4f} at ATT({g},{t})")
+        table(rows, h, ES_TRUTH[h], f"event study ES({h})", regs, pkgs)
+    table(rows, 99, POST_AVG_TRUTH, "post-treatment average (window 0-2)", regs, pkgs)
+    usable(rows, regs, pkgs)
+    cells(rows, regs, pkgs)
+    worst_cells(rows, regs, pkgs)
 
 if __name__ == "__main__":
     main(sys.argv[1])</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>bandsum.py</code> &mdash; joint coverage: how often a uniform band, and how often three pointwise intervals, cover the whole event-study path at once</summary>
+<pre><code>#!/usr/bin/env python3
+# Run from the bench/ folder of the replication package.
+# Usage:  python3 bandsum.py &lt;bands.csv&gt; &lt;ladder.csv&gt;
+"""Joint (simultaneous) coverage of the three post-treatment event times.
+
+An event study is a family of estimates, so the question is how often the
+whole path is covered at once, not how often one horizon is. This reads two
+simulation CSVs and reports, for each interval construction, the fraction of
+replications in which ES(0), ES(1) and ES(2) are ALL covered.
+
+  * csdid uniform band: the multiplier-bootstrap band, stored as one row per
+    horizon with h = 400 + horizon, the lower endpoint in the est column and
+    the upper endpoint in the se column.
+  * csdid three pointwise CIs: the same draws, est +/- 1.96*se at each of the
+    three horizons, counted jointly.
+  * every rival: est +/- 1.96*se at each of the three horizons on the
+    balanced-panel rows of the ladder run, counted jointly.
+
+A replication is counted only if all three horizons are present and usable;
+the count that entered each rate is printed so a thinned cell cannot pass
+itself off as a full one.
+
+Usage:  bandsum.py BANDS.csv LADDER.csv
+"""
+import csv, math, sys, collections
+
+ES_TRUTH = {0: 2.0, 1: 2.5, 2: 3.0}
+BAND_OFFSET = 400                                  # h = 400 + horizon
+Z = 1.959964
+
+PKG = {"csdid": "csdid bal(none)", "jwdid": "jwdid", "bjs": "did_imputation",
+       "dcdh": "did_multiplegt_dyn", "lpdid": "lpdid", "flexdid": "flexdid",
+       "csdidpair": "csdid bal(pair)"}
+ORDER = ["csdid", "csdidpair", "jwdid", "bjs", "dcdh", "lpdid", "flexdid"]
+
+def num(x):
+    try:
+        v = float(x)
+        return None if math.isnan(v) else v
+    except Exception:
+        return None
+
+def load(path):
+    return list(csv.DictReader(open(path)))
+
+def joint_band(rows, regime="bands", pkg="csdid_band"):
+    """Fraction of reps whose uniform band contains all three truths."""
+    got = collections.defaultdict(dict)
+    for r in rows:
+        if r["regime"] != regime or r["pkg"] != pkg:
+            continue
+        h = int(r["h"])
+        if BAND_OFFSET &lt;= h &lt;= BAND_OFFSET + 2:
+            lo, hi = num(r["est"]), num(r["se"])
+            if lo is not None and hi is not None:
+                got[int(r["rep"])][h - BAND_OFFSET] = (lo, hi)
+    full = [v for v in got.values() if len(v) == 3]
+    hit = sum(1 for v in full
+              if all(v[h][0] &lt;= ES_TRUTH[h] &lt;= v[h][1] for h in (0, 1, 2)))
+    return hit, len(full)
+
+def joint_pointwise(rows, regime, pkg):
+    """Fraction of reps whose three pointwise 95% CIs all contain the truth."""
+    got = collections.defaultdict(dict)
+    for r in rows:
+        if r["regime"] != regime or r["pkg"] != pkg:
+            continue
+        h = int(r["h"])
+        if h in (0, 1, 2):
+            e, s = num(r["est"]), num(r["se"])
+            if e is not None and s is not None and s &gt; 0:
+                got[int(r["rep"])][h] = (e, s)
+    full = [v for v in got.values() if len(v) == 3]
+    hit = sum(1 for v in full
+              if all(abs(v[h][0] - ES_TRUTH[h]) &lt;= Z * v[h][1] for h in (0, 1, 2)))
+    return hit, len(full)
+
+def line(lab, hit, n):
+    rate = hit / n if n else float("nan")
+    print(f"  {lab:&lt;34}{rate:&gt;8.3f}   ({hit} of {n} reps)")
+
+def main(bands_path, ladder_path):
+    bands, ladder = load(bands_path), load(ladder_path)
+
+    print("== joint coverage of ES(0), ES(1), ES(2) ==")
+    print(f"  truths: {ES_TRUTH[0]}, {ES_TRUTH[1]}, {ES_TRUTH[2]}\n")
+
+    line("csdid uniform band", *joint_band(bands))
+    line("csdid three pointwise CIs", *joint_pointwise(bands, "bands", "csdid_band"))
+
+    seen = {r["pkg"] for r in ladder if r["regime"] == "balanced"}
+    for pkg in [p for p in ORDER if p in seen]:
+        hit, n = joint_pointwise(ladder, "balanced", pkg)
+        if n:
+            line(f"{PKG.get(pkg, pkg)} pointwise", hit, n)
+
+    print("\n== per-horizon pointwise coverage, same reps (diagnostic) ==")
+    for lab, rows, regime, pkg in (
+            [("csdid (bands run)", bands, "bands", "csdid_band")] +
+            [(PKG.get(p, p), ladder, "balanced", p) for p in ORDER if p in seen]):
+        got = collections.defaultdict(dict)
+        for r in rows:
+            if r["regime"] != regime or r["pkg"] != pkg:
+                continue
+            h = int(r["h"])
+            if h in (0, 1, 2):
+                e, s = num(r["est"]), num(r["se"])
+                if e is not None and s is not None and s &gt; 0:
+                    got[int(r["rep"])][h] = (e, s)
+        full = [v for v in got.values() if len(v) == 3]
+        rates = []
+        for h in (0, 1, 2):
+            c = sum(1 for v in full if abs(v[h][0] - ES_TRUTH[h]) &lt;= Z * v[h][1])
+            rates.append(c / len(full) if full else float("nan"))
+        print(f"  {lab:&lt;34}" + "".join(f"{x:&gt;8.3f}" for x in rates) +
+              f"   (n={len(full)})")
+
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>mk_speed_tables.py</code> &mdash; the speed tables: every timed cell printed from the benchmark CSV, deduplicated keep-last, with its trial count and note</summary>
+<pre><code># Run from the bench/ folder of the replication package.
+# Usage:  python3 mk_speed_tables.py
+import csv, sys
+B="."
+rows=list(csv.DictReader(open(B+"/scalebench-results.csv")))
+def get(scan,**kw):
+    out=[]
+    for r in rows:
+        if r["scan"]!=scan: continue
+        if all(r[k]==v for k,v in kw.items()): out.append(r)
+    return out
+def t(r):
+    try: return float(r["median_seconds"])
+    except: return None
+def fmt(x,dp=2):
+    if x is None: return "—"
+    return f"{x:.{dp}f}"
+# dedupe keep-last on (scan,n,T,G,pkg)
+seen={}
+for r in rows: seen[(r["scan"],r["n_units"],r["T"],r["cohorts"],r["pkg"])]=r
+rows=list(seen.values())
+for scan in ["E_default","A_unbal","B_rcs","C_periods","D_cohorts","F_n","F_T","F_G","F_scheme"]:
+    print("=== "+scan)
+    for r in rows:
+        if r["scan"]==scan:
+            print(f'{r["n_units"]},{r["T"]},{r["cohorts"]},{r["rows"]},{r["pkg"]},{fmt(t(r),3)},{r["trials"]},{r["note"][:60]}')</code></pre>
 </details>
 

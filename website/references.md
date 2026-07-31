@@ -88,6 +88,7 @@ reports for you:
 
 ```
 @misc{csdidStata,
+  author = {Callaway, Brantly and Rios-Avila, Fernando and Sant'Anna, Pedro H. C.},
   title  = {csdid: Difference-in-Differences with Multiple Time Periods in Stata},
   note   = {Stata module, version 2.0.0},
   year   = {2026},

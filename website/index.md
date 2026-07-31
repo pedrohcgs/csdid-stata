@@ -6,9 +6,9 @@ title: csdid
 
 # `csdid`
 
-<p class="tagline">A Stata package for difference-in-differences with staggered treatment adoption, from the authors of Callaway and Sant'Anna (2021).</p>
+<p class="tagline">A Stata package for difference-in-differences with staggered treatment adoption.</p>
 
-`csdid` estimates group-time average treatment effects, ATT(g,t), and the event studies and summaries built from them. It covers the designs applied researchers actually face: staggered adoption across many cohorts, block designs where every treated unit adopts at once, covariates through doubly robust estimation, sampling weights, unbalanced panels, repeated cross sections, anticipation windows, and simultaneous confidence bands over the whole event-study path. Every cell it estimates can be inspected, and every decision it makes along the way is reported.
+`csdid` estimates group-time average treatment effects, ATT(g,t), and the event studies and summaries built from them. It covers the designs applied researchers actually face: staggered adoption across many cohorts, block designs where every treated unit adopts at once, covariates through doubly robust estimation, sampling weights, unbalanced panels, repeated cross sections, anticipation windows, and simultaneous confidence bands over the whole event-study path. Every cell it estimates can be inspected, and every decision it makes along the way is reported. Based on [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001).
 
 <!-- norun -->
 ```stata

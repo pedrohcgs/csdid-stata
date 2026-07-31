@@ -1,0 +1,93 @@
+{
+  "matrix_id": "PY023",
+  "fixture_family": "python-user-bug-fixes",
+  "normative_source": "Python csdid csdid/test_csdid/test_user_bug_fixes.py subordinate to R did 2.5.1",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+  "decision_refs": [
+    "D003",
+    "D004"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/mpdta.csv",
+      "rows": 2500,
+      "columns": 6
+    },
+    {
+      "path": "inputs/fewer_periods.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/zero_pretreat.csv",
+      "rows": 2000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/missing_var.csv",
+      "rows": 1500,
+      "columns": 6
+    },
+    {
+      "path": "inputs/anticipation.csv",
+      "rows": 3000,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py023/generate.py",
+      "path": "tools/parity/generators/py023/generate.py"
+    }
+  ],
+  "rng": {
+    "kind": "numpy.random/default_rng",
+    "seeds": [
+      56,
+      99,
+      126,
+      20250228,
+      9142024
+    ]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "user-bug-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public user-bug regression gates",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "scenario"
+      ]
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY023 maps all public user-bug-fix tests to Stata public behavior: harmless t1 columns, missing covariate preprocessing, fewer periods than groups with aggregations and method grid, zero pre-treatment outcomes, unknown covariate rejection, and anticipation-window treatment-group coercion."
+}

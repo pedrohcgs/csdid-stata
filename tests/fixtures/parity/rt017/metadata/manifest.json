@@ -1,0 +1,92 @@
+{
+  "matrix_id": "RT017",
+  "fixture_family": "r-clustered-multiplier-bootstrap",
+  "normative_source": "R did 2.5.1 tests/testthat/test-mboot-cluster.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D013"],
+  "tolerance_ids": ["TOL003", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/clustered-unbalanced.csv",
+      "rows": 420,
+      "columns": 7
+    },
+    {
+      "path": "inputs/clustered-balanced.csv",
+      "rows": 480,
+      "columns": 7
+    },
+    {
+      "path": "inputs/clustered-invalid.csv",
+      "rows": 420,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt017/generate.R",
+      "path": "tools/parity/generators/rt017/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "data_seeds": [101, 202, 303],
+    "source_biters": 5000,
+    "exact_draw_parity": true,
+    "reason": "The public seeded rademacher path mirrors BMisc/R's multiplier stream; RT017 still enforces deterministic cluster-sum targets and source-test Monte Carlo tolerance rather than exporting raw draw matrices."
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "clustered-bootstrap-scenarios"
+    },
+    {
+      "path": "expected/r/cluster-targets.csv",
+      "schema": "cluster-sum-bootstrap-targets"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata e(inffunc) and e(cluster_vec) cluster-sum targets",
+      "expected": "expected/r/cluster-targets.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Stata clustered e(boot_attgt) SE for ATT(2,2)",
+      "expected": "expected/r/cluster-targets.csv",
+      "tolerance_id": "TOL003",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Stata multiple bootstrap cluster validation",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "scope": "raw_draw_export_fixture_boundary",
+    "reason": "RT017 maps public cluster-bootstrap source assertions and does not export raw draw matrices; F035 guards the exact seeded BMisc/R rademacher multiplier stream.",
+    "accepted_behavior": "Stata must match the R cluster-sum and cluster-mean targets from the influence function, reject multiple non-id cluster variables, and keep clustered bootstrap SEs within the R source-test Monte Carlo tolerance."
+  },
+  "scope_note": "RT017 maps all three public assertions in R did tests/testthat/test-mboot-cluster.R. Stata verifies cluster_vector/influence-function alignment, unbalanced cluster-sum versus cluster-mean separation, balanced cluster-sum equals cluster-mean, clustered bootstrap SEs track the cluster-sum target for ATT(2,2), and multiple non-id cluster declarations are rejected. F035 guards exact seeded BMisc/R rademacher multiplier-stream parity while RT017 remains a cluster-summed bootstrap inheritance fixture."
+}

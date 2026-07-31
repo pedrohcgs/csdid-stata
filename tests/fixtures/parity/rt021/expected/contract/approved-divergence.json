@@ -1,0 +1,20 @@
+[
+  {
+    "divergence_id": "RT021-DIV001",
+    "source_tests": "summary.MP.TEST prints the conditional pre-test results",
+    "reason": "The Stata port has no public conditional_did_pretest command or MP.TEST object surface.",
+    "accepted_behavior": "Stata output coverage is verified for csdid, csdid_stats, and csdid_estat public command surfaces."
+  },
+  {
+    "divergence_id": "RT021-DIV002",
+    "source_tests": "trimmer() runs for both control-group definitions",
+    "reason": "The Stata port has no public trimmer helper command; overlap/support diagnostics are handled through estimation validation rows.",
+    "accepted_behavior": "Stata estimation validation and overlap diagnostics remain covered by F029/PY008/RT024-style rows."
+  },
+  {
+    "divergence_id": "RT021-DIV003",
+    "source_tests": "get_wide_data() guards reject non-data.table and non-2-period input",
+    "reason": "get_wide_data is an internal R data.table helper; Stata has no data.table object or exported wide-data helper analogue.",
+    "accepted_behavior": "Stata rejects unsupported public options and preserves public command-surface validation rather than exposing internal data.table guards."
+  }
+]

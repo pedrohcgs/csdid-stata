@@ -1,0 +1,51 @@
+[
+  {
+    "event_key": "balance_full_is_default",
+    "return_code": 0,
+    "event_type": "none",
+    "offending_option": "balance(full)",
+    "message_normalized": "balance(full) is the same option as bal(full), which is the default; it is not deprecated and prints no note. On a balanced panel it also drops nothing, so no balancing report is emitted either."
+  },
+  {
+    "event_key": "legacy_long_alias",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "long",
+    "message_normalized": "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+  },
+  {
+    "event_key": "legacy_long2_alias",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "long2",
+    "message_normalized": "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+  },
+  {
+    "event_key": "legacy_dryrun_rejected",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "dryrun",
+    "message_normalized": "dryrun is an internal legacy option and is unsupported"
+  },
+  {
+    "event_key": "asinr_noop_warning",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "asinr",
+    "message_normalized": "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
+  },
+  {
+    "event_key": "method_dripw_warning",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "method(dripw)",
+    "message_normalized": "csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)"
+  },
+  {
+    "event_key": "method_stdipw_warning",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "method(stdipw)",
+    "message_normalized": "csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)"
+  }
+]

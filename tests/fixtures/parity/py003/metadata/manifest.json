@@ -1,0 +1,146 @@
+{
+  "matrix_id": "PY003",
+  "fixture_family": "python-att-gt",
+  "normative_source": "Python csdid csdid/test_csdid/test_att_gt.py subordinate to R did 2.5.1 ATT(g,t) behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D014"
+  ],
+  "tolerance_ids": [
+    "TOL002"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/sim-data.csv",
+      "rows": 3200,
+      "columns": 6
+    },
+    {
+      "path": "inputs/two-period.csv",
+      "rows": 2400,
+      "columns": 6
+    },
+    {
+      "path": "inputs/dynamic.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/dynamic-rc.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unequal-periods.csv",
+      "rows": 2000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/anticipation.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced.csv",
+      "rows": 3199,
+      "columns": 6
+    },
+    {
+      "path": "inputs/no-never.csv",
+      "rows": 2400,
+      "columns": 6
+    },
+    {
+      "path": "inputs/small-groups.csv",
+      "rows": 2404,
+      "columns": 6
+    },
+    {
+      "path": "inputs/fixweights.csv",
+      "rows": 3200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/fixweights-constant.csv",
+      "rows": 3200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/fixweights-unbalanced.csv",
+      "rows": 3199,
+      "columns": 7
+    },
+    {
+      "path": "inputs/nonconsecutive.csv",
+      "rows": 4500,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py003/generate.py",
+      "path": "tools/parity/generators/py003/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "numpy.default_rng",
+    "seeds": [
+      9142024,
+      3,
+      7,
+      10,
+      11,
+      13,
+      14
+    ]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "att-gt-public-scenario-grid"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata public ATT(g,t), aggregation, fast, IF, fix_weights, and validation checks",
+      "expected": "source invariant map",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "PY003 maps 93 public Python ATT(g,t) assertions to Stata public-command gates and records the Python callable estimator surface as PY003-DIV001. The gate verifies core dr/reg/ipw estimation, repeated cross-sections, allow_unbalanced routing, not-yet-treated controls, no-never fallback, dynamic aggregation, exposure windows, anticipation, level/cband metadata, validation failures, base-period modes, small-group warnings, weights, cluster SEs, fast/baseline equality, fix_weights behavior, influence-function summaries, and user column-name variations."
+}

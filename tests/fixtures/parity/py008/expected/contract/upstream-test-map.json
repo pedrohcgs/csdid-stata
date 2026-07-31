@@ -1,0 +1,98 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_att_gt_errors_on_missing_column",
+    "mapped_scenario": "missing_column",
+    "assertion_family": "missing outcome variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_att_gt_errors_on_bad_idname",
+    "mapped_scenario": "bad_idname",
+    "assertion_family": "missing id variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_att_gt_coerces_no_nevertreated",
+    "mapped_scenario": "no_never_treated",
+    "assertion_family": "no never-treated warning and latest-cohort fallback",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_att_gt_warns_on_small_groups",
+    "mapped_scenario": "small_groups",
+    "assertion_family": "small-group warning",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_att_gt_drops_first_period_units",
+    "mapped_scenario": "first_period_treated",
+    "assertion_family": "first-period treated warning and drop",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_att_gt_handles_na_in_outcome",
+    "mapped_scenario": "missing_outcome",
+    "assertion_family": "missing outcome rows are dropped with diagnostic",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_aggte_handles_na_with_na_rm",
+    "mapped_scenario": "aggte_na_rm",
+    "assertion_family": "na_rm aggregation proceeds after missing ATT injection",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_fix_weights_validation[bad_value]",
+    "mapped_scenario": "fix_weights_bad_value",
+    "assertion_family": "bad fix_weights() value rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_fix_weights_validation[rc_first_period]",
+    "mapped_scenario": "fix_weights_requires_panel",
+    "assertion_family": "first_period fixed weights require panel id",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_faster_mode_missing_column",
+    "mapped_scenario": "faster_mode_missing_column",
+    "assertion_family": "fast request still validates missing gvar",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_invalid_est_method",
+    "mapped_scenario": "invalid_est_method",
+    "assertion_family": "unknown method rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_error_handling.py",
+    "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+    "source_test": "test_treatment_reversals",
+    "mapped_scenario": "treatment_reversal",
+    "assertion_family": "time-varying cohort within id rejected",
+    "coverage_status": "mapped"
+  }
+]

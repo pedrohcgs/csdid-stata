@@ -1,0 +1,2 @@
+"type","nobs","ngroup","ntime","control_group","est_method"
+"simple",36,2,4,"nevertreated","reg"

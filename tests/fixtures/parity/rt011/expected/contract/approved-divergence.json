@@ -1,0 +1,23 @@
+[
+  {
+    "divergence_id": "RT011-DIV001",
+    "source_tests": "att_gt errors on non-character non-function est_method; att_gt rejects invalid scalar logical controls before base R errors; att_gt rejects invalid cores before parallel code sees it; att_gt rejects argument-referenced internal variable names in both modes; att_gt rejects invalid xformla before formula internals in both modes; att_gt errors on panel=TRUE without idname in both modes; att_gt handles data with .w column (slower mode)",
+    "reason": "R accepts argument shapes and internal column names that Stata syntax either cannot express or intentionally exposes through different public options.",
+    "accepted_behavior": "Stata validates the corresponding public varlist/options and records unsupported or syntactically impossible shapes as non-public-surface divergences.",
+    "_row": "RT011-DIV001"
+  },
+  {
+    "divergence_id": "RT011-DIV002",
+    "source_tests": "simulation helpers reject invalid scalar controls before raw R errors; trimmer rejects malformed exported utility arguments; test.mboot rejects malformed bootstrap inputs before recycling; mboot rejects malformed direct helper inputs before raw errors; process_attgt rejects malformed group-time result lists; plotting helpers reject invalid scalar controls before ggplot errors; mboot rejects invalid scalar controls before bootstrap internals; att_gt handles singular covariance for Wald test gracefully",
+    "reason": "R-only helper functions and mutable S3 object internals are not part of the frozen Stata command surface.",
+    "accepted_behavior": "Stata verifies command-level bootstrap, aggregation, plotting, and saved-artifact behavior through public commands rather than direct R helper calls.",
+    "_row": "RT011-DIV002"
+  },
+  {
+    "divergence_id": "RT011-DIV003",
+    "source_tests": "att_gt warns on extra args with built-in est_method; att_gt messages about anticipation; att_gt warns when no pre-treatment periods for Wald test; empty-cell warning names the actually-empty base period under base_period='universal' in both modes; balanced-panel coercion warning counts dropped units identically in both modes",
+    "reason": "R public messaging and preprocessing choices differ from the owner-directed Stata surface, including unsupported extra dots, anticipation notes, no-Wald-pretest surface, and unbalanced-panel handling.",
+    "accepted_behavior": "Stata rejects unsupported extra options, keeps anticipation as stored metadata, omits R Wald-pretest reporting, and routes unbalanced panels to the R-compatible repeated-cross-section estimator by default.",
+    "_row": "RT011-DIV003"
+  }
+]

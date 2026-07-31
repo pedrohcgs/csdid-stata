@@ -1,0 +1,74 @@
+name: Numerical discrepancy with R did
+description: Report a Stata result that differs from R did 2.5.1.
+title: "[numerical discrepancy]: "
+labels: ["numerical-discrepancy", "needs-reprex"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when Stata `csdid` differs from R `did` 2.5.1. Reports without a reproducible command, data description, and R comparison may be closed as incomplete.
+  - type: input
+    id: csdid-version
+    attributes:
+      label: csdid version
+      description: Output from `csdid version`.
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: input
+    id: stata-version
+    attributes:
+      label: Stata version and edition
+      placeholder: "Stata 18 MP"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Windows 11, macOS, Linux"
+    validations:
+      required: true
+  - type: textarea
+    id: stata-command
+    attributes:
+      label: Stata command
+      render: stata
+    validations:
+      required: true
+  - type: textarea
+    id: r-command
+    attributes:
+      label: R did 2.5.1 comparison
+      description: Include the R command and output being compared.
+      render: r
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Design details
+      description: Describe panel/repeated cross-section status, groups, periods, covariates, weights, clustering, bootstrap, and aggregation.
+    validations:
+      required: true
+  - type: textarea
+    id: difference
+    attributes:
+      label: Difference observed
+      description: Include ATT, SE, aggregation, plot-data, or stored-result differences and the expected tolerance.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Reproducible data or fixture
+      description: Attach a small dataset or describe how maintainers can reproduce the data exactly.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Full Stata log
+      render: text
+    validations:
+      required: true

@@ -1,0 +1,91 @@
+{
+  "matrix_id": "PY015",
+  "fixture_family": "python-clustered-multiplier-bootstrap",
+  "normative_source": "Python csdid csdid/test_csdid/test_mboot_cluster.py subordinate to R did 2.5.1 clustered multiplier-bootstrap behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D013"
+  ],
+  "tolerance_ids": [
+    "TOL003",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/clustered-unbalanced.csv",
+      "rows": 420,
+      "columns": 5
+    },
+    {
+      "path": "inputs/clustered-balanced.csv",
+      "rows": 480,
+      "columns": 5
+    },
+    {
+      "path": "inputs/clustered-invalid.csv",
+      "rows": 420,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py015/generate.py",
+      "path": "tools/parity/generators/py015/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "numpy.random.default_rng",
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "bootstrap_draw_parity": false
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "clustered-bootstrap-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata clustered wboot finite-SE behavior",
+      "expected": "mapped Python run assertions",
+      "tolerance_id": "TOL003",
+      "key_columns": [
+        "scenario"
+      ]
+    },
+    {
+      "actual": "Stata multiple bootstrap cluster validation",
+      "expected": "mapped Python exception assertion",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY015 maps all three Python test_mboot_cluster.py assertions: clustered multiplier bootstrap runs with finite positive SEs for unbalanced and balanced cluster designs, and multiple/list-valued bootstrap cluster declarations are rejected. F035 guards exact seeded BMisc/R rademacher multiplier-stream parity; PY015 remains an inherited Python cluster-bootstrap smoke fixture rather than a raw-draw export fixture."
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_notyettreated.py",
+    "source_sha256": "5bec2a6cc01f1a4bc23a828ce0ef7544375647eb7258b319096e0635a4c2be4a",
+    "source_test": "test_no_crash_notyettreated_no_nevertreated",
+    "mapped_scenario": "notyet_no_crash",
+    "assertion_family": "notyettreated with no never-treated group fits and returns ATT rows",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_notyettreated.py",
+    "source_sha256": "5bec2a6cc01f1a4bc23a828ce0ef7544375647eb7258b319096e0635a4c2be4a",
+    "source_test": "test_last_cohort_retained_in_data",
+    "mapped_scenario": "last_cohort_retained",
+    "assertion_family": "latest cohort remains in processed comparison data",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_notyettreated.py",
+    "source_sha256": "5bec2a6cc01f1a4bc23a828ce0ef7544375647eb7258b319096e0635a4c2be4a",
+    "source_test": "test_last_cohort_not_in_glist",
+    "mapped_scenario": "last_cohort_not_estimated",
+    "assertion_family": "latest cohort is not an estimated group under notyettreated",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_notyettreated.py",
+    "source_sha256": "5bec2a6cc01f1a4bc23a828ce0ef7544375647eb7258b319096e0635a4c2be4a",
+    "source_test": "test_estimates_not_nan",
+    "mapped_scenario": "notyet_finite_att",
+    "assertion_family": "notyettreated ATT estimates are not all missing",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_notyettreated.py",
+    "source_sha256": "5bec2a6cc01f1a4bc23a828ce0ef7544375647eb7258b319096e0635a4c2be4a",
+    "source_test": "test_nevertreated_coerces_without_control",
+    "mapped_scenario": "nevertreated_coerce",
+    "assertion_family": "nevertreated with no never-treated group warns and coerces latest cohort",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_notyettreated.py",
+    "source_sha256": "5bec2a6cc01f1a4bc23a828ce0ef7544375647eb7258b319096e0635a4c2be4a",
+    "source_test": "test_positive_treatment_effect_detected",
+    "mapped_scenario": "positive_post_att",
+    "assertion_family": "post-treatment ATT average is positive",
+    "coverage_status": "mapped"
+  }
+]

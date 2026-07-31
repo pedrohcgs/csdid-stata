@@ -1,0 +1,178 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_missing_yname",
+    "mapped_scenario": "missing_yname",
+    "assertion_family": "missing outcome variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_missing_tname",
+    "mapped_scenario": "missing_tname",
+    "assertion_family": "missing time variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_missing_idname",
+    "mapped_scenario": "missing_idname",
+    "assertion_family": "missing id variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_missing_gname",
+    "mapped_scenario": "missing_gname",
+    "assertion_family": "missing group variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_missing_weights_name",
+    "mapped_scenario": "missing_weights_name",
+    "assertion_family": "missing iweight variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_missing_clustervar",
+    "mapped_scenario": "missing_clustervar",
+    "assertion_family": "missing cluster variable errors",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_reserved_column_w",
+    "mapped_scenario": "reserved_column_w",
+    "assertion_family": "Stata permits user variables named w; no Python internal w conflict exists in this command surface",
+    "coverage_status": "approved-divergence"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_reserved_column_rowid",
+    "mapped_scenario": "reserved_column_rowid",
+    "assertion_family": "Stata permits user variables named rowid; no Python internal rowid conflict exists in this command surface",
+    "coverage_status": "approved-divergence"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_non_numeric_outcome",
+    "mapped_scenario": "non_numeric_outcome",
+    "assertion_family": "string outcome rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_non_numeric_tname",
+    "mapped_scenario": "non_numeric_tname",
+    "assertion_family": "string time rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_non_numeric_gname",
+    "mapped_scenario": "non_numeric_gname",
+    "assertion_family": "string group rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_negative_gname_rejected",
+    "mapped_scenario": "negative_gname",
+    "assertion_family": "negative group values rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_duplicate_id_time",
+    "mapped_scenario": "duplicate_id_time",
+    "assertion_family": "duplicate id-time rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_alp_too_low",
+    "mapped_scenario": "level_too_high",
+    "assertion_family": "Stata level equivalent rejects invalid confidence level",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_alp_too_high",
+    "mapped_scenario": "level_too_low",
+    "assertion_family": "Stata level equivalent rejects invalid confidence level",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_biters_negative",
+    "mapped_scenario": "biters_negative",
+    "assertion_family": "negative bootstrap iterations rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_biters_zero",
+    "mapped_scenario": "biters_zero",
+    "assertion_family": "zero bootstrap iterations rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_negative_anticipation",
+    "mapped_scenario": "negative_anticipation",
+    "assertion_family": "negative anticipation rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_invalid_control_group",
+    "mapped_scenario": "invalid_control_group",
+    "assertion_family": "unsupported control_group() option rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_negative_weights",
+    "mapped_scenario": "negative_weights",
+    "assertion_family": "negative weights rejected",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_valid_data_no_error",
+    "mapped_scenario": "valid_data_no_error",
+    "assertion_family": "valid initialization analogue succeeds",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_validation.py",
+    "source_sha256": "90f92c37e1123518cb4d9c3aaa9389ec6f92889b53a569fa11553cc21609b969",
+    "source_test": "test_valid_data_with_fit",
+    "mapped_scenario": "valid_data_with_fit",
+    "assertion_family": "valid fit produces ATT(g,t) results",
+    "coverage_status": "mapped"
+  }
+]

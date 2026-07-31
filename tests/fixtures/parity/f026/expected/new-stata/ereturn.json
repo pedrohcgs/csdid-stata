@@ -1,0 +1,222 @@
+{
+  "matrix_id": "F026",
+  "fixture_family": "stored-results",
+  "normative_source": "R did 2.5.1 output semantics mapped to Stata e()",
+  "scenarios": {
+    "panel_reg": {
+      "e_cmd": "csdid",
+      "e_properties": "",
+      "macros": {
+        "cmd": "csdid",
+        "cmdline": "csdid y, ivar(id) time(time) gvar(g) method(reg)",
+        "version": "2.0.0",
+        "yname": "y",
+        "timevar": "time",
+        "gvar": "g",
+        "idvar": "id",
+        "clustervar": "",
+        "panel_mode": "panel",
+        "control_group": "nevertreated",
+        "method": "reg",
+        "method_requested": "reg",
+        "weightvar": "",
+        "base_period": "varying",
+        "fix_weights": ""
+      },
+      "scalars": {
+        "N": 192,
+        "N_units": 48,
+        "N_attgt": 6,
+        "N_groups": 2,
+        "N_time": 4,
+        "anticipation": 0,
+        "level": 95
+      },
+      "matrices": {
+        "attgt": {
+          "rows": 6,
+          "cols": 9
+        },
+        "inffunc": {
+          "rows": 48,
+          "cols": 6
+        },
+        "group_prob": {
+          "rows": 2,
+          "cols": 3
+        },
+        "unit_group": {
+          "rows": 48,
+          "cols": 2
+        }
+      },
+      "matrix_stripes": {
+        "attgt": {
+          "rownames": ["r1", "r2", "r3", "r4", "r5", "r6"],
+          "colnames": ["group", "time", "event_time", "att", "se", "n_treat_t", "n_treat_pre", "n_control_t", "n_control_pre"]
+        },
+        "inffunc": {
+          "colnames": ["c1", "c2", "c3", "c4", "c5", "c6"]
+        },
+        "group_prob": {
+          "colnames": ["group", "prob", "n_units"]
+        },
+        "unit_group": {
+          "colnames": ["id", "group"]
+        }
+      }
+    },
+    "rc_reg": {
+      "e_cmd": "csdid",
+      "e_properties": "",
+      "macros": {
+        "cmd": "csdid",
+        "cmdline": "csdid y, time(time) gvar(g) method(reg)",
+        "version": "2.0.0",
+        "yname": "y",
+        "timevar": "time",
+        "gvar": "g",
+        "idvar": "",
+        "clustervar": "",
+        "panel_mode": "repeated-cross-section",
+        "control_group": "nevertreated",
+        "method": "reg",
+        "method_requested": "reg",
+        "weightvar": "",
+        "base_period": "varying",
+        "fix_weights": ""
+      },
+      "scalars": {
+        "N": 192,
+        "N_units": 192,
+        "N_attgt": 6,
+        "N_groups": 2,
+        "N_time": 4,
+        "anticipation": 0,
+        "level": 95
+      },
+      "matrices": {
+        "attgt": {
+          "rows": 6,
+          "cols": 9
+        },
+        "inffunc": {
+          "rows": 192,
+          "cols": 6
+        },
+        "group_prob": {
+          "rows": 2,
+          "cols": 3
+        },
+        "unit_group": {
+          "rows": 192,
+          "cols": 2
+        }
+      },
+      "matrix_stripes": {
+        "attgt": {
+          "rownames": ["r1", "r2", "r3", "r4", "r5", "r6"],
+          "colnames": ["group", "time", "event_time", "att", "se", "n_treat_t", "n_treat_pre", "n_control_t", "n_control_pre"]
+        },
+        "inffunc": {
+          "colnames": ["c1", "c2", "c3", "c4", "c5", "c6"]
+        },
+        "group_prob": {
+          "colnames": ["group", "prob", "n_units"]
+        },
+        "unit_group": {
+          "colnames": ["id", "group"]
+        }
+      }
+    },
+    "panel_reg_cluster": {
+      "e_cmd": "csdid",
+      "e_properties": "",
+      "macros": {
+        "cmd": "csdid",
+        "cmdline": "csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl)",
+        "version": "2.0.0",
+        "yname": "y",
+        "timevar": "time",
+        "gvar": "g",
+        "idvar": "id",
+        "clustervar": "cl",
+        "panel_mode": "panel",
+        "control_group": "nevertreated",
+        "method": "reg",
+        "method_requested": "reg",
+        "weightvar": "",
+        "base_period": "varying",
+        "fix_weights": ""
+      },
+      "scalars": {
+        "N": 192,
+        "N_units": 48,
+        "N_attgt": 6,
+        "N_groups": 2,
+        "N_time": 4,
+        "anticipation": 0,
+        "level": 95,
+        "N_clusters": 8
+      },
+      "matrices": {
+        "attgt": {
+          "rows": 6,
+          "cols": 9
+        },
+        "inffunc": {
+          "rows": 48,
+          "cols": 6
+        },
+        "group_prob": {
+          "rows": 2,
+          "cols": 3
+        },
+        "unit_group": {
+          "rows": 48,
+          "cols": 2
+        }
+      },
+      "matrix_stripes": {
+        "attgt": {
+          "rownames": ["r1", "r2", "r3", "r4", "r5", "r6"],
+          "colnames": ["group", "time", "event_time", "att", "se", "n_treat_t", "n_treat_pre", "n_control_t", "n_control_pre"]
+        },
+        "inffunc": {
+          "colnames": ["c1", "c2", "c3", "c4", "c5", "c6"]
+        },
+        "group_prob": {
+          "colnames": ["group", "prob", "n_units"]
+        },
+        "unit_group": {
+          "colnames": ["id", "group"]
+        }
+      }
+    },
+    "post_simple": {
+      "added_macros": {
+        "agg_type": "simple"
+      },
+      "added_scalars": {
+        "agg_level": 95,
+        "N_aggte": 1
+      },
+      "matrices": {
+        "aggte": {
+          "rows": 1,
+          "cols": 5
+        }
+      },
+      "matrix_stripes": {
+        "aggte": {
+          "rownames": "r1",
+          "colnames": ["egt", "att", "se", "overall_att", "overall_se"]
+        }
+      }
+    }
+  },
+  "postestimation_available": {
+    "csdid_estat attgt": true,
+    "csdid_stats simple": true
+  }
+}

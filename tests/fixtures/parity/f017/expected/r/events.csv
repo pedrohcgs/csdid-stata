@@ -1,0 +1,13 @@
+"event_key","return_code","event_type","offending_option","message_normalized","bal_mode"
+"removed_balanceall",198,"error","balanceall",,"bal(full)"
+"removed_balancepair",198,"error","balancepair",,"bal(pair)"
+"removed_bal_all",198,"error","bal(all)",,"bal(full)"
+"removed_bal_unbal",198,"error","bal(unbal)",,"bal(none)"
+"removed_bal_unbalanced",198,"error","bal(unbalanced)",,"bal(none)"
+"removed_bal_allow_unbalanced",198,"error","bal(allow_unbalanced)",,"bal(none)"
+"accepted_unbalanced",0,"accepted","unbalanced",,"bal(none)"
+"accepted_allowunbalanced",0,"accepted","allowunbalanced",,"bal(none)"
+"accepted_allow_unbalanced",0,"accepted","allow_unbalanced",,"bal(none)"
+"legacy_long",0,"warning","long","warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts.",
+"legacy_long2",0,"warning","long2","warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts.",
+"legacy_asinr_noop",0,"warning","asinr","csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet",

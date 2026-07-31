@@ -1,0 +1,5 @@
+scenario,input,biters,seed,n_clusters,different_rtol,similar_rtol
+clustered_bootstrap_runs,clustered-data.csv,200,20250501,10.0,,
+clustered_vs_unclustered,clustered-data.csv,500,20250502,,0.1,
+unit_cluster_vs_unclustered,clustered-data.csv,500,20250503,,,0.3
+time_varying_cluster_rejected,time-varying-cluster.csv,50,20250504,,,

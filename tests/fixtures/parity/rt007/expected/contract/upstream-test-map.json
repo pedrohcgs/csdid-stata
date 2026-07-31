@@ -1,0 +1,119 @@
+[
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical (no-bootstrap) clustered SE for att_gt equals the cluster-sum CRVE (faster_mode TRUE and FALSE)",
+    "mapped_scenario": "panel_404_regular",
+    "assertion_family": "analytical clustered ATT(g,t) SE equals cluster-sum target and differs from iid SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical (no-bootstrap) clustered SE for att_gt equals the cluster-sum CRVE (faster_mode TRUE and FALSE)",
+    "mapped_scenario": "panel_404_fast",
+    "assertion_family": "requested fast path preserves analytical clustered ATT(g,t) SE target",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical cluster SE agrees with the bootstrap cluster SE (multiple DGPs)",
+    "mapped_scenario": "panel_between_bootstrap",
+    "assertion_family": "clustered bootstrap IQR and raw-draw SD scales agree with analytical clustered SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical cluster SE agrees with the bootstrap cluster SE (multiple DGPs)",
+    "mapped_scenario": "panel_within_bootstrap",
+    "assertion_family": "clustered bootstrap IQR and raw-draw SD scales agree with analytical clustered SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE for repeated cross-sections (idname omitted/provided, faster_mode TRUE/FALSE)",
+    "mapped_scenario": "rcs_909_omitted_regular",
+    "assertion_family": "repeated-cross-section omitted-id analytical clustered SE equals cluster-sum target",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE for repeated cross-sections (idname omitted/provided, faster_mode TRUE/FALSE)",
+    "mapped_scenario": "rcs_909_omitted_fast",
+    "assertion_family": "repeated-cross-section omitted-id requested fast path preserves clustered SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE for repeated cross-sections (idname omitted/provided, faster_mode TRUE/FALSE)",
+    "mapped_scenario": "rcs_909_id_regular",
+    "assertion_family": "repeated-cross-section provided-id analytical clustered SE equals cluster-sum target",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE for repeated cross-sections (idname omitted/provided, faster_mode TRUE/FALSE)",
+    "mapped_scenario": "rcs_909_id_fast",
+    "assertion_family": "repeated-cross-section provided-id requested fast path preserves clustered SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "clustered bootstrap and analytical SE agree for repeated cross-sections (idname omitted)",
+    "mapped_scenario": "rcs_910_regular_bootstrap",
+    "assertion_family": "repeated-cross-section clustered bootstrap agrees with analytical clustered SE",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "clustered bootstrap and analytical SE agree for repeated cross-sections (idname omitted)",
+    "mapped_scenario": "rcs_910_fast_bootstrap",
+    "assertion_family": "repeated-cross-section clustered bootstrap agrees with analytical clustered SE under requested fast path",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE flows through aggte at all levels (simple/group/dynamic)",
+    "mapped_scenario": "aggte_simple",
+    "assertion_family": "clustered analytical SE propagates to simple aggregation and differs from iid",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE flows through aggte at all levels (simple/group/dynamic)",
+    "mapped_scenario": "aggte_group",
+    "assertion_family": "clustered analytical SE propagates to group aggregation and differs from iid",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-cluster-analytic.R",
+    "source_sha256": "6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56",
+    "source_test": "analytical clustered SE flows through aggte at all levels (simple/group/dynamic)",
+    "mapped_scenario": "aggte_dynamic",
+    "assertion_family": "clustered analytical SE propagates to dynamic aggregation and differs from iid",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,78 @@
+{
+  "matrix_id": "RT012",
+  "fixture_family": "r-faster-mode-consistency",
+  "normative_source": "R did 2.5.1 tests/testthat/test-faster-mode-consistency.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 420,
+      "columns": 5
+    },
+    {
+      "path": "inputs/input-unbalanced.csv",
+      "rows": 412,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt012/generate.R",
+      "path": "tools/parity/generators/rt012/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "faster-mode-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata fast/baseline representative equality checks",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT012 maps all public faster_mode consistency tests to Stata fast/nofast behavior: requested-fast optimized equality for no-covariate, covariate balanced/repeated-cross-section/unbalanced modes, anticipation, and aggregation equality. The R-only custom-estimator partial-NA influence-function test is recorded as approved divergence."
+}

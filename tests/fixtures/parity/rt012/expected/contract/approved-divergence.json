@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT012-DIV001",
+    "source_tests": "partial-NA influence functions propagate identically across modes (unbalanced panel)",
+    "reason": "The R source injects NA values through a custom est_method callback and compares internal influence-function propagation across R fast/slow paths. The Stata port has no public custom-estimator callback API or public path that accepts user-supplied influence functions.",
+    "accepted_behavior": "Public Stata fast/nofast behavior is verified through no-covariate equality, requested-fast covariate optimized equality, aggregation equality, F032, PY009, and RT025."
+  }
+]

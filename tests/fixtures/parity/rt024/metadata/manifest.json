@@ -1,0 +1,145 @@
+{
+  "matrix_id": "RT024",
+  "fixture_family": "r-robustness-guards",
+  "normative_source": "R did 2.5.1 tests/testthat/test-robustness-guards.R",
+  "source_commit": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+  "decision_refs": ["D004", "D006", "D012"],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/base-sim.csv",
+      "rows": 1216,
+      "columns": 7
+    },
+    {
+      "path": "inputs/duplicate-id-period.csv",
+      "rows": 1217,
+      "columns": 7
+    },
+    {
+      "path": "inputs/negative-weights.csv",
+      "rows": 1216,
+      "columns": 8
+    },
+    {
+      "path": "inputs/zero-weights.csv",
+      "rows": 1216,
+      "columns": 8
+    },
+    {
+      "path": "inputs/positive-weights.csv",
+      "rows": 1320,
+      "columns": 8
+    },
+    {
+      "path": "inputs/rc-missing-treated-post.csv",
+      "rows": 310,
+      "columns": 5
+    },
+    {
+      "path": "inputs/small-never-treated.csv",
+      "rows": 18,
+      "columns": 10
+    },
+    {
+      "path": "inputs/fractional-unbalanced.csv",
+      "rows": 1182,
+      "columns": 7
+    },
+    {
+      "path": "inputs/column-named-weights.csv",
+      "rows": 1280,
+      "columns": 9
+    },
+    {
+      "path": "inputs/transformed-nonfinite.csv",
+      "rows": 1284,
+      "columns": 9
+    },
+    {
+      "path": "inputs/panel-nan-cells.csv",
+      "rows": 360,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt024/generate.R",
+      "path": "tools/parity/generators/rt024/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed_duplicate": 1,
+    "seed_positive_weights": 2,
+    "seed_rc_missing": 43,
+    "seed_small_never": 44,
+    "seed_fractional": 45,
+    "seed_named_weights": 46,
+    "seed_nonfinite": 20260609,
+    "seed_nan_cells": 47
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata guard outcomes and baseline-vs-fast matrices",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT/TOL002",
+      "key_columns": "source_test"
+    },
+    {
+      "actual": "Approved divergence catalogue",
+      "expected": "expected/contract/approved-divergence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "divergence_id"
+    }
+  ],
+  "approved_divergence": [
+    {
+      "divergence_id": "RT024-DIV001",
+      "source_assertion": "overlap_logit_fit matches fastglm::fastglm exactly",
+      "reason": "The assertion targets a non-exported R helper and fastglm implementation identity, not a Stata public command surface.",
+      "accepted_behavior": "Public overlap/separation behavior remains covered by RT022, PY018, and the mapped RT024 overlap-adjacent cases."
+    },
+    {
+      "divergence_id": "RT024-DIV002",
+      "source_assertion": "never-treated units coded as gname = Inf are not dropped",
+      "reason": "Stata has no numeric Inf value for treatment timing; the frozen Stata public contract uses gvar == 0 for never-treated units and missing gvar rows are dropped.",
+      "accepted_behavior": "Stata accepts gvar == 0 as never-treated and keeps missing treatment timing out of the estimation sample."
+    },
+    {
+      "divergence_id": "RT024-DIV003",
+      "source_assertion": "complete_finite_cases finite_exclude helper behavior",
+      "reason": "The assertion targets a non-exported R preprocessing helper; Stata maps the public missing/non-finite behavior through transformed covariate rows.",
+      "accepted_behavior": "Stata drops missing transformed covariate rows before estimation and emits the frozen non-finite-data warning."
+    }
+  ],
+  "scope_note": "RT024 maps all public robustness guard behavior available on the Stata command surface and records approved divergences for R-only helper internals and R's Inf-coded treatment timing domain."
+}

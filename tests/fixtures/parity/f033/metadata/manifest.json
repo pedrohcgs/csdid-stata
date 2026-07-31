@@ -1,0 +1,69 @@
+{
+  "matrix_id": "F033",
+  "fixture_family": "drdid-boundary",
+  "normative_source": "R DRDID 1.3.0 as used by R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D001",
+  "tolerance_ids": "TOL001",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 96,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f033/generate.R",
+      "path": "tools/parity/generators/f033/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/drdid-direct-grid.csv",
+      "schema": "drdid-direct-grid"
+    },
+    {
+      "path": "expected/r/drdid-alternative-grid.csv",
+      "schema": "drdid-alternative-diagnostic-grid"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid single 2x2 ATT(g,t)",
+      "expected": "expected/r/drdid-direct-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "method", "group", "time"]
+    },
+    {
+      "actual": "Stata csdid function-boundary diagnostic",
+      "expected": "expected/r/drdid-alternative-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "method", "alternative_function", "group", "time"]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Approved-divergence direct DRDID-boundary fixture for one two-period design covering weighted and unweighted panel/repeated-cross-section, intercept/covariate, dr/reg/ipw normalized-IPW cells, nondefault pscoretrim(.7) trimming for weighted covariate DR/IPW cells, and diagnostic contrasts that prove Stata matches the R did target DRDID functions rather than improved DRDID, RC1, or unnormalized IPW alternatives. Raw DRDID helper internals that are not public Stata command surfaces are recorded in F033-DIV001."
+}

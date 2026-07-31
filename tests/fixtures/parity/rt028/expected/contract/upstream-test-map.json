@@ -1,0 +1,65 @@
+[
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "having column named t1 causes code to crash",
+    "mapped_scenario": "mpdta_t1_column",
+    "assertion_family": "mpdta not-yet-treated regression runs before and after adding a harmless t1 column",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "missing covariates",
+    "mapped_scenario": "mpdta_missing_covariate",
+    "assertion_family": "missing covariate warning/run behavior maps to Stata complete-case preprocessing and successful estimation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "repeated cross sections small groups with covariates",
+    "mapped_scenario": "r_custom_rc1_small_group_skipped",
+    "assertion_family": "R source uses a custom DRDID::drdid_rc1 callback on a skipped known-bug branch; no public Stata custom-estimator callback exists",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT028-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "fewer time periods than groups",
+    "mapped_scenario": "fewer_periods_than_groups",
+    "assertion_family": "fewer observed periods than treatment groups gives expected ATT slice and nonmissing dynamic/group/calendar aggregations",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "0 pre-treatment estimates when outcomes are 0",
+    "mapped_scenario": "zero_pretreatment_outcomes",
+    "assertion_family": "pre-treatment ATT for group 9 at time 7 is zero under universal and varying base periods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "variables not in dataset",
+    "mapped_scenario": "missing_formula_variable",
+    "assertion_family": "unknown covariate variable is rejected",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-user_bug_fixes.R",
+    "source_sha256": "0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979",
+    "source_test": "groups treated after max(t) but within anticipation window are not coerced to never-treated",
+    "mapped_scenario": "anticipation_window_coercion",
+    "assertion_family": "anticipation controls whether late cohort is coerced to controls or remains treated; fast-requested path agrees with baseline",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

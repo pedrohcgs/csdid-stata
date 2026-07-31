@@ -1,0 +1,34 @@
+[
+  {
+    "event_key": "method_dripw_warning",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "method(dripw)",
+    "message_normalized": "csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)",
+    "canonical_behavior": "method=dr"
+  },
+  {
+    "event_key": "method_stdipw_warning",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "method(stdipw)",
+    "message_normalized": "csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)",
+    "canonical_behavior": "method=ipw"
+  },
+  {
+    "event_key": "asinr_warning",
+    "return_code": 0,
+    "event_type": "warning",
+    "offending_option": "asinr",
+    "message_normalized": "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet",
+    "canonical_behavior": "no-op"
+  },
+  {
+    "event_key": "wboot_mammen_error",
+    "return_code": 498,
+    "event_type": "error",
+    "offending_option": "wboot(wbtype(mammen))",
+    "message_normalized": "wboot() currently supports only R-compatible rademacher multipliers",
+    "canonical_behavior": "unsupported multiplier"
+  }
+]

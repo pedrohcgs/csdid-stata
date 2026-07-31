@@ -1,0 +1,73 @@
+{
+  "matrix_id": "F049",
+  "fixture_family": "performance-pathology",
+  "normative_source": "Frozen bench budgets in inst/spec/bench-budgets.yml",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D009"],
+  "tolerance_ids": "TOL007",
+  "inputs": [
+    {
+      "path": "inputs/small-smoke.csv",
+      "rows": 1000,
+      "columns": 8
+    },
+    {
+      "path": "inputs/medium-panel.csv",
+      "rows": 50000,
+      "columns": 8
+    },
+    {
+      "path": "inputs/medium-unbalanced.csv",
+      "rows": 48886,
+      "columns": 8
+    },
+    {
+      "path": "inputs/aggregation-medium.csv",
+      "rows": 4200,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f049/generate.R",
+      "path": "tools/parity/generators/f049/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/contract/budgets.csv",
+      "schema": "performance-budgets"
+    },
+    {
+      "path": "expected/contract/r-relative-budgets.csv",
+      "schema": "r-relative-performance-budgets"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "build/f049/results.csv",
+      "expected": "expected/contract/budgets.csv",
+      "tolerance_id": "TOL007",
+      "key_columns": "benchmark"
+    },
+    {
+      "actual": "build/f049/r-stata-ratio.csv",
+      "expected": "expected/contract/r-relative-budgets.csv",
+      "tolerance_id": "TOL007",
+      "key_columns": "benchmark"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Performance pathology gate for frozen small_smoke, balanced-panel, covariate DR, weighted IPW, clustered REG, literal unseeded default bootstrap+cband, seeded bootstrap, unbalanced covariate/weighted DR, all simple/group/calendar/dynamic aggregation, bootstrap aggregation, and supported csdid_plot saving() plot-data export budgets. The generated outcomes include a deterministic unit-by-time disturbance so analytical and bootstrap influence functions are nondegenerate. Stata enforces wall-clock budgets with timer and records c(memory) only as a legacy Stata memory-setting proxy; the opt-in process RSS gate writes measured peaks to build/memory-gate/results.csv. Large default rows verify the unified storage policy: every job, large or small, uses cache-backed lean storage, and storeall is the single opt-in that materializes e(inffunc), e(unit_group), and e(cluster_vec). Large lean clustered jobs avoid materializing e(cluster_vec) and use the Mata cache for postestimation. The option-surface rows require e(fast_used)=1 for covariate, weighted, clustered analytical, default-scale bootstrap, allow_unbalanced, aggregation, and plot-data paths, with compute_path identifying fast-balanced-panel, fast-repeated-cross-section, or fast-allow-unbalanced. The R-relative gate enforces <=1.8x R for non-bootstrap rows and the literal default bootstrap row, plus <=3x R hard gates for seeded bootstrap rows. Tiny aggregation and plot-data rows use repeated averaged timings on both R and Stata to avoid timer-resolution artifacts. Volatile per-run timing results are written to build/f049/results.csv instead of tracked fixtures."
+}

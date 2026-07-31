@@ -1,0 +1,14 @@
+[
+  {
+    "divergence_id": "RT002-DIV001",
+    "source_tests": "aggte simple influence function has correct length",
+    "reason": "The R source inspects an AGGTEobj aggregation influence-function list slot. The Stata public command currently exposes ATT(g,t) influence functions and saved RIF artifacts, but not aggregation-level influence-function objects from csdid_stats.",
+    "accepted_behavior": "Stata verifies public aggregation estimates, SEs, na_rm behavior, windows, metadata, and ATT(g,t) influence-function availability."
+  },
+  {
+    "divergence_id": "RT002-DIV002",
+    "source_tests": "aggte with cband=TRUE and bstrap=TRUE returns simultaneous critical value",
+    "reason": "The R source requests aggregation-level bootstrap and simultaneous-band critical values through aggte(). The Stata port currently verifies ATT(g,t) bootstrap metadata and analytical aggregation SEs; aggregation bootstrap critical values remain tracked by F014/F035.",
+    "accepted_behavior": "Stata verifies analytical simple/dynamic/group/calendar aggregation behavior and records bootstrap/cband metadata at the ATT(g,t) command level; aggregation bootstrap remains outside the closed RT002 surface."
+  }
+]

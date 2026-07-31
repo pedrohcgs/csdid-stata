@@ -1,0 +1,86 @@
+{
+  "matrix_id": "RT004",
+  "fixture_family": "r-always-treated-invariance",
+  "normative_source": "R did 2.5.1 tests/testthat/test-always-treated-invariance.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec",
+  "decision_refs": ["D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/p1.csv",
+      "rows": 400,
+      "columns": 5
+    },
+    {
+      "path": "inputs/p2.csv",
+      "rows": 375,
+      "columns": 5
+    },
+    {
+      "path": "inputs/p3.csv",
+      "rows": 375,
+      "columns": 5
+    },
+    {
+      "path": "inputs/fastslow.csv",
+      "rows": 625,
+      "columns": 5
+    },
+    {
+      "path": "inputs/structural.csv",
+      "rows": 625,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt004/generate.R",
+      "path": "tools/parity/generators/rt004/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R default",
+    "seeds": [2024, 11, 7, 99, 5]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "always-treated-invariance-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata keyed ATT(g,t) invariance checks and group-retention matrices",
+      "expected": "expected/contract/scenarios.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT004 maps all seven public always-treated invariance regression tests from R did to Stata public command behavior: not-yet-treated invariance with literal and anticipation-induced always-treated cohorts, scaling oracle, fast/baseline agreement, structural latest-cohort retention, and nevertreated fallback invariance."
+}

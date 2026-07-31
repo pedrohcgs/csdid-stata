@@ -1,0 +1,136 @@
+{
+  "matrix_id": "RT005",
+  "fixture_family": "r-att-gt",
+  "normative_source": "R did 2.5.1 tests/testthat/test-att_gt.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+  "decision_refs": ["D001", "D003", "D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/anticipation.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/dynamic-rc.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/dynamic.csv",
+      "rows": 4000,
+      "columns": 6
+    },
+    {
+      "path": "inputs/fixweights-constant.csv",
+      "rows": 3200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/fixweights-unbalanced.csv",
+      "rows": 3199,
+      "columns": 7
+    },
+    {
+      "path": "inputs/fixweights.csv",
+      "rows": 3200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/no-never.csv",
+      "rows": 2400,
+      "columns": 6
+    },
+    {
+      "path": "inputs/nonconsecutive.csv",
+      "rows": 4500,
+      "columns": 6
+    },
+    {
+      "path": "inputs/sim-data.csv",
+      "rows": 3200,
+      "columns": 6
+    },
+    {
+      "path": "inputs/small-groups.csv",
+      "rows": 2404,
+      "columns": 6
+    },
+    {
+      "path": "inputs/two-period.csv",
+      "rows": 2400,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced.csv",
+      "rows": 3199,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unequal-periods.csv",
+      "rows": 2000,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt005/generate.R",
+      "path": "tools/parity/generators/rt005/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "inherits_py003_public_dgp_inputs": true
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "r-att-gt-public-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "RT005 source-map and divergence accounting",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    },
+    {
+      "actual": "Stata public att_gt command gates",
+      "expected": "PY003-compatible public scenario gate",
+      "tolerance_id": "TOL002",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT005 maps the R did core att_gt test file to Stata public-command gates for estimation, aggregation, allow_unbalanced handling, not-yet-treated controls, anticipation, base periods, weights, fix_weights, influence functions, clustered SEs, fast/baseline equality, validation, and reserved column names. R function-valued custom estimator callback cases are recorded as approved divergences."
+}

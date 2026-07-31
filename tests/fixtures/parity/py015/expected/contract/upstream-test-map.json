@@ -1,0 +1,29 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_mboot_cluster.py",
+    "source_sha256": "1cfd3d4ecf4bf5b62b81a3b0096964664628398ad8d68b9c8183efb3f020d07c",
+    "source_test": "test_clustered_mboot_unbalanced_runs",
+    "mapped_scenario": "clustered_mboot_unbalanced",
+    "assertion_family": "clustered multiplier bootstrap produces at least one finite positive SE with unbalanced clusters",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_mboot_cluster.py",
+    "source_sha256": "1cfd3d4ecf4bf5b62b81a3b0096964664628398ad8d68b9c8183efb3f020d07c",
+    "source_test": "test_clustered_mboot_balanced_runs",
+    "mapped_scenario": "clustered_mboot_balanced",
+    "assertion_family": "clustered multiplier bootstrap produces at least one finite positive SE with balanced clusters",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_mboot_cluster.py",
+    "source_sha256": "1cfd3d4ecf4bf5b62b81a3b0096964664628398ad8d68b9c8183efb3f020d07c",
+    "source_test": "test_clustering_validation_rejects_multiple_clustervars",
+    "mapped_scenario": "reject_multiple_bootstrap_cluster_variables",
+    "assertion_family": "public bootstrap cluster declaration rejects multiple cluster variables",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

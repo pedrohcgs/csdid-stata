@@ -1,0 +1,104 @@
+{
+  "matrix_id": "PY004",
+  "fixture_family": "python-cluster-analytic",
+  "normative_source": "Python csdid csdid/test_csdid/test_cluster_analytic.py subordinate to R did 2.5.1 clustered inference behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D013"
+  ],
+  "tolerance_ids": [
+    "TOL002",
+    "TOL003",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/clustered-shocks-404.csv",
+      "rows": 828,
+      "columns": 5
+    },
+    {
+      "path": "inputs/clustered-shocks-505.csv",
+      "rows": 828,
+      "columns": 5
+    },
+    {
+      "path": "inputs/clustered-shocks-606.csv",
+      "rows": 828,
+      "columns": 5
+    },
+    {
+      "path": "inputs/clustered-shocks-707.csv",
+      "rows": 828,
+      "columns": 5
+    },
+    {
+      "path": "inputs/clustered-shocks-808.csv",
+      "rows": 828,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py004/generate.py",
+      "path": "tools/parity/generators/py004/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "numpy.random.default_rng",
+    "seeds": [
+      404,
+      505,
+      606,
+      707,
+      808
+    ],
+    "bootstrap_draw_parity": false
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/scenarios.csv",
+      "schema": "cluster-analytic-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata clustered analytical SE run/contrast/aggregation checks",
+      "expected": "mapped Python cluster analytic assertions",
+      "tolerance_id": "TOL002",
+      "key_columns": [
+        "source_test"
+      ]
+    },
+    {
+      "actual": "Stata clustered bootstrap-vs-analytical SE checks",
+      "expected": "mapped Python slow bootstrap assertions",
+      "tolerance_id": "TOL003",
+      "key_columns": [
+        "scenario"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "PY004 maps all public assertions and parameterizations in Python test_cluster_analytic.py: clustered-vs-iid analytical SE differences, clustered analytical runs, simple/group/dynamic aggregation propagation, panel and repeated-cross-section bootstrap-vs-analytical broad agreement, repeated-cross-section requested-fast optimized equivalence against nofast, and all-method clustered analytical aggregation smoke."
+}

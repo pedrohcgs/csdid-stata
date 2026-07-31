@@ -1,0 +1,88 @@
+{
+  "matrix_id": "F030",
+  "fixture_family": "data-types-and-names",
+  "normative_source": "R did 2.5.1 validation plus Stata command-surface mapping",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D001", "D010"],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 144,
+      "columns": 7
+    },
+    {
+      "path": "inputs/internal-names.csv",
+      "rows": 144,
+      "columns": 8
+    },
+    {
+      "path": "inputs/group-time-names.csv",
+      "rows": 144,
+      "columns": 7
+    },
+    {
+      "path": "inputs/output-names.csv",
+      "rows": 144,
+      "columns": 14
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f030/generate.R",
+      "path": "tools/parity/generators/f030/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/name-collision-attgt.csv",
+      "schema": "attgt-with-scenario"
+    },
+    {
+      "path": "expected/r/events.csv",
+      "schema": "error-warning-events-csv"
+    },
+    {
+      "path": "expected/r/events.json",
+      "schema": "error-warning-events"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata ATT(g,t) with non-default variable names and numeric storage classes",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "Stata ATT(g,t) when user variables collide with internal names and output names",
+      "expected": "expected/r/name-collision-attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "method", "group", "time"]
+    },
+    {
+      "actual": "Stata captured data-type validation events",
+      "expected": "expected/r/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "F030 data-type and name fixture for numeric id/time/gvar storage classes, non-default variable names, numeric controls, e() name preservation, user variables named idname/tname/gname with a harmless t1 column, user variables named group/time/unit across dr/reg/ipw, output-name covariates named att/se/event_time/overall_att across dr/reg/ipw, and explicit string outcome/covariate/ivar/time/gvar/cluster rejection. Broader inherited name-normalization stress remains tracked by RT/PY rows."
+}

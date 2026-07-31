@@ -1,0 +1,2 @@
+"relation","lhs_scenario","rhs_scenario","agg_type","expectation","min_abs_se_delta"
+"clustered_same_equals_inherited","clustered_same_override","clustered_inherited","dynamic","equal",0

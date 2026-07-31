@@ -1,0 +1,128 @@
+{
+  "matrix_id": "RT006",
+  "fixture_family": "r-audit-fixes",
+  "normative_source": "R did 2.5.1 tests/testthat/test-audit-fixes.R",
+  "source_commit": "622d7cec474790934cdaeb68c82c5c38c0711426",
+  "source_sha256": "c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4",
+  "decision_refs": ["D001", "D004", "D014"],
+  "tolerance_ids": ["TOL002", "EXACT"],
+  "inputs": [
+    {
+      "path": "inputs/balanced-seed1.csv",
+      "rows": 600,
+      "columns": 4
+    },
+    {
+      "path": "inputs/balanced-seed2.csv",
+      "rows": 600,
+      "columns": 4
+    },
+    {
+      "path": "inputs/balanced-seed3.csv",
+      "rows": 600,
+      "columns": 4
+    },
+    {
+      "path": "inputs/mpdta.csv",
+      "rows": 2500,
+      "columns": 6
+    },
+    {
+      "path": "inputs/negative-g.csv",
+      "rows": 480,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt006/generate.R",
+      "path": "tools/parity/generators/rt006/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "R default",
+    "seeds": [1, 2, 3, 5]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/r/fixweights-attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/fixweights-aggte.csv",
+      "schema": "aggte"
+    },
+    {
+      "path": "expected/r/normal-aggte.csv",
+      "schema": "aggte"
+    },
+    {
+      "path": "expected/r/calendar-ignored.csv",
+      "schema": "aggte"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata fix_weights ATT(g,t)",
+      "expected": "expected/r/fixweights-attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Stata fix_weights aggregation",
+      "expected": "expected/r/fixweights-aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "type", "seq"]
+    },
+    {
+      "actual": "Stata mpdta aggregation",
+      "expected": "expected/r/normal-aggte.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "type", "seq"]
+    },
+    {
+      "actual": "Stata calendar ignored-window aggregation",
+      "expected": "expected/r/calendar-ignored.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "type", "seq"]
+    },
+    {
+      "actual": "Mapped source tests",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "source_test"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "RT006 maps public R audit-fix behavior for fix_weights(varying), aggregation guards, negative gvar rejection, and calendar ignored-window warnings. If the installed did oracle exhibits the known pre-audit doubled-SE behavior, the expected fix_weights(varying) SEs are normalized by the source-test invariant before comparison. The fix_weights(varying) fast request now uses the optimized path; the remaining approved divergence records only R-only non-exported parallel multiplier-bootstrap helper internals."
+}

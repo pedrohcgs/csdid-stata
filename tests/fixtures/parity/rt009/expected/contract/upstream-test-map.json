@@ -1,0 +1,29 @@
+[
+  {
+    "source_file": "tests/testthat/test-conditional-did-pretest.R",
+    "source_sha256": "c09ea5dce40d692776f14ac6b53de39100f9d25f38bd5db87ea182daafdc83b7",
+    "source_test": "conditional did pre-test",
+    "mapped_scenario": "r-conditional-pretest-public-helper-only",
+    "assertion_family": "R conditional_did_pretest() CvM/CvMcval helper output has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT009-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-conditional-did-pretest.R",
+    "source_sha256": "c09ea5dce40d692776f14ac6b53de39100f9d25f38bd5db87ea182daafdc83b7",
+    "source_test": "pretest setup-bundle/y-override path is bit-identical to the legacy data-copy loop",
+    "mapped_scenario": "r-conditional-pretest-public-helper-only",
+    "assertion_family": "R conditional_did_pretest() precompute/legacy exact helper-path equality has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT009-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-conditional-did-pretest.R",
+    "source_sha256": "c09ea5dce40d692776f14ac6b53de39100f9d25f38bd5db87ea182daafdc83b7",
+    "source_test": "conditional pre-test CvM is on the bootstrap scale (R>=4.0 orientation regression)",
+    "mapped_scenario": "r-conditional-pretest-public-helper-only",
+    "assertion_family": "R conditional_did_pretest() bootstrap-scale orientation regression has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT009-DIV001"
+  }
+]

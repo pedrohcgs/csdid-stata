@@ -1,0 +1,8 @@
+"scenario","input","expected_behavior"
+"p1_notyet_full_vs_drop_always","p1.csv","ATT(g,t) common-cell missingness and finite values are invariant after dropping literal always-treated units across dr/reg/ipw and requested-fast modes"
+"p2_anticipation_full_vs_drop_effectively_always","p2.csv","ATT(g,t) common-cell missingness and finite values are invariant after dropping anticipation-promoted always-treated units"
+"p3_anticipation_late_cohort_full_vs_drop_effectively_always","p3.csv","ATT(g,t) common-cell missingness and finite values are invariant after dropping anticipation-promoted always-treated units when a late cohort remains treated"
+"p1_notyet_scaled_always_outcomes","p1.csv","ATT(g,t) values are invariant when outcomes for always-treated units are rescaled"
+"fastslow_notyet_fast_vs_baseline","fastslow.csv","Requested-fast and baseline paths agree in the no-never plus always-treated regime"
+"structural_latest_cohort_retained_as_control","structural.csv","Latest cohort remains in comparison data but is excluded from estimated ATT groups; always-treated cohort is dropped"
+"nevertreated_fallback_full_vs_drop_always","p1.csv","Default nevertreated branch/fallback is invariant to literal always-treated units"

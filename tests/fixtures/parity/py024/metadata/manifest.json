@@ -1,0 +1,82 @@
+{
+  "matrix_id": "PY024",
+  "fixture_family": "python-validation",
+  "normative_source": "Python csdid csdid/test_csdid/test_validation.py subordinate to R did 2.5.1 validation behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D010",
+    "D014"
+  ],
+  "tolerance_ids": [
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/sample.csv",
+      "rows": 200,
+      "columns": 4
+    },
+    {
+      "path": "inputs/negative-weight.csv",
+      "rows": 200,
+      "columns": 5
+    },
+    {
+      "path": "inputs/duplicate.csv",
+      "rows": 201,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py024/generate.py",
+      "path": "tools/parity/generators/py024/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 42,
+    "kind": "numpy.random.seed",
+    "draws": "randn"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/valid-scenarios.csv",
+      "schema": "validation-valid-scenarios"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata captured validation return codes and messages",
+      "expected": "source-test-map mapped scenarios",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "reason": "Python-only reserved internal column names w and rowid do not map to Stata's command surface; Stata allows user variables with those names unless they conflict with explicit option variables. All other source validation tests are mapped to Stata diagnostics."
+  },
+  "scope_note": "PY024 maps 20 validation tests to Stata diagnostics and valid-run checks. Two Python internal reserved-name tests are approved divergences because Stata has no hidden w/rowid data-column reservation in this command surface."
+}

@@ -1,0 +1,2 @@
+divergence_id,source_tests,reason,accepted_behavior
+PY003-DIV001,test_custom_est_method,The Python source accepts a callable est_method object and compares it against the built-in reg estimator. Stata commands do not expose a public callback surface that accepts user-supplied ATT and influence-function computations.,"Stata verifies built-in dr/reg/ipw methods, method validation, and public fast/baseline equality through PY003, PY009, RT012, and F032. Custom user callbacks are outside the frozen public Stata command profile."

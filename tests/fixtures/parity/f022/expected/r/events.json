@@ -1,0 +1,9 @@
+[
+  {
+    "event_key": "negative_gvar",
+    "return_code": 198,
+    "event_type": "error",
+    "offending_option": "gvar(g)",
+    "message_normalized": "gvar() negative values are not supported; gvar() must be 0 for never-treated units and 1 or more for treated cohorts. Shift the cohort and time axes so both start at 1 (for example, replace g = g - min_period + 1 for treated units and t = t - min_period + 1); a monotone relabelling of the periods leaves the estimates unchanged."
+  }
+]

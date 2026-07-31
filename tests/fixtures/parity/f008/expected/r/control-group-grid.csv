@@ -1,0 +1,13 @@
+"control_group","group","time","event_time","att","se","base_period","est_method","panel_mode","sample_n","inffunc_col"
+"nevertreated",3,2,-1,-1.11022302462516e-16,,"varying","reg","panel",192,1
+"nevertreated",3,3,0,0.89,,"varying","reg","panel",192,2
+"nevertreated",3,4,1,0.45,0.0325960120260132,"varying","reg","panel",192,3
+"nevertreated",4,2,-2,0.22,,"varying","reg","panel",192,4
+"nevertreated",4,3,-1,0.22,,"varying","reg","panel",192,5
+"nevertreated",4,4,0,-0.06,0.0325960120260132,"varying","reg","panel",192,6
+"notyettreated",3,2,-1,-0.11,0.0194454364826301,"varying","reg","panel",192,1
+"notyettreated",3,3,0,0.78,0.0194454364826301,"varying","reg","panel",192,2
+"notyettreated",3,4,1,0.45,0.0325960120260132,"varying","reg","panel",192,3
+"notyettreated",4,2,-2,0.22,,"varying","reg","panel",192,4
+"notyettreated",4,3,-1,0.22,,"varying","reg","panel",192,5
+"notyettreated",4,4,0,-0.06,0.0325960120260132,"varying","reg","panel",192,6

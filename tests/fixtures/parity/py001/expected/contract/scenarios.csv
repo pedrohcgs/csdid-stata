@@ -1,0 +1,47 @@
+scenario,family,expected_behavior
+simple-valid-overall-att,base,simple overall ATT is finite and near one
+simple-valid-se,base,simple overall SE is positive and finite
+simple-no-egt,base,simple aggregation has no event/group/calendar egt component
+dynamic-event-times,base,dynamic aggregation has pre and post event times
+dynamic-sorted,base,dynamic event times are sorted
+dynamic-overall-att,base,dynamic overall ATT is finite and near one
+dynamic-min-e,base,dynamic min_e filters event times
+dynamic-max-e,base,dynamic max_e filters event times
+dynamic-min-max,base,dynamic min_e/max_e jointly filter event times
+dynamic-balance-e,base,dynamic balance_e does not increase event-count
+dynamic-positive-se,base,dynamic SEs are positive where ATT is nonmissing
+group-per-group,base,group aggregation returns treatment-group rows
+group-overall-att,base,group overall ATT is finite and near one
+group-positive-se,base,group SEs are positive where ATT is nonmissing
+calendar-periods,base,calendar aggregation returns period rows
+calendar-overall-att,base,calendar overall ATT is finite and near one
+calendar-positive-se,base,calendar SEs are positive where ATT is nonmissing
+calendar-post-treatment-only,base,calendar rows are post-treatment periods
+na-rm-drops-na,base,na_rm drops injected missing ATT and returns finite overall ATT
+preserves-overridden-settings,base,aggregation preserves analytical/level settings through public metadata
+return-dict-simple,type-structure,simple returns e(aggte)
+didparams-simple,type-metadata,simple exposes e() metadata
+return-dict-dynamic,type-structure,dynamic returns e(aggte)
+didparams-dynamic,type-metadata,dynamic exposes e() metadata
+return-dict-group,type-structure,group returns e(aggte)
+didparams-group,type-metadata,group exposes e() metadata
+return-dict-calendar,type-structure,calendar returns e(aggte)
+didparams-calendar,type-metadata,calendar exposes e() metadata
+simple-across-methods-dr,cross-method,simple aggregation valid across methods
+dynamic-across-methods-dr,cross-method,dynamic aggregation valid across methods
+group-across-methods-dr,cross-method,group aggregation valid across methods
+calendar-across-methods-dr,cross-method,calendar aggregation valid across methods
+balance-e-across-methods-dr,cross-method,balance_e filters across methods
+na-rm-across-methods-dr,cross-method,na_rm works across methods
+simple-across-methods-reg,cross-method,simple aggregation valid across methods
+dynamic-across-methods-reg,cross-method,dynamic aggregation valid across methods
+group-across-methods-reg,cross-method,group aggregation valid across methods
+calendar-across-methods-reg,cross-method,calendar aggregation valid across methods
+balance-e-across-methods-reg,cross-method,balance_e filters across methods
+na-rm-across-methods-reg,cross-method,na_rm works across methods
+simple-across-methods-ipw,cross-method,simple aggregation valid across methods
+dynamic-across-methods-ipw,cross-method,dynamic aggregation valid across methods
+group-across-methods-ipw,cross-method,group aggregation valid across methods
+calendar-across-methods-ipw,cross-method,calendar aggregation valid across methods
+balance-e-across-methods-ipw,cross-method,balance_e filters across methods
+na-rm-across-methods-ipw,cross-method,na_rm works across methods

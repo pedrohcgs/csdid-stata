@@ -1,0 +1,8 @@
+[
+  {
+    "divergence_id": "RT020-DIV001",
+    "source_tests": "panel_dt/rc_dt cases in test-mutation-safety.R",
+    "reason": "R distinguishes data.frame and data.table object mutation. Stata exposes one active dataset/frame object rather than separate data.frame/data.table classes.",
+    "accepted_behavior": "Stata verifies that active dataset variable names, values, and row order are unchanged for panel and repeated-cross-section inputs with and without requested fast mode."
+  }
+]

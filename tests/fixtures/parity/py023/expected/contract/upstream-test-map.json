@@ -1,0 +1,83 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_column_named_t1_does_not_crash",
+    "mapped_scenario": "mpdta_t1_column",
+    "assertion_family": "mpdta not-yet-treated regression runs before and after adding a harmless t1 column",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_missing_covariates",
+    "mapped_scenario": "mpdta_missing_covariate",
+    "assertion_family": "missing covariate row is handled by complete-case preprocessing and estimation succeeds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_fewer_periods_than_groups",
+    "mapped_scenario": "fewer_periods_main",
+    "assertion_family": "fewer observed periods than treatment groups gives expected ATT slice and nonmissing aggregations",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_zero_pretreatment_outcomes",
+    "mapped_scenario": "zero_pretreatment",
+    "assertion_family": "pre-treatment ATT for group 9 at time 7 is zero under universal and varying base periods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_variables_not_in_dataset",
+    "mapped_scenario": "missing_formula_variable",
+    "assertion_family": "unknown covariate variable is rejected",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_anticipation_window_coercion",
+    "mapped_scenario": "anticipation_window",
+    "assertion_family": "anticipation controls whether late cohort is coerced to controls or remains treated",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_fewer_periods_than_groups_all_methods[dr]",
+    "mapped_scenario": "fewer_periods_dr",
+    "assertion_family": "fewer-periods design returns finite ATT and nonmissing dynamic overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_fewer_periods_than_groups_all_methods[reg]",
+    "mapped_scenario": "fewer_periods_reg",
+    "assertion_family": "fewer-periods design returns finite ATT and nonmissing dynamic overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "csdid/test_csdid/test_user_bug_fixes.py",
+    "source_sha256": "48f8fa1d991d14a0739c359fd16477e2497c4c6f5385b2b92ec698389ec3f6fc",
+    "source_test": "test_fewer_periods_than_groups_all_methods[ipw]",
+    "mapped_scenario": "fewer_periods_ipw",
+    "assertion_family": "fewer-periods design returns finite ATT and nonmissing dynamic overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

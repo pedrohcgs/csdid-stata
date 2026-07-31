@@ -1,0 +1,89 @@
+{
+  "matrix_id": "PY010",
+  "fixture_family": "python-plotting-public-surface",
+  "normative_source": "Python csdid csdid/test_csdid/test_ggdid.py subordinate to R did 2.5.1 plotting behavior",
+  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "decision_refs": [
+    "D004",
+    "D015"
+  ],
+  "tolerance_ids": [
+    "TOL005",
+    "EXACT"
+  ],
+  "inputs": [
+    {
+      "path": "inputs/sim-ggdid.csv",
+      "rows": 1200,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "Python",
+      "command": "python3 tools/parity/generators/py010/generate.py",
+      "path": "tools/parity/generators/py010/generate.py"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3",
+      "package_versions": {
+        "numpy": "2.4.4",
+        "pandas": "3.0.2"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20260401,
+    "kind": "numpy.default_rng",
+    "draws": "standard_normal"
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/plot-scenarios.csv",
+      "schema": "plot-scenario-contract"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata csdid_plot ATT(g,t) and aggregation plot-data files",
+      "expected": "expected/contract/plot-scenarios.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "scenario"
+      ]
+    },
+    {
+      "actual": "Stata diagnostics for invalid group and unsupported style options",
+      "expected": "expected/contract/approved-divergence.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "divergence_id"
+      ]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv",
+    "reason": "Python matplotlib styling and invalid-group behavior do not override the R did plotting contract."
+  },
+  "scope_note": "PY010 maps Python plotting object-creation tests to Stata csdid_plot plot-data export for ATT(g,t), single-group filtering, and dynamic/group/calendar aggregation. Approved divergence records Python/matplotlib styling options and the Python invalid-group raising behavior, because the Stata port follows R did plot-data and invalid-group warning semantics."
+}

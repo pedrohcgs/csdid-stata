@@ -1,0 +1,12 @@
+{
+  "matrix_id": "F050",
+  "fixture_family": "clean-install-portability",
+  "checks": {
+    "build_script_runs": true,
+    "net_install_source": "local checkout",
+    "sysdir_plus_is_temporary": true,
+    "sysdir_personal_is_temporary": true,
+    "installed_files": ["csdid.ado", "csdid_estat.ado", "csdid_stats.ado", "csdid_plot.ado", "csdid.mata", "csdid.sthlp", "csdid_postestimation.sthlp", "csdid_estat.sthlp", "csdid_stats.sthlp", "csdid_plot.sthlp"],
+    "smoke_commands": ["csdid", "csdid_stats simple", "csdid saverif"]
+  }
+}

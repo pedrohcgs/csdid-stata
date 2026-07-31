@@ -1,0 +1,156 @@
+[
+  {
+    "surface": "csdid",
+    "option": "ivar/time/gvar",
+    "target_classification": "retain",
+    "current_behavior": "accepted",
+    "evidence": "F001-F002/F030"
+  },
+  {
+    "surface": "csdid",
+    "option": "omitted ivar",
+    "target_classification": "retain",
+    "current_behavior": "accepted",
+    "evidence": "F018"
+  },
+  {
+    "surface": "csdid",
+    "option": "notyet",
+    "target_classification": "retain",
+    "current_behavior": "accepted",
+    "evidence": "F008"
+  },
+  {
+    "surface": "csdid",
+    "option": "method(dripw)",
+    "target_classification": "soft-deprecated alias",
+    "current_behavior": "accepted maps to dr",
+    "evidence": "F010/F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "method(stdipw)",
+    "target_classification": "soft-deprecated alias",
+    "current_behavior": "accepted maps to ipw",
+    "evidence": "F010/F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "asinr",
+    "target_classification": "accepted no-op warning",
+    "current_behavior": "accepted warning",
+    "evidence": "F017/F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "bal()/balance()",
+    "target_classification": "soft-deprecated alias",
+    "current_behavior": "accepted warning",
+    "evidence": "F017/F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "long/long2",
+    "target_classification": "deprecated universal-base event-study alias",
+    "current_behavior": "accepted warning",
+    "evidence": "F017/F036/JEL"
+  },
+  {
+    "surface": "csdid",
+    "option": "dryrun",
+    "target_classification": "unsupported-by-design",
+    "current_behavior": "explicit error",
+    "evidence": "F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "agg()",
+    "target_classification": "retain event wrapper; defer other types to csdid_stats",
+    "current_behavior": "agg(event) accepted; other types error",
+    "evidence": "F025/F036/JEL"
+  },
+  {
+    "surface": "csdid",
+    "option": "pscoretrim()",
+    "target_classification": "retain",
+    "current_behavior": "accepted with validation",
+    "evidence": "F033/F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "from()/window()",
+    "target_classification": "postestimation window mapping",
+    "current_behavior": "unsupported option error",
+    "evidence": "F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "wboot aliases",
+    "target_classification": "retain as R-compatible aliases",
+    "current_behavior": "partial F035 support",
+    "evidence": "F035/F036"
+  },
+  {
+    "surface": "csdid",
+    "option": "cluster()",
+    "target_classification": "retain analytical; bootstrap later",
+    "current_behavior": "partial F015/F016 support",
+    "evidence": "F015/F016"
+  },
+  {
+    "surface": "csdid",
+    "option": "id()",
+    "target_classification": "Stata-style alias",
+    "current_behavior": "accepted as ivar()",
+    "evidence": "F051"
+  },
+  {
+    "surface": "csdid",
+    "option": "notyettreated/nevertreated",
+    "target_classification": "Stata-style aliases",
+    "current_behavior": "accepted and conflict-checked",
+    "evidence": "F051"
+  },
+  {
+    "surface": "csdid",
+    "option": "vce(cluster)",
+    "target_classification": "Stata-style alias",
+    "current_behavior": "accepted as cluster()",
+    "evidence": "F051"
+  },
+  {
+    "surface": "csdid",
+    "option": "wboot shorthand",
+    "target_classification": "Stata-style alias",
+    "current_behavior": "accepted as wboot(reps()/seed()/rseed())",
+    "evidence": "F035/F051"
+  },
+  {
+    "surface": "csdid",
+    "option": "saverif()",
+    "target_classification": "retain",
+    "current_behavior": "partial F034 support",
+    "evidence": "F034"
+  },
+  {
+    "surface": "csdid_stats",
+    "option": "min_e/max_e/balance_e/na_rm",
+    "target_classification": "retain",
+    "current_behavior": "partial F025/F051 support",
+    "evidence": "F025/F036/F051"
+  },
+  {
+    "surface": "csdid_estat",
+    "option": "tidy/glance saving replace",
+    "target_classification": "retain",
+    "current_behavior": "partial F027/F051 support",
+    "evidence": "F027/F036/F051"
+  },
+  {
+    "surface": "csdid_plot",
+    "option": "saving/group",
+    "target_classification": "retain",
+    "current_behavior": "partial F028 support",
+    "evidence": "F028/F036"
+  }
+]

@@ -1,0 +1,416 @@
+[
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "att_gt works w/o dynamics, time effects, or group effects",
+    "mapped_scenario": "basic-covariate-panel",
+    "assertion_family": "Stata dr/reg panel covariate ATT(g,t) cells are finite and near the simulated effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "att_gt works using ipw",
+    "mapped_scenario": "basic-no-covariate-panel-ipw",
+    "assertion_family": "Stata dr/ipw panel no-covariate ATT(g,t) cells are finite and near the simulated effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "two period case",
+    "mapped_scenario": "two-period-aggregation",
+    "assertion_family": "Stata simple/group/dynamic/calendar aggregation is finite and near the simulated two-period effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "no covariates case",
+    "mapped_scenario": "no-covariates",
+    "assertion_family": "Stata dr/reg no-covariate panel ATT(g,t) cells are finite and near the simulated effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "repeated cross section",
+    "mapped_scenario": "repeated-cross-section",
+    "assertion_family": "Stata dr/reg repeated-cross-section ATT(g,t) cells are finite and near the simulated effect",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "ipw repeated cross sections",
+    "mapped_scenario": "ipw-repeated-cross-section",
+    "assertion_family": "Stata dr/ipw repeated-cross-section ATT(g,t) cells are finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "repeated cross sections dynamic effects",
+    "mapped_scenario": "rc-dynamic-effects",
+    "assertion_family": "Stata repeated-cross-section dynamic aggregation tracks the exposure-varying DGP",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "unbalanced panel",
+    "mapped_scenario": "allow_unbalanced",
+    "assertion_family": "Stata unbalanced ivar() data routes through the owner-directed allow_unbalanced path",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "not yet treated comparison group",
+    "mapped_scenario": "notyettreated-and-no-never",
+    "assertion_family": "Stata not-yet-treated controls and no-never fallback are finite and diagnostic messages are emitted",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "aggregations",
+    "mapped_scenario": "aggregation-dynamic-group-calendar-balance",
+    "assertion_family": "Stata aggregation surfaces cover dynamic/group/calendar plus balance_e behavior",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "unequally spaced groups",
+    "mapped_scenario": "unequally-spaced-groups",
+    "assertion_family": "Stata nonconsecutive time-period dynamic aggregation is finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "some units treated in first period",
+    "mapped_scenario": "first-period-treated-warning",
+    "assertion_family": "Stata drops first-period-treated units with a diagnostic",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "min and max length of exposures",
+    "mapped_scenario": "dynamic-min-max-window",
+    "assertion_family": "Stata dynamic min_e/max_e windowing respects requested exposure bounds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "anticipation",
+    "mapped_scenario": "anticipation-dynamic",
+    "assertion_family": "Stata anticipation changes dynamic event-time effects as expected",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "significance level and uniform confidence bands",
+    "mapped_scenario": "level-and-cband",
+    "assertion_family": "Stata cband/pointwise critical-value metadata is coherent",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "malformed data",
+    "mapped_scenario": "malformed-data-validation",
+    "assertion_family": "Stata invalid id variable and malformed inputs fail clearly",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "varying or universal base period",
+    "mapped_scenario": "varying-vs-universal-base",
+    "assertion_family": "Stata varying and universal base-period dynamic aggregations are finite",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "small groups",
+    "mapped_scenario": "small-treated-groups",
+    "assertion_family": "Stata small treated groups warn while other cells remain estimable",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "small comparison group",
+    "mapped_scenario": "small-comparison-group",
+    "assertion_family": "Stata small comparison-group behavior is covered by warning/error and not-yet-treated gates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "custom estimation method",
+    "mapped_scenario": "r-custom-estimator-callback",
+    "assertion_family": "R function-valued est_method callbacks have no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT005-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "sampling weights",
+    "mapped_scenario": "sampling-weights",
+    "assertion_family": "Stata unit weights match the unweighted subset result",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "works when user column is literally named 'gname'",
+    "mapped_scenario": "reserved-column-names",
+    "assertion_family": "Stata supports user columns literally named like API argument names",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "works when user column is literally named 'gname' with faster_mode",
+    "mapped_scenario": "reserved-column-names-fast",
+    "assertion_family": "Stata reserved-name behavior is covered together with fast/baseline equality gates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "time-varying weights: faster_mode matches slow mode (default fix_weights=NULL)",
+    "mapped_scenario": "time-varying-weights-fast",
+    "assertion_family": "Stata requested fast path matches standard path under time-varying weights",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "fix_weights options: faster_mode matches slow mode (balanced panel)",
+    "mapped_scenario": "fixweights-balanced-fast",
+    "assertion_family": "Stata fix_weights modes produce finite balanced-panel results and fast equality",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "time-invariant weights: all fix_weights options produce identical ATTs",
+    "mapped_scenario": "fixweights-time-invariant",
+    "assertion_family": "Stata time-invariant weights produce identical ATT(g,t) values across fixed-weight modes",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "message emitted for time-varying weights in balanced panel",
+    "mapped_scenario": "time-varying-weight-message",
+    "assertion_family": "Stata emits the frozen time-varying-weight diagnostic",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "no message for time-invariant weights",
+    "mapped_scenario": "time-invariant-weight-no-message",
+    "assertion_family": "Stata emits no time-varying-weight diagnostic for time-invariant weights",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "notyettreated with time-varying weights: faster_mode matches",
+    "mapped_scenario": "notyettreated-time-varying-weights-fast",
+    "assertion_family": "Stata requested fast path matches standard path for not-yet-treated time-varying weights",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "RC with time-varying weights: faster_mode matches",
+    "mapped_scenario": "rc-time-varying-weights-fast",
+    "assertion_family": "Stata requested fast path matches standard path for repeated-cross-section time-varying weights",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "fix_weights validation",
+    "mapped_scenario": "fixweights-validation-custom-callback",
+    "assertion_family": "Stata validates invalid fix_weights values and unsupported repeated-cross-section fixed modes; R custom callback subcases diverge",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT005-DIV002"
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "unbalanced panel fix_weights with units missing from reference period",
+    "mapped_scenario": "fixweights-unbalanced-reference-period",
+    "assertion_family": "Stata unbalanced fixed-weight reference-period behavior is finite under allow_unbalanced routing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "IF consistency: balanced panel, all fix_weights x est_method x base_period",
+    "mapped_scenario": "if-consistency-balanced",
+    "assertion_family": "Stata fast/baseline equality preserves ATT(g,t) and influence-function summaries for balanced panels",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "IF consistency: balanced panel, notyettreated control group",
+    "mapped_scenario": "if-consistency-notyettreated",
+    "assertion_family": "Stata fast/baseline equality preserves ATT(g,t) and influence-function summaries for not-yet-treated panels",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "IF consistency: repeated cross-sections, default weights x est_method",
+    "mapped_scenario": "if-consistency-rc",
+    "assertion_family": "Stata fast/baseline equality preserves ATT(g,t) and influence-function summaries for repeated cross-sections",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "IF consistency: unbalanced panel, default weights x est_method",
+    "mapped_scenario": "if-consistency-unbalanced",
+    "assertion_family": "Stata fast/baseline equality preserves ATT(g,t) and influence-function summaries for unbalanced panels",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "IF consistency: no covariates (xformla=~1), all data types",
+    "mapped_scenario": "if-consistency-no-covariates",
+    "assertion_family": "Stata fast/baseline equality preserves ATT(g,t) and influence-function summaries without covariates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "clustered standard errors",
+    "mapped_scenario": "clustered-se",
+    "assertion_family": "Stata clustered analytical SE metadata and positive SEs are verified",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster mode enabled for panel data",
+    "mapped_scenario": "fast-panel",
+    "assertion_family": "Stata requested fast path equals standard path for panel data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster model enabled for repeated cross sectional data",
+    "mapped_scenario": "fast-rc",
+    "assertion_family": "Stata requested fast path equals standard path for repeated cross-sections",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster model enabled for unbalanced panel data and time-varying covariates",
+    "mapped_scenario": "fast-unbalanced-time-varying",
+    "assertion_family": "Stata requested fast path equals standard path for unbalanced panels with time-varying covariates",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster_mode = TRUE matches baseline on filtered sim dataset when there are not subsequent cohort and time periods",
+    "mapped_scenario": "fast-filtered-sim",
+    "assertion_family": "Stata requested fast path equals standard path on filtered simulation data",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster_mode time indexing matches baseline with repeated cross-sections",
+    "mapped_scenario": "fast-time-indexing-rc",
+    "assertion_family": "Stata requested fast path equals standard path for repeated-cross-section time indexing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster_mode time indexing matches baseline with panel data and varying base period",
+    "mapped_scenario": "fast-time-indexing-panel",
+    "assertion_family": "Stata requested fast path equals standard path for panel time indexing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster_mode time indexing with non-consecutive time periods",
+    "mapped_scenario": "fast-time-indexing-nonconsecutive",
+    "assertion_family": "Stata requested fast path equals standard path for nonconsecutive time periods",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-att_gt.R",
+    "source_sha256": "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c",
+    "source_test": "faster_mode time indexing with universal base period",
+    "mapped_scenario": "fast-time-indexing-universal",
+    "assertion_family": "Stata requested fast path equals standard path for universal-base time indexing",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

@@ -1,0 +1,12 @@
+source_file,source_sha256,source_test,mapped_scenario,assertion_family,coverage_status,divergence_id
+tests/testthat/test-jel_replication.R,7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054,JEL Table 7: 2x2 CS-DiD point estimates match,jel009 (jel-table7-artifact-contract),published-article-values,mapped,
+tests/testthat/test-jel_replication.R,7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054,"JEL 2xT: event study ATT(g,t) point estimates match","jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",published-article-values,mapped,
+tests/testthat/test-jel_replication.R,7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054,JEL 2xT: event study with covariates matches across methods,"jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",published-article-values,mapped,
+tests/testthat/test-jel_replication.R,7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054,JEL GxT: staggered event study without covariates matches,"jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",published-article-values,mapped,
+tests/testthat/test-jel_replication.R,7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054,JEL GxT: staggered event study with DR covariates matches,"jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",published-article-values,mapped,
+tests/testthat/test-jel_replication.R,7538c16e888105bd5c4aa30ad9d735a4f2612780eae844ca22312cfc94b9e054,JEL: faster_mode matches regular mode,n/a -- csdid has a single engine,engine-invariance,mapping,JEL-MAP001
+csdid/test_csdid/test_jel_replication.py,0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32,test_jel_table7_2x2,jel009 (jel-table7-artifact-contract),published-article-values,mapped,
+csdid/test_csdid/test_jel_replication.py,0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32,test_jel_2xt_event_study,"jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",published-article-values,mapped,
+csdid/test_csdid/test_jel_replication.py,0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32,test_jel_2xt_with_covariates,"jel011-jel013 (figures 2-4, JEL script 3_2XT.R)",published-article-values,mapped,
+csdid/test_csdid/test_jel_replication.py,0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32,test_jel_gxt_no_covs,"jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",published-article-values,mapped,
+csdid/test_csdid/test_jel_replication.py,0eba34481cb0fdacf92b81040430cc353b9d2ce72e503af8676f4677a27baa32,test_jel_gxt_dr_covs,"jel014-jel018 (figures 5-9, JEL script 4_GxT.R)",published-article-values,mapped,

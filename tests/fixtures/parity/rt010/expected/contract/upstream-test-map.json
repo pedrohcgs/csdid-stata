@@ -1,0 +1,101 @@
+[
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "single treated group produces valid att_gt",
+    "mapped_scenario": "single_treated_attgt_finite",
+    "assertion_family": "Stata returns at least one finite ATT(g,t) with a single treated group",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "single treated group works with all 4 aggte types",
+    "mapped_scenario": "single_treated_all_aggte_types",
+    "assertion_family": "Stata simple/dynamic/group/calendar aggregations all return nonmissing overall ATT",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "two-period data with universal base period",
+    "mapped_scenario": "two_period_universal_base",
+    "assertion_family": "Stata two-period universal-base run returns at least one finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "data with no never-treated group works with notyettreated",
+    "mapped_scenario": "no_never_notyet_runs",
+    "assertion_family": "Stata notyettreated run with no never-treated group succeeds",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "data with no never-treated group warns with nevertreated",
+    "mapped_scenario": "no_never_nevertreated_warns",
+    "assertion_family": "Stata default nevertreated branch warns and falls back when no never-treated group exists",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "groups treated in first period are dropped",
+    "mapped_scenario": "first_period_treated_warns_and_runs",
+    "assertion_family": "Stata warns and drops first-period-treated units while still estimating",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "non-consecutive time periods work",
+    "mapped_scenario": "nonconsecutive_time_dynamic",
+    "assertion_family": "Stata supports non-consecutive time values and dynamic aggregation",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "non-consecutive group values work",
+    "mapped_scenario": "nonconsecutive_group_values",
+    "assertion_family": "Stata supports non-consecutive treatment cohort values and estimates multiple groups",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "allow_unbalanced_panel=TRUE with balanced data proceeds normally",
+    "mapped_scenario": "balanced_allow_unbalanced_equivalent",
+    "assertion_family": "Stata balanced panel run proceeds normally under the public default",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "allow_unbalanced_panel=TRUE with truly unbalanced data",
+    "mapped_scenario": "unbalanced_default_as_rc",
+    "assertion_family": "Stata unbalanced ivar() data uses the owner-directed repeated-cross-section path and returns finite ATT(g,t)",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-edge-cases.R",
+    "source_sha256": "1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3",
+    "source_test": "single post-treatment period produces valid results",
+    "mapped_scenario": "single_post_treatment_finite",
+    "assertion_family": "Stata returns at least one finite post-treatment ATT(g,t) with a single post-treatment period",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

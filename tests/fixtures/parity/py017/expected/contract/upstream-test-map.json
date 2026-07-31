@@ -1,0 +1,962 @@
+[
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[dr-nevertreated-varying]",
+    "mapped_scenario": "combo_a__dr__nevertreated__varying",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[dr-nevertreated-varying]",
+    "mapped_scenario": "combo_a__dr__nevertreated__varying",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[dr-nevertreated-varying]",
+    "mapped_scenario": "combo_a__dr__nevertreated__varying",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[dr-nevertreated-universal]",
+    "mapped_scenario": "combo_a__dr__nevertreated__universal",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[dr-nevertreated-universal]",
+    "mapped_scenario": "combo_a__dr__nevertreated__universal",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[dr-nevertreated-universal]",
+    "mapped_scenario": "combo_a__dr__nevertreated__universal",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[dr-notyettreated-varying]",
+    "mapped_scenario": "combo_a__dr__notyettreated__varying",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[dr-notyettreated-varying]",
+    "mapped_scenario": "combo_a__dr__notyettreated__varying",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[dr-notyettreated-varying]",
+    "mapped_scenario": "combo_a__dr__notyettreated__varying",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[dr-notyettreated-universal]",
+    "mapped_scenario": "combo_a__dr__notyettreated__universal",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[dr-notyettreated-universal]",
+    "mapped_scenario": "combo_a__dr__notyettreated__universal",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[dr-notyettreated-universal]",
+    "mapped_scenario": "combo_a__dr__notyettreated__universal",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[reg-nevertreated-varying]",
+    "mapped_scenario": "combo_a__reg__nevertreated__varying",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[reg-nevertreated-varying]",
+    "mapped_scenario": "combo_a__reg__nevertreated__varying",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[reg-nevertreated-varying]",
+    "mapped_scenario": "combo_a__reg__nevertreated__varying",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[reg-nevertreated-universal]",
+    "mapped_scenario": "combo_a__reg__nevertreated__universal",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[reg-nevertreated-universal]",
+    "mapped_scenario": "combo_a__reg__nevertreated__universal",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[reg-nevertreated-universal]",
+    "mapped_scenario": "combo_a__reg__nevertreated__universal",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[reg-notyettreated-varying]",
+    "mapped_scenario": "combo_a__reg__notyettreated__varying",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[reg-notyettreated-varying]",
+    "mapped_scenario": "combo_a__reg__notyettreated__varying",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[reg-notyettreated-varying]",
+    "mapped_scenario": "combo_a__reg__notyettreated__varying",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[reg-notyettreated-universal]",
+    "mapped_scenario": "combo_a__reg__notyettreated__universal",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[reg-notyettreated-universal]",
+    "mapped_scenario": "combo_a__reg__notyettreated__universal",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[reg-notyettreated-universal]",
+    "mapped_scenario": "combo_a__reg__notyettreated__universal",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[ipw-nevertreated-varying]",
+    "mapped_scenario": "combo_a__ipw__nevertreated__varying",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[ipw-nevertreated-varying]",
+    "mapped_scenario": "combo_a__ipw__nevertreated__varying",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[ipw-nevertreated-varying]",
+    "mapped_scenario": "combo_a__ipw__nevertreated__varying",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[ipw-nevertreated-universal]",
+    "mapped_scenario": "combo_a__ipw__nevertreated__universal",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[ipw-nevertreated-universal]",
+    "mapped_scenario": "combo_a__ipw__nevertreated__universal",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[ipw-nevertreated-universal]",
+    "mapped_scenario": "combo_a__ipw__nevertreated__universal",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[ipw-notyettreated-varying]",
+    "mapped_scenario": "combo_a__ipw__notyettreated__varying",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[ipw-notyettreated-varying]",
+    "mapped_scenario": "combo_a__ipw__notyettreated__varying",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[ipw-notyettreated-varying]",
+    "mapped_scenario": "combo_a__ipw__notyettreated__varying",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_att_gt_valid[ipw-notyettreated-universal]",
+    "mapped_scenario": "combo_a__ipw__notyettreated__universal",
+    "assertion_family": "ATT(g,t) has at least one nonmissing estimate",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_se_positive_finite[ipw-notyettreated-universal]",
+    "mapped_scenario": "combo_a__ipw__notyettreated__universal",
+    "assertion_family": "at least one positive finite ATT(g,t) standard error",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboA.test_aggte_simple[ipw-notyettreated-universal]",
+    "mapped_scenario": "combo_a__ipw__notyettreated__universal",
+    "assertion_family": "simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_produces_results[dr-panelTrue]",
+    "mapped_scenario": "combo_b__dr__panel_true",
+    "assertion_family": "panel flag variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_aggte_dynamic[dr-panelTrue]",
+    "mapped_scenario": "combo_b__dr__panel_true",
+    "assertion_family": "dynamic aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_produces_results[dr-panelFalse]",
+    "mapped_scenario": "combo_b__dr__panel_false",
+    "assertion_family": "panel flag variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_aggte_dynamic[dr-panelFalse]",
+    "mapped_scenario": "combo_b__dr__panel_false",
+    "assertion_family": "dynamic aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_produces_results[reg-panelTrue]",
+    "mapped_scenario": "combo_b__reg__panel_true",
+    "assertion_family": "panel flag variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_aggte_dynamic[reg-panelTrue]",
+    "mapped_scenario": "combo_b__reg__panel_true",
+    "assertion_family": "dynamic aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_produces_results[reg-panelFalse]",
+    "mapped_scenario": "combo_b__reg__panel_false",
+    "assertion_family": "panel flag variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_aggte_dynamic[reg-panelFalse]",
+    "mapped_scenario": "combo_b__reg__panel_false",
+    "assertion_family": "dynamic aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_produces_results[ipw-panelTrue]",
+    "mapped_scenario": "combo_b__ipw__panel_true",
+    "assertion_family": "panel flag variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_aggte_dynamic[ipw-panelTrue]",
+    "mapped_scenario": "combo_b__ipw__panel_true",
+    "assertion_family": "dynamic aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_produces_results[ipw-panelFalse]",
+    "mapped_scenario": "combo_b__ipw__panel_false",
+    "assertion_family": "panel flag variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboB.test_aggte_dynamic[ipw-panelFalse]",
+    "mapped_scenario": "combo_b__ipw__panel_false",
+    "assertion_family": "dynamic aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant0-dr]",
+    "mapped_scenario": "combo_c__ant0__dr",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant0-dr]",
+    "mapped_scenario": "combo_c__ant0__dr",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant0-reg]",
+    "mapped_scenario": "combo_c__ant0__reg",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant0-reg]",
+    "mapped_scenario": "combo_c__ant0__reg",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant0-ipw]",
+    "mapped_scenario": "combo_c__ant0__ipw",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant0-ipw]",
+    "mapped_scenario": "combo_c__ant0__ipw",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant1-dr]",
+    "mapped_scenario": "combo_c__ant1__dr",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant1-dr]",
+    "mapped_scenario": "combo_c__ant1__dr",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant1-reg]",
+    "mapped_scenario": "combo_c__ant1__reg",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant1-reg]",
+    "mapped_scenario": "combo_c__ant1__reg",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant1-ipw]",
+    "mapped_scenario": "combo_c__ant1__ipw",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant1-ipw]",
+    "mapped_scenario": "combo_c__ant1__ipw",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant2-dr]",
+    "mapped_scenario": "combo_c__ant2__dr",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant2-dr]",
+    "mapped_scenario": "combo_c__ant2__dr",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant2-reg]",
+    "mapped_scenario": "combo_c__ant2__reg",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant2-reg]",
+    "mapped_scenario": "combo_c__ant2__reg",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_produces_results[ant2-ipw]",
+    "mapped_scenario": "combo_c__ant2__ipw",
+    "assertion_family": "anticipation variant has at least one nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboC.test_se_finite[ant2-ipw]",
+    "mapped_scenario": "combo_c__ant2__ipw",
+    "assertion_family": "anticipation variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_se_finite[bstrapTrue-dr]",
+    "mapped_scenario": "combo_d__bstrap_true__dr",
+    "assertion_family": "bootstrap flag variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_att_reasonable[bstrapTrue-dr]",
+    "mapped_scenario": "combo_d__bstrap_true__dr",
+    "assertion_family": "bootstrap flag variant has finite nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_se_finite[bstrapTrue-reg]",
+    "mapped_scenario": "combo_d__bstrap_true__reg",
+    "assertion_family": "bootstrap flag variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_att_reasonable[bstrapTrue-reg]",
+    "mapped_scenario": "combo_d__bstrap_true__reg",
+    "assertion_family": "bootstrap flag variant has finite nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_se_finite[bstrapTrue-ipw]",
+    "mapped_scenario": "combo_d__bstrap_true__ipw",
+    "assertion_family": "bootstrap flag variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_att_reasonable[bstrapTrue-ipw]",
+    "mapped_scenario": "combo_d__bstrap_true__ipw",
+    "assertion_family": "bootstrap flag variant has finite nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_se_finite[bstrapFalse-dr]",
+    "mapped_scenario": "combo_d__bstrap_false__dr",
+    "assertion_family": "bootstrap flag variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_att_reasonable[bstrapFalse-dr]",
+    "mapped_scenario": "combo_d__bstrap_false__dr",
+    "assertion_family": "bootstrap flag variant has finite nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_se_finite[bstrapFalse-reg]",
+    "mapped_scenario": "combo_d__bstrap_false__reg",
+    "assertion_family": "bootstrap flag variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_att_reasonable[bstrapFalse-reg]",
+    "mapped_scenario": "combo_d__bstrap_false__reg",
+    "assertion_family": "bootstrap flag variant has finite nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_se_finite[bstrapFalse-ipw]",
+    "mapped_scenario": "combo_d__bstrap_false__ipw",
+    "assertion_family": "bootstrap flag variant has at least one positive finite SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "TestComboD.test_att_reasonable[bstrapFalse-ipw]",
+    "mapped_scenario": "combo_d__bstrap_false__ipw",
+    "assertion_family": "bootstrap flag variant has finite nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-nevertreated-varying-panelTrue]",
+    "mapped_scenario": "combo_e__dr__nevertreated__varying__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-nevertreated-varying-panelFalse]",
+    "mapped_scenario": "combo_e__dr__nevertreated__varying__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-nevertreated-universal-panelTrue]",
+    "mapped_scenario": "combo_e__dr__nevertreated__universal__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-nevertreated-universal-panelFalse]",
+    "mapped_scenario": "combo_e__dr__nevertreated__universal__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-notyettreated-varying-panelTrue]",
+    "mapped_scenario": "combo_e__dr__notyettreated__varying__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-notyettreated-varying-panelFalse]",
+    "mapped_scenario": "combo_e__dr__notyettreated__varying__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-notyettreated-universal-panelTrue]",
+    "mapped_scenario": "combo_e__dr__notyettreated__universal__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[dr-notyettreated-universal-panelFalse]",
+    "mapped_scenario": "combo_e__dr__notyettreated__universal__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-nevertreated-varying-panelTrue]",
+    "mapped_scenario": "combo_e__reg__nevertreated__varying__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-nevertreated-varying-panelFalse]",
+    "mapped_scenario": "combo_e__reg__nevertreated__varying__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-nevertreated-universal-panelTrue]",
+    "mapped_scenario": "combo_e__reg__nevertreated__universal__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-nevertreated-universal-panelFalse]",
+    "mapped_scenario": "combo_e__reg__nevertreated__universal__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-notyettreated-varying-panelTrue]",
+    "mapped_scenario": "combo_e__reg__notyettreated__varying__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-notyettreated-varying-panelFalse]",
+    "mapped_scenario": "combo_e__reg__notyettreated__varying__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-notyettreated-universal-panelTrue]",
+    "mapped_scenario": "combo_e__reg__notyettreated__universal__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[reg-notyettreated-universal-panelFalse]",
+    "mapped_scenario": "combo_e__reg__notyettreated__universal__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-nevertreated-varying-panelTrue]",
+    "mapped_scenario": "combo_e__ipw__nevertreated__varying__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-nevertreated-varying-panelFalse]",
+    "mapped_scenario": "combo_e__ipw__nevertreated__varying__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-nevertreated-universal-panelTrue]",
+    "mapped_scenario": "combo_e__ipw__nevertreated__universal__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-nevertreated-universal-panelFalse]",
+    "mapped_scenario": "combo_e__ipw__nevertreated__universal__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-notyettreated-varying-panelTrue]",
+    "mapped_scenario": "combo_e__ipw__notyettreated__varying__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-notyettreated-varying-panelFalse]",
+    "mapped_scenario": "combo_e__ipw__notyettreated__varying__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-notyettreated-universal-panelTrue]",
+    "mapped_scenario": "combo_e__ipw__notyettreated__universal__panel_true",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_full_integration[ipw-notyettreated-universal-panelFalse]",
+    "mapped_scenario": "combo_e__ipw__notyettreated__universal__panel_false",
+    "assertion_family": "fit plus simple aggregation has nonmissing overall ATT",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[simple-dr]",
+    "mapped_scenario": "combo_f__simple__dr",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[simple-reg]",
+    "mapped_scenario": "combo_f__simple__reg",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[simple-ipw]",
+    "mapped_scenario": "combo_f__simple__ipw",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[dynamic-dr]",
+    "mapped_scenario": "combo_f__dynamic__dr",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[dynamic-reg]",
+    "mapped_scenario": "combo_f__dynamic__reg",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[dynamic-ipw]",
+    "mapped_scenario": "combo_f__dynamic__ipw",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[group-dr]",
+    "mapped_scenario": "combo_f__group__dr",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[group-reg]",
+    "mapped_scenario": "combo_f__group__reg",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[group-ipw]",
+    "mapped_scenario": "combo_f__group__ipw",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[calendar-dr]",
+    "mapped_scenario": "combo_f__calendar__dr",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[calendar-reg]",
+    "mapped_scenario": "combo_f__calendar__reg",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_aggte_type_by_method[calendar-ipw]",
+    "mapped_scenario": "combo_f__calendar__ipw",
+    "assertion_family": "aggregation type by method has nonmissing overall ATT and positive SE",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_rcs_dynamic_effects_by_method[dr]",
+    "mapped_scenario": "combo_g__dynamic_rc__dr",
+    "assertion_family": "repeated-cross-section dynamic post-treatment effects include a positive effect",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_rcs_vs_panel_both_work[dr]",
+    "mapped_scenario": "combo_g__rc_vs_panel__dr",
+    "assertion_family": "panel and repeated-cross-section variants both have nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_rcs_dynamic_effects_by_method[reg]",
+    "mapped_scenario": "combo_g__dynamic_rc__reg",
+    "assertion_family": "repeated-cross-section dynamic post-treatment effects include a positive effect",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_rcs_vs_panel_both_work[reg]",
+    "mapped_scenario": "combo_g__rc_vs_panel__reg",
+    "assertion_family": "panel and repeated-cross-section variants both have nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_rcs_dynamic_effects_by_method[ipw]",
+    "mapped_scenario": "combo_g__dynamic_rc__ipw",
+    "assertion_family": "repeated-cross-section dynamic post-treatment effects include a positive effect",
+    "coverage_status": "mapped"
+  },
+  {
+    "source_file": "csdid/test_csdid/test_parametric_combinations.py",
+    "source_sha256": "ce505335fe16f7ed98196daffa628b25852474b0fd1fe948167c32f8e2502936",
+    "source_test": "test_rcs_vs_panel_both_work[ipw]",
+    "mapped_scenario": "combo_g__rc_vs_panel__ipw",
+    "assertion_family": "panel and repeated-cross-section variants both have nonmissing ATT(g,t)",
+    "coverage_status": "mapped"
+  }
+]

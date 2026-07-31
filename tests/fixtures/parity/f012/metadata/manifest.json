@@ -1,0 +1,83 @@
+{
+  "matrix_id": "F012",
+  "fixture_family": "weights",
+  "normative_source": "R did 2.5.1",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": "D012",
+  "tolerance_ids": "TOL001",
+  "inputs": [
+    {
+      "path": "inputs/input.csv",
+      "rows": 192,
+      "columns": 9
+    },
+    {
+      "path": "inputs/input-unbalanced.csv",
+      "rows": 181,
+      "columns": 9
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/f012/generate.R",
+      "path": "tools/parity/generators/f012/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {},
+  "expected_outputs": [
+    {
+      "path": "expected/r/weighted-grid.csv",
+      "schema": "weighted-attgt-grid"
+    },
+    {
+      "path": "expected/r/time-invariant-fixweights.csv",
+      "schema": "weighted-attgt-grid"
+    },
+    {
+      "path": "expected/r/weighted-aggte.csv",
+      "schema": "weighted-aggte-grid"
+    },
+    {
+      "path": "expected/r/events.csv",
+      "schema": "weight-diagnostic-events"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "expected/new-stata/weighted-grid.csv",
+      "expected": "expected/r/weighted-grid.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["panel_mode", "weight_var", "fix_weights", "covariates", "method", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/time-invariant-fixweights.csv",
+      "expected": "expected/r/time-invariant-fixweights.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["panel_mode", "weight_var", "fix_weights", "covariates", "method", "group", "time"]
+    },
+    {
+      "actual": "expected/new-stata/weighted-aggte.csv",
+      "expected": "expected/r/weighted-aggte.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["panel_mode", "weight_var", "fix_weights", "covariates", "method", "type", "seq"]
+    },
+    {
+      "actual": "Stata diagnostic logs",
+      "expected": "expected/r/events.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "event_key"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "Balanced panel default/varying/base_period/first_period iweight/weightsname slice plus true repeated-cross-section default/varying weighted slice with no and numeric covariates; time-invariant unit weights cover default/varying/base_period/first_period ATT(g,t) parity and point-estimate invariance across dr/reg/ipw with no and numeric covariates; weighted simple/group/calendar/dynamic aggregation is covered for dr/reg/ipw, no and numeric covariates, wt and wt_scaled, across the same panel and repeated-cross-section weight-mode surfaces, plus the allow_unbalanced default/varying/base_period/first_period aggregation surface. Diagnostics cover the R time-varying-weight message, time-invariant no-message case, and fixed-weight reference-period drop warning. Broader inherited IF consistency and custom-estimator diagnostics remain incomplete."
+}

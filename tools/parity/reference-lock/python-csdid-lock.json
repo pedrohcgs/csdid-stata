@@ -1,0 +1,12 @@
+{
+  "status": "frozen",
+  "source": "https://github.com/DrSquare/csdid",
+  "observed_on": "2026-06-22",
+  "commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "license_file": "MIT",
+  "setup_license": "MIT",
+  "classifier_license_note": "setup.py classifier says Apache Software License; LICENSE file and setup license say MIT, so provenance treats MIT as binding until upstream clarifies.",
+  "mapped_test_files": 24,
+  "additional_test_files": ["csdid/test_csdid/conftest.py", "test/test_vs_r.py"],
+  "role": "deeper-test source subordinate to R"
+}

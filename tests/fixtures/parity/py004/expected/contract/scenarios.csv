@@ -1,0 +1,8 @@
+scenario,input,method,different_rtol,biters,seed,bootstrap_rtol,methods,types
+clustered_vs_iid_404,clustered-shocks-404.csv,reg,0.01,,,,,
+clustered_runs_505,clustered-shocks-505.csv,reg,,,,,,
+panel_bootstrap_vs_analytical_505,clustered-shocks-505.csv,reg,,1499.0,20250401.0,0.35,,
+rc_nofast_vs_fast_808,clustered-shocks-808.csv,reg,,,,,,
+rc_bootstrap_vs_analytical_606,clustered-shocks-606.csv,reg,,1499.0,20250402.0,0.35,,
+all_methods_runs_606,clustered-shocks-606.csv,,,,,,dr;reg;ipw,
+all_methods_aggte_707,clustered-shocks-707.csv,,,,,,dr;reg;ipw,simple;group;dynamic

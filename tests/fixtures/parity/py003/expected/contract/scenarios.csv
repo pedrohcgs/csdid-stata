@@ -1,0 +1,7 @@
+scenario,input,expected_behavior
+basic-covariate-panel,sim-data.csv,"ATT(g,t) first treated cell near one"
+two-period-aggregation,two-period.csv,all aggte types finite and near one
+dynamic-aggregation,dynamic.csv,event-time effect around exposure-varying DGP
+allow_unbalanced,unbalanced.csv,ivar unbalanced panel reports allow_unbalanced and finite ATT
+fixweights-options,fixweights.csv,fix_weights modes finite or reject when unsupported for RC
+fast-if-consistency,sim-data.csv,requested fast equals standard and preserves IF summaries

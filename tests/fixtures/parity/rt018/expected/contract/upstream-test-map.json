@@ -1,0 +1,20 @@
+[
+  {
+    "source_file": "tests/testthat/test-mboot-postprocess.R",
+    "source_sha256": "184431a6dbf1f2dc56f2ac91aaf47592938c6b10026f21e41084e6ed500fdc6d",
+    "source_test": "mboot on an all-degenerate influence function returns NA crit.val and all-NA se",
+    "mapped_scenario": "r-mboot-helper-postprocess-only",
+    "assertion_family": "R mboot() helper all-degenerate internal influence-function branch has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT018-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-mboot-postprocess.R",
+    "source_sha256": "184431a6dbf1f2dc56f2ac91aaf47592938c6b10026f21e41084e6ed500fdc6d",
+    "source_test": "mboot pmax-fold critical value equals the old row-wise apply reference",
+    "mapped_scenario": "r-mboot-helper-postprocess-only",
+    "assertion_family": "R mboot() helper row-wise critical-value post-processing equivalence has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT018-DIV001"
+  }
+]

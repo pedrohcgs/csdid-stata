@@ -1,0 +1,74 @@
+[
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "compute_inffunc = FALSE gives point estimates identical to a full run",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R point-estimates-only compute_inffunc=FALSE object path has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "compute_inffunc = FALSE forces bstrap/cband off and yields a valid MP object",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R no-IF MP object print/summary/tidy/glance behavior has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "aggte() errors clearly on a compute_inffunc = FALSE object",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R no-IF MP object aggregation-blocking behavior has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "compute_inffunc must be a single logical",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R compute_inffunc argument validation has no public Stata command analogue because the option is unsupported",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "compute_inffunc = FALSE matches a full run with fix_weights = 'varying'",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R no-IF varying-weight branch has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "compute_inffunc = FALSE matches a full run with anticipation, universal base period, not-yet-treated controls, and clustering",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R no-IF anticipation/universal/not-yet-treated/cluster branch has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "compute_inffunc = FALSE matches a full run on an unbalanced panel",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R no-IF unbalanced-panel branch has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  },
+  {
+    "source_file": "tests/testthat/test-compute-inffunc.R",
+    "source_sha256": "9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d",
+    "source_test": "custom est_method receives inffunc = FALSE and may return a NULL influence function",
+    "mapped_scenario": "r-compute-inffunc-false-only",
+    "assertion_family": "R custom-estimator inffunc=FALSE callback path has no public Stata command analogue",
+    "coverage_status": "approved-divergence",
+    "divergence_id": "RT008-DIV001"
+  }
+]

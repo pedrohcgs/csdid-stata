@@ -1,0 +1,7 @@
+"group","time","event_time","att","se","crit_val","ci_low","ci_high","control_group","base_period","est_method","panel_mode","sample_n","inffunc_col"
+2005,2002,-3,-1.11022302462516e-16,,,,,"nevertreated","varying","reg","panel",192,1
+2005,2005,0,0.89,,,,,"nevertreated","varying","reg","panel",192,2
+2005,2007,2,0.45,0.0325960120260132,,,,"nevertreated","varying","reg","panel",192,3
+2007,2002,-5,-1.11022302462516e-16,,,,,"nevertreated","varying","reg","panel",192,4
+2007,2005,-2,5.55111512312578e-17,,,,,"nevertreated","varying","reg","panel",192,5
+2007,2007,0,0.6,0.0325960120260132,,,,"nevertreated","varying","reg","panel",192,6

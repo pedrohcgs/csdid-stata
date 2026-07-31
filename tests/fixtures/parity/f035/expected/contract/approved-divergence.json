@@ -1,0 +1,14 @@
+[
+  {
+    "divergence_id": "F035-DIV001",
+    "surface": "multiplier-draw-stream",
+    "reason": "The public seeded rademacher path now mirrors BMisc/R's multiplier stream; raw exported draw matrices are not part of the public fixture surface.",
+    "accepted_behavior": "Stata must enforce deterministic ATT(g,t), analytical SE, bootstrap metadata, pointwise/cband algebra, seed/reps options, exact seeded BMisc/R rademacher stream probe, and cluster-summed ATT(g,t) bootstrap smoke while recording the requested distribution."
+  },
+  {
+    "divergence_id": "F035-DIV002",
+    "surface": "aggregation-bootstrap-postprocess",
+    "reason": "Aggregation-level bootstrap postprocessing is exercised by RT018 as an inherited R mboot() helper boundary. F035 freezes Stata option parsing, metadata, diagnostics, and ATT(g,t) clustered bootstrap behavior.",
+    "accepted_behavior": "Aggregation bootstrap semantics remain tracked by F014/RT018-style bootstrap evidence; F035 is the option-surface gate for accepted/rejected Stata syntax."
+  }
+]

@@ -13,7 +13,7 @@
   --muted: #6b7280;
   --rule: #e3e6e9;
   --code-bg: rgba(185, 151, 91, 0.08);
-  --maxw: 66rem;
+  --maxw: 84rem;
 }
 * { box-sizing: border-box; }
 body {
@@ -32,10 +32,14 @@ body {
   font-weight: 700; font-size: 1.15rem; color: var(--navy); text-decoration: none;
 }
 .site-nav .links a {
-  margin-left: 1.1rem; color: var(--muted); text-decoration: none; font-size: 0.95rem;
+  margin-left: 1.1rem; color: var(--navy-light); text-decoration: none; font-size: 0.95rem;
+  font-weight: 600;
 }
 .site-nav .links a:hover { color: var(--navy); }
 .content { max-width: var(--maxw); margin: 0 auto; padding: 2.2rem 1.25rem 3rem; }
+/* One uniform width: prose, hero, tables, code and cards all align to the
+   content column. Capping prose narrower than the furniture around it left
+   the page visibly ragged, so nothing is capped. */
 h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 1rem; color: var(--navy); }
 h2 {
   font-size: 1.6rem; margin: 2.4rem 0 0.7rem; padding-bottom: 0.35rem;
@@ -178,8 +182,7 @@ details.code-fold > pre code { font-size: 0.78rem; }
 .fold-controls button:hover { background: var(--navy-wash); }
 
 /* ---- responsive: wide desktop column, fluid on phones and tablets ---- */
-/* Prose stays at a readable measure (p, li capped at 65ch above); the wider
-   container benefits tables, code blocks, cards, and the hero. */
+/* Everything shares the one content column: prose, hero, tables, code, cards. */
 @media (max-width: 700px) {
   .content { padding: 1.4rem 1rem 2.2rem; }
   table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -213,10 +216,11 @@ th:empty { padding: 0.18rem; }
 .toc ul ul { padding-left: 0.9rem; }
 .toc a { text-decoration: none; color: var(--navy-light); }
 .toc a:hover { color: var(--gold-dark); }
-@media (min-width: 1420px) {
+@media (min-width: 1760px) {
   .toc {
     position: fixed; top: 5.5rem;
-    left: calc((100vw - 66rem) / 2 - 16.5rem);
+    /* tracks the content column; hardcoding it here drifts when --maxw changes */
+    left: calc((100vw - var(--maxw)) / 2 - 16.5rem);
     width: 14.5rem; margin: 0;
     max-height: calc(100vh - 8rem); overflow-y: auto;
   }

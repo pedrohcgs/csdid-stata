@@ -1,0 +1,233 @@
+---
+title: News
+---
+
+# csdid news
+
+## csdid 2.0.0
+
+A rewritten estimation engine. Everything below is what changes for someone upgrading from **csdid Version 1.82** —
+the version SSC distributes today via `ssc install csdid`, dated 2025-10-05.
+The command surface is deliberately the same, so most existing do-files run
+unchanged.
+
+### Changes that can affect your results
+
+**Not-yet-treated is now the default comparison group.** Version 1.82 and the
+reference implementation both default to never-treated. Version 2.0.0 uses every
+unit not yet treated at *t* as a control. It uses more of the data, usually
+gives tighter standard errors, and does not depend on a never-treated group
+existing or being large enough to trust. `nevertreated` restores the old
+behaviour.
+
+One consequence: the refusal described below, when the never-treated group is
+too small, no longer fires by default. That is correct — `notyet` is precisely
+the remedy that refusal recommends.
+
+**Universal base period is now the default.** Version 1.82 and the reference
+implementation both default to a varying base period. Version 2.0.0 measures
+every cell against *g-1*.
+
+This is the layout an event-study plot assumes, and event studies are how these
+results are nearly always presented. Post-treatment effects are identical under
+either choice; only the pre-treatment cells differ, and universal additionally
+reports the *g-1* normalisation row. Use `base_period(varying)` when
+**pre-testing**: each pre-treatment cell is then its own one-period comparison,
+so a violation shows up in the period where it happens rather than being carried
+forward into every later cell.
+
+Both of these are deliberate, documented departures from the reference
+implementation as well as from Version 1.82.
+
+**Standard errors are bootstrapped by default, with simultaneous confidence
+bands.** Version 1.82 reported pointwise analytical standard errors unless you asked
+for `wboot`.
+
+This is deliberate. A staggered design produces one estimate per cohort and
+period — often dozens — and pointwise intervals do not account for looking at
+all of them at once. Reading a 95% pointwise band as though it covered the whole
+event study understates uncertainty, and it is the most common way these results
+are over-read. The default is now the multiplier bootstrap with simultaneous
+bands over 1,000 iterations, so the interval you are shown is the one that
+covers every reported effect jointly.
+
+`analytical` (or `vce(analytical)`) restores pointwise analytical standard
+errors, and `pointwise` gives pointwise intervals from the bootstrap. Point
+estimates are unaffected by any of this.
+
+**Unbalanced panels are balanced, and say so.** Version 1.82 dropped, without
+comment, the units not observed in both periods of each comparison — silently
+changing the estimand. Version 2.0.0 makes the choice explicit and reports it.
+`bal()` takes three modes:
+
+| | |
+| --- | --- |
+| `bal(full)` | drop units not observed in every period, once, for all comparisons. **Default**, matching the reference implementation. |
+| `bal(pair)` | balance each 2x2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did silently; ask for it to reproduce a result from that version. |
+| `bal(none)` | keep every unit and use the repeated-cross-section computation. |
+
+Whenever a mode discards observations, `csdid` reports how many units and how
+many observations went. `e(panel_mode)` records the resolved layout.
+`unbalanced` is a supported synonym of `bal(none)`, for when that reads better
+than a mode inside `bal()`; `allowunbalanced` and `allow_unbalanced` are the
+longhand form of the same thing, carrying the name the reference implementation
+gives this setting. All three are typed in full — no abbreviation of them is an
+option.
+
+**Repeated cross sections can be declared, not just inferred.** The new `rcs`
+option is the counterpart of the reference implementation's `panel = FALSE`.
+Previously the only way to say "these are cross sections" was to omit `ivar()`,
+which forced anyone whose cross sections carried an identifier to withhold a
+real variable. With `rcs` you keep it: it is validated and used to exclude
+observations where it is missing, but each observation is its own unit.
+`cluster()` is what puts that identifier back into the standard errors.
+
+**A too-small never-treated group is now refused.** `csdid` stops when the
+never-treated group is smaller than `#covariates + 5`, and warns about any
+small group. Group size is measured as rows divided by periods — the average
+number of units per period — not as distinct units. The two agree on balanced
+panels and differ only on unbalanced ones, where the guard now fires in cases
+earlier versions estimated. If it fires, `notyet` uses not-yet-treated units as
+the comparison group and does not depend on the never-treated group being large. This
+changes *whether the command runs*, never an estimate.
+
+### Stored results
+
+**`e()` carries the estimation contract; unit-level objects stay internal.**
+The influence functions — one row per unit, one column per ATT(g,t) — drive
+every standard error, aggregation, and bootstrap, and they live inside the
+estimation engine. Every feature computes from that internal copy: `estat`,
+`csdid_stats`, `test`/`lincom` (with full covariances), `csdid_plot`, and
+`saverif()`. This is the same division of labor official Stata commands use
+for unit-level quantities, and it is what keeps large estimations fast:
+copying an n-unit matrix into `e()` costs quadratic time in the number of
+units. Two explicit routes expose the influence functions when you want them —
+`storeall` materializes `e(inffunc)`, `e(unit_group)`, and `e(cluster_vec)`
+as Stata matrices, and `saverif()` writes the durable dataset that
+`csdid_stats using` aggregates in any later session.
+
+### Options that now error instead of being accepted quietly
+
+| Option | 2.0.0 |
+| --- | --- |
+| `wboot(wtype(mammen\|gaussian\|normal))` | Errors. Only the Rademacher multiplier is supported; these used to be coerced to it silently |
+| `wboot(reps(#))` with `#` ≤ 20 | Errors. Fewer than ~20 iterations cannot support a simultaneous band; 1,000 is the default |
+| `pscoretrim(#)` with `#` ≤ 0 | Errors. Omit it for the default of .995, or pass 1 (or more) for no trimming |
+| `gvar()` with negative values | Errors. `gvar()` is 0 for never-treated units and 1 or more for treated cohorts |
+| `time()` below 1 | Errors. Cohorts and periods share one positive calendar-time axis; a monotone relabelling leaves every estimate unchanged |
+| `from()` | No longer supported. Use `window(# #)` on `estat event` for event-time windows |
+| `dryrun` | Rejected; it was never a documented option |
+
+### New
+
+- **Repeated cross sections.** Omit `ivar()`, or declare them with `rcs` and
+  keep the identifier for `cluster()`.
+- **Clustered standard errors without the bootstrap.** `cluster()` with
+  `analytical` reports cluster-robust standard errors at every aggregation
+  level, and the parallel-trends pre-test under clustering.
+- **`fix_weights()`** — control how time-varying sampling weights are resolved
+  in each 2×2 comparison: `varying`, `base_period`, or `first_period`.
+- **Parallel-trends pre-test** reported with the results and stored in
+  `e(wald_stat)`, `e(wald_pvalue)` and `e(wald_df)`.
+- **Influence functions on request** — `storeall` materializes them as
+  `e(inffunc)` for sensitivity analysis or custom aggregation, and
+  `saverif()` writes them as a dataset that `csdid_stats using` aggregates
+  later, in another session or on another machine.
+- **`estat event`, `estat group`, `estat calendar`, `estat simple`,
+  `estat dynamic` and `estat attgt`** as conventional postestimation forms.
+- **`saving()` on every `estat` subcommand**, which writes what that subcommand
+  computed to a dataset — the same option `margins`, `simulate` and `graph`
+  take, so there is no separate export command.
+- **`csdid_plot, saving()`** exports plot-ready data so you keep control of the
+  graph styling.
+- **Transformation and factor covariates** in the covariate list.
+- **No external dependencies.** Version 1.82 required `drdid` from SSC; 2.0.0 requires
+  nothing beyond Stata itself.
+
+### Performance
+
+Version 2.0.0 is a rewritten engine, and speed at scale was a design goal
+alongside numerical parity with the reference implementation. Absolute
+numbers from one machine (Stata MP, Apple Silicon), so you can calibrate:
+
+- A 400,000-observation repeated cross section with 20 periods and 12 cohorts
+  estimates in under 30 seconds; a 350,000-row panel in one to three seconds
+  for every method (`dr`, `reg`, `ipw`), with or without covariates.
+- Aggregations never disturb stored results and are effectively instant at
+  any size: `estat event` takes a fraction of a second after a 20,000-unit
+  estimation and a few seconds after 400,000 units.
+- The multiplier bootstrap is accelerated by a compiled plugin on macOS
+  (shipped with the package; Mata everywhere else, with identical results):
+  199 replications on a 350,000-row panel add about two seconds.
+- `saverif()` writes its dataset in about a second at 20,000 units, and cost
+  scales linearly.
+
+The design rule behind these numbers: no object with one row per unit ever
+crosses into Stata's classic-matrix layer, whose cost is quadratic in a
+matrix's longest dimension. Unit-level results live in the engine, in
+variables, or in files — never in `e()` matrices, unless you ask with
+`storeall`.
+
+### Legacy commands
+
+`csgvar` (and its helper `_gcsgvar`) is carried forward and supported: it builds
+the `gvar()` cohort variable from a treatment indicator.
+
+`csdid_rif`, `csdid_table`, `dipt` and `tsvmat` still ship so existing do-files
+keep running, but are **deprecated and will be removed in a future release**.
+Each prints a notice when called. They are not covered by the numerical test
+suite. `help csdid_legacy` documents what to use instead — in short,
+`estat attgt, saving()` for a results dataset, with the saved-RIF path still
+supported through `csdid_stats using`.
+
+### Compatibility
+
+These are accepted and map to the documented spelling. Most warn; the ones
+marked as supported below do not, because they are current names rather than
+deprecations. New code should use the names in `help csdid`.
+
+| Accepted | Canonical |
+| --- | --- |
+| `id()` | `ivar()` |
+| `vce(cluster var)` | `cluster(var)` |
+| `notyettreated` | `notyet`, the default comparison group |
+| `storeall`, `store_all` | `storeall` |
+| `balance()` | `bal()`, the same option unabbreviated |
+| `unbalanced` | `bal(none)`. Supported and silent, not deprecated: the documented synonym, for when it reads better than a mode inside `bal()`. Typed in full; `unbal` is not an option, since it would read as the refused `bal(unbal)`. Combining it with a conflicting `bal()` is an error |
+| `allowunbalanced`, `allow_unbalanced` | `bal(none)`, same as `unbalanced`. The R-style longhand: it is the argument name this setting carries in R `did` (`att_gt(allow_unbalanced_panel = TRUE)`), so code written with that vocabulary runs unchanged. Also supported, silent, not deprecated, and also typed in full |
+| `baseperiod()`, bare `universal` / `varying` | `base_period()` |
+| `method(dripw)`, `method(stdipw)` | `method(dr)`, `method(ipw)` |
+| `wboot reps(#) seed(#)` | `wboot(reps(#) rseed(#))` |
+| `asinr` | no-op; use `notyet` |
+| `long`, `long2` | deprecated; imply `baseperiod(universal)` when `baseperiod()` is omitted |
+| `agg(event)`, `csdid_stats event` | dynamic aggregation |
+
+#### Spellings that are not options
+
+These have never been options in any release, so there is nothing to be
+compatible with: they are absent from Version 1.82 and 2.0.0 is the first
+release of this rewrite. Each is refused as an unknown option
+(return code 198).
+
+| Not an option | Use instead |
+| --- | --- |
+| `bal(unbal)`, `bal(unbalanced)`, `bal(allow_unbalanced)` | `bal(none)`, or the `unbalanced` spelling of it (longhand `allowunbalanced`) |
+| `balanceall`, `bal(all)` | `bal(full)` |
+| `balancepair` | `bal(pair)` |
+| `lean`, `performance()` in every form | nothing to type: storage is internal at every sample size, and `storeall` is the one switch that changes it |
+
+`unbalanced` and `allow_unbalanced` are not in this table: as *options* they
+are supported (see above). What is refused is `unbalanced` or
+`allow_unbalanced` as a *value inside* `bal()`.
+`e(allow_unbalanced)` and the `allow_unbalanced` value of `e(panel_mode)` are
+stored-result names and are unaffected.
+
+### Upgrading
+
+The migration guide in the repository (`docs/legacy-migration-guide.md`)
+covers the migration in full, including how to compare Version 1.82 and
+2.0.0 output on your own data.
+
+---
+
+Development history before this release is in the git log.

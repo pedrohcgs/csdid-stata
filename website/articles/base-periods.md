@@ -141,7 +141,3 @@ pre-treatment coefficients may trace back to one bad period.
 Whichever you pick, the post-treatment conclusions do not depend on the choice.
 We would treat this option as a decision about how to display and pre-test the
 design, and not as a decision about what the design estimates.
-
-```stata
-capture erase "jel_balanced.dta"
-```

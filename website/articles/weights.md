@@ -140,7 +140,3 @@ Treatment here is assigned at the state level, so clustering on state is the
 relevant choice regardless of how the observations are weighted, and a weighted
 run with the wrong cluster variable is no safer than an unweighted one. See
 [Inference](inference.html).
-
-```stata
-capture erase "jel_weighted.dta"
-```

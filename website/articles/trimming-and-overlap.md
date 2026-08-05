@@ -138,7 +138,3 @@ default, and it is the reason overlap matters less here than it does for plain
 `ipw`. Double robustness still needs overlap, though, and we would read the
 warnings before trusting any individual cell. See
 [Covariates and estimators](covariates-and-estimators.html).
-
-```stata
-capture erase "jel_overlap.dta"
-```

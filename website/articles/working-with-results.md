@@ -57,7 +57,6 @@ use "attgt_cells.dta", clear
 describe
 list in 1/5
 restore
-capture erase "attgt_cells.dta"
 ```
 
 Every aggregation exports itself in the same way. The file then holds that
@@ -69,7 +68,6 @@ preserve
 use "eventstudy.dta", clear
 list in 1/5
 restore
-capture erase "eventstudy.dta"
 ```
 
 ```stata
@@ -78,7 +76,6 @@ preserve
 use "overall.dta", clear
 list
 restore
-capture erase "overall.dta"
 ```
 
 Because `saving()` sits on the subcommand, the options that shape a result go
@@ -159,7 +156,6 @@ twoway (rcap ci_high ci_low x) (scatter estimate x), ///
     ytitle("Effect on mortality per 100,000") ///
     title("Event study") name(es, replace)
 restore
-capture erase "eventdata.dta"
 ```
 
 The exported columns are `x` (the value on the horizontal axis), `estimate`,
@@ -190,7 +186,3 @@ estat simple
 
 Nothing is re-estimated. That is four aggregations from one estimation, and the
 bootstrap ran once.
-
-```stata
-capture erase "jel_results.dta"
-```

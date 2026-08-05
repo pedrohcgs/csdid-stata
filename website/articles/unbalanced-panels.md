@@ -147,9 +147,4 @@ estat event
 `allow_unbalanced`, and the string says so. We would use it to reproduce a
 result computed with Version 1.82, and we would not choose it for new work.
 
-```stata
-capture erase "jel_unbal_base.dta"
-capture erase "jel_unbalanced.dta"
-```
-
 Next: [repeated cross sections](repeated-cross-sections.html).

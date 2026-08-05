@@ -136,7 +136,3 @@ changes whether the command runs and never changes an estimate. The remedy it
 recommends is `notyet`, which is one of the reasons that group is the default.
 If you meet that message, the guard is telling you to use a different comparison
 group, and loosening it would only hide the problem.
-
-```stata
-capture erase "jel_balanced.dta"
-```

@@ -154,8 +154,9 @@ numbers from one machine (Stata MP, Apple Silicon), so you can calibrate:
   estimates in under 30 seconds; a 350,000-row panel in one to three seconds
   for every method (`dr`, `reg`, `ipw`), with or without covariates.
 - Aggregations never disturb stored results and are effectively instant at
-  any size: `estat event` takes a fraction of a second after a 20,000-unit
-  estimation and a few seconds after 400,000 units.
+  any size, whether the fit used analytical or bootstrap standard errors:
+  `estat event` takes a fraction of a second after a 20,000-unit estimation
+  and a few seconds after 100,000 units (a million-row panel).
 - The multiplier bootstrap is accelerated by a compiled plugin on macOS
   (shipped with the package; Mata everywhere else, with identical results):
   199 replications on a 350,000-row panel add about two seconds.

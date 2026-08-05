@@ -404,6 +404,41 @@ program define sim_est3, rclass
             }
         }
     }
+    else if "`pkg'" == "jwdid_uc" {
+        if inlist("`regime'", "rcs", "rcsvar") {
+            local xv = cond("`cov'" != "", "x1 x2", "")
+            capture jwdid y `xv', tvar(time) gvar(gvar) method(regress) corr
+        }
+        else {
+            local xv = cond("`cov'" != "", "x1 x2", "")
+            capture jwdid y `xv', ivar(id) tvar(time) gvar(gvar) method(regress) corr
+        }
+        if _rc local ok = 0
+        else {
+            capture quietly estat event, vce(unconditional)
+            if _rc local ok = 0
+            else {
+                matrix B = r(table)
+                local cn : colnames B
+                local base = .
+                foreach c of local cn {
+                    if strpos("`c'","bn.__event__") local base = real(subinstr("`c'","bn.__event__","",.))
+                }
+                if missing(`base') local ok = 0
+                else {
+                    forvalues h = 0/2 {
+                        local lev = `base' + `h'
+                        local pos : list posof "`lev'.__event__" in cn
+                        if `pos' == 0 local pos : list posof "`lev'bn.__event__" in cn
+                        if `pos' &gt; 0 {
+                            matrix `R'[`h'+1,1] = B[1,`pos']
+                            matrix `R'[`h'+1,2] = B[2,`pos']
+                        }
+                    }
+                }
+            }
+        }
+    }
     else if "`pkg'" == "bjs" {
         if inlist("`regime'", "rcs", "rcsvar") {
             if "`cov'" != "" {
@@ -484,9 +519,181 @@ program define sim_est3, rclass
             }
         }
     }
+    else if "`pkg'" == "sa" {
+        * Sun &amp; Abraham interaction-weighted estimator (eventstudyinteract).
+        * Full relative-time dummy set, reference -1, never-treated control.
+        capture drop ry_XX nevertr_XX g_XX*
+        quietly gen int ry_XX = time - gvar if gvar &gt; 0
+        quietly gen byte nevertr_XX = (gvar == 0)
+        local dums ""
+        foreach k in -4 -3 -2 0 1 2 3 4 {
+            local nm = cond(`k' &lt; 0, "g_XXm`=abs(`k')'", "g_XXp`k'")
+            quietly gen byte `nm' = (ry_XX == `k')
+            quietly replace `nm' = 0 if missing(`nm')
+            local dums "`dums' `nm'"
+        }
+        local sacov = cond("`cov'" != "", "covariates(x1 x2)", "")
+        capture eventstudyinteract y `dums', cohort(gvar_miss) ///
+            control_cohort(nevertr_XX) `sacov' absorb(id time) vce(cluster id)
+        if _rc local ok = 0
+        else {
+            capture matrix BSA = e(b_iw)
+            capture matrix VSA = e(V_iw)
+            if _rc local ok = 0
+            else {
+                local cnsa : colnames BSA
+                forvalues h = 0/2 {
+                    local jj : list posof "g_XXp`h'" in cnsa
+                    if `jj' &gt; 0 {
+                        matrix `R'[`h'+1,1] = BSA[1,`jj']
+                        matrix `R'[`h'+1,2] = sqrt(VSA[`jj',`jj'])
+                    }
+                }
+            }
+        }
+    }
+    else if inlist("`pkg'", "csdid_dr", "csdid_ipw", "csdid_reg") | ///
+        inlist("`pkg'", "csdid_dr_nt", "csdid_ipw_nt", "csdid_reg_nt") {
+        * field-design csdid arms: package defaults (multiplier-bootstrap
+        * inference), method and comparison group parsed from the arm name,
+        * harvested from estat event's r(table)
+        local mth : word 2 of `=subinstr("`pkg'", "_", " ", .)'
+        local nt = cond(strpos("`pkg'", "_nt"), "nevertreated", "")
+        local xv = cond("`cov'" != "", "x1 x2", "")
+        capture csdid y `xv', ivar(id) time(time) gvar(gvar) method(`mth') `nt'
+        if _rc local ok = 0
+        else {
+            capture estat event, window(0 2)
+            if _rc local ok = 0
+            else {
+                matrix E = r(table)
+                local ce : colnames E
+                forvalues h = 0/2 {
+                    local j : list posof "Tp`h'" in ce
+                    if `j' &gt; 0 {
+                        matrix `R'[`h'+1,1] = E[1,`j']
+                        matrix `R'[`h'+1,2] = E[2,`j']
+                    }
+                }
+            }
+        }
+    }
+    else if inlist("`pkg'", "lpdid_ctl", "lpdid_rw_ctl") {
+        local rwo = cond(strpos("`pkg'", "_rw"), "rw", "")
+        capture lpdid y, unit(id) time(time) treat(treated) post_window(2) ///
+            pre_window(3) `rwo' controls(x1 x2)
+        if _rc local ok = 0
+        else {
+            capture matrix B = e(results)
+            if _rc local ok = 0
+            else {
+                local rn : rownames B
+                forvalues h = 0/2 {
+                    local pos : list posof "tau`h'" in rn
+                    if `pos' &gt; 0 {
+                        matrix `R'[`h'+1,1] = B[`pos',1]
+                        matrix `R'[`h'+1,2] = B[`pos',2]
+                    }
+                }
+            }
+        }
+    }
+    else if "`pkg'" == "dcdh_tnp" {
+        capture did_multiplegt_dyn y id time treated, effects(3) ///
+            trends_nonparam(x1) graphoptions(nodraw) graph_off
+        forvalues h = 0/2 {
+            local j = `h' + 1
+            local b = .
+            local se = .
+            capture local b = e(Effect_`j')
+            capture local se = e(se_effect_`j')
+            if `b' &lt; . {
+                matrix `R'[`h'+1,1] = `b'
+                matrix `R'[`h'+1,2] = `se'
+            }
+        }
+    }
+    else if "`pkg'" == "sa_xt" {
+        * Sun &amp; Abraham with covariate-by-period-dummy interactions
+        quietly {
+            capture drop ry_XX nevertr_XX g_XX* xa_XX* xb_XX*
+            gen int ry_XX = time - gvar if gvar &gt; 0
+            gen byte nevertr_XX = (gvar == 0)
+            local dums ""
+            foreach k in -4 -3 -2 0 1 2 3 4 {
+                local nm = cond(`k' &lt; 0, "g_XXm`=abs(`k')'", "g_XXp`k'")
+                gen byte `nm' = (ry_XX == `k')
+                replace `nm' = 0 if missing(`nm')
+                local dums "`dums' `nm'"
+            }
+            local xl ""
+            if "`cov'" != "" {
+                forvalues t = 2/7 {
+                    gen double xa_XX`t' = x1*(time==`t')
+                    gen double xb_XX`t' = x2*(time==`t')
+                    local xl "`xl' xa_XX`t' xb_XX`t'"
+                }
+            }
+        }
+        capture eventstudyinteract y `dums', cohort(gvar_miss) ///
+            control_cohort(nevertr_XX) covariates(`xl') absorb(id time) vce(cluster id)
+        if _rc local ok = 0
+        else {
+            capture matrix BSA = e(b_iw)
+            capture matrix VSA = e(V_iw)
+            if _rc local ok = 0
+            else {
+                local cnsa : colnames BSA
+                forvalues h = 0/2 {
+                    local jj : list posof "g_XXp`h'" in cnsa
+                    if `jj' &gt; 0 {
+                        matrix `R'[`h'+1,1] = BSA[1,`jj']
+                        matrix `R'[`h'+1,2] = sqrt(VSA[`jj',`jj'])
+                    }
+                }
+            }
+        }
+    }
+    else if "`pkg'" == "bjs_wtr" {
+        * did_imputation with population-share wtr() weights
+        mkwtr
+        local sopt = cond("`cov'" != "", "fe(id time x1#time) timecontrols(x2)", "")
+        capture did_imputation y id time gvar_miss, wtr(w0 w1 w2) autosample `sopt'
+        if _rc local ok = 0
+        else {
+            matrix W = r(table)
+            local cw : colnames W
+            forvalues h = 0/2 {
+                local p : list posof "tau_w`h'" in cw
+                if `p' &gt; 0 {
+                    matrix `R'[`h'+1,1] = W[1,`p']
+                    matrix `R'[`h'+1,2] = W[2,`p']
+                }
+            }
+        }
+    }
     else if "`pkg'" == "lpdid" {
         local ctl = cond("`cov'" != "", "controls(x1 x2)", "")
         capture lpdid y, unit(id) time(time) treat(treated) post_window(2) pre_window(3) `ctl'
+        if _rc local ok = 0
+        else {
+            capture matrix B = e(results)
+            if _rc local ok = 0
+            else {
+                local rn : rownames B
+                forvalues h = 0/2 {
+                    local pos : list posof "tau`h'" in rn
+                    if `pos' &gt; 0 {
+                        matrix `R'[`h'+1,1] = B[`pos',1]
+                        matrix `R'[`h'+1,2] = B[`pos',2]
+                    }
+                }
+            }
+        }
+    }
+    else if "`pkg'" == "lpdid_rw" {
+        local ctl = cond("`cov'" != "", "controls(x1 x2)", "")
+        capture lpdid y, unit(id) time(time) treat(treated) post_window(2) pre_window(3) rw `ctl'
         if _rc local ok = 0
         else {
             capture matrix B = e(results)
@@ -1513,6 +1720,1500 @@ forvalues r = 1/`reps' {
 file close out
 display "MCDONE"</code></pre>
 </details>
+
+## Option arms and the designs that separate the estimators
+
+The scripts below add the option arms discussed in the guide (lpdid <code>rw</code>, jwdid unconditional inference, did_imputation <code>wtr()</code>, eventstudyinteract) and the designs in which the commands genuinely part ways. The DGPs live in one definitions file (<code>fielddgp.do</code>); every design driver is a thin loop that writes one CSV row per (regime, pkg, rep, horizon), summarized by <code>mcsum.py</code>; and <code>eqgate.do</code> verifies, at the seed level, that every estimator arm reproduces the literal command it stands for. All run from the bench/ folder and seed replication r at 90000&nbsp;+&nbsp;r.
+
+<details class="code-fold">
+<summary><code>fielddgp.do</code> &mdash; every field-design DGP in one definitions file, the simdgp.do pattern</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      fielddgp.do -- data generating processes for the field comparisons
+*-----------------------------------------------------------------------------
+* One definitions file, the simdgp.do pattern: every DGP used by the option-
+* arm and separating-design drivers below, defined once. Loaded by each
+* driver with -do "fielddgp.do"-. Programs set their own seed, so results
+* depend only on the seed argument, never on load order.
+*   dgp_ct      covariate trend effects vary with CALENDAR time (ctvar)
+*   dgp_ch      cohort-specific treatment-effect heterogeneity in X
+*   dgp_master  both mechanisms at once; target ES(e) = 2.516667 + 0.633333e
+*   dgp_snt     small (5 percent) never-treated share
+*   dgp_ym      period-varying missingness as row deletion or missing Y
+*   dgp_break   designs B (nonlinear-in-X trend) and C (unequal cohorts)
+*   mkpanel     balanced timing panel for the option-cost benchmarks
+*   mkwtr       population-share wtr() weights for did_imputation
+* Run from the bench/ folder of the replication package.
+*-----------------------------------------------------------------------------
+
+capture program drop dgp_ct
+program define dgp_ct
+    syntax , N(integer) SEED(integer)
+    clear
+    set seed `seed'
+    quietly set obs `n'
+    generate long id = _n
+    quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+        cond(mod(_n,4)==2, 4, 5)))
+    quietly generate double mu = rnormal()
+    quietly generate byte   x1 = runiform() &lt; cond(gvar==0, .35, .15 + .10*gvar)
+    quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, 0.4*(gvar-4))
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + 0.4*x1 + 0.6*x2
+    quietly replace y = y + x1*(2.0*sin(1.6*time)) + x2*(2.2*cos(1.3*time))
+    quietly generate double tau = (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
+    quietly replace y = y + tau if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly drop mu
+end
+
+capture program drop dgp_ch
+program define dgp_ch
+    syntax , N(integer) SEED(integer)
+    clear
+    set seed `seed'
+    quietly set obs `n'
+    generate long id = _n
+    quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+        cond(mod(_n,4)==2, 4, 5)))
+    quietly generate double mu = rnormal()
+    quietly generate byte   x1 = runiform() &lt; cond(gvar==0, .35, .15 + .10*gvar)
+    quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, 0.4*(gvar-4))
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + 0.4*x1 + 0.6*x2 + (0.35*x1 + 0.45*x2)*time
+    quietly generate double ag = cond(gvar==3,0.3,cond(gvar==4,0.8,cond(gvar==5,1.5,0)))
+    quietly generate double bg = cond(gvar==3,0.2,cond(gvar==4,0.6,cond(gvar==5,1.2,0)))
+    quietly generate double tau = 0
+    quietly replace tau = (gvar-2) + 0.5*(time-gvar) + ag*x1 + bg*x2*(time-gvar) ///
+        if gvar&gt;0 &amp; time&gt;=gvar
+    quietly replace y = y + tau if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly drop mu ag bg
+end
+
+capture program drop dgp_master
+program define dgp_master
+    syntax , N(integer) SEED(integer)
+    clear
+    set seed `seed'
+    quietly set obs `n'
+    generate long id = _n
+    quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+        cond(mod(_n,4)==2, 4, 5)))
+    quietly generate double mu = rnormal()
+    quietly generate byte   x1 = runiform() &lt; cond(gvar==0, .35, .15 + .10*gvar)
+    quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, 0.4*(gvar-4))
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + 0.4*x1 + 0.6*x2
+    quietly replace y = y + x1*(2.0*sin(1.6*time)) + x2*(2.2*cos(1.3*time))
+    quietly generate double ag = cond(gvar==3,0.3,cond(gvar==4,0.8,cond(gvar==5,1.5,0)))
+    quietly generate double bg = cond(gvar==3,0.2,cond(gvar==4,0.6,cond(gvar==5,1.2,0)))
+    quietly generate double tau = (gvar-2) + 0.5*(time-gvar) + ag*x1 + bg*x2*(time-gvar) ///
+        if gvar&gt;0 &amp; time&gt;=gvar
+    quietly replace y = y + tau if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly drop mu ag bg
+end
+
+capture program drop dgp_snt
+program define dgp_snt
+    syntax , N(integer) SEED(integer) [NTSHARE(real 0.05)]
+    clear
+    set seed `seed'
+    quietly set obs `n'
+    generate long id = _n
+    quietly generate double u = runiform()
+    quietly generate int gvar = 0
+    quietly replace gvar = 3 + mod(_n,3) if u &gt;= `ntshare'
+    quietly drop u
+    quietly generate double mu = rnormal()
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly drop mu
+end
+
+capture program drop dgp_ym
+program define dgp_ym
+    syntax , N(integer) SEED(integer) MODE(string)
+    clear
+    set seed `seed'
+    quietly set obs `n'
+    generate long id = _n
+    quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+        cond(mod(_n,4)==2, 4, 5)))
+    quietly generate double mu = rnormal()
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly drop mu
+    * period-varying missingness, identical draw either way
+    quietly generate double ku = runiform()
+    quietly generate double dr = .
+    quietly replace dr=.05 if time==1
+    quietly replace dr=.15 if time==2
+    quietly replace dr=.25 if time==3
+    quietly replace dr=.45 if time==4
+    quietly replace dr=.55 if time==5
+    quietly replace dr=.35 if time==6
+    quietly replace dr=.10 if time==7
+    if "`mode'"=="drop"  quietly drop if ku&lt;dr
+    if "`mode'"=="ymiss" quietly replace y = . if ku&lt;dr
+    quietly drop ku dr
+end
+
+capture program drop dgp_break
+program define dgp_break
+    syntax , N(integer) SEED(integer) DESIGN(string)
+    clear
+    set seed `seed'
+    quietly set obs `n'
+    generate long id = _n
+    if "`design'"=="B" {
+        quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+            cond(mod(_n,4)==2, 4, 5)))
+        * ASYMMETRIC cohort means, common variance -&gt; logit-linear pscore
+        quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, ///
+            cond(gvar==3, -0.8, cond(gvar==4, 0.0, 0.2)))
+    }
+    else {
+        * UNEQUAL cohort sizes: 50/30/20 among treated, 25% never-treated
+        quietly generate double u = runiform()
+        quietly generate int gvar = 0
+        quietly replace gvar = 3 if u&gt;=.25 &amp; u&lt;.625
+        quietly replace gvar = 4 if u&gt;=.625 &amp; u&lt;.85
+        quietly replace gvar = 5 if u&gt;=.85
+        quietly drop u
+        quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, 0.4*(gvar-4))
+    }
+    quietly generate byte x1 = runiform() &lt; cond(gvar==0, .35, .15 + .10*gvar)
+    quietly generate double mu = rnormal()
+    quietly expand 7
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + 0.4*x1 + 0.6*x2
+    if "`design'"=="B" {
+        * NONLINEAR covariate trend, common across cohorts -&gt; conditional PT holds
+        quietly replace y = y + (0.35*x1 + 0.45*x2 + 0.50*(x2^2-1))*time
+        quietly generate double tau = (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
+    }
+    else {
+        quietly replace y = y + (0.35*x1 + 0.45*x2)*time
+        quietly generate double ag = cond(gvar==3,0.3,cond(gvar==4,0.8,cond(gvar==5,1.5,0)))
+        quietly generate double bg = cond(gvar==3,0.2,cond(gvar==4,0.6,cond(gvar==5,1.2,0)))
+        quietly generate double tau = (gvar-2) + 0.5*(time-gvar) + ag*x1 + bg*x2*(time-gvar) ///
+            if gvar&gt;0 &amp; time&gt;=gvar
+        quietly drop ag bg
+    }
+    quietly replace y = y + tau if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly generate int gvar_miss = gvar
+    quietly replace gvar_miss = . if gvar==0
+    quietly drop mu
+end
+
+capture program drop mkpanel
+program define mkpanel
+    syntax , N(integer) [T(integer 10)]
+    clear
+    set seed 20260731
+    quietly set obs `n'
+    generate long id = _n
+    quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+        cond(mod(_n,4)==2, 4, 5)))
+    quietly generate double mu = rnormal()
+    quietly expand `t'
+    quietly bysort id: generate int time = _n
+    quietly generate double y = mu + 0.30*time + rnormal()
+    quietly replace y = y + (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
+    quietly generate byte treated = (gvar&gt;0 &amp; time&gt;=gvar)
+    quietly drop mu
+end
+
+capture program drop mkwtr
+program define mkwtr
+    quietly capture drop K w0 w1 w2 ncell
+    quietly gen int K = time - gvar if gvar &gt; 0 &amp; time &gt;= gvar
+    forvalues h = 0/2 {
+        quietly capture drop ncell
+        quietly bysort gvar time: egen double ncell = total(K == `h') if K == `h'
+        quietly gen double w`h' = cond(K == `h' &amp; ncell &gt; 0, 1/(3*ncell), 0)
+        quietly replace w`h' = 0 if missing(w`h')
+    }
+end
+</code></pre>
+</details>
+<details class="code-fold">
+<summary><code>eqgate.do</code> &mdash; the seed-level equivalence gate: every arm moved into simrun3.do must reproduce its inline command exactly</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      eqgate.do -- seed-level equivalence gate for the refactored arms
+*-----------------------------------------------------------------------------
+* Every arm moved from inline driver code into sim_est3 must reproduce the
+* inline command exactly, estimate and standard error, at the same seed.
+* csdid arms use multiplier-bootstrap inference, so the RNG is reset to the
+* same state immediately before the branch call and the inline call; the
+* other arms consume no randomness at estimation.
+* Output: eqgate.csv, one row per (seed, arm, horizon) with both values.
+* Run from the bench/ folder. Pass = max |difference| is exactly zero.
+*-----------------------------------------------------------------------------
+clear all
+set more off
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "eqgate.csv", write replace text
+file write out "seed,arm,h,b_branch,b_inline,se_branch,se_inline" _n
+
+foreach sd in 90001 90002 90003 {
+    dgp_master, n(2000) seed(`sd')
+    tempfile d
+    quietly save "`d'", replace
+
+    foreach arm in csdid_reg csdid_dr csdid_reg_nt lpdid lpdid_rw lpdid_ctl lpdid_rw_ctl dcdh_tnp sa_xt {
+
+        * ---- branch path ----
+        use "`d'", clear
+        set seed 7654321
+        local covopt = cond(inlist("`arm'", "lpdid", "lpdid_rw"), "", "cov")
+        capture sim_est3, pkg(`arm') regime(balanced) bal(none) `covopt'
+        matrix RB = r(R)
+
+        * ---- inline path: the literal command the old drivers ran ----
+        use "`d'", clear
+        set seed 7654321
+        matrix RI = J(3, 2, .)
+        if inlist("`arm'", "csdid_reg", "csdid_dr", "csdid_reg_nt") {
+            local mth = cond(strpos("`arm'", "_dr"), "dr", "reg")
+            local nt  = cond(strpos("`arm'", "_nt"), "nevertreated", "")
+            capture csdid y x1 x2, ivar(id) time(time) gvar(gvar) method(`mth') `nt'
+            if _rc == 0 {
+                capture estat event, window(0 2)
+                if _rc == 0 {
+                    matrix E = r(table)
+                    local ce : colnames E
+                    forvalues h = 0/2 {
+                        local j : list posof "Tp`h'" in ce
+                        if `j' &gt; 0 {
+                            matrix RI[`h'+1,1] = E[1,`j']
+                            matrix RI[`h'+1,2] = E[2,`j']
+                        }
+                    }
+                }
+            }
+        }
+        else if inlist("`arm'", "lpdid", "lpdid_rw", "lpdid_ctl", "lpdid_rw_ctl") {
+            local rwo = cond(strpos("`arm'", "rw"), "rw", "")
+            local cto = cond(strpos("`arm'", "ctl"), "controls(x1 x2)", "")
+            capture lpdid y, unit(id) time(time) treat(treated) post_window(2) ///
+                pre_window(3) `rwo' `cto'
+            if _rc == 0 {
+                capture matrix B = e(results)
+                if _rc == 0 {
+                    local rn : rownames B
+                    forvalues h = 0/2 {
+                        local pos : list posof "tau`h'" in rn
+                        if `pos' &gt; 0 {
+                            matrix RI[`h'+1,1] = B[`pos',1]
+                            matrix RI[`h'+1,2] = B[`pos',2]
+                        }
+                    }
+                }
+            }
+        }
+        else if "`arm'" == "dcdh_tnp" {
+            capture did_multiplegt_dyn y id time treated, effects(3) ///
+                trends_nonparam(x1) graphoptions(nodraw) graph_off
+            forvalues h = 0/2 {
+                local j = `h' + 1
+                local b = .
+                local se = .
+                capture local b = e(Effect_`j')
+                capture local se = e(se_effect_`j')
+                if `b' &lt; . {
+                    matrix RI[`h'+1,1] = `b'
+                    matrix RI[`h'+1,2] = `se'
+                }
+            }
+        }
+        else if "`arm'" == "sa_xt" {
+            quietly {
+                gen int ry = time - gvar if gvar &gt; 0
+                gen byte nevertr = (gvar == 0)
+                local dums ""
+                foreach k in -4 -3 -2 0 1 2 3 4 {
+                    local nm = cond(`k' &lt; 0, "g_m`=abs(`k')'", "g_p`k'")
+                    gen byte `nm' = (ry == `k')
+                    replace `nm' = 0 if missing(`nm')
+                    local dums "`dums' `nm'"
+                }
+                local xl ""
+                forvalues t = 2/7 {
+                    gen double xa_`t' = x1*(time==`t')
+                    gen double xb_`t' = x2*(time==`t')
+                    local xl "`xl' xa_`t' xb_`t'"
+                }
+            }
+            capture eventstudyinteract y `dums', cohort(gvar_miss) ///
+                control_cohort(nevertr) covariates(`xl') absorb(id time) vce(cluster id)
+            if _rc == 0 {
+                matrix BS = e(b_iw)
+                matrix VS = e(V_iw)
+                local cn : colnames BS
+                forvalues h = 0/2 {
+                    local j : list posof "g_p`h'" in cn
+                    if `j' &gt; 0 {
+                        matrix RI[`h'+1,1] = BS[1,`j']
+                        matrix RI[`h'+1,2] = sqrt(VS[`j',`j'])
+                    }
+                }
+            }
+        }
+
+        forvalues h = 0/2 {
+            local bb = string(RB[`h'+1,1], "%21.0g")
+            local bi = string(RI[`h'+1,1], "%21.0g")
+            local sb = string(RB[`h'+1,2], "%21.0g")
+            local si = string(RI[`h'+1,2], "%21.0g")
+            file write out "`sd',`arm',`h',`bb',`bi',`sb',`si'" _n
+        }
+    }
+}
+file close out
+</code></pre>
+</details>
+<details class="code-fold">
+<summary><code>lpdidrw.do</code> &mdash; the lpdid <code>rw</code> arm on every design where lpdid appears, same seeds as simmc.do</summary>
+<pre><code>* Adds the lpdid `rw' arm to every design in which lpdid already appears.
+* Same DGP, same seeds (90000 + rep) as simmc.do / simmc_dr.do / simmc_ps2.do,
+* so the default-lpdid rows reproduce the published numbers and the rw rows
+* drop straight into the same tables.
+*   Usage: stata-mp -b do lpdidrw.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+args nunits reps outfile
+local B "."
+quietly do "`B'/simdgp.do"
+quietly do "`B'/simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+
+    * ---- Reliability I sampling regimes (no covariates) ----
+    foreach reg in balanced varmiss unbalanced {
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(`reg')
+        tempfile d
+        quietly save "`d'", replace
+        foreach pkg in lpdid lpdid_rw {
+            use "`d'", clear
+            capture sim_est3, pkg(`pkg') regime(`reg') bal(none)
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "`reg',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "`reg',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+    }
+
+    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    foreach cell in ok owrong pwrong2 {
+        local msp = cond("`cell'" == "ok", "", ///
+            cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(balanced) cov `msp'
+        tempfile dc
+        quietly save "`dc'", replace
+        foreach pkg in lpdid lpdid_rw {
+            use "`dc'", clear
+            capture sim_est3, pkg(`pkg') regime(balanced) bal(none) cov
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "bal_`cell',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "bal_`cell',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+    }
+
+    if mod(`r', 10) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>jwuncond.do</code> &mdash; jwdid with <code>method(regress) corr</code> and <code>vce(unconditional)</code>, paired with the default on the same seeds</summary>
+<pre><code>* Adds the jwdid unconditional-SE arm to every design in which lpdid already appears.
+* Same DGP, same seeds (90000 + rep) as simmc.do / simmc_dr.do / simmc_ps2.do,
+* so the default-lpdid rows reproduce the published numbers and the rw rows
+* drop straight into the same tables.
+*   Usage: stata-mp -b do lpdidrw.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+args nunits reps outfile
+local B "."
+quietly do "`B'/simdgp.do"
+quietly do "`B'/simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+
+    * ---- Reliability I sampling regimes (no covariates) ----
+    foreach reg in balanced varmiss unbalanced {
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(`reg')
+        tempfile d
+        quietly save "`d'", replace
+        foreach pkg in jwdid jwdid_uc {
+            use "`d'", clear
+            capture sim_est3, pkg(`pkg') regime(`reg') bal(none)
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "`reg',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "`reg',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+    }
+
+    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    foreach cell in ok owrong pwrong2 {
+        local msp = cond("`cell'" == "ok", "", ///
+            cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(balanced) cov `msp'
+        tempfile dc
+        quietly save "`dc'", replace
+        foreach pkg in jwdid jwdid_uc {
+            use "`dc'", clear
+            capture sim_est3, pkg(`pkg') regime(balanced) bal(none) cov
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "bal_`cell',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "bal_`cell',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+    }
+
+    if mod(`r', 10) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>bjswtr.do</code> &mdash; did_imputation default vs <code>wtr()</code> population-share weights across the sampling regimes</summary>
+<pre><code>* did_imputation: default vs wtr(population-share), all designs where it appears.
+args nunits reps outfile
+quietly do "simdgp.do"
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+capture program drop mkwtr
+program define mkwtr
+    quietly capture drop K w0 w1 w2 ncell
+    quietly gen int K = time - gvar if gvar &gt; 0 &amp; time &gt;= gvar
+    forvalues h = 0/2 {
+        quietly capture drop ncell
+        quietly bysort gvar time: egen double ncell = total(K == `h') if K == `h'
+        quietly gen double w`h' = cond(K == `h' &amp; ncell &gt; 0, 1/(3*ncell), 0)
+        quietly replace w`h' = 0 if missing(w`h')
+    }
+end
+
+forvalues r = 1/`reps' {
+    foreach reg in balanced varmiss unbalanced {
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(`reg')
+        tempfile d
+        quietly save "`d'", replace
+
+        use "`d'", clear
+        capture did_imputation y id time gvar_miss, horizons(0/2) autosample
+        local ok = (_rc == 0)
+        forvalues h = 0/2 {
+            local e = .
+            local s = .
+            if `ok' {
+                matrix B = r(table)
+                local cn : colnames B
+                local p : list posof "tau`h'" in cn
+                if `p' &gt; 0 {
+                    local e = B[1,`p']
+                    local s = B[2,`p']
+                }
+            }
+            file write out "`reg',bjs,`r',`h'," (string(`e',"%18.0g")) "," (string(`s',"%18.0g")) _n
+        }
+
+        use "`d'", clear
+        mkwtr
+        capture did_imputation y id time gvar_miss, wtr(w0 w1 w2) autosample
+        local ok2 = (_rc == 0)
+        forvalues h = 0/2 {
+            local e2 = .
+            local s2 = .
+            if `ok2' {
+                matrix W = r(table)
+                local cw : colnames W
+                local p2 : list posof "tau_w`h'" in cw
+                if `p2' &gt; 0 {
+                    local e2 = W[1,`p2']
+                    local s2 = W[2,`p2']
+                }
+            }
+            file write out "`reg',bjs_wtr,`r',`h'," (string(`e2',"%18.0g")) "," (string(`s2',"%18.0g")) _n
+        }
+    }
+    if mod(`r',25)==0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>sarun.do</code> &mdash; the Sun and Abraham interaction-weighted estimator (eventstudyinteract) on the main designs</summary>
+<pre><code>* Runs the Sun and Abraham arm (eventstudyinteract) via simrun3.do on the main designs.
+* Same DGP, same seeds (90000 + rep) as simmc.do / simmc_dr.do / simmc_ps2.do,
+* so the default-lpdid rows reproduce the published numbers and the rw rows
+* drop straight into the same tables.
+*   Usage: stata-mp -b do lpdidrw.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+args nunits reps outfile
+local B "."
+quietly do "`B'/simdgp.do"
+quietly do "`B'/simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+
+    * ---- Reliability I sampling regimes (no covariates) ----
+    foreach reg in balanced varmiss unbalanced {
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(`reg')
+        tempfile d
+        quietly save "`d'", replace
+        foreach pkg in sa {
+            use "`d'", clear
+            capture sim_est3, pkg(`pkg') regime(`reg') bal(none)
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "`reg',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "`reg',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+    }
+
+    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    foreach cell in ok owrong pwrong2 {
+        local msp = cond("`cell'" == "ok", "", ///
+            cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
+        quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(balanced) cov `msp'
+        tempfile dc
+        quietly save "`dc'", replace
+        foreach pkg in sa {
+            use "`dc'", clear
+            capture sim_est3, pkg(`pkg') regime(balanced) bal(none) cov
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "bal_`cell',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "bal_`cell',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+    }
+
+    if mod(`r', 10) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>optcost.do</code> &mdash; what the <code>rw</code> and unconditional options cost in run time, at the guide's timing protocol</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      optcost.do -- what the option arms cost in run time
+*-----------------------------------------------------------------------------
+* The guide's timing protocol: one discarded warmup per (arm, dataset), then
+* the median of the requested trials.
+*   jwdid default vs method(regress) corr + estat, vce(unconditional)
+*   lpdid default vs rw
+* Output: optcost.csv, one row per (n, arm). Run from the bench/ folder.
+*   Usage: stata-mp -b do optcost.do &lt;trials&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+args trials
+if "`trials'" == "" local trials 5
+quietly do "fielddgp.do"
+
+capture program drop run_jw_default
+program define run_jw_default
+    quietly jwdid y, ivar(id) tvar(time) gvar(gvar)
+    quietly estat event
+end
+capture program drop run_jw_uncond
+program define run_jw_uncond
+    quietly jwdid y, ivar(id) tvar(time) gvar(gvar) method(regress) corr
+    quietly estat event, vce(unconditional)
+end
+capture program drop run_lp_default
+program define run_lp_default
+    quietly lpdid y, unit(id) time(time) treat(treated) post_window(2) pre_window(3)
+end
+capture program drop run_lp_rw
+program define run_lp_rw
+    quietly lpdid y, unit(id) time(time) treat(treated) post_window(2) pre_window(3) rw
+end
+
+capture program drop timeit
+program define timeit, rclass
+    syntax , WHAT(string) TRIALS(integer)
+    capture noisily run_`what'
+    tempname T
+    matrix `T' = J(`trials', 1, .)
+    forvalues k = 1/`trials' {
+        timer clear 9
+        timer on 9
+        capture run_`what'
+        timer off 9
+        quietly timer list 9
+        matrix `T'[`k',1] = r(t9)
+    }
+    tempname V
+    mata: st_matrix("`V'", sort(st_matrix("`T'"), 1))
+    local mid = ceil(`trials'/2)
+    return scalar med = `V'[`mid',1]
+end
+
+capture file close out
+file open out using "optcost.csv", write replace text
+file write out "n,rows,arm,median_seconds" _n
+
+foreach n in 1000 10000 {
+    mkpanel, n(`n')
+    local rows = _N
+    tempfile d
+    quietly save "`d'", replace
+    foreach arm in jw_default jw_uncond lp_default lp_rw {
+        use "`d'", clear
+        capture timeit, what(`arm') trials(`trials')
+        local m = cond(_rc, ., r(med))
+        local v = string(`m', "%12.0g")
+        file write out "`n',`rows',`arm',`v'" _n
+    }
+}
+file close out
+display "MCDONE optcost.csv"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>sa_equiv.do</code> &mdash; csdid <code>nevertreated</code> and eventstudyinteract on one draw per regime: the balanced-panel equivalence and where it stops</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      sa_equiv.do -- the csdid / eventstudyinteract equivalence, one draw
+*-----------------------------------------------------------------------------
+* One draw per sampling regime, no covariates: csdid with nevertreated and
+* the interaction-weighted estimator coincide to machine precision on the
+* balanced panel and part ways once the panel is unbalanced or period sizes
+* vary. Output: sa_equiv.csv. Run from the bench/ folder.
+*   Usage: stata-mp -b do sa_equiv.do
+*-----------------------------------------------------------------------------
+clear all
+set more off
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "simdgp.do"
+
+capture file close out
+file open out using "sa_equiv.csv", write replace text
+file write out "regime,h,sa,csdid_nyt,diff" _n
+
+foreach reg in balanced unbalanced varmiss {
+    quietly sim_dgp, n(2000) seed(90007) regime(`reg')
+    quietly {
+        gen int ry = time - gvar if gvar &gt; 0
+        gen byte nevertr = (gvar == 0)
+        local dums ""
+        foreach k in -4 -3 -2 0 1 2 3 4 {
+            local nm = cond(`k' &lt; 0, "g_m`=abs(`k')'", "g_p`k'")
+            gen byte `nm' = (ry == `k')
+            replace `nm' = 0 if missing(`nm')
+            local dums "`dums' `nm'"
+        }
+    }
+    capture eventstudyinteract y `dums', cohort(gvar_miss) ///
+        control_cohort(nevertr) absorb(id time) vce(cluster id)
+    matrix BS = e(b_iw)
+    local cn : colnames BS
+    capture csdid y, ivar(id) time(time) gvar(gvar) nevertreated
+    capture estat event, window(0 2)
+    matrix E = r(table)
+    local ce : colnames E
+    forvalues h = 0/2 {
+        local j : list posof "g_p`h'" in cn
+        local sa = cond(`j' &gt; 0, BS[1,`j'], .)
+        local jc : list posof "Tp`h'" in ce
+        local cs = cond(`jc' &gt; 0, E[1,`jc'], .)
+        local v1 = string(`sa', "%18.0g")
+        local v2 = string(`cs', "%18.0g")
+        local v3 = string(`sa' - `cs', "%18.0g")
+        file write out "`reg',`h',`v1',`v2',`v3'" _n
+    }
+}
+file close out
+display "MCDONE sa_equiv.csv"
+</code></pre>
+</details>
+
+
+
+<details class="code-fold">
+<summary><code>sa_se.do</code> &mdash; standard errors of csdid and eventstudyinteract compared over 200 draws</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      sa_se.do -- standard errors of csdid and eventstudyinteract compared
+*-----------------------------------------------------------------------------
+* Balanced panel, no covariates, 200 draws: mean standard errors of the two
+* commands and the largest point-estimate gap. Output: sa_se.csv.
+* Run from the bench/ folder.
+*   Usage: stata-mp -b do sa_se.do &lt;reps&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+args reps
+if "`reps'" == "" local reps 200
+quietly do "simdgp.do"
+
+matrix S = J(3, 5, 0)
+forvalues r = 1/`reps' {
+    quietly sim_dgp, n(1000) seed(`=90000 + `r'') regime(balanced)
+    quietly {
+        capture drop ry nevertr g_m* g_p*
+        gen int ry = time - gvar if gvar &gt; 0
+        gen byte nevertr = (gvar == 0)
+        local dums ""
+        foreach k in -4 -3 -2 0 1 2 3 4 {
+            local nm = cond(`k' &lt; 0, "g_m`=abs(`k')'", "g_p`k'")
+            gen byte `nm' = (ry == `k')
+            replace `nm' = 0 if missing(`nm')
+            local dums "`dums' `nm'"
+        }
+    }
+    capture eventstudyinteract y `dums', cohort(gvar_miss) ///
+        control_cohort(nevertr) absorb(id time) vce(cluster id)
+    local sa_ok = (_rc == 0)
+    if `sa_ok' {
+        matrix BS = e(b_iw)
+        matrix VS = e(V_iw)
+        local cns : colnames BS
+    }
+    capture csdid y, ivar(id) time(time) gvar(gvar) nevertreated
+    local cs_ok = (_rc == 0)
+    if `cs_ok' {
+        capture estat event, window(0 2)
+        matrix EC = r(table)
+        local cnc : colnames EC
+    }
+    if `sa_ok' &amp; `cs_ok' {
+        forvalues h = 0/2 {
+            local js : list posof "g_p`h'" in cns
+            local jc : list posof "Tp`h'" in cnc
+            if `js' &gt; 0 &amp; `jc' &gt; 0 {
+                local i = `h' + 1
+                matrix S[`i',1] = S[`i',1] + sqrt(VS[`js',`js'])
+                matrix S[`i',2] = S[`i',2] + EC[2,`jc']
+                matrix S[`i',3] = S[`i',3] + 1
+                local db = abs(BS[1,`js'] - EC[1,`jc'])
+                matrix S[`i',4] = S[`i',4] + `db'
+                if `db' &gt; S[`i',5] matrix S[`i',5] = `db'
+            }
+        }
+    }
+}
+capture file close out
+file open out using "sa_se.csv", write replace text
+file write out "h,mean_se_sa,mean_se_csdid,reps,mean_absdiff_b,max_absdiff_b" _n
+forvalues h = 0/2 {
+    local i = `h' + 1
+    local n = S[`i',3]
+    local v1 = string(S[`i',1]/`n', "%18.0g")
+    local v2 = string(S[`i',2]/`n', "%18.0g")
+    local v3 = string(S[`i',4]/`n', "%18.0g")
+    local v4 = string(S[`i',5], "%18.0g")
+    file write out "`h',`v1',`v2',`n',`v3',`v4'" _n
+}
+file close out
+display "MCDONE sa_se.csv"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>sa_scale.do</code> &mdash; the csdid-reg/eventstudyinteract difference at n = 500 to 32,000: the root-n convergence check</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      sa_scale.do -- does the csdid-reg / eventstudyinteract gap shrink?
+*-----------------------------------------------------------------------------
+* With covariates the two are different estimators of the same estimand; the
+* mean absolute difference should fall at the root-n rate. n = 500 to
+* 32,000, 20 draws each. Output: sa_scale.csv. Run from the bench/ folder.
+*   Usage: stata-mp -b do sa_scale.do &lt;reps&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+args reps
+if "`reps'" == "" local reps 20
+quietly do "simdgp.do"
+
+capture file close out
+file open out using "sa_scale.csv", write replace text
+file write out "n,mean_absdiff,mean_diff,reps" _n
+
+foreach n in 500 2000 8000 32000 {
+    local sumabs = 0
+    local sumdif = 0
+    local k = 0
+    forvalues r = 1/`reps' {
+        quietly sim_dgp, n(`n') seed(`=90000 + `r'') regime(balanced) cov
+        tempfile d
+        quietly save "`d'", replace
+        local c0 = .
+        capture csdid y x1 x2, ivar(id) time(time) gvar(gvar) method(reg) nevertreated
+        if _rc == 0 {
+            capture estat event, window(0 2)
+            if _rc == 0 {
+                matrix E = r(table)
+                local ce : colnames E
+                local j : list posof "Tp0" in ce
+                if `j' &gt; 0 local c0 = E[1,`j']
+            }
+        }
+        use "`d'", clear
+        quietly {
+            gen int ry = time - gvar if gvar &gt; 0
+            gen byte nevertr = (gvar == 0)
+            local dums ""
+            foreach k2 in -4 -3 -2 0 1 2 3 4 {
+                local nm = cond(`k2' &lt; 0, "g_m`=abs(`k2')'", "g_p`k2'")
+                gen byte `nm' = (ry == `k2')
+                replace `nm' = 0 if missing(`nm')
+                local dums "`dums' `nm'"
+            }
+            local xl ""
+            forvalues t = 2/7 {
+                gen double xa_`t' = x1*(time==`t')
+                gen double xb_`t' = x2*(time==`t')
+                local xl "`xl' xa_`t' xb_`t'"
+            }
+        }
+        local s0 = .
+        capture eventstudyinteract y `dums', cohort(gvar_miss) ///
+            control_cohort(nevertr) covariates(`xl') absorb(id time) vce(cluster id)
+        if _rc == 0 {
+            matrix BS = e(b_iw)
+            local cn : colnames BS
+            local j : list posof "g_p0" in cn
+            if `j' &gt; 0 local s0 = BS[1,`j']
+        }
+        if `c0' &lt; . &amp; `s0' &lt; . {
+            local sumabs = `sumabs' + abs(`c0' - `s0')
+            local sumdif = `sumdif' + (`c0' - `s0')
+            local k = `k' + 1
+        }
+    }
+    local v1 = string(`sumabs'/`k', "%18.0g")
+    local v2 = string(`sumdif'/`k', "%18.0g")
+    file write out "`n',`v1',`v2',`k'" _n
+}
+file close out
+display "MCDONE sa_scale.csv"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>cell_compare.do</code> &mdash; ATT(g,t) cells of csdid reg nevertreated against <code>e(b_interact)</code>, one draw</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      cell_compare.do -- ATT(g,t) cells against e(b_interact), one draw
+*-----------------------------------------------------------------------------
+* With covariates the disagreement between csdid reg (nevertreated) and the
+* interaction-weighted estimator is already present at the cell level, not
+* only after aggregation. Output: cell_compare.csv. Run from the bench/
+* folder.
+*   Usage: stata-mp -b do cell_compare.do
+*-----------------------------------------------------------------------------
+clear all
+set more off
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "simdgp.do"
+quietly sim_dgp, n(4000) seed(90001) regime(balanced) cov
+tempfile d
+quietly save "`d'", replace
+
+capture file close out
+file open out using "cell_compare.csv", write replace text
+file write out "source,cell,value" _n
+
+quietly csdid y x1 x2, ivar(id) time(time) gvar(gvar) method(reg) nevertreated
+matrix CB = e(b)
+local cn : colnames CB
+forvalues j = 1/`=colsof(CB)' {
+    local nm : word `j' of `cn'
+    local v = string(CB[1,`j'], "%18.0g")
+    file write out "csdid,`nm',`v'" _n
+}
+
+use "`d'", clear
+quietly {
+    gen int ry = time - gvar if gvar &gt; 0
+    gen byte nevertr = (gvar == 0)
+    local dums ""
+    foreach k in -4 -3 -2 0 1 2 3 4 {
+        local nm = cond(`k' &lt; 0, "g_m`=abs(`k')'", "g_p`k'")
+        gen byte `nm' = (ry == `k')
+        replace `nm' = 0 if missing(`nm')
+        local dums "`dums' `nm'"
+    }
+    local xl ""
+    forvalues t = 2/7 {
+        gen double xa_`t' = x1*(time==`t')
+        gen double xb_`t' = x2*(time==`t')
+        local xl "`xl' xa_`t' xb_`t'"
+    }
+}
+quietly eventstudyinteract y `dums', cohort(gvar_miss) ///
+    control_cohort(nevertr) covariates(`xl') absorb(id time) vce(cluster id)
+matrix BI = e(b_interact)
+local rn : rownames BI
+local cnn : colnames BI
+forvalues i = 1/`=rowsof(BI)' {
+    local g : word `i' of `rn'
+    forvalues j = 1/`=colsof(BI)' {
+        local e : word `j' of `cnn'
+        local v = string(BI[`i',`j'], "%18.0g")
+        file write out "sa_b_interact,g`g'_`e',`v'" _n
+    }
+}
+matrix W = e(ff_w)
+forvalues i = 1/`=rowsof(W)' {
+    local g : word `i' of `rn'
+    forvalues j = 1/`=colsof(W)' {
+        local e : word `j' of `cnn'
+        local v = string(W[`i',`j'], "%18.0g")
+        file write out "sa_ff_w,g`g'_`e',`v'" _n
+    }
+}
+file close out
+display "MCDONE cell_compare.csv"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>wtr_cells.do</code> &mdash; isolating single ATT(g,t) cells with did_imputation's <code>wtr()</code></summary>
+<pre><code>* Can wtr() isolate individual ATT(g,t) cells from did_imputation?
+* Truth for cell (g,t) is (g-2) + 0.5*(t-g).
+clear all
+set more off
+quietly do "simdgp.do"
+quietly sim_dgp, n(4000) seed(90001) regime(balanced)
+
+quietly {
+    gen double c33 = 0
+    gen double c45 = 0
+    gen double c57 = 0
+    * one indicator per (g,t) cell, normalised to average within the cell
+    foreach spec in 3_3 4_5 5_7 {
+        local g = substr("`spec'",1,1)
+        local t = substr("`spec'",3,1)
+        count if gvar==`g' &amp; time==`t'
+        local n = r(N)
+        replace c`g'`t' = 1/`n' if gvar==`g' &amp; time==`t'
+    }
+}
+di "--- cell sizes and weight totals ---"
+foreach v in c33 c45 c57 {
+    quietly summarize `v', meanonly
+    di "   `v' sums to " %6.4f r(sum)
+}
+di ""
+di "--- did_imputation with cell-isolating wtr() ---"
+capture noisily did_imputation y id time gvar_miss, wtr(c33 c45 c57) autosample
+matrix W = r(table)
+local cw : colnames W
+foreach pair in tau_c33:1.0 tau_c45:2.5 tau_c57:4.0 {
+    local nm = substr("`pair'",1,strpos("`pair'",":")-1)
+    local tr = substr("`pair'",strpos("`pair'",":")+1,.)
+    local p : list posof "`nm'" in cw
+    if `p' &gt; 0 di "   `nm'  est=" %9.5f W[1,`p'] "   truth=`tr'   diff=" %9.5f W[1,`p']-`tr'
+}
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>ctvar_all.do</code> &mdash; the calendar-time design: covariate trend effects vary with calendar time; every estimator and option</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      ctvar_all.do -- the calendar-time design, every command at every option
+*-----------------------------------------------------------------------------
+* Covariate trend effects vary with calendar time, identically across
+* cohorts: conditional parallel trends holds and every outcome model is
+* correctly specified cell by cell. Target ES(e) = 2.0 + 0.5 e.
+* Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+* mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+*   Usage: stata-mp -b do ctvar_all.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+args nunits reps outfile
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+    dgp_ct, n(`nunits') seed(`=90000 + `r'')
+    tempfile d
+    quietly save "`d'", replace
+    foreach pkg in csdid_dr csdid_ipw csdid_reg csdid_dr_nt csdid_ipw_nt csdid_reg_nt jwdid jwdid_uc bjs bjs_wtr dcdh dcdh_tnp lpdid lpdid_rw lpdid_ctl lpdid_rw_ctl sa sa_xt {
+        use "`d'", clear
+        * the plain lpdid arms run WITHOUT controls: the legacy lpdid branch
+        * adds controls(x1 x2) whenever cov is passed, which is the separate
+        * lpdid_ctl arm here
+        local covopt = cond(inlist("`pkg'", "lpdid", "lpdid_rw"), "", "cov")
+        capture sim_est3, pkg(`pkg') regime(balanced) bal(none) `covopt'
+        if _rc == 0 &amp; r(ok) == 1 {
+            matrix RR = r(R)
+            forvalues h = 0/2 {
+                local v1 = string(RR[`h'+1,1], "%18.0g")
+                local v2 = string(RR[`h'+1,2], "%18.0g")
+                file write out "ctvar,`pkg',`r',`h',`v1',`v2'" _n
+            }
+        }
+        else {
+            forvalues h = 0/2 {
+                file write out "ctvar,`pkg',`r',`h',.,." _n
+            }
+        }
+    }
+    if mod(`r', 25) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+
+<details class="code-fold">
+<summary><code>cohorthet.do</code> &mdash; cohort-specific treatment-effect heterogeneity in X, all estimators</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      cohorthet.do -- cohort-specific treatment-effect heterogeneity in X
+*-----------------------------------------------------------------------------
+* tau(g,t,X) has cohort-specific coefficients on X and X-by-event-time;
+* conditional parallel trends holds. Target ES(e) = 2.516667 + 0.633333 e.
+* The appended _nt and sa arms are the pooled-gamma contamination test.
+* Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+* mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+*   Usage: stata-mp -b do cohorthet.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+args nunits reps outfile
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+    dgp_ch, n(`nunits') seed(`=90000 + `r'')
+    tempfile d
+    quietly save "`d'", replace
+    foreach pkg in csdid_dr csdid_reg jwdid bjs lpdid_rw_ctl dcdh sa csdid_reg_nt csdid_dr_nt sa_xt {
+        use "`d'", clear
+        capture sim_est3, pkg(`pkg') regime(balanced) bal(none) cov
+        if _rc == 0 &amp; r(ok) == 1 {
+            matrix RR = r(R)
+            forvalues h = 0/2 {
+                local v1 = string(RR[`h'+1,1], "%18.0g")
+                local v2 = string(RR[`h'+1,2], "%18.0g")
+                file write out "cohorthet,`pkg',`r',`h',`v1',`v2'" _n
+            }
+        }
+        else {
+            forvalues h = 0/2 {
+                file write out "cohorthet,`pkg',`r',`h',.,." _n
+            }
+        }
+    }
+    if mod(`r', 25) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+
+<details class="code-fold">
+<summary><code>breakhunt.do</code> &mdash; two designs probing lpdid's covariate adjustment: nonlinear-in-X trends, unequal cohort sizes</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      breakhunt.do -- designs probing lpdid's covariate adjustment
+*-----------------------------------------------------------------------------
+* Design B: untreated trend nonlinear in x2 with asymmetric cohort means --
+* every linear-outcome model is misspecified while the propensity score
+* stays logit-linear, so csdid ipw/dr survive. Target ES(e) = 2.0 + 0.5 e.
+* Design C: unequal cohort sizes (50/30/20) with cohort-specific tau(X)
+* profiles. Target ES(e) = 2.0945 + 0.556 e (closed form in mcsum.py).
+* Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+* mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+*   Usage: stata-mp -b do breakhunt.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+args nunits reps outfile
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+foreach design in B C {
+    forvalues r = 1/`reps' {
+        dgp_break, n(`nunits') seed(`=90000 + `r'') design(`design')
+        tempfile d
+        quietly save "`d'", replace
+        foreach pkg in csdid_dr csdid_ipw csdid_reg sa_xt lpdid_rw_ctl jwdid bjs {
+            use "`d'", clear
+            capture sim_est3, pkg(`pkg') regime(balanced) bal(none) cov
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "break`design',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "break`design',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+        if mod(`r', 25) == 0 display "MCPROG design `design' rep `r' of `reps' done"
+    }
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+
+<details class="code-fold">
+<summary><code>master.do</code> &mdash; the master design: both mechanisms at once, twelve estimator arms, closed-form target</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      master.do -- the master design, every command at every option
+*-----------------------------------------------------------------------------
+* Both mechanisms at once: covariate trend effects nonlinear in calendar
+* time (common across cohorts, so conditional parallel trends holds exactly)
+* plus cohort-specific treatment-effect heterogeneity in X.
+* Closed-form target ES(e) = 2.516667 + 0.633333 e, verified in fielddgp.do.
+* Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+* mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+*   Usage: stata-mp -b do master.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+args nunits reps outfile
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+    dgp_master, n(`nunits') seed(`=90000 + `r'')
+    tempfile d
+    quietly save "`d'", replace
+    foreach pkg in csdid_reg csdid_dr jwdid jwdid_uc bjs lpdid lpdid_rw lpdid_ctl lpdid_rw_ctl dcdh dcdh_tnp sa sa_xt {
+        use "`d'", clear
+        * the plain lpdid arms run WITHOUT controls: the legacy lpdid branch
+        * adds controls(x1 x2) whenever cov is passed, which is the separate
+        * lpdid_ctl arm here
+        local covopt = cond(inlist("`pkg'", "lpdid", "lpdid_rw"), "", "cov")
+        capture sim_est3, pkg(`pkg') regime(balanced) bal(none) `covopt'
+        if _rc == 0 &amp; r(ok) == 1 {
+            matrix RR = r(R)
+            forvalues h = 0/2 {
+                local v1 = string(RR[`h'+1,1], "%18.0g")
+                local v2 = string(RR[`h'+1,2], "%18.0g")
+                file write out "master,`pkg',`r',`h',`v1',`v2'" _n
+            }
+        }
+        else {
+            forvalues h = 0/2 {
+                file write out "master,`pkg',`r',`h',.,." _n
+            }
+        }
+    }
+    if mod(`r', 25) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+
+<details class="code-fold">
+<summary><code>smallnt.do</code> &mdash; comparison groups when the never-treated share is five percent</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      smallnt.do -- comparison groups with a five percent never-treated share
+*-----------------------------------------------------------------------------
+* Never-treated share ~5 percent; three equal treated cohorts, so the
+* target stays ES(e) = 2.0 + 0.5 e.
+* Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+* mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+*   Usage: stata-mp -b do smallnt.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+args nunits reps outfile
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+    dgp_snt, n(`nunits') seed(`=90000 + `r'')
+    tempfile d
+    quietly save "`d'", replace
+    foreach pkg in csdid_dr csdid_dr_nt sa {
+        use "`d'", clear
+        capture sim_est3, pkg(`pkg') regime(balanced) bal(none) 
+        if _rc == 0 &amp; r(ok) == 1 {
+            matrix RR = r(R)
+            forvalues h = 0/2 {
+                local v1 = string(RR[`h'+1,1], "%18.0g")
+                local v2 = string(RR[`h'+1,2], "%18.0g")
+                file write out "smallnt,`pkg',`r',`h',`v1',`v2'" _n
+            }
+        }
+        else {
+            forvalues h = 0/2 {
+                file write out "smallnt,`pkg',`r',`h',.,." _n
+            }
+        }
+    }
+    if mod(`r', 25) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>ymiss.do</code> &mdash; row-deletion versus outcome-missing representations of an unbalanced panel</summary>
+<pre><code>*-----------------------------------------------------------------------------
+*      ymiss.do -- two representations of an unbalanced panel
+*-----------------------------------------------------------------------------
+* Period-varying missingness applied the same way at the same seeds, either
+* by deleting rows or by setting only the outcome to missing (cohort and X
+* stay on the roster). Target ES(e) = 2.0 + 0.5 e. All three commands drop
+* missing-Y rows internally, so the two representations coincide.
+* Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+* mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+*   Usage: stata-mp -b do ymiss.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+*-----------------------------------------------------------------------------
+clear all
+set more off
+args nunits reps outfile
+* replication-package layout puts src/ beside bench/; in the repo checkout it
+* sits three levels up -- probe for it
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+quietly do "fielddgp.do"
+quietly do "simrun3.do"
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+foreach mode in drop ymiss {
+    forvalues r = 1/`reps' {
+        dgp_ym, n(`nunits') seed(`=90000 + `r'') mode(`mode')
+        tempfile d
+        quietly save "`d'", replace
+        foreach pkg in csdid_dr jwdid bjs {
+            use "`d'", clear
+            capture sim_est3, pkg(`pkg') regime(unbalanced) bal(none)
+            if _rc == 0 &amp; r(ok) == 1 {
+                matrix RR = r(R)
+                forvalues h = 0/2 {
+                    local v1 = string(RR[`h'+1,1], "%18.0g")
+                    local v2 = string(RR[`h'+1,2], "%18.0g")
+                    file write out "ymiss_`mode',`pkg',`r',`h',`v1',`v2'" _n
+                }
+            }
+            else {
+                forvalues h = 0/2 {
+                    file write out "ymiss_`mode',`pkg',`r',`h',.,." _n
+                }
+            }
+        }
+        if mod(`r', 25) == 0 display "MCPROG mode `mode' rep `r' of `reps' done"
+    }
+}
+file close out
+display "MCDONE `outfile'"
+</code></pre>
+</details>
+
 
 
 ## Speed
@@ -3071,6 +4772,12 @@ Usage:  mcsum.py FILE.csv
 import csv, math, sys, collections
 
 ES_TRUTH = {0: 2.0, 1: 2.5, 2: 3.0}
+# field designs with their own closed-form targets (base, slope in event time)
+REGIME_TRUTH = {"master": (2.516667, 0.633333), "cohorthet": (2.516667, 0.633333),
+                "breakC": (2.0945, 0.556)}
+def es_truth(regime, h):
+    base, slope = REGIME_TRUTH.get(regime, (2.0, 0.5))
+    return base + slope * h
 POST_AVG_TRUTH = (2.0 + 2.5 + 3.0) / 3.0          # equal-weight window(0 2) overall
 def cell_truth(code):                              # code = 1000*g + t
     g, t = divmod(code, 1000)
@@ -3078,12 +4785,12 @@ def cell_truth(code):                              # code = 1000*g + t
 
 PKG = {"csdid": "csdid bal(none)", "csdidpair": "csdid bal(pair)",
        "csdid_dr": "csdid dr", "csdid_ipw": "csdid ipw", "csdid_reg": "csdid reg",
-       "jwdid": "jwdid", "bjs": "did_imputation", "dcdh": "did_multiplegt_dyn",
-       "lpdid": "lpdid", "flexdid": "flexdid", "csdid_band": "csdid uniform band"}
+       "jwdid": "jwdid", "jwdid_uc": "jwdid uncond", "bjs": "did_imputation", "bjs_wtr": "did_imputation wtr", "dcdh": "did_multiplegt_dyn",
+       "lpdid": "lpdid", "sa": "eventstudyinteract", "lpdid_rw": "lpdid rw", "flexdid": "flexdid", "csdid_band": "csdid uniform band"}
 ORDER = ["csdid", "csdidpair", "csdid_dr", "csdid_ipw", "csdid_reg",
-         "jwdid", "bjs", "dcdh", "lpdid", "flexdid", "csdid_band"]
+         "jwdid", "jwdid_uc", "bjs", "bjs_wtr", "sa", "dcdh", "lpdid", "lpdid_rw", "flexdid", "csdid_band"]
 REGIMES = ["balanced", "varmiss", "unbalanced", "rcs", "rcsvar",
-           "bal_ok", "bal_owrong", "bal_pwrong", "bal_ps2", "unitroot", "bands"]
+           "bal_ok", "bal_owrong", "bal_pwrong", "bal_pwrong2", "bal_ps2", "unitroot", "bands"]
 
 def num(x):
     try:
@@ -3108,7 +4815,7 @@ def pkgs_in(rows):
     return sorted({r["pkg"] for r in rows}, key=order_key)
 
 def table(rows, hsel, truth, lab, regs, pkgs):
-    print(f"\n== {lab}   truth = {truth:.4f} ==")
+    print(f"\n== {lab}   default truth = {truth:.4f} (field designs use their own) ==")
     print(f"  {'regime':&lt;11}{'estimator':&lt;20}{'reps':&gt;5}{'bias':&gt;9}{'sd':&gt;8}"
           f"{'rmse':&gt;8}{'meanSE':&gt;8}{'cover95':&gt;8}")
     for regime in regs:
@@ -3122,16 +4829,17 @@ def table(rows, hsel, truth, lab, regs, pkgs):
                 print(f"  {regime:&lt;11}{label(pkg):&lt;20}    - unsupported/empty")
                 continue
             n = len(ok)
+            rtruth = es_truth(regime, hsel) if hsel in (0, 1, 2) else truth
             est = [e for e, _ in ok]
             m = sum(est) / n
             sd = math.sqrt(sum((e - m) ** 2 for e in est) / (n - 1)) if n &gt; 1 else float("nan")
-            rmse = math.sqrt(sum((e - truth) ** 2 for e in est) / n)
+            rmse = math.sqrt(sum((e - rtruth) ** 2 for e in est) / n)
             ses = [s for _, s in ok if s is not None]
             mse = sum(ses) / len(ses) if ses else float("nan")
-            cov = [1 if abs(e - truth) &lt;= 1.959964 * s else 0
+            cov = [1 if abs(e - rtruth) &lt;= 1.959964 * s else 0
                    for e, s in ok if s is not None and s &gt; 0]
             cvr = sum(cov) / len(cov) if cov else float("nan")
-            print(f"  {regime:&lt;11}{label(pkg):&lt;20}{n:&gt;5}{m-truth:&gt;+9.4f}{sd:&gt;8.4f}"
+            print(f"  {regime:&lt;11}{label(pkg):&lt;20}{n:&gt;5}{m-rtruth:&gt;+9.4f}{sd:&gt;8.4f}"
                   f"{rmse:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
 
 def usable(rows, regs, pkgs):
@@ -3188,11 +4896,11 @@ def cells(rows, regs, pkgs):
                 sd = math.sqrt(sum((e - m) ** 2 for e in est) / (n - 1)) if n &gt; 1 else float("nan")
                 ses = [s for _, s in v if s is not None]
                 mse = sum(ses) / len(ses) if ses else float("nan")
-                cov = [1 if abs(e - truth) &lt;= 1.959964 * s else 0
+                cov = [1 if abs(e - rtruth) &lt;= 1.959964 * s else 0
                        for e, s in v if s is not None and s &gt; 0]
                 cvr = sum(cov) / len(cov) if cov else float("nan")
                 print(f"  {regime:&lt;11}{label(pkg):&lt;20}{f'ATT({g},{t})':&gt;12}{n:&gt;6}"
-                      f"{truth:&gt;8.3f}{m-truth:&gt;+9.4f}{sd:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
+                      f"{truth:&gt;8.3f}{m-rtruth:&gt;+9.4f}{sd:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
 
 def worst_cells(rows, regs, pkgs):
     print("\n== ATT(g,t) cells: worst |bias| over the post grid ==")
@@ -3381,3 +5089,417 @@ for scan in ["E_default","A_unbal","B_rcs","C_periods","D_cohorts","F_n","F_T","
             print(f'{r["n_units"]},{r["T"]},{r["cohorts"]},{r["rows"]},{r["pkg"]},{fmt(t(r),3)},{r["trials"]},{r["note"][:60]}')</code></pre>
 </details>
 
+<details class="code-fold">
+<summary><code>figdata.do</code> &mdash; per-replication estimates behind the opening figure: all nine command arms on the unequal-period-sampling design, same seeds as the Reliability I tables</summary>
+<pre><code>* Per-replication estimates behind the hero figure: every command on the
+* unequal-period-sampling design (varmiss), event times 0-2.
+* Same DGP and seeds (90000 + rep) as the Reliability I tables, so the
+* bias and coverage computed from this file reproduce the published rows.
+*   Usage: stata-mp -b do figdata.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
+args nunits reps outfile
+local root ".."
+capture confirm file "`root'/src/ado/csdid.ado"
+if _rc local root "../../.."
+adopath ++ "`root'/src/ado"
+adopath ++ "`root'/src/mata"
+local B "."
+quietly do "`B'/simdgp.do"
+quietly do "`B'/simrun3.do"
+
+* population-share wtr() weights for did_imputation (as in bjswtr.do)
+capture program drop mkwtr
+program define mkwtr
+    quietly capture drop K w0 w1 w2 ncell
+    quietly gen int K = time - gvar if gvar &gt; 0 &amp; time &gt;= gvar
+    forvalues h = 0/2 {
+        quietly capture drop ncell
+        quietly bysort gvar time: egen double ncell = total(K == `h') if K == `h'
+        quietly gen double w`h' = cond(K == `h' &amp; ncell &gt; 0, 1/(3*ncell), 0)
+        quietly replace w`h' = 0 if missing(w`h')
+    }
+end
+
+capture file close out
+file open out using "`outfile'", write replace text
+file write out "regime,pkg,rep,h,est,se" _n
+
+forvalues r = 1/`reps' {
+
+    quietly sim_dgp, n(`nunits') seed(`=90000 + `r'') regime(varmiss)
+    tempfile d
+    quietly save "`d'", replace
+
+    foreach pkg in csdid jwdid jwdid_uc bjs bjs_wtr dcdh lpdid lpdid_rw sa {
+        use "`d'", clear
+        capture sim_est3, pkg(`pkg') regime(varmiss) bal(none)
+        if _rc == 0 &amp; r(ok) == 1 {
+            matrix RR = r(R)
+            forvalues h = 0/2 {
+                local v1 = string(RR[`h'+1,1], "%18.0g")
+                local v2 = string(RR[`h'+1,2], "%18.0g")
+                file write out "varmiss,`pkg',`r',`h',`v1',`v2'" _n
+            }
+        }
+        else {
+            forvalues h = 0/2 {
+                file write out "varmiss,`pkg',`r',`h',.,." _n
+            }
+        }
+    }
+
+    if mod(`r', 10) == 0 display "MCPROG rep `r' of `reps' done"
+}
+file close out
+display "MCDONE `outfile'"</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>fig_hero.R</code> &mdash; draws the opening figure from figdata.csv: ridge densities of the estimates and zipper plots of the confidence intervals</summary>
+<pre><code>#------------------------------------------------------------------------------
+# Hero figure for the csdid-against-the-field guide
+#
+# Reads the per-replication estimates written by figdata.do (unequal period
+# sampling design, event time 0) and draws a two-panel figure in the style of
+# the DR-with-weak-overlap / DDD papers: ridge densities of the estimates on
+# the left, zipper plots of the confidence intervals on the right.
+#
+# Inputs : figdata.csv           (regime,pkg,rep,h,est,se)
+# Outputs: &lt;outdir&gt;/field-hero-varmiss.png
+#          figcheck.csv          (bias and coverage per command, for the gate)
+#
+# Usage  : Rscript fig_hero.R [infile] [outdir]
+#------------------------------------------------------------------------------
+rm(list = ls())
+
+library(ggplot2)
+library(ggridges)
+library(ggtext)
+library(cowplot)
+library(ggplotify)
+library(dplyr)
+library(tibble)
+library(grid)
+
+#------------------------------------------------------------------------------
+# Set parameters
+#------------------------------------------------------------------------------
+args    &lt;- commandArgs(trailingOnly = TRUE)
+infile  &lt;- ifelse(length(args) &gt;= 1, args[1], "figdata.csv")
+outdir  &lt;- ifelse(length(args) &gt;= 2, args[2], ".")
+h_sel   &lt;- 0          # event time shown in the figure
+truth   &lt;- 2.0        # population ES(0) in the Reliability I designs
+z95     &lt;- qnorm(0.975)
+
+navy &lt;- "#012169"
+gray &lt;- "#525252"
+
+# display labels and colors, in the order of the published table (top first)
+pkg_meta &lt;- tribble(
+  ~pkg,       ~label,                  ~color,
+  "csdid",    "csdid",                 "#1e40af",
+  "jwdid",    "jwdid",                 "#d97706",
+  "jwdid_uc", "jwdid uncond*",         "#b45309",
+  "bjs",      "did_imputation",        "#b91c1c",
+  "bjs_wtr",  "did_imputation wtr*",   "#15803d",
+  "dcdh",     "did_multiplegt_dyn",    "#7c3aed",
+  "lpdid",    "lpdid",                 "#6b7280",
+  "lpdid_rw", "lpdid rw*",             "#334155",
+  "sa",       "eventstudyinteract",    "#be185d"
+)
+pkg_meta &lt;- pkg_meta %&gt;%
+  filter(!pkg %in% c("jwdid_uc", "bjs_wtr", "lpdid_rw"))
+est_colors &lt;- setNames(pkg_meta$color, pkg_meta$label)
+
+#------------------------------------------------------------------------------
+# Theme (theme_dr_paper, trimmed)
+#------------------------------------------------------------------------------
+theme_fig &lt;- function(base_size = 13) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      plot.title       = element_text(color = navy, face = "bold", size = 15),
+      plot.subtitle    = element_text(color = gray, size = 11,
+                                      margin = margin(b = 8)),
+      axis.title       = element_text(color = navy),
+      axis.text        = element_text(color = gray),
+      legend.position  = "none",
+      panel.grid.major = element_line(color = "gray90", linewidth = 0.3),
+      panel.grid.minor = element_blank(),
+      plot.background  = element_rect(fill = "white", color = NA),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.margin      = margin(10, 10, 10, 10)
+    )
+}
+
+#------------------------------------------------------------------------------
+# Load, restrict to the plotted horizon, compute the summary used by the gate
+#------------------------------------------------------------------------------
+raw &lt;- read.csv(infile, stringsAsFactors = FALSE)
+
+dat &lt;- raw %&gt;%
+  filter(h == h_sel, !is.na(est), !is.na(se)) %&gt;%
+  inner_join(pkg_meta, by = "pkg") %&gt;%
+  mutate(
+    label = factor(label, levels = rev(pkg_meta$label)),  # csdid on top
+    lower = est - z95 * se,
+    upper = est + z95 * se,
+    cover = lower &lt;= truth &amp; truth &lt;= upper
+  )
+
+summ &lt;- dat %&gt;%
+  group_by(label) %&gt;%
+  summarise(reps = n(), bias = mean(est) - truth,
+            coverage = mean(cover), .groups = "drop") %&gt;%
+  arrange(desc(label))
+
+write.csv(summ, "figcheck.csv", row.names = FALSE)
+
+# shared horizontal scale so the two panels can be read against each other
+xlims &lt;- range(c(dat$lower, dat$upper, dat$est))
+
+#------------------------------------------------------------------------------
+# Left panel: ridge densities of the estimates
+#------------------------------------------------------------------------------
+ridge_p &lt;- ggplot(dat, aes(x = est, y = label, fill = label)) +
+  geom_density_ridges(alpha = 0.85, rel_min_height = 0.01, scale = 1.35) +
+  geom_vline(xintercept = truth, colour = navy, linewidth = 1,
+             linetype = "dashed") +
+  scale_fill_manual(values = est_colors) +
+  scale_y_discrete(expand = c(0, 0.2)) +
+  coord_cartesian(xlim = xlims, clip = "off") +
+  labs(title = "Where the estimates land",
+       subtitle = "Density of the 500 estimates at e=0",
+       x = NULL, y = NULL) +
+  theme_fig() +
+  theme(axis.text.y = element_text(color = navy, face = "bold", size = 11),
+        plot.margin = margin(15, 12, 10, 10))
+
+#------------------------------------------------------------------------------
+# Right panel: zipper plot of the confidence intervals
+#------------------------------------------------------------------------------
+html_lab &lt;- setNames(
+  paste0("&lt;span style='color:", pkg_meta$color, "'&gt;**", pkg_meta$label,
+         "**&lt;/span&gt;"),
+  pkg_meta$label)
+
+zdat &lt;- dat %&gt;%
+  mutate(
+    flabel     = factor(html_lab[as.character(label)],
+                        levels = html_lab),               # csdid strip on top
+    draw_col   = ifelse(cover, est_colors[as.character(label)], "#000000"),
+    draw_alpha = ifelse(cover, 0.45, 0.65)
+  )
+
+cov_anno &lt;- summ %&gt;%
+  mutate(flabel = factor(html_lab[as.character(label)], levels = html_lab),
+         run = -Inf, y_pos = Inf,
+         lab = paste0("bias ", sprintf("%+.2f", bias), " &amp;middot; coverage ",
+                      formatC(100 * coverage, format = "f", digits = 0), "%"))
+
+zip_base &lt;- ggplot(zdat, aes(x = rep)) +
+  geom_linerange(aes(ymin = lower, ymax = upper,
+                     colour = draw_col, alpha = draw_alpha),
+                 linewidth = 0.35, show.legend = FALSE) +
+  geom_hline(yintercept = truth, colour = navy, linetype = "dashed",
+             linewidth = 0.8) +
+  facet_grid(flabel ~ ., switch = "y") +
+  scale_colour_identity() +
+  scale_alpha_identity() +
+  coord_flip() +
+  scale_y_continuous(limits = xlims) +
+  labs(title = "Whether the intervals cover the truth",
+       subtitle = "One 95% confidence interval per sample; black = does not cover the truth",
+       x = NULL, y = NULL) +
+  theme_fig() +
+  ggtext::geom_richtext(
+    data = cov_anno, aes(x = run, y = y_pos, label = lab),
+    inherit.aes = FALSE, hjust = 1, vjust = 0,
+    fill = alpha("white", 0.85), label.color = NA,
+    label.padding = unit(c(1, 3, 1, 3), "pt"),
+    color = navy, size = 3.0) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.spacing.y    = unit(2, "pt"),
+    strip.text.y.left  = ggtext::element_markdown(angle = 0, vjust = 0.5,
+                                                  hjust = 0, size = 9),
+    strip.placement    = "outside",
+    axis.text.y        = element_blank(),
+    axis.ticks.y       = element_blank(),
+    plot.margin        = margin(15, 10, 10, 6)
+  )
+
+zip_p &lt;- zip_base
+
+#------------------------------------------------------------------------------
+# Assemble: title block on top, panels, source note at the bottom
+#------------------------------------------------------------------------------
+panels &lt;- cowplot::plot_grid(ridge_p, zip_p, ncol = 2, rel_widths = c(1, 1.15))
+
+title_grob &lt;- cowplot::ggdraw() +
+  cowplot::draw_label(
+    "Event-study estimates under unequal sampling across periods",
+    x = 0.012, y = 0.80, hjust = 0, vjust = 0.5, color = navy,
+    fontface = "bold", size = 19) +
+  cowplot::draw_label(
+    paste0("Staggered DiD with no covariates: 1,000 units, 7 periods, three treated cohorts plus a never-treated group; 500 simulated samples.\n",
+           "Each period keeps a different share of its units (45% to 95%), independent of everything else. Truth at e=0 is 2. Every command at its default."),
+    x = 0.012, y = 0.30, hjust = 0, vjust = 0.5, color = gray, size = 12,
+    lineheight = 1.15)
+
+foot_grob &lt;- cowplot::ggdraw() +
+  cowplot::draw_label(
+    paste0("Same data-generating process and seeds as the Reliability I tables. Biases flip sign with the horizon (the imputation commands move from\n",
+           "-0.16 at e=0 to +0.23 at e=2), so averaging across horizons would cancel misses rather than reveal them. Non-default options are discussed in the text."),
+    x = 0.012, y = 0.55, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
+    lineheight = 1.2)
+
+combo &lt;- cowplot::plot_grid(title_grob, panels, foot_grob, ncol = 1,
+                            rel_heights = c(0.155, 1, 0.085))
+
+ggsave(file.path(outdir, "field-hero-varmiss.png"), combo,
+       width = 13, height = 7.6, dpi = 200, bg = "white")</code></pre>
+</details>
+
+<details class="code-fold">
+<summary><code>fig_speed.R</code> &mdash; draws the opening speed figure from the numbers in the Speed-section tables</summary>
+<pre><code>#------------------------------------------------------------------------------
+# Speed figure for the csdid-against-the-field guide
+#
+# Two log-log panels drawn from the published Speed-section tables:
+#   A. seconds vs rows       (unbalanced-panel table: n x {1k,10k,100k}, T=10)
+#   B. seconds vs periods T  (T-scaling table: T x {5,10,20,40}, n=10,000)
+# The numbers below are exactly the numbers printed in those tables; the
+# timing protocol (median of 10 runs, event study plus clustered standard
+# errors) is described in the Speed section.
+#
+# Output : &lt;outdir&gt;/field-speed.png
+# Usage  : Rscript fig_speed.R [outdir]
+#------------------------------------------------------------------------------
+rm(list = ls())
+
+library(ggplot2)
+library(ggtext)
+library(cowplot)
+library(dplyr)
+library(tibble)
+
+#------------------------------------------------------------------------------
+# Set parameters
+#------------------------------------------------------------------------------
+args   &lt;- commandArgs(trailingOnly = TRUE)
+outdir &lt;- ifelse(length(args) &gt;= 1, args[1], ".")
+
+navy &lt;- "#012169"
+gray &lt;- "#525252"
+cols &lt;- c("csdid"          = "#1e40af",
+          "jwdid"          = "#d97706",
+          "did_imputation" = "#b91c1c",
+          "lpdid"          = "#6b7280")
+
+# Speed section, "Unbalanced panels" table (csdid at bal(none), T=10, G=4)
+size_tab &lt;- tribble(
+  ~rows,   ~csdid, ~jwdid, ~lpdid, ~did_imputation,
+  8500,     0.10,   0.20,   0.32,   0.57,
+  85000,    0.69,   0.70,   0.85,   3.85,
+  850000,   3.79,   6.28,   5.83,   38.0
+)
+
+# Speed section, T-scaling table (balanced panel, n=10,000, G=4)
+T_tab &lt;- tribble(
+  ~T,  ~csdid, ~jwdid, ~lpdid, ~did_imputation,
+  5,    0.13,   0.26,   0.55,   1.44,
+  10,   0.26,   0.67,   1.05,   3.44,
+  20,   0.52,   2.76,   1.92,   8.99,
+  40,   1.07,  12.1,    3.66,  20.0
+)
+
+#------------------------------------------------------------------------------
+# Theme
+#------------------------------------------------------------------------------
+theme_fig &lt;- function(base_size = 13) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      plot.title       = element_text(color = navy, face = "bold", size = 15),
+      plot.subtitle    = element_text(color = gray, size = 11,
+                                      margin = margin(b = 8)),
+      axis.title       = element_text(color = navy),
+      axis.text        = element_text(color = gray),
+      legend.position  = "none",
+      panel.grid.major = element_line(color = "gray90", linewidth = 0.3),
+      panel.grid.minor = element_blank(),
+      plot.background  = element_rect(fill = "white", color = NA),
+      panel.background = element_rect(fill = "white", color = NA),
+      plot.margin      = margin(10, 10, 10, 10)
+    )
+}
+
+#------------------------------------------------------------------------------
+# One workhorse for both panels: log-log lines with end labels
+#------------------------------------------------------------------------------
+speed_panel &lt;- function(tab, xvar, title, subtitle, xlab, xbreaks, xlabels,
+                        vj = NULL) {
+  long &lt;- tab %&gt;%
+    tidyr::pivot_longer(-dplyr::all_of(xvar), names_to = "cmd",
+                        values_to = "sec") %&gt;%
+    mutate(cmd = factor(cmd, levels = names(cols)))
+  ends &lt;- long %&gt;%
+    group_by(cmd) %&gt;% slice_max(.data[[xvar]], n = 1) %&gt;% ungroup() %&gt;%
+    mutate(lab = paste0("**", cmd, "** ", sec, "s"),
+           vjust = if (is.null(vj)) 0.5
+                   else dplyr::coalesce(vj[as.character(cmd)], 0.5))
+
+  ggplot(long, aes(x = .data[[xvar]], y = sec, colour = cmd)) +
+    geom_line(linewidth = 1.1) +
+    geom_point(size = 2.4) +
+    ggtext::geom_richtext(
+      data = ends, aes(label = lab, vjust = vjust), hjust = 0,
+      nudge_x = 0.045, fill = NA, label.color = NA, size = 3.6,
+      show.legend = FALSE) +
+    scale_colour_manual(values = cols) +
+    scale_x_log10(breaks = xbreaks, labels = xlabels,
+                  expand = expansion(mult = c(0.04, 0.42))) +
+    scale_y_log10(breaks = c(0.1, 0.3, 1, 3, 10, 30),
+                  labels = c("0.1", "0.3", "1", "3", "10", "30")) +
+    labs(title = title, subtitle = subtitle, x = xlab, y = "seconds") +
+    theme_fig()
+}
+
+pA &lt;- speed_panel(size_tab, "rows",
+  "More data",
+  "Unbalanced panel (15% of rows deleted), T=10, four cohorts",
+  "rows in the panel",
+  c(8500, 85000, 850000), c("8,500", "85,000", "850,000"),
+  vj = c(jwdid = -0.3, lpdid = 0.5, csdid = 1.3))
+
+pB &lt;- speed_panel(T_tab, "T",
+  "More periods",
+  "Balanced panel, 10,000 units, four cohorts",
+  "number of time periods",
+  c(5, 10, 20, 40), c("5", "10", "20", "40"))
+
+#------------------------------------------------------------------------------
+# Assemble: title block, panels, source note
+#------------------------------------------------------------------------------
+panels &lt;- cowplot::plot_grid(pA, pB, ncol = 2)
+
+title_grob &lt;- cowplot::ggdraw() +
+  cowplot::draw_label(
+    "Computation time by sample size and number of periods",
+    x = 0.012, y = 0.76, hjust = 0, vjust = 0.5, color = navy,
+    fontface = "bold", size = 19) +
+  cowplot::draw_label(
+    "Run time of one event-study estimation with clustered standard errors; median of 10 runs. Both axes on log scale.",
+    x = 0.012, y = 0.22, hjust = 0, vjust = 0.5, color = gray, size = 12)
+
+foot_grob &lt;- cowplot::ggdraw() +
+  cowplot::draw_label(
+    paste0("Numbers from the Speed section tables. csdid timed at bal(none), the common-sample choice, with analytical inference;\n",
+           "its default (999 bootstrap draws plus uniform bands) adds about a third of a second at one million rows."),
+    x = 0.012, y = 0.5, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
+    lineheight = 1.2)
+
+combo &lt;- cowplot::plot_grid(title_grob, panels, foot_grob, ncol = 1,
+                            rel_heights = c(0.16, 1, 0.11))
+
+ggsave(file.path(outdir, "field-speed.png"), combo,
+       width = 13, height = 5.6, dpi = 200, bg = "white")</code></pre>
+</details>

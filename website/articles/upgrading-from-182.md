@@ -182,8 +182,4 @@ slower, with the per-workload benchmark table in the package README; the gains b
 sample size, periods, cohorts, and sampling scheme (16× to 208×) are on
 [their own page](speed-vs-182.html).
 
-```stata
-capture erase "jel_upgrade.dta"
-```
-
 Back to [the guides](../index.html#guides).

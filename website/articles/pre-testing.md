@@ -137,7 +137,3 @@ and then reporting only that one. We view the pre-test as one piece of evidence
 on the credibility of a DiD design in a particular application. A piece of
 evidence that has been selected on no longer carries the information you are
 asking your readers to take from it.
-
-```stata
-capture erase "jel_balanced.dta"
-```

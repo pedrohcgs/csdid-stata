@@ -134,7 +134,3 @@ decomposes the estimand into 2×2 comparisons and shows where the negative weigh
 come from; de Chaisemartin and D'Haultfœuille (2020) characterize those weights;
 and Sun and Abraham (2021) show how event-study coefficients contaminate each
 other across cohorts.
-
-```stata
-capture erase "jel_twfe.dta"
-```

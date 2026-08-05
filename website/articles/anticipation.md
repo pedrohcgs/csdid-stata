@@ -112,7 +112,3 @@ estat event
 
 See [Comparison groups](comparison-groups.html) for the choice itself, and
 [Pre-testing](pre-testing.html) for reading the pre-treatment cells that remain.
-
-```stata
-capture erase "jel_balanced.dta"
-```

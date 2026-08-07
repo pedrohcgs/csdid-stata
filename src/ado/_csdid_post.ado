@@ -366,6 +366,7 @@ program define _csdid_post_replace_bv, eclass
     * for the same reason (HS-06/HS-03 post them at estimation time).
     local local_names cmd cmdline version yname timevar gvar idvar clustervar ///
         panel_mode control_group method method_requested weightvar base_period ///
+        wtype wexp ///
         fix_weights boot_dist boot_dist_requested boot_seed fast_mode compute_path rif_file ///
         storage agg_type agg_clustervar ///
         marginsnotok depvar vce vcetype predict

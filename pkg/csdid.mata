@@ -7,6 +7,34 @@ mata:
 // before compiling, which is where strictness belongs; the source below
 // satisfies it either way.
 
+
+// ---------------------------------------------------------------------------
+// csdid__selidx() with a usable empty result.
+//
+// Mata's selectindex returns 1 x 0 when nothing matches AND the input is
+// either a row vector or a 1 x 1 column; it returns 0 x 1 for a longer
+// column. So `rows(idx) > 0` -- the natural guard, used at a dozen sites here
+// -- is TRUE for an empty result whenever the input had a single element.
+//
+// That is not hypothetical: a seeded multiplier bootstrap on a design with
+// exactly one ATT(g,t) cell whose sigma is missing (an outcome with no
+// within-group variation) passed the guard in csdid__boot_table and then
+// multiplied a biters x 1 matrix by a 0 x 1 one, aborting with r(3200)
+// instead of returning missing standard errors.
+//
+// Normalising the empty case to 0 x 1 makes rows(), cols() and length() all
+// agree with each other and with every existing guard. Non-empty results are
+// returned untouched, so no live path changes shape.
+// ---------------------------------------------------------------------------
+real vector csdid__selidx(real vector v)
+{
+    real vector idx
+    idx = selectindex(v)
+    if (length(idx) == 0) return(J(0, 1, .))
+    return(idx)
+}
+
+
 real scalar csdid__mean(real colvector x)
 {
     if (rows(x) == 0) return(.)
@@ -1305,7 +1333,7 @@ void csdid__prescan(
     real scalar hascl, sorted_it, sh_nunit, sh_gvary, sh_cvary, sh_dup
     string scalar tlist, glist
 
-    rowsel = selectindex(st_data(., tousename) :!= 0)
+    rowsel = csdid__selidx(st_data(., tousename) :!= 0)
     n = rows(rowsel)
     tv = st_data(., timename)[rowsel]
     gv = st_data(., gname)[rowsel]
@@ -1322,7 +1350,7 @@ void csdid__prescan(
 
     // ---- time levels (ascending) via one sort + vectorized run bounds ----
     ord = sort(tv, 1)
-    if (n > 1) runstart = selectindex((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
+    if (n > 1) runstart = csdid__selidx((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
     else runstart = J(1, 1, 1)
     tlev = ord[runstart]
     nt = rows(tlev)
@@ -1333,7 +1361,7 @@ void csdid__prescan(
     cutoff = tmax + anticipation
     gsmall = gv :* (gv :<= cutoff)          // cohorts beyond the horizon fold to 0
     ord = sort(gsmall, 1)
-    if (n > 1) runstart = selectindex((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
+    if (n > 1) runstart = csdid__selidx((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
     else runstart = J(1, 1, 1)
     glev = ord[runstart]
     if (rows(runstart) > 1) gcnt = (runstart[|2 \ rows(runstart)|] \ (n + 1)) :- runstart
@@ -1342,7 +1370,7 @@ void csdid__prescan(
     // selectindex on a 1x1 input returns a 1x0 ROWVECTOR, so an emptiness
     // guard on rows() passes and the subscript aborts with 3301 - length()
     // is orientation-proof (caught by the single-period refusal fixture)
-    ord = selectindex(glev :> 0)
+    ord = csdid__selidx(glev :> 0)
     if (length(ord) > 0) {
         glev = glev[ord]
         gcnt = gcnt[ord]
@@ -1381,7 +1409,7 @@ void csdid__prescan(
         // runs in data order (n == 1 and single-run panels need their own
         // ranges: a [|2 \ 1|] subscript is an error, not an empty vector)
         if (n == 1) runstart = 1
-        else runstart = selectindex((1 :: n) :== 1 :| (idv :!= (idv[1] \ idv[|1 \ n - 1|])))
+        else runstart = csdid__selidx((1 :: n) :== 1 :| (idv :!= (idv[1] \ idv[|1 \ n - 1|])))
         nrun = rows(runstart)
         if (nrun > 1) runlen = (runstart[|2 \ nrun|] \ (n + 1)) :- runstart
         else runlen = J(1, 1, n)
@@ -1398,7 +1426,7 @@ void csdid__prescan(
         }
         if (grouped) {
             n_units = nrun
-            badunit = selectindex(runlen :< nt)
+            badunit = csdid__selidx(runlen :< nt)
             inc_units = rows(badunit)
             if (inc_units > 0) {
                 for (i = 1; i <= inc_units; i++) {
@@ -1467,7 +1495,7 @@ void csdid__prescan(
                 sorted_it = 0
             }
             else {
-                within = selectindex(d_id :== 0)
+                within = csdid__selidx(d_id :== 0)
                 if (rows(within) == 0) {
                     sorted_it = 1
                 }
@@ -2007,7 +2035,7 @@ void csdid_basic_attgt(
         unit_weight = first_weight
     }
     else {
-        wpos = selectindex(wcount_vec :> 0)
+        wpos = csdid__selidx(wcount_vec :> 0)
         if (rows(wpos) > 0) unit_weight[wpos] = wsum_vec[wpos] :/ wcount_vec[wpos]
     }
     unit_weight = editmissing(unit_weight, 1)
@@ -2040,7 +2068,7 @@ void csdid_basic_attgt(
     if (idname != "" & !balanced_panel) {
         unit_p1 = J(n_units, 1, .)
         for (j = cols(tlevels); j >= 1; j--) {
-            p1_present = selectindex(row_index[., j] :< .)
+            p1_present = csdid__selidx(row_index[., j] :< .)
             if (rows(p1_present) > 0) unit_p1[p1_present] = J(rows(p1_present), 1, tlevels[j])
         }
         unit_group_mat = idlevels, unit_group, unit_weight, unit_p1  // F-001/F-022
@@ -2103,19 +2131,19 @@ void csdid_basic_attgt(
     // original mask path verbatim below.
     if (!balanced_panel & !pair_mode & idname == "") {
         prof_t0 = csdid__profile_start()
-        rc_rowsel = selectindex(use :!= 0)
+        rc_rowsel = csdid__selidx(use :!= 0)
         if (rows(rc_rowsel) > 0) {
             rc_gcats = uniqrows(geff[rc_rowsel])
             rc_nbg = rows(rc_gcats)
             rc_nbt = cols(tlevels)
             rc_gidx = J(rows(rc_rowsel), 1, .)
             for (rc_b = 1; rc_b <= rc_nbg; rc_b++) {
-                rc_ord = selectindex(geff[rc_rowsel] :== rc_gcats[rc_b])
+                rc_ord = csdid__selidx(geff[rc_rowsel] :== rc_gcats[rc_b])
                 if (length(rc_ord) > 0) rc_gidx[rc_ord] = J(length(rc_ord), 1, rc_b)
             }
             rc_tidxv = J(rows(rc_rowsel), 1, .)
             for (rc_b = 1; rc_b <= rc_nbt; rc_b++) {
-                rc_ord = selectindex(tt[rc_rowsel] :== tlevels[rc_b])
+                rc_ord = csdid__selidx(tt[rc_rowsel] :== tlevels[rc_b])
                 if (length(rc_ord) > 0) rc_tidxv[rc_ord] = J(length(rc_ord), 1, rc_b)
             }
             rc_bid = (rc_gidx :- 1) :* rc_nbt :+ rc_tidxv
@@ -2817,7 +2845,7 @@ void csdid_basic_attgt(
                     if (rows(rc_treat_pre)) rc_mask[rc_treat_pre] = J(rows(rc_treat_pre), 1, 1)
                     if (rows(rc_ctrl_t)) rc_mask[rc_ctrl_t] = J(rows(rc_ctrl_t), 1, 1)
                     if (rows(rc_ctrl_pre)) rc_mask[rc_ctrl_pre] = J(rows(rc_ctrl_pre), 1, 1)
-                    valid_rows = selectindex(rc_mask)
+                    valid_rows = csdid__selidx(rc_mask)
                     if (rows(valid_rows)) rc_mask[valid_rows] = J(rows(valid_rows), 1, 0)
                 }
                 else {
@@ -3032,7 +3060,7 @@ void csdid_basic_attgt(
                 if (rows(rc_treat_pre)) rc_mask[rc_treat_pre] = J(rows(rc_treat_pre), 1, 1)
                 if (rows(rc_ctrl_t)) rc_mask[rc_ctrl_t] = J(rows(rc_ctrl_t), 1, 1)
                 if (rows(rc_ctrl_pre)) rc_mask[rc_ctrl_pre] = J(rows(rc_ctrl_pre), 1, 1)
-                valid_rows = selectindex(rc_mask)
+                valid_rows = csdid__selidx(rc_mask)
                 if (rows(valid_rows)) rc_mask[valid_rows] = J(rows(valid_rows), 1, 0)
                 for (rr = 1; rr <= rows(valid_rows); rr++) {
                     r = valid_rows[rr]
@@ -3065,7 +3093,7 @@ void csdid_basic_attgt(
                 // and the accumulation order are unchanged: selectindex
                 // returns ascending row numbers, which is the order the full
                 // sweep visited them in.
-                valid_rows = selectindex(idx_t1 :| idx_t0 :| idx_c1 :| idx_c0)
+                valid_rows = csdid__selidx(idx_t1 :| idx_t0 :| idx_c1 :| idx_c0)
                 for (rr = 1; rr <= rows(valid_rows); rr++) {
                     r = valid_rows[rr]
                     if_value = 0
@@ -3545,7 +3573,7 @@ real matrix csdid__boot_table(
     pointcrit = invnormal(1 - alp / 2)
     crit = pointcrit
     if (cband) {
-        active = selectindex(bsigma :< .)
+        active = csdid__selidx(bsigma :< .)
         if (rows(active) > 0) {
             scaled = J(biters, 1, 1) * bsigma[active]'
             scaled = abs(bres[., active] :/ scaled)
@@ -3704,14 +3732,14 @@ void csdid_bootstrap_attgt_fast(
     // (every blanked (g,t) cell produces one), and the branch that reads
     // `active' contains the R-stream-alignment call, so that flip would not
     // be a rounding difference.
-    keep_rows = selectindex(rowmissing(sc) :== 0)
+    keep_rows = csdid__selidx(rowmissing(sc) :== 0)
     if (rows(keep_rows) > 0) {
         colss = quadcolsum(sc[keep_rows, .]:^2)'
     }
     else {
         colss = J(cols(sc), 1, 0)
     }
-    active = selectindex(colss :> zero_tol)
+    active = csdid__selidx(colss :> zero_tol)
     csdid__boot_profile_add(3, boot_t0, rows(active))
     boot_t0 = csdid__profile_start()
     if (rows(active) == k) {
@@ -3850,14 +3878,14 @@ void csdid_boot_plugin_prepare(
     // (every blanked (g,t) cell produces one), and the branch that reads
     // `active' contains the R-stream-alignment call, so that flip would not
     // be a rounding difference.
-    keep_rows = selectindex(rowmissing(sc) :== 0)
+    keep_rows = csdid__selidx(rowmissing(sc) :== 0)
     if (rows(keep_rows) > 0) {
         colss = quadcolsum(sc[keep_rows, .]:^2)'
     }
     else {
         colss = J(cols(sc), 1, 0)
     }
-    active = selectindex(colss :> zero_tol)
+    active = csdid__selidx(colss :> zero_tol)
     csdid__boot_profile_add(3, boot_t0, rows(active))
 
     scratchvars = tokens(inputvars)
@@ -4692,7 +4720,7 @@ real colvector csdid__boot_order_panel(real colvector group)
     real scalar n
 
     // Treated cohorts ascending, never-treated last, original row order
-    // within a cohort. That used to be a loop that ran selectindex() -- a
+    // within a cohort. That used to be a loop that ran csdid__selidx() -- a
     // full O(N) pass -- once per cohort, and concatenated the answer onto a
     // growing vector each time.
     //
@@ -4752,10 +4780,10 @@ real colvector csdid__boot_order_unbal(real colvector p1, real colvector group)
     ord = J(0, 1, .)
     for (b = 1; b <= rows(plevels); b++) {
         for (j = 1; j <= rows(glevels); j++) {
-            idx = selectindex((p1 :== plevels[b]) :& (group :== glevels[j]))
+            idx = csdid__selidx((p1 :== plevels[b]) :& (group :== glevels[j]))
             if (rows(idx) > 0) ord = ord \ idx
         }
-        idx = selectindex((p1 :== plevels[b]) :& (group :== 0))
+        idx = csdid__selidx((p1 :== plevels[b]) :& (group :== 0))
         if (rows(idx) > 0) ord = ord \ idx
     }
     if (rows(ord) != rows(group)) {
@@ -6169,7 +6197,7 @@ void csdid_post_attgt_v(
         errprintf("these ATT(g,t) results predate the base_time column and cannot be posted; re-run csdid (or re-save the RIF artifact) with csdid 2.0.0 or later\n")
         _error(498)
     }
-    keep = selectindex((att[., 4] :< .) :& (att[., 10] :!= att[., 2]))'
+    keep = csdid__selidx((att[., 4] :< .) :& (att[., 10] :!= att[., 2]))'
     if (cols(keep) == 0) {
         st_matrix(vname, J(0, 0, .))
         return
@@ -6270,7 +6298,7 @@ void csdid_post_mapped_v(
         st_matrix(vname, V)
         return
     }
-    valid_pos = selectindex((map :>= 1) :& (map :<= cols(inf)))
+    valid_pos = csdid__selidx((map :>= 1) :& (map :<= cols(inf)))
     if (cols(valid_pos) == 0) {
         st_matrix(vname, V)
         return

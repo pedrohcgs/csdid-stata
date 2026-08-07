@@ -74,20 +74,6 @@ foreach f in csdid.ado _csdid_post.ado csdid_estat.ado csdid_stats.ado csdid_plo
              csgvar.ado _gcsgvar.ado csdid_rif.ado csdid_table.ado dipt.ado tsvmat.ado {
     copy "build/`f'" "pkg/`f'", replace
 }
-* The compiled plugin. It was NOT copied here before, so pkg/ kept whatever
-* binary was placed by hand: the shipped macOS plugin sat nine days behind its
-* own C source and lacked the all-zero RNG-state guard, while src/ado/ carried
-* a build that had it. net install ships pkg/, so macOS users got the stale one.
-foreach p in csdid_bootstrap_macosx.plugin csdid_bootstrap_unix.plugin ///
-             csdid_bootstrap_windows.plugin {
-    capture confirm file "build/`p'"
-    if !_rc {
-        copy "build/`p'" "src/ado/`p'", replace
-        copy "build/`p'" "pkg/`p'", replace
-        display as text "packaged `p'"
-    }
-}
-
 copy build/csdid.mata pkg/csdid.mata, replace
 copy build/lcsdid.mlib pkg/lcsdid.mlib, replace
 foreach f in csdid.sthlp csdid_postestimation.sthlp csdid_estat.sthlp csdid_stats.sthlp csdid_plot.sthlp ///

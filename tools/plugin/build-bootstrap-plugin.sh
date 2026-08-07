@@ -71,4 +71,27 @@ case "$target" in
     ;;
 esac
 
+# Place the freshly built binary where the package actually ships it.
+#
+# Nothing did this before: src/build.do copied the mata, the compiled library
+# and the help files into pkg/ and never the plugin, so pkg/ kept whatever was
+# put there by hand -- for nine days that was a binary without the all-zero
+# RNG-state guard, and net install ships pkg/.
+#
+# Done here rather than in build.do because Stata's `copy` does not preserve
+# the executable bit, and silently demoting the shipped plugin to 644 is its
+# own defect.
+for placed in "$OUTDIR"/csdid_bootstrap_*.plugin; do
+  [ -e "$placed" ] || continue
+  base="$(basename "$placed")"
+  [ "$base" = "csdid_bootstrap.plugin" ] && continue
+  for dest in "$ROOT/src/ado" "$ROOT/pkg"; do
+    [ -d "$dest" ] || continue
+    cp -p "$placed" "$dest/$base"
+    chmod 755 "$dest/$base"
+    echo "placed $base in ${dest#$ROOT/}"
+  done
+done
+
+
 file "$OUTDIR/csdid_bootstrap.plugin" "$OUTDIR"/csdid_bootstrap_*.plugin

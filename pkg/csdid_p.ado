@@ -25,7 +25,7 @@ program define csdid_p
         error 301
     }
     display as error "predict is not supported after csdid"
-    display as error "{p 4 4 2}e(b) holds ATT(g,t) treatment effects, not coefficients on regressors, so there is no linear index to predict from, and csdid does not set e(sample).{p_end}"
+    display as error "{p 4 4 2}e(b) holds ATT(g,t) treatment effects, not coefficients on regressors, so there is no linear index to predict from; e(sample) does mark the estimation sample, so `summarize ... if e(sample)' and `estat summarize' describe exactly the observations the estimation used.{p_end}"
     display as error "{p 4 4 2}Use test, lincom or nlcom on the ATT(g,t) coefficient names, csdid_estat or csdid_stats for aggregations, or csdid_plot to export plot data; see {help csdid_postestimation}.{p_end}"
     exit 198
 end

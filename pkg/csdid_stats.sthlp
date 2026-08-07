@@ -206,7 +206,20 @@ and may not be combined with the Stata spelling they duplicate:
 {cmd:min_e()} or {cmd:max_e()} together with {cmd:window()}, or
 {cmd:balance_e()} together with {cmd:balance()}, is an error. Repeating any one
 of them, as in {cmd:min_e(-3) min_e(-2)}, is also an error, and the message
-names the repeated option rather than reporting it as unsupported.
+names the repeated option rather than reporting it as unsupported. The same
+holds for the options declared on the syntax line -- {cmd:type()},
+{cmd:window()}, {cmd:balance()}, {cmd:level()} -- in every abbreviation Stata
+accepts for them: {cmd:win(0 1) win(1 2)} is reported as a repeated
+{cmd:window()}, not as an unsupported option.
+
+{phang}
+{opt from(#)} was a lower bound on event time in Stata {cmd:csdid} Version
+1.82, applied to the simple, group and calendar aggregations. It is rejected
+with return code 198 and a message naming the replacement. There is no
+equivalent: those three aggregations are defined from event time 0 upward, so
+a lower bound below that has nothing to restrict and one above it would
+silently redefine the estimand. Use {cmd:window(}{it:# #}{cmd:)} with
+{cmd:type(dynamic)} for an event-time window.
 
 {dlgtab:Sample}
 
@@ -229,7 +242,9 @@ automatically whenever {cmd:csdid} itself was run with {cmd:cluster()}, so this
 option is only a check. A cluster variable that differs from the estimation
 cluster variable is refused with return code 498; falling back to unclustered
 standard errors, or re-clustering influence functions that were computed under
-a different design, would silently change inference.
+a different design, would silently change inference. Specifying it twice, or
+specifying both spellings, is an error rather than a last-one-wins: the
+discarded one is the one that might have matched.
 
 {marker opt_level}{...}
 {phang}

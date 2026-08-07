@@ -85,6 +85,16 @@ program define csdid_estat, eclass
         exit 198
     }
     if `"`subcmd'"' == `"attgt"' {
+        * SP-07: attgt builds no r(table), and csdid_estat is eclass, so
+        * nothing here touches r(). matlist actively restores the caller's
+        * r() around its own body, and estat.ado's `return add' copies the
+        * stale r() back out through the wrapper -- so `estat event' followed
+        * by `estat attgt' left the EVENT STUDY's r(table) standing and it
+        * read as the result of the attgt command. csdid_estat's help
+        * promises r(table) "is never left holding an earlier aggregation's
+        * numbers", and _csdid_estat_rclear exists for exactly this; it was
+        * called on one route out of eight.
+        _csdid_estat_rclear
         * attgt redisplays the stored ATT(g,t) table, and with saving() writes
         * that same table out as a dataset. saving() is how Stata spells "put
         * this in a file" -- margins, simulate and graph all take it -- so it is
@@ -99,6 +109,10 @@ program define csdid_estat, eclass
         if `"`window'"' != "" local attgt_bad "`attgt_bad' window()"
         if `level' != c(level) local attgt_bad "`attgt_bad' level()"
         if "`dropmissing'" != "" local attgt_bad "`attgt_bad' dropmissing"
+        * replace only means something to saving(); on its own it was parsed
+        * and silently dropped, like the four above it before they were
+        * refused. Same treatment.
+        if "`replace'" != "" & `"`saving'"' == "" local attgt_bad "`attgt_bad' replace (without saving())"
         if "`attgt_bad'" != "" {
             display as error "estat attgt accepts only saving() and replace; not allowed:`attgt_bad'"
             exit 198
@@ -107,7 +121,13 @@ program define csdid_estat, eclass
             _csdid_estat_tidy_attgt using `"`saving'"', `replace'
             exit
         }
-        matlist e(attgt), names(columns) format(%10.6g)
+        * base_time (column 10) is a posting-layer marker, not part of the
+        * printed ATT(g,t) table; print the nine documented columns, as csdid's
+        * own Display does. It remains readable in e(attgt).
+        tempname attgt_show
+        matrix `attgt_show' = e(attgt)
+        if colsof(`attgt_show') > 9 matrix `attgt_show' = `attgt_show'[1..., 1..9]
+        matlist `attgt_show', names(columns) format(%10.6g)
         exit
     }
     if inlist(`"`subcmd'"', "event", "dynamic", "simple", "group", "calendar") {
@@ -186,8 +206,41 @@ program define csdid_estat, eclass
         local stat_opts "type(`agg_type') level(`level')"
         if "`dropmissing'" != "" local stat_opts "`stat_opts' dropmissing"
         if "`window'" != "" local stat_opts `"`stat_opts' window(`window')"'
+        * csdid_stats reports two things on the TEXT channel that the
+        * `quietly' below suppresses, so the estat route printed neither:
+        *   - "window() is ignored for type(calendar)", so
+        *     `estat calendar, window(0 2)' returned the FULL unwindowed
+        *     calendar aggregation, rc 0, with no indication at all;
+        *   - the note explaining that every standard error in the
+        *     aggregation is missing, leaving the user a column of dots with
+        *     the explanation removed.
+        * Both are emitted here instead, outside the `quietly'. The window is
+        * still FORWARDED and still warn-and-ignored rather than refused:
+        * warn-and-return-unrestricted is the documented behaviour and is
+        * pinned as an upstream contract, and csdid_estat's help promises
+        * window() "behaves exactly as it does" in csdid_stats.
+        if "`agg_type'" == "calendar" & `"`window'"' != "" {
+            display as text "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"
+        }
         _csdid_estat_rclear
         quietly csdid_stats, `stat_opts'
+        * DS-11, restated on this route: csdid_stats' own note is inside the
+        * `quietly'. Re-derive it from the aggregation it just produced.
+        capture confirm matrix e(aggte)
+        if !_rc {
+            tempname agg_se_check
+            matrix `agg_se_check' = e(aggte)
+            local agg_se_col = colnumb(`agg_se_check', "se")
+            if !missing(`agg_se_col') {
+                local agg_se_allmiss 1
+                forvalues agg_i = 1/`=rowsof(`agg_se_check')' {
+                    if !missing(`agg_se_check'[`agg_i', `agg_se_col']) local agg_se_allmiss 0
+                }
+                if `agg_se_allmiss' {
+                    display as text "note: every standard error in this type(`agg_type') aggregation is missing. The ATT(g,t) estimates it aggregates have no usable standard errors, which usually means the influence functions are degenerate for these cells (a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance). The point estimates below are still the aggregation of the ATT(g,t) estimates."
+                }
+            }
+        }
         tempname show_b
         * No-transit (supersedes the snapshot/restore machinery, including the
         * SP-08 generic e() snapshot): without `post', _csdid_post no longer
@@ -238,6 +291,13 @@ program define csdid_estat, eclass
         * `estat event, saving(f)' returned rc 0 and wrote no file. It now
         * writes the aggregation that was just computed -- the same file
         * `estat tidy, saving(f)' writes if run immediately afterwards.
+        *
+        * replace is meaningless without saving(), and was accepted and
+        * dropped; it is refused on this route too, as it is on attgt.
+        if "`replace'" != "" & `"`saving'"' == "" {
+            display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
+            exit 198
+        }
         if `"`saving'"' != "" {
             _csdid_estat_tidy_aggte using `"`saving'"', `replace'
         }
@@ -252,6 +312,10 @@ program define csdid_estat, eclass
         exit 198
     }
     if `"`subcmd'"' == `"tidy"' {
+        * SP-07: see the attgt branch. tidy exports and returns nothing, so
+        * without this the previous aggregation's r(table) survives the
+        * command and reads as its result.
+        _csdid_estat_rclear
         if `"`saving'"' == "" {
             display as error "tidy requires saving(filename)"
             exit 198
@@ -266,6 +330,8 @@ program define csdid_estat, eclass
         exit
     }
     if `"`subcmd'"' == `"glance"' {
+        * SP-07: see the attgt branch.
+        _csdid_estat_rclear
         if `"`saving'"' == "" {
             display as error "glance requires saving(filename)"
             exit 198
@@ -334,8 +400,65 @@ program define _csdid_estat_tidy_attgt
         rename se std_error
         generate double statistic = estimate / std_error
         generate double p_value = 2 * normal(-abs(statistic))
-        local crit = e(crit_val)
-        local z = e(point_crit_val)
+        * ---------------------------------------------------------------
+        * The ATT(g,t) bands come from the ATT(g,t) inference, not from
+        * whatever aggregation ran last.
+        *
+        * e(crit_val)/e(point_crit_val) are NOT stable descriptions of this
+        * table. Every bootstrap aggregation overwrites them with its own
+        * critical values (csdid_stats.ado, `ereturn scalar crit_val'), and
+        * the two are different maxima: the ATT(g,t) uniform band is the max
+        * over the (g,t) cells, the dynamic band the max over the surviving
+        * event times. `csdid ..., wboot agg(event)' runs an aggregation
+        * inside the estimation itself, so the very first export a user ever
+        * wrote already carried the event-study band. When the aggregation
+        * also ran at a different level(), the exported band was at the wrong
+        * level as well.
+        *
+        * The estimation-time (g,t) values survive in e(boot_attgt), whose
+        * crit_val and point_crit_val columns are constant across rows and
+        * are carried across every posting round trip by _csdid_post.
+        *
+        * Under analytical inference there is nothing to recover: csdid posts
+        * a pure normal quantile at e(level), which is what this table needs.
+        * On the saved-RIF path nothing posts crit_val at all, and reading it
+        * unguarded wrote four ALL-MISSING confidence columns at rc 0 -- the
+        * band this table's own help promises (csdid_estat.sthlp, "The conf_*
+        * columns use the reported critical value ... and the point_conf_*
+        * columns use the pointwise one").
+        *
+        * The fallback is deliberately NOT a blanket normal quantile: under
+        * a bootstrap that would silently swap a simultaneous band for a
+        * pointwise one. That residual case says so instead.
+        * ---------------------------------------------------------------
+        local crit = .
+        local z = .
+        local use_boot 0
+        capture confirm scalar e(bstrap)
+        if !_rc local use_boot = (e(bstrap) != 0)
+        if `use_boot' {
+            capture confirm matrix e(boot_attgt)
+            if !_rc {
+                tempname BA
+                matrix `BA' = e(boot_attgt)
+                local ccrit = colnumb(`BA', "crit_val")
+                local cpoint = colnumb(`BA', "point_crit_val")
+                if !missing(`ccrit') local crit = `BA'[1, `ccrit']
+                if !missing(`cpoint') local z = `BA'[1, `cpoint']
+            }
+        }
+        if missing(`crit') | missing(`z') {
+            local band_level = e(level)
+            if missing(`band_level') local band_level = c(level)
+            if `use_boot' {
+                * `display as error' is the one channel a caller's -quietly-
+                * does not suppress; the band just changed meaning.
+                display as error "warning: the ATT(g,t) bootstrap critical values are not available (e(boot_attgt) is missing), so the exported conf_low/conf_high columns are pointwise normal bands at `band_level'%, not the simultaneous bootstrap band. Re-run csdid to restore them."
+            }
+            local normal_crit = invnormal(1 - (100 - `band_level') / 200)
+            if missing(`crit') local crit = `normal_crit'
+            if missing(`z') local z = `normal_crit'
+        }
         generate double conf_low = estimate - `crit' * std_error
         generate double conf_high = estimate + `crit' * std_error
         generate double point_conf_low = estimate - `z' * std_error

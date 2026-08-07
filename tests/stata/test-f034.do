@@ -89,7 +89,7 @@ foreach scenario in panel_reg rc_reg {
         local lab : variable label rif`j'
         assert regexm(`"`lab'"', "^RIF group=([-+0-9.eE]+) time=([-+0-9.eE]+) event_time=([-+0-9.eE]+)$")
         local meta : char rif`j'[csdid_attgt]
-        assert wordcount(`"`meta'"') == 9
+        assert wordcount(`"`meta'"') == 10
         local g = regexs(1)
         local t = regexs(2)
         local ev = regexs(3)

@@ -65,6 +65,9 @@ table {
   font-size: 1rem; width: 100%;
   border: 1px solid var(--rule); border-radius: 8px;
 }
+.table-title { font-weight: 600; margin: 1.2rem 0 0; }
+.table-title + table { margin-top: 0.45rem; }
+.table-note { font-size: 0.92rem; color: var(--muted); margin: -0.7rem 0 1.2rem; }
 th, td { border-bottom: 1px solid var(--rule); padding: 0.5rem 0.8rem; text-align: left; }
 th {
   background: var(--navy); color: #fff; font-weight: 600;

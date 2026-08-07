@@ -143,20 +143,38 @@ as Stata matrices, and `saverif()` writes the durable dataset that
 ### Performance
 
 Version 2.0.0 is a rewritten engine, and speed at scale was a design goal
-alongside numerical parity with the reference implementation. Absolute
-numbers from one machine (Stata MP, Apple Silicon), so you can calibrate:
+alongside numerical parity with the reference implementation.
 
-- A 400,000-observation repeated cross section with 20 periods and 12 cohorts
-  estimates in under 30 seconds; a 350,000-row panel in one to three seconds
-  for every method (`dr`, `reg`, `ipw`), with or without covariates.
+**Against Version 1.82, on identical data with 2.0.0 pinned to that
+version's own defaults so both versions compute the same numbers: 17x to 334x**, depending
+on the design. The gain grows with the number of periods and the number of
+cohorts, because those are what drive the number of ATT(g,t) cells: 25x at
+five periods and 334x at forty, 114x at three cohorts and 118x at six. It is
+smallest on repeated cross sections, which was Version 1.82's fastest path,
+at 17x.
+At one million rows Version 1.82 could not be timed at all inside a
+two-minute per-call ceiling, where 2.0.0 takes 1.78 seconds.
+
+Absolute numbers from one machine (StataNow/MP 19.5, Apple Silicon), so you
+can calibrate:
+
+- A one-million-row panel estimates all ATT(g,t) in 1.31 seconds with
+  analytical standard errors, and in 1.50 seconds at the shipped default of
+  999 bootstrap replications with uniform confidence bands.
+- A 350,000-row panel takes between 0.39 and 0.74 seconds for every method
+  (`dr`, `reg`, `ipw`), with or without covariates. A 400,000-observation
+  repeated cross section with 20 periods and 12 cohorts takes about three
+  seconds.
 - Aggregations never disturb stored results and are effectively instant at
-  any size: `estat event` takes a fraction of a second after a 20,000-unit
-  estimation and a few seconds after 400,000 units.
+  any size, whether the fit used analytical or bootstrap standard errors:
+  `estat event` takes 0.06 seconds after a 20,000-unit estimation and 0.26
+  seconds after 100,000 units (a million-row panel).
 - The multiplier bootstrap is accelerated by a compiled plugin on macOS
   (shipped with the package; Mata everywhere else, with identical results):
-  199 replications on a 350,000-row panel add about two seconds.
-- `saverif()` writes its dataset in about a second at 20,000 units, and cost
-  scales linearly.
+  199 replications on a 350,000-row panel add about two hundredths of a
+  second over the analytical fit.
+- `saverif()` writes its dataset in about a quarter of a second at 20,000
+  units, and cost scales linearly.
 
 The design rule behind these numbers: no object with one row per unit ever
 crosses into Stata's classic-matrix layer, whose cost is quadratic in a

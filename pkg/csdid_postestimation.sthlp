@@ -309,10 +309,15 @@ it requires an internet connection.
 {phang2}{cmd:. test Tm3 = Tm2 = Tm1 = 0}{p_end}
 
 {pstd}
-The window is given here so that the coefficients are recomputed and the names
-{cmd:Tm3}, {cmd:Tm2}, and {cmd:Tm1} are known to exist; a bare
-{cmd:estat event, post} would post whichever dynamic aggregation is active,
-which after the {cmd:balance(1)} line above covers a shorter event window.
+The window is given here so that the coefficient names {cmd:Tm3}, {cmd:Tm2}
+and {cmd:Tm1} are known to exist. Note that {cmd:estat} never inherits an
+aggregation computed earlier: every {cmd:estat} aggregation recomputes from
+the ATT(g,t) cells, and {cmd:balance()} is a {helpb csdid_stats} option that
+{cmd:estat} does not accept and cannot forward. So the {cmd:balance(1)} line
+above does not carry into the {cmd:estat event, post} that follows it -- the
+posted event study is the unbalanced one. To test coefficients from a
+balanced-event-time profile, run {cmd:csdid_stats event, balance(1)} and read
+its table, or post from it with {cmd:_csdid_post event, post}.
 
 {pstd}{bf:Export estimates, metadata, and plot data}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}

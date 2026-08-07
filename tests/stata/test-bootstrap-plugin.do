@@ -1,3 +1,8 @@
+* The Mata reference below is the table kernel, which is now the only
+* multiplier kernel there is. The comparisons against the plugin are to a
+* tolerance, not exact: the plugin sums in C and any Mata kernel sums in a
+* different order, so they agree only to rounding.
+
 version 15
 clear all
 set more off
@@ -76,7 +81,7 @@ timer clear 4
 timer on 4
 mata:
 state = csdid__bmisc_rng_init(20260627)
-expected_boot = csdid__bmisc_bootstrap_dense(plugin_if, 1000, state) / sqrt(rows(plugin_if))
+expected_boot = csdid__bmisc_bootstrap_matrix(plugin_if, 1000, state) / sqrt(rows(plugin_if))
 st_numscalar("plugin_boot_delta", max(abs(st_matrix("plugin_boot") :- expected_boot)))
 st_numscalar("plugin_boot_state_delta", max(abs(st_matrix("plugin_state") :- state)))
 end
@@ -108,14 +113,14 @@ agg_expected_common = J(199, 3, .)
 agg_expected_state = csdid__bmisc_rng_init(20260712)
 for (agg_j = 1; agg_j <= 3; agg_j++) {
     agg_expected[., agg_j] =
-        csdid__bmisc_bootstrap_dense(agg_x[., agg_j], 199, agg_expected_state) /
+        csdid__bmisc_bootstrap_matrix(agg_x[., agg_j], 199, agg_expected_state) /
         sqrt(rows(agg_x))
 }
 agg_expected_common =
-    csdid__bmisc_bootstrap_dense(agg_x[., 1..3], 199, agg_expected_state) /
+    csdid__bmisc_bootstrap_matrix(agg_x[., 1..3], 199, agg_expected_state) /
     sqrt(rows(agg_x))
 agg_expected[., 4] =
-    csdid__bmisc_bootstrap_dense(agg_x[., 4], 199, agg_expected_state) /
+    csdid__bmisc_bootstrap_matrix(agg_x[., 4], 199, agg_expected_state) /
     sqrt(rows(agg_x))
 st_numscalar("agg_independent_delta", max(abs(st_matrix("agg_independent") :- agg_expected)))
 st_numscalar("agg_common_delta", max(abs(st_matrix("agg_common") :- agg_expected_common)))

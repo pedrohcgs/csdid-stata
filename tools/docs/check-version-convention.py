@@ -64,11 +64,44 @@ def main() -> int:
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        for lineno, line in enumerate(text.splitlines(), 1):
+        lines = text.splitlines()
+        in_code = False
+        for lineno, line in enumerate(lines, 1):
+            # The convention is about PROSE, which is what the message says.
+            # Two things in these documents are not prose and were being
+            # flagged anyway: fenced code, where the text is Stata or shell
+            # source whose comments legitimately name the version the way the
+            # script does, and table rows, where the mention is a column
+            # header and "Version 1.82" in a narrow column reads worse than
+            # the bare number the table is comparing against 2.0.0.
+            if line.lstrip().startswith("```"):
+                in_code = not in_code
+                continue
+            # The code appendix is generated HTML, not fenced markdown: its
+            # listings sit in <pre><code> ... </code></pre> and carry escaped
+            # entities. Same rule, other spelling.
+            if "<pre>" in line:
+                in_code = True
+            if in_code:
+                if "</pre>" in line:
+                    in_code = False
+                continue
+            if line.lstrip().startswith("|"):
+                continue
             if not BARE.search(line):
                 continue
             if any(a in line for a in ALLOWED_SUBSTRINGS):
                 continue
+            # Prose wraps. "... csdid Version\n1.82, applied to ..." reads
+            # correctly and satisfies this rule, but the mention is split
+            # across two lines and a line-at-a-time check saw only the bare
+            # half. If the previous line ends with the word that is supposed
+            # to precede it, and this line opens with the number, the pair is
+            # already in the required form.
+            if lineno > 1 and line.lstrip().startswith("1.82"):
+                previous = lines[lineno - 2].rstrip()
+                if previous.endswith("Version") or previous.endswith("version"):
+                    continue
             # "Version 1.82" is the required form; a line may also carry an
             # allowed literal alongside a correct mention, so strip the good
             # ones before deciding.

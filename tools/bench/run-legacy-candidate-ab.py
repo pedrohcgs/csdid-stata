@@ -10,6 +10,7 @@ import platform
 import random
 import statistics
 import subprocess
+import textwrap
 import time
 from datetime import date
 from pathlib import Path
@@ -153,7 +154,30 @@ def percentile(values, probability):
     return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
 
 
-RSS_TOLERANCE = 0.03
+# Owner-directed, 2026-08-07: 8% on peak RSS, raised from 3%.
+#
+# The 3% bound was calibrated against Stata 17 baselines. On Stata 19.5 both
+# implementations use about 20% more memory -- measured on the same machine and
+# the same scenarios, the candidate +78MB and Version 1.82 +61MB -- so a roughly
+# constant ~15MB difference between them reads as +3.5% there where it read as
+# -1% on Stata 17. The bound was tripping on the interpreter's footprint rather
+# than on anything csdid does.
+#
+# This does not blunt the gate, and the large scenario is why: on the weighted
+# DR workload at scale the candidate uses 164MB against Version 1.82's 241MB, a
+# third less, and less in absolute terms than it used on Stata 17. Eleven of
+# fifteen scenarios sit far below the bound, so the tolerance never engages
+# there, and a genuine memory regression -- materialising an extra n-by-k
+# matrix, say -- is tens of percent rather than eight.
+#
+# 8% rather than 5% because of the headroom, which is the mistake the 3% bound
+# made. The worst measured value is 1.0473 and this harness records the bound
+# moving about 0.008 between runs of unchanged code, so a 5% line would sit
+# less than one run's variation above the worst reading -- it would pass today
+# and fail next week for no reason anyone could act on. 8% puts the line about
+# four variations clear. Nothing measured occupies the 5-8% band, so the
+# sensitivity given up is to regressions no scenario here exhibits.
+RSS_TOLERANCE = 0.08
 # Owner-directed: 5% on time. The strict rule below required csdid to be
 # PROVABLY faster on every workload, with the upper bound of the paired ratio
 # under 1.0. That was safe while the two sides were 5-29x apart, but it is a
@@ -275,9 +299,21 @@ def write_report(summaries, metadata):
         "- Candidate/legacy execution order alternates by trial.",
         "- Estimator time excludes startup and data loading.",
         "- Peak RSS is sampled from the operating-system process every 2 ms.",
-        "- A row passes only when its paired median ratio is below `1.0` and",
-        "  the deterministic bootstrap 95% upper bound is also at or below `1.0`",
-        "  for both estimator time and peak RSS.",
+        "- A row passes on TIME only when its paired median ratio and the",
+        "  deterministic bootstrap 95% upper bound are both at or below `1.0`:",
+        "  the candidate must be no slower.",
+        *textwrap.wrap(
+            f"- A row passes on PEAK RSS at the same bound widened to "
+            f"`{1 + RSS_TOLERANCE:.2f}`, so the candidate may use up to "
+            f"`{RSS_TOLERANCE * 100:.0f}%` more peak memory than the legacy "
+            "package without failing. That allowance exists because peak RSS "
+            "is dominated by the Stata interpreter rather than by either "
+            "implementation, and moves with the Stata release; a regression "
+            "that materialises an extra n-by-k matrix is tens of percent and "
+            "still fails.",
+            width=70,
+            subsequent_indent="  ",
+        ),
         "- Unbalanced rows are performance comparisons across intentionally",
         "  different semantics: the candidate performs the R-compatible",
         "  repeated-cross-section computation and the legacy package does not.",
@@ -294,6 +330,24 @@ def write_report(summaries, metadata):
             "{candidate_median_peak_rss_mb} | {legacy_median_peak_rss_mb} | "
             "{median_paired_rss_ratio} | {rss_ratio_upper95} |".format(**row)
         )
+    over_one = [r for r in summaries if float(r["median_paired_rss_ratio"]) > 1.0]
+    if over_one:
+        worst_over = max(over_one, key=lambda r: float(r["median_paired_rss_ratio"]))
+        rss_sentence = (
+            "This certifies that the candidate is faster than the pinned public "
+            "legacy package on every frozen workload on this platform, and that "
+            f"peak RSS is within the `{RSS_TOLERANCE * 100:.0f}%` allowance on "
+            f"every one. It is NOT a claim that peak RSS is lower everywhere: "
+            f"`{len(over_one)}` of `{len(summaries)}` scenarios use more, the "
+            f"largest being `{worst_over['scenario']}` at "
+            f"`{worst_over['median_paired_rss_ratio']}`."
+        )
+    else:
+        rss_sentence = (
+            "This certifies that the candidate is faster and uses less peak RSS "
+            "than the pinned public legacy package on every frozen workload on "
+            "this platform."
+        )
     lines.extend(
         [
             "",
@@ -304,9 +358,8 @@ def write_report(summaries, metadata):
             f"`{worst_time['scenario']}`. The worst RSS upper bound is",
             f"`{worst_rss['rss_ratio_upper95']}` for `{worst_rss['scenario']}`.",
             "",
-            "This certifies that the candidate is faster and uses less peak RSS",
-            "than the pinned public legacy package on every frozen workload on",
-            "this platform. It is not a universal mathematical claim for every",
+            *textwrap.wrap(rss_sentence, width=70),
+            "It is not a universal mathematical claim for every",
             "possible dataset, operating system, or Stata release. Windows and",
             "Linux require their own recorded platform rows before final release.",
             "Numerical correctness is governed separately by the R `did` 2.5.1",

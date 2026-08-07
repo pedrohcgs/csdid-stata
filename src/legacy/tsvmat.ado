@@ -1,4 +1,4 @@
-*! V1 Creates Temporary new variables
+*! tsvmat 2.0.0 30jul2026
 
 *capture program drop tsvmat
 program define tsvmat, return
@@ -7,8 +7,8 @@ program define tsvmat, return
     * a future release. Replacement: no replacement; it was never part of the documented surface.
     display as text "note: tsvmat is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
-        syntax anything, name(string)
         version 7
+        syntax anything, name(string)
 		 
         local nx = rowsof(matrix(`anything'))
         local nc = colsof(matrix(`anything'))

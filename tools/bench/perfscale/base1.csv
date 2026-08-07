@@ -1,0 +1,13 @@
+tag,cell,nunits,nobs,seconds,min,max
+base1,panel_reg_analytic,20000,200000,.273,.272,.274
+base1,panel_dr_cov,20000,200000,.6910000000000001,.6890000000000001,.701
+base1,panel_reg_cluster,20000,200000,.295,.294,.295
+base1,rcs_reg,20000,200000,1.009,1.008,1.014
+base1,unbal_reg_none,20000,200000,.273,.268,.277
+base1,panel_reg_wboot,20000,200000,.398,.394,.399
+base1,panel_reg_analytic,60000,600000,.7870000000000001,.784,.79
+base1,panel_dr_cov,60000,600000,1.442,1.418,1.444
+base1,panel_reg_cluster,60000,600000,.853,.845,.863
+base1,rcs_reg,60000,600000,2.736,2.714,2.739
+base1,unbal_reg_none,60000,600000,.7720000000000001,.767,.784
+base1,panel_reg_wboot,60000,600000,1.232,1.225,1.243

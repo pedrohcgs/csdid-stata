@@ -18,8 +18,19 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_JEL = ROOT.parent / "GitHub" / "JEL-DiD"
-JEL_ROOT = Path(os.environ.get("JEL_DID_REFERENCE", DEFAULT_JEL)).expanduser()
+
+# Same resolution order as the R generators in tools/parity/generators/f04*:
+# $JEL_DID_REFERENCE, then the sibling checkout, then the legacy /tmp path.
+_JEL_CANDIDATES = [
+    Path(p).expanduser()
+    for p in (
+        os.environ.get("JEL_DID_REFERENCE", ""),
+        Path.home() / "Documents/GitHub/JEL-DiD",
+        "/tmp/jel-did-reference",
+    )
+    if str(p)
+]
+JEL_ROOT = next((p for p in _JEL_CANDIDATES if p.is_dir()), _JEL_CANDIDATES[-1])
 OUT_ROOT = ROOT / "tests" / "fixtures" / "jel"
 SOURCE_COMMIT = "50f4f183783d2344f85bc4f39bcbcc1b7eba6466"
 

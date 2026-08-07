@@ -1,0 +1,11 @@
+stata,call,seconds,accel,status
+17,unseeded,.303,mata,mata-unseeded
+17,unseeded,.297,mata,mata-unseeded
+17,unseeded,.298,mata,mata-unseeded
+17,seeded,.375,plugin,plugin-active
+17,seeded,.369,plugin,plugin-active
+17,seeded,.371,plugin,plugin-active
+17,analytical,.219,none,not-requested
+17,analytical,.218,none,not-requested
+17,analytical,.219,none,not-requested
+17,estat_event,.94,,,

@@ -65,6 +65,25 @@ def blocks(md: str) -> tuple[list[str], int]:
     return keep, skipped
 
 
+def jel_root():
+    """$JEL_DID_REFERENCE, then the sibling checkout, then the legacy /tmp path.
+
+    The same order as the R generators under tools/parity/generators. Returns
+    the last candidate when none exists so the caller reports "no local data"
+    rather than crashing -- this gate degrades to skipping, it does not block.
+    """
+    candidates = [
+        Path(p).expanduser()
+        for p in (
+            os.environ.get("JEL_DID_REFERENCE", ""),
+            Path.home() / "Documents/GitHub/JEL-DiD",
+            "/tmp/jel-did-reference",
+        )
+        if str(p)
+    ]
+    return next((p for p in candidates if p.is_dir()), candidates[-1])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--stata", default=os.environ.get("STATA_CMD", "stata-mp"))
@@ -75,8 +94,7 @@ def main() -> int:
         print(f"BLOCKED: {args.stata} not on PATH (set STATA_CMD)")
         return 1
 
-    jel = os.environ.get("JEL_DID_REFERENCE", str(Path.home() / "Documents/GitHub/JEL-DiD"))
-    jel_csv = Path(jel) / "data/county_mortality_data.csv"
+    jel_csv = jel_root() / "data/county_mortality_data.csv"
     have_local = jel_csv.is_file()
 
     failures, blocked, passed = [], [], []

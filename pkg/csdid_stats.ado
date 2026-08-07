@@ -106,6 +106,8 @@ program define csdid_stats, eclass
     local na_rm ""
     if "`dropmissing'" != "" local na_rm "na_rm"
     local agg_cluster ""
+    local agg_cluster_specified 0
+    local agg_cluster_name ""
     local unsupported ""
     * EUX-013/OPT-011: -syntax- hands the leftover options back as ONE string,
     * and the plain `foreach opt of local options' this loop used to open with
@@ -216,22 +218,54 @@ program define csdid_stats, eclass
             local na_rm "na_rm"
         }
         else if regexm(`"`opt_l'"', "^(cluster|clustervars)\(([^)]+)\)$") {
+            * min_e(), max_e() and balance_e() each refuse a repeat; this one
+            * last-won in silence. The harm is not symmetric: a mismatch with
+            * e(clustervar) exits 498 naming the LAST spelling, so
+            * `cluster(state) cluster(county)' on a run clustered by state
+            * refused while advising the user to re-run the estimation with
+            * county -- i.e. to change a correct estimation to match the
+            * accidental second option -- and discarded cluster(state), the
+            * one that matched, without a word.
+            local cl_name = regexs(1)
+            if `agg_cluster_specified' {
+                if "`cl_name'" != "`agg_cluster_name'" {
+                    display as error "cluster() and clustervars() are the same option under two names; specify only one."
+                }
+                else {
+                    display as error "option `cl_name'() specified more than once"
+                }
+                exit 198
+            }
             local agg_cluster = regexs(2)
             * recover the user's capitalisation: the match ran on the
             * lower-cased token, but e(clustervar) stores the real name.
             * EUX-013: read it off `opt_c' (blanks removed, case kept) so
             * `cluster( State )' recovers "State", not " State ".
             if regexm(`"`opt_c'"', "\(([^)]+)\)$") local agg_cluster = regexs(1)
+            local agg_cluster_specified 1
+            local agg_cluster_name "`cl_name'"
         }
         * OPT-004: a repeated DECLARED option is handed to the `*' catch-all
         * by -syntax-, so "window(0 2) window(1 3)" used to be reported as an
         * unsupported option. Name the real fault.
-        else if regexm(`"`opt_l'"', "^(window|balance|type|level)\(") {
-            local dup_opt = regexs(1)
-            display as error "option `dup_opt'() specified more than once"
-            exit 198
-        }
+        *
+        * The old test was a hand-written list of the FULL option names, and
+        * Stata's own abbreviations are legal on the same syntax line, so
+        * `win(0 1) win(1 2)', `lev(90) lev(80)' and `bal(1) bal(2)' fell
+        * through it and exited with "unsupported option(s): win(1 2)" --
+        * telling the user that window(), a supported option, is unsupported.
+        * Ask -syntax- instead of a table that drifts: _csdid_stats_optdup
+        * declares exactly this command's own options and nothing else, so a
+        * leftover token it can parse is by definition one of ours typed
+        * twice, in whatever spelling. csdid_estat solves the same problem
+        * the same way, and its comment names this hazard.
         else {
+            capture _csdid_stats_optdup, `opt'
+            if _rc == 0 {
+                local dup_opt "`r(option)'"
+                display as error "option `dup_opt'() specified more than once"
+                exit 198
+            }
             local unsupported "`unsupported' `opt'"
         }
     }
@@ -310,7 +344,19 @@ program define csdid_stats, eclass
         exit 198
     }
     if "`type'" == "calendar" & (`min_e_specified' | `max_e_specified' | `balance_e_specified') {
-        display as text "warning: min_e(), max_e(), and balance_e() are ignored for type(calendar)"
+        * Name what was TYPED, not all three spellings. The calendar
+        * aggregation is over periods, not event times, so any of them is
+        * ignored -- but telling a user that min_e() and balance_e() are
+        * ignored when they typed window() reads as a message about someone
+        * else's command.
+        local cal_ignored ""
+        if `"`window'"' != "" local cal_ignored "`cal_ignored' window()"
+        if `balance_given' local cal_ignored "`cal_ignored' balance()"
+        if `min_e_specified' & `"`window'"' == "" local cal_ignored "`cal_ignored' min_e()"
+        if `max_e_specified' & `"`window'"' == "" local cal_ignored "`cal_ignored' max_e()"
+        if `balance_e_specified' & !`balance_given' local cal_ignored "`cal_ignored' balance_e()"
+        if "`cal_ignored'" == "" local cal_ignored " min_e(), max_e(), and balance_e()"
+        display as text "warning:`cal_ignored' is ignored for type(calendar); the full calendar aggregation is reported"
     }
     local na_rm_flag = ("`na_rm'" != "")
     local use_cluster = ("`e(clustervar)'" != "")
@@ -410,17 +456,235 @@ program define csdid_stats, eclass
     if `bstrap' {
         local biters = e(biters)
         local cband = e(cband)
+        * Same cap, same gate as the estimation stage: the aggregation
+        * bootstrap writes biters-row Stata matrices too, and biters is
+        * INHERITED from e(biters), so a run that got past csdid on a raised
+        * matsize can still meet the cap here in a later session.
+        if c(stata_version) < 16 & `biters' > c(matsize) {
+            display as error "this Stata version limits matrix dimensions with -set matsize- (currently `=c(matsize)'), and the aggregation bootstrap inherits e(biters) = `biters' from the estimation. Type -set matsize `biters'- and rerun, or re-run csdid with a smaller reps()."
+            exit 908
+        }
         local boot_dist "`e(boot_dist)'"
         if "`boot_dist'" == "" local boot_dist "rademacher"
         tempname boot_aggte agg_boot_draws agg_crit agg_pointcrit boot_rng_state agg_bootstrap_profile
-        if !`agg_store_large' {
-            * The bootstrap plumbing below consumes a named Stata matrix.
-            * Under lean aggregation the IF lives only in the Mata cache, so
-            * materialize it once here -- the single remaining quadratic
-            * boundary crossing, paid only when an aggregation bootstrap is
-            * actually requested.
-            mata: st_matrix("`agg_inffunc'", CSDID_LAST_AGG_INFFUNC)
+        * sources for the variables-input plugin path: unit/group map name,
+        * repeated-cross-section time variable, and whether clustering is on
+        local agg_unit_src "e(unit_group)"
+        if "`e(panel_mode)'" == "allow_unbalanced" {
+            capture confirm matrix e(unit_group_boot)
+            if !_rc local agg_unit_src "e(unit_group_boot)"
         }
+        local agg_time_src ""
+        if "`e(idvar)'" == "" local agg_time_src "`e(timevar)'"
+        local boot_agg_if ""
+        local boot_agg_cluster_vec ""
+        local boot_rng_arg ""
+        capture confirm matrix e(boot_rng_state)
+        if !_rc {
+            matrix `boot_rng_state' = e(boot_rng_state)
+            local boot_rng_arg "`boot_rng_state'"
+        }
+        else if "`e(boot_seed)'" != "" {
+            mata: st_matrix("`boot_rng_state'", csdid__bmisc_rng_init(`e(boot_seed)'))
+            local boot_rng_arg "`boot_rng_state'"
+        }
+        local agg_boot_accel "mata"
+        local agg_boot_status "mata-unseeded"
+        local agg_boot_rc 0
+        local agg_plugin_success 0
+        * F-004 extension: type(simple) is not the only aggregation whose IF
+        * is one effect column duplicated as the overall column -- a
+        * one-effect event window (estat event, window(0 0)) produces the
+        * same degeneracy. R runs a single mboot serving both columns there,
+        * which the Mata kernels replicate through their simple_duplicate
+        * rule; the plugin would draw an independent second block that R
+        * never draws. The numeric test below is the same one the kernels
+        * apply, so plugin and Mata can never disagree on this case.
+        local agg_dupcol 0
+        if `use_cache' {
+            capture mata: st_local("agg_dupcol", strofreal( ///
+                cols(CSDID_LAST_AGG_INFFUNC) == 2 & ///
+                max(abs(CSDID_LAST_AGG_INFFUNC[., 1] :- CSDID_LAST_AGG_INFFUNC[., 2])) <= sqrt(epsilon(1)) * 10))
+        }
+        else {
+            capture mata: st_local("agg_dupcol", strofreal( ///
+                cols(st_matrix("`agg_inffunc'")) == 2 & ///
+                max(abs(st_matrix("`agg_inffunc'")[., 1] :- st_matrix("`agg_inffunc'")[., 2])) <= sqrt(epsilon(1)) * 10))
+        }
+        if "`agg_dupcol'" == "" local agg_dupcol 0
+        * the two shapes where effect and overall are the same column
+        local agg_dupcol_rule = ("`type'" == "simple" | `agg_dupcol')
+        if "$CSDID_BOOT_PLUGIN_DISABLE" == "1" {
+            local agg_boot_status "mata-plugin-disabled"
+        }
+        else if "`boot_rng_arg'" != "" & "`boot_dist'" == "rademacher" & ///
+            "`e(bootstrap_accelerator)'" == "plugin" {
+            * F-004, resolved rather than avoided. When the aggregate influence
+            * function is one column duplicated -- type(simple) always, and a
+            * one-effect event window (window(0 0)) by the numeric test above --
+            * R's aggte runs a SINGLE mboot whose draws serve both the effect
+            * and the overall column. The plugin draws the overall column from
+            * its own stream, which R never draws, so using it unchanged made
+            * overall_se diverge.
+            *
+            * type(simple) was therefore excluded outright, which left the
+            * simplest aggregation as the slowest: measured on 30,000 units and
+            * 999 replications, simple took 1.081s on the Mata kernels against
+            * 0.350s for group and 0.443s for calendar on the plugin.
+            *
+            * The Mata rule it was falling back to is two lines -- draw column
+            * one, copy it to the overall column, no second draw -- so the
+            * plugin can be used and the same rule applied to its output. That
+            * is what happens after the call below. The plugin still consumes
+            * its overall-column block; the block is discarded rather than
+            * read, so the reported draws are R's and the extra consumption
+            * only moves the random state, which nothing downstream reads (the
+            * state is re-derived from rseed() on the next command).
+            local agg_boot_status "mata-plugin-unavailable"
+            local agg_plugin_bound 0
+            capture quietly findfile csdid.ado
+            if !_rc {
+                local agg_csdid_path "`r(fn)'"
+                local agg_plugin_file "`e(bootstrap_accelerator_file)'"
+                local agg_plugin_path "`agg_csdid_path'"
+                local agg_plugin_path : subinstr local agg_plugin_path ///
+                    "csdid.ado" "`agg_plugin_file'", all
+                capture confirm file "`agg_plugin_path'"
+                if !_rc & ("$CSDID_AGG_BOOT_PLUGIN_PATH" == "" | ///
+                    "$CSDID_AGG_BOOT_PLUGIN_PATH" == "`agg_plugin_path'") {
+                    capture program __csdid_agg_boot_plugin, plugin using("`agg_plugin_path'")
+                    local agg_bind_rc = _rc
+                    if inlist(`agg_bind_rc', 0, 110) {
+                        global CSDID_AGG_BOOT_PLUGIN_PATH "`agg_plugin_path'"
+                        local agg_plugin_bound 1
+                    }
+                }
+            }
+            if `agg_plugin_bound' {
+                tempname agg_plugin_independent agg_plugin_common agg_plugin_input ///
+                    agg_plugin_n ///
+                    agg_plugin_nc agg_plugin_cluster agg_plugin_started agg_rng_backup
+                matrix `agg_rng_backup' = `boot_rng_state'
+                local agg_plugin_rc 0
+                * variables-input path: the influence functions never leave
+                * Mata as a Stata matrix (matrix CREATION is quadratic in
+                * rows; measured 48s at 100,000 units). The plugin reads them
+                * from temp variables, exactly as the estimation stage does.
+                local agg_plugin_k 0
+                capture mata: st_local("agg_plugin_k", strofreal(cols(CSDID_LAST_AGG_INFFUNC)))
+                if `agg_plugin_k' < 2 local agg_plugin_rc 498
+                local agg_plugin_effects = `agg_plugin_k' - 1
+                local agg_plugin_if_vars ""
+                if !`agg_plugin_rc' {
+                    forvalues agg_plugin_col = 1/`agg_plugin_k' {
+                        tempvar agg_plugin_if_var
+                        capture generate double `agg_plugin_if_var' = .
+                        if _rc local agg_plugin_rc = _rc
+                        local agg_plugin_if_vars "`agg_plugin_if_vars' `agg_plugin_if_var'"
+                    }
+                }
+                if !`agg_plugin_rc' {
+                    capture mata: csdid_agg_boot_plugin_prep_vars("`agg_unit_src'", "`agg_time_src'", `use_cluster', "`agg_plugin_if_vars'", "`agg_plugin_n'", "`agg_plugin_nc'", "`agg_plugin_cluster'", "`agg_plugin_started'")
+                    local agg_plugin_rc = _rc
+                    if `agg_plugin_rc' == 1 exit 1
+                }
+                if !`agg_plugin_rc' {
+                    capture matrix `agg_plugin_independent' = J(`biters', `agg_plugin_k', .)
+                    if _rc local agg_plugin_rc = _rc
+                    capture matrix `agg_plugin_common' = J(`biters', `agg_plugin_effects', .)
+                    if _rc local agg_plugin_rc = _rc
+                }
+                if !`agg_plugin_rc' {
+                    local agg_plugin_nc_value : display %21.0f scalar(`agg_plugin_nc')
+                    local agg_plugin_nc_value = strtrim("`agg_plugin_nc_value'")
+                    * `in 1/<rows>' matches the estimation-stage call in
+                    * csdid.ado. Without it the plugin received an
+                    * unrestricted observation range and read a PREFIX of the
+                    * data of the declared width; the plugin now refuses a
+                    * range that is not exactly the declared width, so the two
+                    * call sites read exactly the rows the influence
+                    * functions describe.
+                    capture plugin call __csdid_agg_boot_plugin `agg_plugin_if_vars' in 1/`agg_plugin_nc_value', ///
+                        bootstrap_agg_vars `biters' `agg_plugin_nc_value' `cband' ///
+                        `agg_plugin_independent' ///
+                        `agg_plugin_common' `boot_rng_state'
+                    local agg_plugin_rc = _rc
+                    if `agg_plugin_rc' == 1 exit 1
+                }
+                if !`agg_plugin_rc' & `agg_dupcol_rule' {
+                    * The duplicate rule, applied to the plugin's output: the
+                    * overall column IS the effect column, not a second draw.
+                    capture matrix `agg_plugin_independent'[1, `agg_plugin_k'] = ///
+                        `agg_plugin_independent'[1..., 1]
+                    if _rc local agg_plugin_rc = _rc
+                }
+                if !`agg_plugin_rc' {
+                    capture mata: csdid_agg_boot_plugin_finish("`aggte'", ///
+                        "`agg_plugin_independent'", "`agg_plugin_common'", ///
+                        st_numscalar("`agg_plugin_n'"), st_numscalar("`agg_plugin_nc'"), ///
+                        st_numscalar("`agg_plugin_cluster'"), `biters', ///
+                        (100 - `level') / 100, `cband', "`agg_plugin_started'", ///
+                        "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", ///
+                        "`agg_pointcrit'")
+                    local agg_plugin_rc = _rc
+                    * Break, like the two captures above it. This call
+                    * summarizes biters x k draws and computes the
+                    * simultaneous critical value, so it is exactly where a
+                    * user interrupts; without this the Break was absorbed,
+                    * reported as a plugin failure, and the whole bootstrap
+                    * was recomputed on the Mata path, forcing the user to
+                    * press Break a second time.
+                    if `agg_plugin_rc' == 1 exit 1
+                }
+                if !`agg_plugin_rc' {
+                    local agg_plugin_success 1
+                    local agg_boot_accel "plugin"
+                    local agg_boot_status "plugin-active"
+                }
+                else {
+                    matrix `boot_rng_state' = `agg_rng_backup'
+                    local agg_boot_status "mata-plugin-failed"
+                    local agg_boot_rc = `agg_plugin_rc'
+                }
+            }
+        }
+        local agg_direct_done 0
+        if !`agg_plugin_success' & `use_cache' {
+            * Fresh fit, lean storage (the default): the aggregation IF lives
+            * in the Mata cache. Assemble, bootstrap and write back entirely
+            * in Mata. No n_units-row object crosses the Mata-Stata boundary:
+            * classic-matrix creation is quadratic in rows (measured per
+            * write: 4s at 25k, 27s at 50k, 145s at 100k) and impossible past
+            * c(max_matdim) rows, which made the old route take minutes on
+            * any platform where the plugin does not run -- unseeded fits,
+            * non-rademacher draws, and every OS without the shipped plugin.
+            capture mata: csdid_bootstrap_aggte_direct("`aggte'", "`agg_unit_src'", "`agg_time_src'", `use_cluster', `biters', (100 - `level') / 100, `cband', "`boot_dist'", "`boot_rng_arg'", "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", "`agg_pointcrit'")
+            local agg_boot_kernel_rc = _rc
+            if `agg_boot_kernel_rc' == 1 exit 1
+            if `agg_boot_kernel_rc' {
+                display as error `"csdid_stats could not bootstrap the type(`type') aggregation; rerun csdid before csdid_stats"'
+                exit `agg_boot_kernel_rc'
+            }
+            local agg_direct_done 1
+        }
+        if !`agg_plugin_success' & !`agg_direct_done' {
+            * storeall / saved-RIF entry: the influence functions genuinely
+            * live in Stata matrices, so the named-matrix route remains.
+            *
+            * The `agg_prep_done' flag that used to guard this branch was
+            * vestigial: it is initialised to 0 and set to 1 only inside the
+            * branch it guards, so it was always 0 where it was tested.
+            *
+            * The `if !`agg_store_large'' materialization that used to sit
+            * here, with its c(max_matdim) refusal, was UNREACHABLE and its
+            * comment claimed the opposite ("both facts now refuse loudly"):
+            * reaching this branch at all requires use_cache == 0, which is
+            * exactly agg_store_large == 1, so the test could never be true.
+            * The influence functions are already in a Stata matrix on this
+            * route -- that is what storeall means -- so nothing needed
+            * materializing. The c(max_matdim) exposure it advertised is real
+            * but lives on the saved-RIF LOAD, where it is now refused by name
+            * (see _csdid_stats_load_rif).
         local boot_agg_if "`agg_inffunc'"
         local boot_agg_cluster_vec ""
         if `use_cluster' {
@@ -483,103 +747,8 @@ program define csdid_stats, eclass
             }
             local boot_agg_if "`boot_agg_if_ordered'"
         }
-        local boot_rng_arg ""
-        capture confirm matrix e(boot_rng_state)
-        if !_rc {
-            matrix `boot_rng_state' = e(boot_rng_state)
-            local boot_rng_arg "`boot_rng_state'"
         }
-        else if "`e(boot_seed)'" != "" {
-            mata: st_matrix("`boot_rng_state'", csdid__bmisc_rng_init(`e(boot_seed)'))
-            local boot_rng_arg "`boot_rng_state'"
-        }
-        local agg_boot_accel "mata"
-        local agg_boot_status "mata-unseeded"
-        local agg_boot_rc 0
-        local agg_plugin_success 0
-        if "$CSDID_BOOT_PLUGIN_DISABLE" == "1" {
-            local agg_boot_status "mata-plugin-disabled"
-        }
-        else if "`boot_rng_arg'" != "" & "`boot_dist'" == "rademacher" & ///
-            "`e(bootstrap_accelerator)'" == "plugin" & "`type'" != "simple" {
-            * F-004: type(simple) must NOT use the plugin. Its aggregate IF is
-            * one column duplicated (effect == overall); R's aggte(simple) runs
-            * a single mboot whose draws serve both, and the Mata kernels
-            * replicate that via their simple_duplicate branch. The plugin
-            * draws an independent second multiplier block for the overall
-            * column, which R never draws, so its overall_se diverges from R.
-            local agg_boot_status "mata-plugin-unavailable"
-            local agg_plugin_bound 0
-            capture quietly findfile csdid.ado
-            if !_rc {
-                local agg_csdid_path "`r(fn)'"
-                local agg_plugin_file "`e(bootstrap_accelerator_file)'"
-                local agg_plugin_path "`agg_csdid_path'"
-                local agg_plugin_path : subinstr local agg_plugin_path ///
-                    "csdid.ado" "`agg_plugin_file'", all
-                capture confirm file "`agg_plugin_path'"
-                if !_rc & ("$CSDID_AGG_BOOT_PLUGIN_PATH" == "" | ///
-                    "$CSDID_AGG_BOOT_PLUGIN_PATH" == "`agg_plugin_path'") {
-                    capture program __csdid_agg_boot_plugin, plugin using("`agg_plugin_path'")
-                    local agg_bind_rc = _rc
-                    if inlist(`agg_bind_rc', 0, 110) {
-                        global CSDID_AGG_BOOT_PLUGIN_PATH "`agg_plugin_path'"
-                        local agg_plugin_bound 1
-                    }
-                }
-            }
-            if `agg_plugin_bound' {
-                tempname agg_plugin_independent agg_plugin_common agg_plugin_input ///
-                    agg_plugin_n ///
-                    agg_plugin_nc agg_plugin_cluster agg_plugin_started agg_rng_backup
-                matrix `agg_rng_backup' = `boot_rng_state'
-                local agg_plugin_rc 0
-                local agg_plugin_k = colsof(`boot_agg_if')
-                local agg_plugin_effects = `agg_plugin_k' - 1
-                local agg_plugin_input_name "`boot_agg_if'"
-                if `use_cluster' local agg_plugin_input_name "`agg_plugin_input'"
-                if !`agg_plugin_rc' {
-                    capture mata: csdid_agg_boot_plugin_prepare("`boot_agg_if'", "`boot_agg_cluster_vec'", "`agg_plugin_input_name'", "`agg_plugin_n'", "`agg_plugin_nc'", "`agg_plugin_cluster'", "`agg_plugin_started'")
-                    local agg_plugin_rc = _rc
-                }
-                if !`agg_plugin_rc' {
-                    capture matrix `agg_plugin_independent' = J(`biters', `agg_plugin_k', .)
-                    if _rc local agg_plugin_rc = _rc
-                    capture matrix `agg_plugin_common' = J(`biters', `agg_plugin_effects', .)
-                    if _rc local agg_plugin_rc = _rc
-                }
-                if !`agg_plugin_rc' {
-                    local agg_plugin_nc_value : display %21.0f scalar(`agg_plugin_nc')
-                    local agg_plugin_nc_value = strtrim("`agg_plugin_nc_value'")
-                    capture plugin call __csdid_agg_boot_plugin, bootstrap_agg ///
-                        `biters' `agg_plugin_nc_value' `cband' ///
-                        `agg_plugin_input_name' `agg_plugin_independent' ///
-                        `agg_plugin_common' `boot_rng_state'
-                    local agg_plugin_rc = _rc
-                }
-                if !`agg_plugin_rc' {
-                    capture mata: csdid_agg_boot_plugin_finish("`aggte'", ///
-                        "`agg_plugin_independent'", "`agg_plugin_common'", ///
-                        st_numscalar("`agg_plugin_n'"), st_numscalar("`agg_plugin_nc'"), ///
-                        st_numscalar("`agg_plugin_cluster'"), `biters', ///
-                        (100 - `level') / 100, `cband', "`agg_plugin_started'", ///
-                        "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", ///
-                        "`agg_pointcrit'")
-                    local agg_plugin_rc = _rc
-                }
-                if !`agg_plugin_rc' {
-                    local agg_plugin_success 1
-                    local agg_boot_accel "plugin"
-                    local agg_boot_status "plugin-active"
-                }
-                else {
-                    matrix `boot_rng_state' = `agg_rng_backup'
-                    local agg_boot_status "mata-plugin-failed"
-                    local agg_boot_rc = `agg_plugin_rc'
-                }
-            }
-        }
-        if !`agg_plugin_success' {
+        if !`agg_plugin_success' & !`agg_direct_done' {
             * EUX-001: capture + re-raise so a bootstrap-kernel refusal
             * ("BMisc bootstrap RNG state is invalid", "stored aggregate
             * influence functions do not match aggregation results") cannot
@@ -666,6 +835,29 @@ end
 * the kernel's wording and its check order. It never aborts: if the probe
 * itself fails it is discarded and the caller falls back to a generic message,
 * so a probe defect can never turn a working aggregation into a refusal.
+* Mirror of csdid_stats's own syntax line, minus the `*' catch-all and the
+* options this command parses by hand out of `options' (min_e(), max_e(),
+* balance_e(), cluster()/clustervars(), na_rm/na.rm/dropmissing). A leftover
+* token that THIS parses is one of csdid_stats's declared options appearing a
+* second time, whatever abbreviation was typed -- Stata does the abbreviation
+* matching, so the two declaration lists cannot drift into disagreement the
+* way a hand-written name list did.
+program define _csdid_stats_optdup, rclass
+    version 14
+    syntax [, TYPE(string) Level(cilevel) WINdow(string) BALance(string) ///
+        DROPMissing FROM(string)]
+    local hit ""
+    if `"`type'"' != "" local hit "type"
+    if `"`window'"' != "" local hit "window"
+    if `"`balance'"' != "" local hit "balance"
+    if `"`from'"' != "" local hit "from"
+    if "`dropmissing'" != "" local hit "dropmissing"
+    * level(cilevel) always resolves to a value, so it is the only declared
+    * option a successful parse cannot distinguish by emptiness.
+    if "`hit'" == "" local hit "level"
+    return local option "`hit'"
+end
+
 program define _csdid_stats_aggfail
     version 14
     syntax , TYPE(string) MINE(string) MAXE(string) BALE(string) ///
@@ -684,7 +876,7 @@ program define _csdid_stats_aggfail
             } ///
             if (__csdid_pM == "") { ///
                 if (sum(__csdid_pA[., 4] :>= .) > 0) { ///
-                    if (`narm' == 0) __csdid_pM = "missing values found in ATT(g,t) estimates; specify dropmissing to drop them"; ///
+                    if (`narm' == 0) __csdid_pM = sprintf("%g of the %g ATT(g,t) cells have a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated, or address the cause of the failures (the per-cell warnings above name it) and re-run.", sum(__csdid_pA[., 4] :>= .), rows(__csdid_pA), sum(__csdid_pA[., 4] :< .)); ///
                     if (`narm' != 0) { ///
                         __csdid_pA = select(__csdid_pA, __csdid_pA[., 4] :< .); ///
                         if (rows(__csdid_pA) == 0) __csdid_pM = "all ATT(g,t) estimates are missing; cannot aggregate"; ///
@@ -750,6 +942,10 @@ program define _csdid_stats_aggfail
         } ///
         st_local("msg", __csdid_pM)
     if _rc local msg ""
+    * The probe builds fifteen external Mata objects, one of which is a full
+    * copy of e(inffunc), and left every one of them in the session namespace
+    * after a refusal. The Wald block in csdid.ado ends the same way.
+    capture mata: mata drop __csdid_p*
     if `"`msg'"' == "" {
         local msg "csdid_stats could not compute the type(`type') aggregation from the stored ATT(g,t) results; check window()/balance()/dropmissing and the ATT(g,t) table"
     }
@@ -762,6 +958,54 @@ program define Display
     tempname out
     matrix `out' = e(aggte)
     display as text _newline "Aggregated treatment effects"
+    * -------------------------------------------------------------------
+    * #19. level() was parsed here and never used, and the table printed
+    * with nothing above it saying how the standard errors were produced.
+    * A reader could not tell an analytical run from a bootstrap, could not
+    * see the replication count, and -- the part that costs people time --
+    * could not see that an UNSEEDED bootstrap had been run, whose numbers
+    * drift between two identical calls. That is the same gap DS-10 closed
+    * on the estimation side; this is the aggregation side of it, built
+    * from the same e() macros and printed in the same shape.
+    *
+    * The aggregation has no inference options of its own -- it inherits
+    * the estimation's -- so these read from the estimation's stored
+    * results, except the level, which is this command's own and is now
+    * the argument that was already being passed in.
+    * -------------------------------------------------------------------
+    local inf_line ""
+    if "`e(vce)'" == "bootstrap" {
+        local inf_line "Std. errors: multiplier bootstrap, `=e(biters)' reps"
+        if "`e(rseed)'" != "" {
+            local inf_line "`inf_line', rseed(`e(rseed)')"
+        }
+        else {
+            local inf_line "`inf_line', no seed set (not reproducible)"
+        }
+    }
+    else {
+        local inf_line "Std. errors: analytical (influence function)"
+    }
+    if "`e(clustervar)'" != "" {
+        local inf_line "`inf_line'; clustered on `e(clustervar)'"
+        capture confirm scalar e(N_clusters)
+        if !_rc local inf_line "`inf_line' (`=e(N_clusters)' clusters)"
+    }
+    local band_kind "pointwise"
+    capture confirm scalar e(cband)
+    if !_rc {
+        if e(cband) == 1 local band_kind "simultaneous"
+    }
+    display as text "`inf_line'; `level'% `band_kind' bands"
+    * The aggregation can be forced off the estimation's cluster variable;
+    * when that happened, say so rather than let the line above imply the
+    * aggregation clustered the same way the estimation did.
+    capture confirm scalar e(agg_cluster_fallback)
+    if !_rc {
+        if e(agg_cluster_fallback) == 1 {
+            display as text "note: the aggregation could not cluster on `e(clustervar)' and used unclustered inference"
+        }
+    }
     matlist `out', names(columns) format(%10.6g)
 end
 
@@ -809,6 +1053,25 @@ program define _csdid_stats_load_rif, eclass
         exit 498
     }
 
+    * The load materializes the influence functions as CLASSIC Stata
+    * matrices, whose dimensions are capped at c(max_matdim) (11,000 on
+    * SE/MP, 800 on BE). mkmat raises a bare `error 915' at that cap, naming
+    * neither the file, nor the size, nor a remedy -- and the WRITER has no
+    * matching cap, because saverif() fills the artifact through st_store,
+    * which is linear and uncapped. So a large estimation could write an
+    * artifact that could never be read back, and the user found out on the
+    * way back with a stock r(915). The test mirrors mkmat's own
+    * max(_N, nvar), and it is placed before the first crossing so that it
+    * covers all four (two mkmat calls and two ereturn matrix posts).
+    quietly count
+    local rif_rows = r(N)
+    local rif_dim = max(`rif_rows', `nrif')
+    if `rif_dim' > c(max_matdim) {
+        restore
+        display as error "saved RIF artifact in using() holds `rif_rows' unit rows and `nrif' ATT(g,t) columns, and reading it needs a matrix of `rif_dim' rows or columns; this Stata's limit is `=c(max_matdim)'. The artifact is valid -- it was written through a path with no such limit -- but it cannot be read back on this Stata flavour. Use Stata/SE or Stata/MP, or re-run csdid rather than reloading."
+        exit 908
+    }
+
     mkmat `rifvars', matrix(`IF')
     capture confirm variable weight
     if _rc {
@@ -820,7 +1083,13 @@ program define _csdid_stats_load_rif, eclass
         mkmat id group weight, matrix(`UG')
         generate double _csdid_rif_weight = weight
     }
-    matrix `ATT' = J(`nrif', 9, .)
+    * Ten columns: the nine documented ATT(g,t) columns plus base_time, the
+    * reference period each cell was differenced against. base_time is what
+    * lets a reloaded artifact identify the universal-base normalisation row
+    * and name coefficients with the base period the run actually used, so an
+    * artifact written before the column existed is refused rather than
+    * silently reloaded one column short.
+    matrix `ATT' = J(`nrif', 10, .)
 
     local treated_groups ""
     forvalues j = 1/`nrif' {
@@ -830,7 +1099,11 @@ program define _csdid_stats_load_rif, eclass
             display as error "saved RIF artifact is missing ATT metadata for `rv'"
             exit 498
         }
-        forvalues c = 1/9 {
+        if wordcount(`"`meta'"') != 10 {
+            display as error "saved RIF artifact has damaged ATT metadata for `rv': it holds `=wordcount(`"`meta'"')' fields where csdid 2.0.0 writes 10 (group, time, event_time, att, se, and the four counts, then base_time). The file in using() was written by csdid but has been modified since, or predates the base_time field. Re-run csdid with saverif() to rewrite it."
+            exit 498
+        }
+        forvalues c = 1/10 {
             local val : word `c' of `meta'
             matrix `ATT'[`j', `c'] = `val'
         }
@@ -853,6 +1126,57 @@ program define _csdid_stats_load_rif, eclass
         local ++i
     }
 
+    * ------------------------------------------------------------------
+    * #20. The aggregation weights above are REBUILT from the data. The
+    * artifact also records what they were when the estimation ran, and
+    * nothing read them -- so a RIF whose group or weight column had been
+    * edited silently produced different aggregation weights instead of
+    * being refused. SP-12 already refuses a MISSING column; a changed one
+    * went through.
+    *
+    * They are checked, not substituted. Substituting would silently change
+    * results for existing artifacts, and the recorded value is a decimal
+    * rendering rather than the exact double, so the tolerance below is set
+    * by the stored format -- sixteen significant digits, measured -- and
+    * not by the arithmetic.
+    *
+    * Artifacts written before these chars existed carry none of this and
+    * are loaded exactly as before.
+    * ------------------------------------------------------------------
+    local gp_rows "`: char _dta[csdid_group_prob_rows]'"
+    if "`gp_rows'" != "" {
+        if `gp_rows' != `n_groups' {
+            display as error "this RIF file records `gp_rows' treatment group(s) but the data in it contain `n_groups'; the group column has been altered since the file was written, so the aggregation weights would not be the ones the estimation used. Re-save the RIF from a fresh csdid run."
+            exit 459
+        }
+        forvalues i = 1/`gp_rows' {
+            local gp_meta "`: char _dta[csdid_group_prob_`i']'"
+            if "`gp_meta'" != "" {
+                local want_g : word 1 of `gp_meta'
+                local want_p : word 2 of `gp_meta'
+                local want_n : word 3 of `gp_meta'
+                local got_g = `GP'[`i', 1]
+                local got_p = `GP'[`i', 2]
+                local got_n = `GP'[`i', 3]
+                local bad = 0
+                if `want_g' != `got_g' local bad = 1
+                if `want_n' != `got_n' local bad = 1
+                if abs(`want_p' - `got_p') > 1e-6 * max(1, abs(`want_p')) local bad = 1
+                if `bad' {
+                    display as error "the aggregation weights rebuilt from this RIF file do not match the ones it records: group `want_g' had probability `want_p' over `want_n' observations, and the file's own data now give group `got_g', probability `got_p' over `got_n'. The group or weight column has been altered since the file was written. Re-save the RIF from a fresh csdid run."
+                    exit 459
+                }
+            }
+        }
+    }
+    local n_attgt_meta "`: char _dta[csdid_N_attgt]'"
+    if "`n_attgt_meta'" != "" {
+        if `n_attgt_meta' != rowsof(`ATT') {
+            display as error "this RIF file records `n_attgt_meta' ATT(g,t) cell(s) but `=rowsof(`ATT')' were read from it; the file has been altered since it was written. Re-save the RIF from a fresh csdid run."
+            exit 459
+        }
+    }
+
     local panel_mode "`: char _dta[csdid_panel_mode]'"
     local control_group "`: char _dta[csdid_control_group]'"
     local base_period "`: char _dta[csdid_base_period]'"
@@ -869,7 +1193,7 @@ program define _csdid_stats_load_rif, eclass
     local time_first "`: char _dta[csdid_time_first]'"
     restore
 
-    matrix colnames `ATT' = group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre
+    matrix colnames `ATT' = group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre base_time
     matrix colnames `GP' = group prob n_units
     matrix colnames `UG' = id group weight
     matrix colnames `IF' = `rifvars'
@@ -881,6 +1205,12 @@ program define _csdid_stats_load_rif, eclass
     ereturn matrix unit_group = `UG'
     ereturn local cmd "csdid"
     ereturn local estat_cmd "csdid_estat"
+    * predict is never valid after csdid; csdid_p is the guard that says so
+    * instead of letting `predict' fall through to matrix scoring and abort
+    * with r(111) naming a coefficient as a missing variable. Set here so the
+    * reloaded state carries it before any estat runs.
+    ereturn local predict "csdid_p"
+    ereturn local marginsnotok "_ALL"
     ereturn local rif_file `"`using'"'
     ereturn local cmdline `"`cmdline'"'
     ereturn local version "2.0.0"

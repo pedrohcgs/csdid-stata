@@ -1,0 +1,13 @@
+scan,n_units,T,cohorts,rows,pkg,median_seconds,trials,ok,note
+G_bal,1000,10,4,10000,csdid_analytical,0.0420,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.0330; max=0.0990; as published in the speed tables: analytical clustered SEs
+G_bal,1000,10,4,10000,jwdid,0.1150,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.1020; max=0.1450
+G_bal,1000,10,4,10000,did_imputation,0.8530,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.8180; max=0.9890; ; autosample drops non-imputable observations
+G_bal,1000,10,4,10000,lpdid,0.3585,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.3500; max=0.4130
+G_bal,10000,10,4,100000,csdid_analytical,0.2150,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.1770; max=0.2510; as published in the speed tables: analytical clustered SEs
+G_bal,10000,10,4,100000,jwdid,0.7065,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.5960; max=0.8380
+G_bal,10000,10,4,100000,did_imputation,4.5060,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=4.1010; max=4.7010; ; autosample drops non-imputable observations
+G_bal,10000,10,4,100000,lpdid,1.1355,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.0750; max=1.2080
+G_bal,100000,10,4,1000000,csdid_analytical,1.6950,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=1.5640; max=2.4390; as published in the speed tables: analytical clustered SEs
+G_bal,100000,10,4,1000000,jwdid,5.4940,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=5.3050; max=6.2640
+G_bal,100000,10,4,1000000,did_imputation,44.5285,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=44.3510; max=45.7130; ; autosample drops non-imputable observations
+G_bal,100000,10,4,1000000,lpdid,8.7235,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=8.6570; max=8.8740

@@ -176,7 +176,20 @@ r_relative <- data.frame(
 	    "ggdid aggte group",
 	    "ggdid aggte calendar"
 	  ),
-	  max_stata_over_r = c(1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 3, 3, 1.8, 3, 3, 3, 3, 1.8, 3, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8),
+	  # Row 15, medium_unbalanced_cov_weight_dr, carries 3 rather than the 1.8
+	  # the other non-bootstrap rows use. Owner decision, 2026-08-06, on measured
+	  # evidence: the repeated-cross-section doubly robust path with covariates
+	  # spends most of its time in two propensity fits per cell, and R runs the
+	  # same two -- overlap_check_fail() fits unweighted, and R's per-cell guard
+	  # cache is disabled unless panel && nevertreated && fix_weights != "varying".
+	  # Same estimator, same number of fits, same per-cell sample; the difference
+	  # is compiled fastglm against interpreted Mata IRLS, not extra work.
+	  # Measured 2.29-2.36 after the optimisation pass that took it from 2.93.
+	  # The ABSOLUTE guarantee for this row is unchanged at 5 seconds and holds
+	  # with wide margin -- 0.35s at benchmark scale, 2.6s at 568,000 observations
+	  # -- and that, not the ratio, is what a user experiences. 3 matches the
+	  # budget its own bootstrap sibling already carries.
+	  max_stata_over_r = c(1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 3, 3, 1.8, 3, 3, 3, 3, 3, 3, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8),
   stringsAsFactors = FALSE
 )
 write.csv(r_relative, file.path(fixture, "expected/contract/r-relative-budgets.csv"), row.names = FALSE, na = "")
@@ -206,6 +219,6 @@ manifest <- list(
     list(actual = "build/f049/r-stata-ratio.csv", expected = "expected/contract/r-relative-budgets.csv", tolerance_id = "TOL007", key_columns = c("benchmark"))
   ),
   approved_divergence = NULL,
-		  scope_note = "Performance pathology gate for frozen small_smoke, balanced-panel, covariate DR, weighted IPW, clustered REG, literal unseeded default bootstrap+cband, seeded bootstrap, unbalanced covariate/weighted DR, all simple/group/calendar/dynamic aggregation, bootstrap aggregation, and supported csdid_plot saving() plot-data export budgets. The generated outcomes include a deterministic unit-by-time disturbance so analytical and bootstrap influence functions are nondegenerate. Stata enforces wall-clock budgets with timer and records c(memory) only as a legacy Stata memory-setting proxy; the opt-in process RSS gate writes measured peaks to build/memory-gate/results.csv. Large default rows verify the unified storage policy: every job, large or small, uses cache-backed lean storage, and storeall is the single opt-in that materializes e(inffunc), e(unit_group), and e(cluster_vec). Large lean clustered jobs avoid materializing e(cluster_vec) and use the Mata cache for postestimation. The option-surface rows require e(fast_used)=1 for covariate, weighted, clustered analytical, default-scale bootstrap, allow_unbalanced, aggregation, and plot-data paths, with compute_path identifying fast-balanced-panel, fast-repeated-cross-section, or fast-allow-unbalanced. The R-relative gate enforces <=1.8x R for non-bootstrap rows and the literal default bootstrap row, plus <=3x R hard gates for seeded bootstrap rows. Tiny aggregation and plot-data rows use repeated averaged timings on both R and Stata to avoid timer-resolution artifacts. Volatile per-run timing results are written to build/f049/results.csv instead of tracked fixtures."
+		  scope_note = "Performance pathology gate for frozen small_smoke, balanced-panel, covariate DR, weighted IPW, clustered REG, literal unseeded default bootstrap+cband, seeded bootstrap, unbalanced covariate/weighted DR, all simple/group/calendar/dynamic aggregation, bootstrap aggregation, and supported csdid_plot saving() plot-data export budgets. The generated outcomes include a deterministic unit-by-time disturbance so analytical and bootstrap influence functions are nondegenerate. Stata enforces wall-clock budgets with timer and records c(memory) only as a legacy Stata memory-setting proxy; the opt-in process RSS gate writes measured peaks to build/memory-gate/results.csv. Large default rows verify the unified storage policy: every job, large or small, uses cache-backed lean storage, and storeall is the single opt-in that materializes e(inffunc), e(unit_group), and e(cluster_vec). Large lean clustered jobs avoid materializing e(cluster_vec) and use the Mata cache for postestimation. The option-surface rows require e(fast_used)=1 for covariate, weighted, clustered analytical, default-scale bootstrap, allow_unbalanced, aggregation, and plot-data paths, with compute_path identifying fast-balanced-panel, fast-repeated-cross-section, or fast-allow-unbalanced. The R-relative gate enforces <=1.8x R for non-bootstrap rows and the literal default bootstrap row, plus <=3x R hard gates for seeded bootstrap rows and for the analytical repeated-cross-section covariate weighted DR row, whose time is dominated by two propensity fits per cell that R also performs (its overlap guard fits unweighted, and its per-cell guard cache is disabled for repeated cross sections) and where the difference is compiled fastglm against interpreted Mata IRLS rather than extra work; that row's absolute 5-second budget is unchanged and holds with wide margin. Tiny aggregation and plot-data rows use repeated averaged timings on both R and Stata to avoid timer-resolution artifacts. Volatile per-run timing results are written to build/f049/results.csv instead of tracked fixtures."
 )
 writeLines(jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE), file.path(fixture, "metadata/manifest.json"))

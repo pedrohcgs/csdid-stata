@@ -59,6 +59,6 @@ guides borrow.
 | | |
 | --- | --- |
 | [Upgrading from Version 1.82](articles/upgrading-from-182.html) | what moves, what is deprecated, and what each old option is called now |
-| [Speed against Version 1.82](articles/speed-vs-182.html) | the gains by sample size, periods, cohorts, and sampling scheme, from 16x to 208x |
+| [Speed against Version 1.82](articles/speed-vs-182.html) | the gains by sample size, periods, cohorts, and sampling scheme, from 17x to 334x |
 | [References](references.html) | the papers behind the estimator, and how to cite `csdid` |
 

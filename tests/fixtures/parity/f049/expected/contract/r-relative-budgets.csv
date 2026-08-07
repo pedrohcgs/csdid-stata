@@ -13,7 +13,7 @@
 "medium_panel_bootstrap_weighted_ipw","att_gt panel bootstrap weighted ipw",3
 "medium_panel_bootstrap_clustered_reg","att_gt panel bootstrap clustered reg",3
 "medium_unbalanced_bootstrap_cov_weight_dr","att_gt repeated-cross-section bootstrap covariate weighted dr",3
-"medium_unbalanced_cov_weight_dr","att_gt repeated-cross-section covariate weighted dr",1.8
+"medium_unbalanced_cov_weight_dr","att_gt repeated-cross-section covariate weighted dr",3
 "aggregation_bootstrap_dynamic_medium","aggte dynamic bootstrap",3
 "aggregation_medium","aggte dynamic",1.8
 "aggregation_simple_medium","aggte simple",1.8

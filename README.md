@@ -162,28 +162,45 @@ restore
 
 ## Speed
 
-Measured against **csdid Version 1.82** — the version SSC distributes today — on the
-same machine, same data, seven trials per workload with the first discarded.
+Measured against **csdid Version 1.82** &mdash; the version SSC distributes today
+&mdash; on the same machine, same data, seven trials per workload with the first
+discarded, on StataNow/MP 19.5.
 
 | Workload | Version 1.82 | 2.0.0 | |
 | --- | ---: | ---: | ---: |
-| ATT(g,t), outcome regression, analytical | 7.27s | 0.27s | **27x** |
-| ATT(g,t), doubly robust with covariates | 8.30s | 0.42s | **20x** |
-| ATT(g,t), IPW with weights | 7.72s | 0.31s | **25x** |
-| ATT(g,t), clustered | 6.81s | 0.25s | **28x** |
-| Bootstrap, outcome regression | 9.40s | 0.42s | **22x** |
-| Bootstrap, doubly robust with covariates | 10.76s | 0.61s | **18x** |
-| Bootstrap, clustered | 11.94s | 0.42s | **28x** |
-| Unbalanced panel, weighted DR | 9.41s | 1.44s | **6.5x** |
-| Unbalanced panel, bootstrap | 13.42s | 1.60s | **8.4x** |
-| Event study, analytical | 7.95s | 1.54s | **5.2x** |
-| Event study, bootstrap | 13.89s | 2.63s | **5.3x** |
-| Event study, simultaneous bands | 14.08s | 2.80s | **5.0x** |
-| Event study, clustered + bands | 12.64s | 2.57s | **4.9x** |
-| Large panel, weighted DR | 28.88s | 2.07s | **13.9x** |
+| ATT(g,t), outcome regression, analytical | 2.22s | 0.06s | **35x** |
+| ATT(g,t), doubly robust with covariates | 2.56s | 0.10s | **26x** |
+| ATT(g,t), IPW with weights | 2.55s | 0.07s | **35x** |
+| ATT(g,t), clustered | 2.26s | 0.07s | **33x** |
+| Bootstrap, outcome regression | 3.27s | 0.16s | **21x** |
+| Bootstrap, doubly robust with covariates | 3.68s | 0.19s | **19x** |
+| Bootstrap, IPW with weights | 3.41s | 0.17s | **20x** |
+| Bootstrap, clustered | 3.33s | 0.10s | **35x** |
+| Unbalanced panel, weighted DR | 2.47s | 0.15s | **17x** |
+| Unbalanced panel, bootstrap | 3.42s | 0.24s | **14x** |
+| Event study, analytical | 2.12s | 0.07s | **29x** |
+| Event study, bootstrap | 3.61s | 0.30s | **12x** |
+| Event study, simultaneous bands | 3.59s | 0.34s | **10x** |
+| Event study, clustered + bands | 3.68s | 0.15s | **24x** |
+| Large panel, weighted DR | 11.54s | 0.47s | **24x** |
 
-Between **4.9x and 28x**, and never slower. Peak memory is lower on every
-workload. The engine is Mata throughout and ships precompiled, so there is no
+Between **10x and 35x**, and never slower. Peak memory is
+within 8% of Version 1.82 on every workload and much lower where it matters
+most: on the large panel above, 164MB against 241MB. It is not lower
+everywhere &mdash; 8 of these 15 workloads use slightly more, because at
+this size peak memory is dominated by the Stata interpreter rather than by
+either implementation.
+
+Those are fixed-size workloads. The gap widens with the number of periods and
+cohorts, which is what drives the number of ATT(g,t) cells: **up to 334x** on
+a forty-period panel. See
+[Speed against Version 1.82](https://psantanna.com/csdid/articles/speed-vs-182.html)
+for that comparison, and
+[How csdid compares](https://psantanna.com/csdid/articles/csdid-against-the-field.html)
+for timings against the other Stata DiD commands, including Stata's own
+`xthdidregress` and `hdidregress`.
+
+The engine is Mata throughout and ships precompiled, so there is no
 per-session compilation cost either.
 
 ## Unbalanced panels

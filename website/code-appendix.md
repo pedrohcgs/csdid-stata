@@ -3489,7 +3489,7 @@ end</code></pre>
 <details class="code-fold">
 <summary><code>runners.do</code> &mdash; one timing runner per package, each given the same data, the same clustering, and the same inference request</summary>
 <pre><code>* Run from the bench/ folder of the replication package. Not run on its
-* own: the drivers load it with -do-.  It defines bench_csdid, bench_jwdid, bench_bjs, bench_dcdh, bench_lpdid and bench_flexdid.
+* own: the drivers load it with -do-.  It defines bench_csdid, bench_jwdid, bench_bjs, bench_dcdh, bench_lpdid, bench_flexdid, bench_esi, bench_xthdid and bench_hdid.
 * ---------------------------------------------------------------------------
 * One runner per package. Each takes the SAME dataset and the SAME inference
 * request, and returns the event-study coefficients in one shape:
@@ -3544,16 +3544,40 @@ program define bench_csdid, rclass
     local rc = _rc
     timer off 99
     quietly timer list 99
-    return scalar secs = r(t99)
+    local fitsecs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note ""
-    if `rc' exit
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "used_N=`e(N)'"
+        exit
+    }
 
-    quietly estat event, window(0 `horizons')
+    * The event study is part of what a user asks for, so it is part of what
+    * we time. csdid and jwdid deliver it in a SECOND call; every other command
+    * in this comparison delivers it inside its single call. Timing only the
+    * fit would hand these two a deliverable that the others pay for. The
+    * split survives as secs_fit / secs_agg.
+    timer clear 98
+    timer on 98
+    capture quietly estat event, window(0 `horizons')
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    local aggsecs = r(t98)
+    return scalar secs_agg = `aggsecs'
+    return scalar secs = `fitsecs' + `aggsecs'
+    if `arc' {
+        return scalar ok = 0
+        return local note "; estat event rc=`arc'"
+        exit
+    }
+    return local note ""
+
     * e(aggte) is egt | att | se | overall_att | overall_se
     matrix A = e(aggte)
     matrix ES = J(`horizons' + 1, 3, .)
-    forvalues k = 1/`horizons' {
+    forvalues k = 1/`=`horizons'+1' {
         if `k' &gt; rowsof(A) continue
         matrix ES[`k', 1] = A[`k', 1]
         matrix ES[`k', 2] = A[`k', 2]
@@ -3583,17 +3607,36 @@ program define bench_jwdid, rclass
     local rc = _rc
     timer off 99
     quietly timer list 99
-    return scalar secs = r(t99)
+    local fitsecs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "`note'"
-    if `rc' exit
-
-    capture quietly estat event
-    if _rc {
-        return scalar ok = 0
-        return local note "`note'; estat event unavailable"
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "`note'"
         exit
     }
+
+    * The event study is part of what a user asks for, so it is part of what
+    * we time. csdid and jwdid deliver it in a SECOND call; every other command
+    * in this comparison delivers it inside its single call. Timing only the
+    * fit would hand these two a deliverable that the others pay for. The
+    * split survives as secs_fit / secs_agg.
+    timer clear 98
+    timer on 98
+    * windowed exactly like the csdid aggregation it is compared with
+    capture quietly estat event, window(0 `horizons')
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    local aggsecs = r(t98)
+    return scalar secs_agg = `aggsecs'
+    return scalar secs = `fitsecs' + `aggsecs'
+    if `arc' {
+        return scalar ok = 0
+        return local note "`note'; estat event rc=`arc'"
+        exit
+    }
+    return local note "`note'"
     * estat event names columns &lt;level&gt;.__event__, where &lt;level&gt; is an internal
     * recoding of event time and the base (marked "bn") is the e = -1 reference.
     * The offset between level and event time depends on how many pre-periods
@@ -3663,7 +3706,9 @@ program define bench_bjs, rclass
     quietly timer list 99
     return scalar secs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "`note'; autosample drops non-imputable observations"
+    local asdrop "`e(autosample_drop)'"
+    local asnote = cond("`asdrop'" == "", "autosample requested, nothing dropped", "autosample dropped: `asdrop'")
+    return local note "`note'; N=`e(N)'; `asnote'"
     if `rc' exit
 
     matrix B = r(table)
@@ -3697,8 +3742,10 @@ program define bench_dcdh, rclass
     local eff = `horizons' + 1
     timer clear 99
     timer on 99
+    * graph_off is the package's own no-graph switch; graphoptions(nodraw)
+    * only suppresses the display and leaves the construction in the timer
     capture noisily did_multiplegt_dyn y id time treated, ///
-        effects(`eff') cluster(`cluster') `boot' `ctrl' graphoptions(nodraw)
+        effects(`eff') cluster(`cluster') `boot' `ctrl' graph_off
     local rc = _rc
     timer off 99
     quietly timer list 99
@@ -3737,8 +3784,10 @@ program define bench_lpdid, rclass
 
     timer clear 99
     timer on 99
+    * nograph: without it the timed call also builds the event-study
+    * graph, which no other command is being charged for
     capture noisily lpdid y, unit(id) time(time) treat(treated) ///
-        post_window(`horizons') pre_window(3) cluster(`cluster') `boot' `ctrl'
+        post_window(`horizons') pre_window(3) cluster(`cluster') nograph `boot' `ctrl'
     local rc = _rc
     timer off 99
     quietly timer list 99
@@ -3773,14 +3822,182 @@ program define bench_flexdid, rclass
     timer clear 99
     timer on 99
     capture quietly flexdid y `covariates', tx(treated) group(gvar) time(time) ///
-        specification(lagsandleads) vce(robust)
+        specification(lagsandleads) vce(cluster `cluster')
     local rc = _rc
     timer off 99
     quietly timer list 99
     return scalar secs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "overall displayed at estimation; no band or bootstrap option"
-end</code></pre>
+    return local note "vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option"
+end
+
+* ------------------------------------------------- xthdidregress (Stata)
+* Stata's own Callaway and Sant'Anna estimator for panels. The arm maps onto
+* csdid's method(): ra &lt;-&gt; reg, ipw &lt;-&gt; ipw, aipw &lt;-&gt; dr. Covariates go in the
+* outcome model for ra, the treatment model for ipw, and both for aipw, which
+* is the mapping the two commands' own documentation implies.
+*
+* xtset is panel setup, not estimation, so it happens OUTSIDE the timer, on
+* the same footing as the prepared inputs eventstudyinteract receives. The
+* event study comes from a second call, as it does for csdid and jwdid, and
+* both calls are timed.
+capture program drop bench_xthdid
+program define bench_xthdid, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) ARM(string)]
+    if "`arm'" == "" local arm "ra"
+    capture quietly xtset id time
+
+    local om = cond("`arm'" == "ipw", "", "`covariates'")
+    local tm = cond("`arm'" == "ra", "", "`covariates'")
+
+    * On an UNBALANCED panel xthdidregress derives each unit's cohort from its
+    * first OBSERVED treated period, so a unit whose true first treated period
+    * is a missing row is silently placed in a later cohort and all of its
+    * cells move with it. Supplying the true cohort restores the full-panel
+    * answer exactly (the article's missingness section shows this). Without
+    * it this column would be
+    * timing a command answering a different question from every other column,
+    * which is not a speed comparison. On a balanced panel the derivation is
+    * already correct and nothing is supplied, so the command runs exactly as
+    * a user would run it.
+    local uc ""
+    if "`structure'" == "unbalanced" local uc "usercohort(gvar_miss)"
+
+    timer clear 99
+    timer on 99
+    capture quietly xthdidregress `arm' (y `om') (treated `tm'), ///
+        group(id) vce(cluster `cluster') `uc'
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    local fitsecs = r(t99)
+    return scalar ok = (`rc' == 0)
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "xthdidregress `arm' rc=`rc'; used_N=`e(N)'"
+        exit
+    }
+
+    timer clear 98
+    timer on 98
+    capture quietly estat aggregation, dynamic
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    return scalar secs_agg = r(t98)
+    return scalar secs = `fitsecs' + r(t98)
+    if `arc' {
+        return scalar ok = 0
+        return local note "estat aggregation rc=`arc'"
+        exit
+    }
+    local ucnote = cond("`uc'" == "", "cohort derived by the command", "usercohort() supplies the true cohort")
+    return local note "Stata `c(stata_version)' native; arm=`arm'; vce(cluster) as in every column; `ucnote'"
+end
+
+* ------------------------------------------------- hdidregress (Stata)
+* The repeated-cross-section sibling of xthdidregress: no unit is followed, so
+* the cohort is carried by a group variable and the period by time().
+capture program drop bench_hdid
+program define bench_hdid, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) ARM(string)]
+    if "`arm'" == "" local arm "ra"
+
+    local om = cond("`arm'" == "ipw", "", "`covariates'")
+    local tm = cond("`arm'" == "ra", "", "`covariates'")
+
+    timer clear 99
+    timer on 99
+    capture quietly hdidregress `arm' (y `om') (treated `tm'), ///
+        group(gvar) time(time) vce(cluster `cluster')
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    local fitsecs = r(t99)
+    return scalar ok = (`rc' == 0)
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "hdidregress `arm' rc=`rc'; used_N=`e(N)'"
+        exit
+    }
+
+    timer clear 98
+    timer on 98
+    capture quietly estat aggregation, dynamic
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    return scalar secs_agg = r(t98)
+    return scalar secs = `fitsecs' + r(t98)
+    if `arc' {
+        return scalar ok = 0
+        return local note "estat aggregation rc=`arc'"
+        exit
+    }
+    return local note "Stata `c(stata_version)' native, repeated cross sections; arm=`arm'"
+end
+
+* ------------------------------------------------- eventstudyinteract
+* Sun and Abraham (2021) interaction-weighted estimator. The command takes a
+* user-built saturated set of relative-time dummies (reference e = -1) and a
+* never-treated control cohort, exactly as the reliability arms build them;
+* both are constructed OUTSIDE the timer, on the same footing as the prepared
+* inputs every other runner receives. The single timed call estimates every
+* cohort-by-relative-time interaction and aggregates to the IW event study,
+* so it sits in the one-shot family in the published tables.
+capture program drop bench_esi
+program define bench_esi, rclass
+    syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string)]
+    if "`mode'" == "" local mode "pointwise"
+    local note "never-treated control cohort (the command takes no not-yet-treated option); dummy build timed"
+    if "`mode'" != "pointwise" local note "`note'; no bootstrap or band option"
+
+    * The saturated dummy set is estimator-specific input the user must
+    * build to run this command at all, so its construction belongs inside
+    * the timer -- unlike gvar/treated, which are facts of the data every
+    * runner receives. Disclosed in the protocol note.
+    timer clear 99
+    timer on 99
+    capture drop ry_XX nevertr_XX g_XX*
+    quietly generate int ry_XX = time - gvar if gvar &gt; 0
+    quietly generate byte nevertr_XX = (gvar == 0)
+    quietly levelsof ry_XX, local(rys)
+    local dums ""
+    foreach k of local rys {
+        if `k' == -1 continue
+        local nm = cond(`k' &lt; 0, "g_XXm`=abs(`k')'", "g_XXp`k'")
+        quietly generate byte `nm' = (ry_XX == `k')
+        local dums "`dums' `nm'"
+    }
+    local sacov = cond("`covariates'" != "", "covariates(`covariates')", "")
+    capture noisily eventstudyinteract y `dums', cohort(gvar_miss) ///
+        control_cohort(nevertr_XX) `sacov' absorb(id time) vce(cluster `cluster')
+    local rc = _rc
+    timer off 99
+    quietly timer list 99
+    return scalar secs = r(t99)
+    return scalar ok = (`rc' == 0)
+    return local note "`note'"
+    if `rc' exit
+
+    matrix B = e(b_iw)
+    matrix V = e(V_iw)
+    local cn : colnames B
+    matrix ES = J(`horizons' + 1, 3, .)
+    forvalues h = 0/`horizons' {
+        local k = `h' + 1
+        matrix ES[`k', 1] = `h'
+        local pos : list posof "g_XXp`h'" in cn
+        if `pos' &gt; 0 {
+            matrix ES[`k', 2] = B[1, `pos']
+            matrix ES[`k', 3] = sqrt(V[`pos', `pos'])
+        }
+    }
+    return matrix ES = ES
+end
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -3802,7 +4019,7 @@ end</code></pre>
 capture program drop bench_time
 program define bench_time, rclass
     syntax , PKG(string) DATA(string) HORizons(integer) CLuster(varname) ///
-        [COVariates(varlist) MODE(string) STRUCTure(string) TRIALS(integer 5)]
+        [COVariates(varlist) MODE(string) STRUCTure(string) TRIALS(integer 5) CAP(real 0)]
 
     if "`mode'" == "" local mode "pointwise"
     local sopt ""
@@ -3820,14 +4037,40 @@ program define bench_time, rclass
     }
     local ok = r(ok)
     local note "`r(note)'"
+    local warmsecs = r(secs)
+
+    * a command that failed its warmup has nothing to time: running the
+    * trials anyway would record the cost of failing, not of estimating
+    if `ok' != 1 {
+        return scalar ok = `ok'
+        return scalar med = .
+        return scalar medagg = .
+        return local note "`note'; warmup failed, trials skipped"
+        exit
+    }
+
+    * Per-call cap, mirroring the Version 1.82 tier's 120-second skip
+    * rule: a cell whose single WARMUP call exceeds the cap is recorded,
+    * not timed. The warmup seconds go into the note so the table can say
+    * how far past the cap the call went. ok = -1 distinguishes "measured
+    * once, too slow to trial" from a runner failure.
+    if `cap' &gt; 0 &amp; `ok' == 1 &amp; `warmsecs' &gt; `cap' {
+        return scalar ok = -1
+        return scalar med = .
+        return local note "`note'; not timed: single warmup call took `=string(`warmsecs', "%9.1f")'s, past the `cap's cap"
+        exit
+    }
 
     tempname T
-    matrix `T' = J(`trials', 1, .)
+    matrix `T' = J(`trials', 2, .)
     forvalues i = 1/`trials' {
         use "`data'", clear
         quietly bench_`pkg', horizons(`horizons') cluster(`cluster') ///
             covariates(`covariates') mode(`mode') `sopt'
         matrix `T'[`i', 1] = r(secs)
+        * runners that deliver the event study in the estimation call return
+        * no split; their aggregation cost is already inside column 1
+        capture matrix `T'[`i', 2] = r(secs_agg)
     }
 
     * median of the trials: robust to a single stray scheduling hiccup in a
@@ -3839,12 +4082,20 @@ program define bench_time, rclass
     local med = r(p50)
     local lo = r(min)
     local hi = r(max)
+    quietly count if !missing(t2)
+    local hasagg = (r(N) &gt; 0)
+    local medagg = .
+    if `hasagg' {
+        quietly summarize t2, detail
+        local medagg = r(p50)
+    }
     restore
 
     return scalar ok = `ok'
     return scalar med = `med'
     return scalar lo = `lo'
     return scalar hi = `hi'
+    return scalar medagg = `medagg'
     return local note "`note'"
 end</code></pre>
 </details>
@@ -3856,9 +4107,9 @@ end</code></pre>
 * ---------------------------------------------------------------------------
 * scalebench.do -- extended speed-benchmark grid for the comparison article.
 *
-*   stata-mp -b do scalebench.do &lt;A|B|C|D|E&gt; [smoke]
+*   stata-mp -b do scalebench.do &lt;A|B|C|D|E|G&gt; [smoke]
 *
-* Five scans, each runnable on its own so the tiers can be sequenced:
+* Six scans, each runnable on its own so the tiers can be sequenced:
 *
 *   A  UNBALANCED LADDER   n_units in {1e3, 1e4, 1e5}, T=10, G=4, 15% MCAR
 *                          csdid bal(full) and bal(none), jwdid,
@@ -3869,6 +4120,10 @@ end</code></pre>
 *                          _cov).
 *   C  PERIODS SCAN        n_units=1e4, T in {5,10,20,40}, G=4, balanced
 *   D  COHORTS SCAN        n_units=1e4, T=20, G in {3,6,12,18}, balanced
+*   G  BALANCED LADDER    n_units in {1e3, 1e4, 1e5}, T=10, G=4, fully
+*                          balanced: the tier-A package set (csdid analytical,
+*                          jwdid, did_imputation, lpdid) at the same sizes,
+*                          without the missingness.
 *   E  DEFAULT'S TRUE COST balanced ladder at the published sizes
 *                          n_units in {1e2, 1e3, 1e4, 1e5}, T=10, G=4, timing
 *                          csdid as published (analytical) against csdid at its
@@ -3923,12 +4178,15 @@ end</code></pre>
 * CSV: scan, n_units, T, cohorts, rows, pkg, median_seconds, trials, ok, note
 * appended to scalebench-results.csv (smoke runs go to scalebench-smoke.csv).
 *
-* dcdh (did_multiplegt_dyn) is excluded by design: runtime.
+* dcdh (did_multiplegt_dyn) runs everywhere its design support allows
+* (owner call, 05aug2026; it had been excluded for runtime). Cells whose
+* single warmup call exceeds the 120-second cap are recorded as not
+* timed, mirroring the Version 1.82 tier's skip rule.
 * ---------------------------------------------------------------------------
 args tier smoke onlyn onlypkg
 
-if !inlist("`tier'", "A", "B", "C", "D", "E") {
-    display as error "usage: do scalebench.do &lt;A|B|C|D|E&gt; [smoke] [only_n] [only_pkg]"
+if !inlist("`tier'", "A", "B", "C", "D", "E", "G") {
+    display as error "usage: do scalebench.do &lt;A|B|C|D|E|G&gt; [smoke] [only_n] [only_pkg]"
     exit 198
 }
 local issmoke = ("`smoke'" != "" &amp; "`smoke'" != "0" &amp; "`smoke'" != ".")
@@ -3947,6 +4205,9 @@ global SB_CSV "`B'/scalebench-results.csv"
 if `issmoke' global SB_CSV "`B'/scalebench-smoke.csv"
 global SB_ONLYN  "`onlyn'"
 global SB_ONLYPKG "`onlypkg'"
+* "." is the positional placeholder for "no filter", matching the smoke arg
+if "$SB_ONLYN" == "." global SB_ONLYN ""
+if "$SB_ONLYPKG" == "." global SB_ONLYPKG ""
 
 * Bootstrap draws for the tier-E shipped-default column. 999 matches the reps
 * every other bootstrap in this harness uses; csdid's own default is 1000, a
@@ -3992,21 +4253,38 @@ program define bench_csdidbf, rclass
     local rc = _rc
     timer off 99
     quietly timer list 99
-    return scalar secs = r(t99)
+    local fitsecs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "csdid shipped default bal(full)"
-    if `rc' exit
-
-    * extraction only; the timer is already off, so nothing here can move a
-    * reported number
-    capture quietly estat event, window(0 `horizons')
-    if _rc {
-        return local note "csdid shipped default bal(full); estat event rc=`=_rc'"
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "csdid shipped default bal(full); used_N=`e(N)'"
         exit
     }
+
+    * The event study is part of what a user asks for, so it is part of what
+    * we time. csdid and jwdid deliver it in a SECOND call; every other command
+    * in this comparison delivers it inside its single call. Timing only the
+    * fit would hand these two a deliverable that the others pay for. The
+    * split survives as secs_fit / secs_agg.
+    timer clear 98
+    timer on 98
+    capture quietly estat event, window(0 `horizons')
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    local aggsecs = r(t98)
+    return scalar secs_agg = `aggsecs'
+    return scalar secs = `fitsecs' + `aggsecs'
+    if `arc' {
+        return scalar ok = 0
+        return local note "csdid shipped default bal(full); estat event rc=`arc'"
+        exit
+    }
+    return local note "csdid shipped default bal(full); used_N=`e(N)'"
     matrix A = e(aggte)
     matrix ES = J(`horizons' + 1, 3, .)
-    forvalues k = 1/`horizons' {
+    forvalues k = 1/`=`horizons'+1' {
         if `k' &gt; rowsof(A) continue
         matrix ES[`k', 1] = A[`k', 1]
         matrix ES[`k', 2] = A[`k', 2]
@@ -4033,21 +4311,38 @@ program define bench_csdidpair, rclass
     local rc = _rc
     timer off 99
     quietly timer list 99
-    return scalar secs = r(t99)
+    local fitsecs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "csdid bal(pair), per-comparison balancing"
-    if `rc' exit
-
-    * extraction only; the timer is already off, so nothing here can move a
-    * reported number
-    capture quietly estat event, window(0 `horizons')
-    if _rc {
-        return local note "csdid bal(pair), per-comparison balancing; estat event rc=`=_rc'"
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "csdid bal(pair), per-comparison balancing; used_N=`e(N)'"
         exit
     }
+
+    * The event study is part of what a user asks for, so it is part of what
+    * we time. csdid and jwdid deliver it in a SECOND call; every other command
+    * in this comparison delivers it inside its single call. Timing only the
+    * fit would hand these two a deliverable that the others pay for. The
+    * split survives as secs_fit / secs_agg.
+    timer clear 98
+    timer on 98
+    capture quietly estat event, window(0 `horizons')
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    local aggsecs = r(t98)
+    return scalar secs_agg = `aggsecs'
+    return scalar secs = `fitsecs' + `aggsecs'
+    if `arc' {
+        return scalar ok = 0
+        return local note "csdid bal(pair), per-comparison balancing; estat event rc=`arc'"
+        exit
+    }
+    return local note "csdid bal(pair), per-comparison balancing; used_N=`e(N)'"
     matrix A = e(aggte)
     matrix ES = J(`horizons' + 1, 3, .)
-    forvalues k = 1/`horizons' {
+    forvalues k = 1/`=`horizons'+1' {
         if `k' &gt; rowsof(A) continue
         matrix ES[`k', 1] = A[`k', 1]
         matrix ES[`k', 2] = A[`k', 2]
@@ -4084,7 +4379,7 @@ program define bench_csdidboot, rclass
     local rc = _rc
     timer off 99
     quietly timer list 99
-    local secs = r(t99)
+    local fitsecs = r(t99)
 
     local acc "`e(bootstrap_accelerator)'"
     local accst "`e(bootstrap_accelerator_status)'"
@@ -4092,19 +4387,37 @@ program define bench_csdidboot, rclass
     capture local accsec = e(bootstrap_accelerator_seconds)
     local accstr = trim(string(`accsec', "%12.4f"))
 
-    return scalar secs = `secs'
     return scalar ok = (`rc' == 0)
-    return local note "shipped-default inference: wboot reps(`reps') rseed(20260729) simultaneous bands; accelerator=`acc'/`accst' accel_secs=`accstr'"
-    if `rc' exit
-
-    capture quietly estat event, window(0 `horizons')
-    if _rc {
-        return local note "shipped-default inference: wboot reps(`reps') simultaneous bands; accelerator=`acc'/`accst'; estat event rc=`=_rc'"
+    return scalar secs_fit = `fitsecs'
+    if `rc' {
+        return scalar secs = `fitsecs'
+        return local note "shipped-default inference: wboot reps(`reps') rseed(20260729) simultaneous bands; accelerator=`acc'/`accst' accel_secs=`accstr'"
         exit
     }
+
+    * Under the shipped default the aggregation is NOT a cheap extraction:
+    * csdid_estat recomputes the aggregate and, under wboot, re-draws the
+    * multiplier bootstrap for the aggregate influence functions. Leaving it
+    * outside the clock is what made the default look nearly free. Tier E
+    * exists to price the default, so the price has to include this.
+    timer clear 98
+    timer on 98
+    capture quietly estat event, window(0 `horizons')
+    local arc = _rc
+    timer off 98
+    quietly timer list 98
+    local aggsecs = r(t98)
+    return scalar secs_agg = `aggsecs'
+    return scalar secs = `fitsecs' + `aggsecs'
+    if `arc' {
+        return scalar ok = 0
+        return local note "shipped-default inference: wboot reps(`reps') simultaneous bands; accelerator=`acc'/`accst'; estat event rc=`arc'"
+        exit
+    }
+    return local note "shipped-default inference: wboot reps(`reps') rseed(20260729) simultaneous bands; accelerator=`acc'/`accst' accel_secs=`accstr'; fit=`=string(`fitsecs',"%9.3f")'s agg=`=string(`aggsecs',"%9.3f")'s"
     matrix A = e(aggte)
     matrix ES = J(`horizons' + 1, 3, .)
-    forvalues k = 1/`horizons' {
+    forvalues k = 1/`=`horizons'+1' {
         if `k' &gt; rowsof(A) continue
         matrix ES[`k', 1] = A[`k', 1]
         matrix ES[`k', 2] = A[`k', 2]
@@ -4120,6 +4433,8 @@ program define bench_jwdidrcs, rclass
     local mopt = cond("`mode'" == "", "", "mode(`mode')")
     bench_jwdid, horizons(`horizons') cluster(`cluster') `copt' `mopt' structure(rcs)
     return scalar secs = r(secs)
+    capture return scalar secs_fit = r(secs_fit)
+    capture return scalar secs_agg = r(secs_agg)
     return scalar ok = r(ok)
     return local note "`r(note)'"
 end
@@ -4235,6 +4550,8 @@ program define sb_cell
         }
         if "`base'" == "csdid_boot999" local runner "csdidboot"
         if "`base'" == "did_imputation" local runner "bjs"
+        if "`base'" == "eventstudyinteract" local runner "esi"
+        if "`base'" == "did_multiplegt_dyn" local runner "dcdh"
         if "`base'" == "jwdid" &amp; "`structure'" == "rcs" local runner "jwdidrcs"
         if "`runner'" == "csdid" &amp; "`structure'" == "rcs" local sopt "structure(rcs)"
 
@@ -4243,9 +4560,10 @@ program define sb_cell
         local hi = .
         local ok = 0
         local rnote ""
+        local medagg = .
 
         capture noisily bench_time, pkg(`runner') data("`d'") horizons(`h') ///
-            cluster(cl) trials(`trials') `copt' `sopt'
+            cluster(cl) trials(`trials') `copt' `sopt' cap(120)
         local rc = _rc
         if `rc' {
             local rnote "harness error rc=`rc'"
@@ -4255,6 +4573,7 @@ program define sb_cell
             capture local med = r(med)
             capture local lo = r(lo)
             capture local hi = r(hi)
+            capture local medagg = r(medagg)
             local rnote "`r(note)'"
         }
 
@@ -4262,11 +4581,20 @@ program define sb_cell
         local lostr  = trim(string(`lo',  "%14.4f"))
         local histr  = trim(string(`hi',  "%14.4f"))
         local note "H=`h'; G_real=`greal'; nevertreated=`nevpct'%; `covnote'; min=`lostr'; max=`histr'"
+        * commands that aggregate in a second call report the split, so the
+        * share of the total spent aggregating stays visible in the record
+        if !missing("`medagg'") &amp; "`medagg'" != "." {
+            local note "`note'; agg=`=trim(string(`medagg', "%14.4f"))'"
+        }
         if "`extra'" != "" local note "`note'; `extra'"
         if "`rnote'" != "" local note "`note'; `rnote'"
 
+        * a capped cell was measured once and never trialled: the record
+        * must not claim otherwise, and the cap explanation leads the note
+        local wtrials = cond(`ok' == -1, 0, `trials')
+        if `ok' == -1 local note "`rnote'; `note'"
         sb_write, scan(`scan') n(`n') t(`t') g(`g') rows(`rows') pkg(`pkg') ///
-            med(`medstr') trials(`trials') ok(`ok') note(`note')
+            med(`medstr') trials(`wtrials') ok(`ok') note(`note')
         display as text "SB ROW  `scan' n=`n' T=`t' G=`g' rows=`rows' `pkg' med=`medstr' ok=`ok'"
     }
     clear
@@ -4289,7 +4617,7 @@ if "`tier'" == "A" {
     if `issmoke' local ns "200"
     foreach n of local ns {
         sb_cell, scan(A_unbal) n(`n') t(10) g(4) structure(unbalanced) trials(`trials') ///
-            pkgs(csdid_balfull csdid_balpair csdid_balnone jwdid did_imputation lpdid)
+            pkgs(csdid_balfull csdid_balpair csdid_balnone jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid)
     }
 }
 
@@ -4307,8 +4635,8 @@ if "`tier'" == "B" {
     if `issmoke' local ns "200"
     foreach n of local ns {
         sb_cell, scan(B_rcs) n(`n') t(10) g(4) structure(rcs) trials(`trials') ///
-            pkgs(csdid flexdid jwdid did_imputation ///
-                 csdid_cov flexdid_cov jwdid_cov did_imputation_cov)
+            pkgs(csdid flexdid jwdid did_imputation hdid ///
+                 csdid_cov flexdid_cov jwdid_cov did_imputation_cov hdid_cov)
     }
 }
 
@@ -4324,7 +4652,7 @@ if "`tier'" == "C" {
     }
     foreach t of local ts {
         sb_cell, scan(C_periods) n(`n') t(`t') g(4) structure(balanced) trials(`trials') ///
-            pkgs(csdid jwdid did_imputation lpdid)
+            pkgs(csdid jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid)
     }
 }
 
@@ -4341,7 +4669,7 @@ if "`tier'" == "D" {
     }
     foreach g of local gs {
         sb_cell, scan(D_cohorts) n(`n') t(20) g(`g') structure(balanced) trials(`trials') ///
-            pkgs(csdid jwdid did_imputation lpdid)
+            pkgs(csdid jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid)
     }
 }
 
@@ -4361,7 +4689,20 @@ if "`tier'" == "E" {
     }
 }
 
-display as text "SB DONE tier=`tier' smoke=`issmoke'"</code></pre>
+* ---- G. balanced ladder, cross-package: same n ladder as tier A, T=10, G=4,
+*         no missingness. csdid runs analytical clustered, as in every other
+*         cross-package speed table.
+if "`tier'" == "G" {
+    local ns "1000 10000 100000"
+    if `issmoke' local ns "200"
+    foreach n of local ns {
+        sb_cell, scan(G_bal) n(`n') t(10) g(4) structure(balanced) trials(`trials') ///
+            pkgs(csdid_analytical jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid)
+    }
+}
+
+display as text "SB DONE tier=`tier' smoke=`issmoke'"
+</code></pre>
 </details>
 
 <details class="code-fold">

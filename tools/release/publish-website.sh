@@ -15,6 +15,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 [ -d website ] || { echo "no website/ directory" >&2; exit 1; }
+bash tools/release/lint-website.sh
 if ! git diff --quiet website || ! git diff --cached --quiet website; then
   echo "website/ has uncommitted changes; commit them first so the published" >&2
   echo "site corresponds to a recorded commit." >&2

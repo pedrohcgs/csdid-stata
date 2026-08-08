@@ -2,10 +2,6 @@
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")
-    if "`subcmd'" == "attgt" {
-        _csdid_post_attgt `0'
-        exit
-    }
     if "`subcmd'" == "event" {
         _csdid_post_event `0'
         exit
@@ -15,81 +11,8 @@ program define _csdid_post, eclass
         _csdid_post_aggte `0'
         exit
     }
-    if "`subcmd'" == "replacebv" {
-        _csdid_post_replace_bv `0'
-        exit
-    }
     display as error `"_csdid_post subcommand `subcmd' is not implemented"'
     exit 198
-end
-
-program define _csdid_post_attgt, eclass
-    version 14
-    syntax [, Level(cilevel)]
-
-    capture confirm matrix e(attgt)
-    if _rc exit
-
-    tempname A B V
-    matrix `A' = e(attgt)
-
-    local names ""
-    local k = 0
-    forvalues i = 1/`=rowsof(`A')' {
-        local g = `A'[`i', 1]
-        local t = `A'[`i', 2]
-        local ev = `A'[`i', 3]
-        local att = `A'[`i', 4]
-        local se = `A'[`i', 5]
-        if missing(`att') continue
-        if abs(`ev' + 1) < 1e-8 continue
-
-        local base = `g' - 1
-        local gtxt : display %21.0f `g'
-        local ttxt : display %21.0f `t'
-        local btxt : display %21.0f `base'
-        local gtxt = strtrim("`gtxt'")
-        local ttxt = strtrim("`ttxt'")
-        local btxt = strtrim("`btxt'")
-        local cname "g`gtxt'___`ttxt'_`btxt'"
-
-        if missing(`se') local vval 0
-        else local vval = `se' ^ 2
-
-        local ++k
-        if `k' == 1 {
-            matrix `B' = (`att')
-            matrix `V' = (`vval')
-        }
-        else {
-            matrix `B' = `B', (`att')
-            matrix `V' = (`V', J(rowsof(`V'), 1, 0))
-            matrix `V' = (`V' \ J(1, `k', 0))
-            matrix `V'[`k', `k'] = `vval'
-        }
-        local names "`names' `cname'"
-    }
-
-    if `k' == 0 exit
-    local post_if ""
-    capture confirm matrix e(inffunc)
-    if !_rc local post_if "e(inffunc)"
-    local post_cluster ""
-    capture confirm matrix e(cluster_vec)
-    if !_rc local post_cluster "e(cluster_vec)"
-    local post_boot ""
-    local use_boot 0
-    capture confirm scalar e(bstrap)
-    if !_rc local use_boot = e(bstrap)
-    if `use_boot' {
-        capture confirm matrix e(boot_draws)
-        if !_rc local post_boot "e(boot_draws)"
-    }
-    mata: csdid_post_attgt_v("e(attgt)", "`post_if'", "`post_cluster'", "`post_boot'", `use_boot', "`V'")
-    matrix colnames `B' = `names'
-    matrix colnames `V' = `names'
-    matrix rownames `V' = `names'
-    _csdid_post_replace_bv `B' `V'
 end
 
 program define _csdid_post_event, eclass
@@ -106,7 +29,14 @@ program define _csdid_post_event, eclass
     capture confirm matrix e(aggte)
     if _rc {
         * F-047: auto-compute quietly at the requested level.
-        quietly csdid_stats, type(dynamic) na_rm level(`level')
+        *
+        * Without na_rm, as csdid_stats and estat behave and as R's aggte()
+        * defaults (na.rm = FALSE). This fallback has no in-tree caller today
+        * -- both callers compute the aggregation first -- but it shipped with
+        * the opposite default, so the same estimation could drop cells here
+        * that every other route refuses. `quietly' does not suppress the
+        * refusal, which is error-styled.
+        quietly csdid_stats, type(dynamic) level(`level')
     }
     * F-045: delegate to the generic poster with the historical event names.
     _csdid_post_aggte, level(`level') eventnames `post'
@@ -404,10 +334,21 @@ program define _csdid_post_replace_bv, eclass
     * round-trip (all estat event paths, agg() at estimation) silently
     * dropped them - and balance_e() reads e(time_first), so
     * `csdid_stats event, balance_e()' hard-errored after any `estat event'.
+    * The same class again: wald_stat, wald_df and wald_pvalue are posted by
+    * estimation and were absent here, so `csdid ..., agg(event)' and
+    * `estat <type>, post' printed the pre-test line and then destroyed the
+    * scalar the help tells users to test for -- `confirm scalar
+    * e(wald_pvalue)' failed on a run that had just reported a p-value. They
+    * are declared public interface (help csdid, Stored results, marked
+    * conditional) and csdid_estat's help promises outright that the
+    * estimation scalars survive posting. tests/meta/test-package-manifest.sh
+    * now fails when csdid.ado posts a scalar this list does not carry, so the
+    * next one added cannot vanish the same way.
     local scalar_names N N_units N_attgt N_groups N_time anticipation pscoretrim ///
         bstrap biters cband pointwise fast_requested fast_auto fast_allowed fast_used crit_val point_crit_val ///
         N_clusters level agg_cluster_fallback agg_level N_aggte time_first ///
-        allow_unbalanced mata_cache mata_cache_token
+        allow_unbalanced mata_cache mata_cache_token ///
+        wald_stat wald_df wald_pvalue
     * (F-055's separate handling of performance_auto_threshold is gone with
     * the scalar itself: storage is unified on lean, so no threshold exists.)
     foreach s of local scalar_names {
@@ -425,6 +366,7 @@ program define _csdid_post_replace_bv, eclass
     * for the same reason (HS-06/HS-03 post them at estimation time).
     local local_names cmd cmdline version yname timevar gvar idvar clustervar ///
         panel_mode control_group method method_requested weightvar base_period ///
+        wtype wexp ///
         fix_weights boot_dist boot_dist_requested boot_seed fast_mode compute_path rif_file ///
         storage agg_type agg_clustervar ///
         marginsnotok depvar vce vcetype predict
@@ -435,6 +377,15 @@ program define _csdid_post_replace_bv, eclass
     * entry path (csdid_stats using) never does. margins is never valid after
     * csdid on any path, so default it rather than leave the guard off.
     if `"`local_marginsnotok'"' == "" local local_marginsnotok "_ALL"
+    * Same class, same path: csdid_p exists so that `predict' after csdid
+    * refuses with a message that names the reason instead of falling through
+    * to matrix scoring and aborting with "variable g2004___2004_2003 not
+    * found / r(111)", which reads as a missing variable in the user's data.
+    * The saved-RIF entry path never sets e(predict) either, so after
+    * `csdid_stats using f' followed by `estat event, post' the guard was off
+    * and exactly that r(111) came back. predict is never valid after csdid on
+    * any path, so default it here too.
+    if `"`local_predict'"' == "" local local_predict "csdid_p"
 
     * SP-03/DS-10: reps and rseed may be posted either as scalars or as macros
     * depending on how the inference settings are stored; preserve whichever

@@ -1,0 +1,7 @@
+tag,cell,nunits,nobs,seconds,min,max
+base0,panel_reg_analytic,5000,50000,.078,.077,.078
+base0,panel_dr_cov,5000,50000,.202,.202,.202
+base0,panel_reg_cluster,5000,50000,.083,.082,.083
+base0,rcs_reg,5000,50000,.284,.28,.284
+base0,unbal_reg_none,5000,50000,.076,.076,.076
+base0,panel_reg_wboot,5000,50000,.108,.107,.108

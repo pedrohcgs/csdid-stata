@@ -1,29 +1,13 @@
-*! v1.1 Corrects typo
-* v1 Creates gvar-Cohort/group variable
-*program drop _gcsgvar
+*! csgvar 2.0.0 30jul2026
+* Cohort ("gvar") variable from a binary treatment indicator, command form.
+*
+* The implementation lives in _gcsgvar.ado, which is also Stata's egen entry
+* point for `egen g = csgvar(treated), tvar() ivar()'. Forwarding is what
+* keeps the two routes identical: they were previously the same 29 lines
+* twice, so every guard and every message had to be fixed in both files or
+* they diverged.
 program csgvar, sortpreserve
+	version 14
 	syntax newvarname =/exp [if] [in], tvar(varname) ivar(varname)
-	local exp = subinstr("`exp'","(","",.)
-	local exp = subinstr("`exp'",")","",.)
-	tempvar touse
-	qui:gen byte `touse'=0
-	qui:replace `touse'=1 `if' `in'
-	qui:replace `touse'=0 if `tvar'==. | `ivar'==. | `exp'==.
-		
-	tempvar vals
-	bys `touse' `exp' : gen byte `vals' = (_n == 1) * `touse'
-	su `vals' if `touse', meanonly
-	if r(sum)>2 {
-			display in r "display More than 2 values detected in `exp'."
-			error 4444
-	}
-	qui: {
-		tempvar aux
-		bysort `touse' `ivar' `exp':egen `aux'=min(`tvar')
-		replace `aux'=0 if `exp'==0
-		by     `touse' `ivar':egen `varlist'=max(`aux')
-		replace `varlist'=. if `exp'==. | !`touse'
-	}
-	
-	label var `varlist' "Group Variable based on `exp'"
+	_gcsgvar `typlist' `varlist' = (`exp') `if' `in', tvar(`tvar') ivar(`ivar')
 end

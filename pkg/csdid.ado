@@ -61,7 +61,7 @@ program define csdid, eclass sortpreserve
         GVAR(varname) ///
         [ IVAR(varname) ID(varname) NOTYET METHOD(string) BASE_period(string) ///
           FIX_weights(string) ///
-          ANTICIPation(integer 0) Level(cilevel) AGG(string) ///
+          ANTICIPation(integer 0) Level(cilevel) AGG(string) DROPMissing ///
           CLuster(varname) VCE(string asis) POINTwise WBOOT(string asis) ///
           REPS(string) BITERS(string) SEED(string) ///
           PSCORETRIM(real 0.995) RSEED(string) ///
@@ -101,11 +101,19 @@ program define csdid, eclass sortpreserve
             * Stata abbreviates options: CLuster() accepts cl. These arrive
             * through the catch-all, where an exact match meant nevertreat and
             * notyettreat were errors while nevertreated and never happened to
-            * work -- the latter only because it was separately defined. Accept
-            * any prefix from the documented minimum, as syntax would.
-            *   NEVERtreated   min never    NOTYETtreated  min notyet
-            *   ALLOWunbalanced min allow   STOREall       min store
-            *   BALANCEAll min balancea     BALANCEPair    min balancep
+            * work -- the latter only because it was separately defined. Two
+            * spellings are prefix-matched from a documented minimum, as
+            * syntax would:
+            *   NEVERtreated   min never (5)
+            *   NOTYETtreated  min notyet (6)
+            * Everything else in this catch-all is matched EXACTLY, by design:
+            * unbalanced / allowunbalanced / allow_unbalanced, storeall /
+            * store_all, universal, varying, rcs. That mirrors the
+            * full-spelling rule balance_e() follows on the aggregation side,
+            * and it is documented as such in help csdid. The comment
+            * previously listed abbreviation minima for the exact-match
+            * spellings, and two options -- BALANCEAll and BALANCEPair -- that
+            * have never existed in any release and are refused by name.
             else if strlen(`"`opt_l'"') >= 6 & ///
                     `"`opt_l'"' == substr("notyettreated", 1, strlen(`"`opt_l'"')) {
                 local notyet "notyet"
@@ -211,7 +219,6 @@ program define csdid, eclass sortpreserve
     * matrices. (The development-era performance()/lean spellings never
     * shipped in any release and were removed before 2.0.0.)
     local performance_mode = cond("`store_all'" != "", "full", "auto")
-    local lean_requested = 0
     * ---------------------------------------------------------------------
     * bal() selects what happens to an unbalanced ivar() panel.
     *
@@ -272,6 +279,17 @@ program define csdid, eclass sortpreserve
         }
         local balance_mode "none"
     }
+    * bal(full) and bal(pair) balance a PANEL. Without ivar() there is no
+    * panel: each observation is its own unit, csdid__prescan never marks a
+    * drop (its balance pass is gated on ivar()) and pair_mode is 0 in the
+    * kernel. Both were therefore complete no-ops that said nothing, while the
+    * twin case -- rcs together with an explicit bal() -- is refused at length
+    * immediately above. bal(none) agrees with what the no-ivar path already
+    * does and stays accepted.
+    if "`ivar'" == "" & `balance_explicit' & "`balance_mode'" != "none" {
+        display as error "bal(`balance_mode') balances a panel, but no ivar() was given, so each observation is its own unit and there is nothing to balance. Omit bal(), specify bal(none), or supply ivar()."
+        exit 198
+    }
 
     if `nevertreated_alias' & "`notyet'" != "" {
         display as error "nevertreated and notyettreated select different comparison groups; specify only one. Omitting both uses not-yet-treated, the default."
@@ -309,6 +327,13 @@ program define csdid, eclass sortpreserve
             display as error "agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation"
             exit 498
         }
+    }
+    * dropmissing governs the agg() aggregation and nothing else, so with no
+    * agg() it would be a silent no-op. Refuse instead, and name the two
+    * places it does mean something.
+    if "`dropmissing'" != "" & "`agg'" == "" {
+        display as error "dropmissing applies to the aggregation, so it needs agg() on this command. Specify agg(event) to aggregate here, or run csdid_stats, type() dropmissing (or estat event, dropmissing) after estimation."
+        exit 198
     }
     capture confirm numeric variable `time'
     if _rc {
@@ -404,7 +429,6 @@ program define csdid, eclass sortpreserve
     local boot_seed ""
     local boot_dist ""
     local boot_dist_requested ""
-    local boot_dist_explicit 0
     local boot_cluster ""
     local cband = 0
     if !`bstrap' & (`"`rseed_top'"' != "" | `"`seed_top'"' != "" | `"`reps_top'"' != "" | `"`biters_top'"' != "") {
@@ -528,11 +552,9 @@ program define csdid, eclass sortpreserve
         }
         if `"`wb_wtype'"' != "" {
             local boot_dist_requested = lower(strtrim(`"`wb_wtype'"'))
-            local boot_dist_explicit 1
         }
         else if `"`wb_wbtype'"' != "" {
             local boot_dist_requested = lower(strtrim(`"`wb_wbtype'"'))
-            local boot_dist_explicit 1
         }
         if inlist("`boot_dist_requested'", "rademacher", "") {
             local boot_dist "rademacher"
@@ -721,22 +743,47 @@ program define csdid, eclass sortpreserve
                 exit 109
             }
         }
+        * One -summarize- per covariate, whose results are reused below for
+        * the missing-value probe instead of a second full pass each. r(N) is
+        * the count of NON-MISSING values in the if-sample, so it answers both
+        * questions.
+        quietly count if `touse'
+        local xvars_nuse = r(N)
         local xvars_filtered ""
+        local xvars_nmiss ""
         foreach xv of local xvars_expanded {
+            quietly summarize `xv' if `touse', meanonly
+            local xv_n = r(N)
             if substr("`xv'", 1, 2) == "__" {
-                quietly summarize `xv' if `touse', meanonly
-                if r(N) > 0 & r(min) == 0 & r(max) == 0 {
+                if `xv_n' > 0 & r(min) == 0 & r(max) == 0 {
                     continue
                 }
             }
             local xvars_filtered "`xvars_filtered' `xv'"
+            local xvars_nmiss "`xvars_nmiss' `xv_n'"
         }
         local xvars_expanded "`xvars_filtered'"
         if "`ivar'" != "" {
+            * The all-zero screen above already summarized every covariate
+            * over `touse', and -summarize- reports r(N) as the count of
+            * NON-MISSING values in the if-sample. So the missing-value probe
+            * is the same pass a second time. It reuses what the screen
+            * measured: `xvars_nmiss' is that r(N) per covariate and
+            * `xvars_nuse' the sample size, so a covariate has a missing value
+            * exactly when they differ.
             local any_xmiss 0
+            local xv_i 0
             foreach xv of local xvars_expanded {
-                quietly count if `touse' & missing(`xv')
-                if r(N) > 0 {
+                local ++xv_i
+                local xv_n : word `xv_i' of `xvars_nmiss'
+                if "`xv_n'" == "" {
+                    quietly count if `touse' & missing(`xv')
+                    if r(N) > 0 {
+                        local any_xmiss 1
+                        continue, break
+                    }
+                }
+                else if `xv_n' < `xvars_nuse' {
                     local any_xmiss 1
                     continue, break
                 }
@@ -800,7 +847,18 @@ program define csdid, eclass sortpreserve
     }
     quietly count if `touse_initial' & !`touse'
     if r(N) > 0 {
-        display as text "warning: dropped observations with missing or non-finite data"
+        local miss_dropped = r(N)
+        * `as error' is a DISPLAY STYLE here, not an error. It is the only
+        * channel Stata does not suppress under `quietly csdid ...', and the
+        * rule this file states at the bal() drop below -- a warning that
+        * announces a SAMPLE change has to survive, because the estimand
+        * changed with it -- applies here identically. On `as text' this
+        * message went dark on every scripted run and e(N) moved with no
+        * trace of why.
+        *
+        * The count is APPENDED rather than interpolated so the sentence
+        * itself stays the frozen substring four tests grep for.
+        display as error "warning: dropped observations with missing or non-finite data (`miss_dropped' observation(s))"
     }
     * DS-08. csdid indexes cohorts and periods on a positive calendar-time axis:
     * time() runs from 1 upward, gvar() is the period in which a unit is first
@@ -870,11 +928,17 @@ program define csdid, eclass sortpreserve
         }
         quietly do "`r(fn)'"
     }
+    * The library path stores functions only, so the engine's globals are not
+    * created by loading it; initialise them explicitly. It has to happen
+    * BEFORE the first kernel call, which is csdid__prescan a few lines below;
+    * it used to run after it. Idempotent - a no-op once done, so the Mata
+    * result cache is never reset mid-session.
+    quietly mata: csdid__globals_init()
     tempvar bal_drop
     quietly generate byte `bal_drop' = 0
     tempname ps_gcounts
     local want_bal = ("`ivar'" != "" & "`balance_mode'" == "full")
-    capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'")
+    capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'")
     if _rc {
         * a scan failure must refuse cleanly, never leave a previous
         * estimation posted (the same anti-leak contract as every guard)
@@ -904,41 +968,92 @@ program define csdid, eclass sortpreserve
                 exit 2000
             }
             local sample_N = r(N)
+            * ---------------------------------------------------------------
+            * R parity, refusal ORDER: R did 2.5.1 pre_process_did.R balances
+            * the panel first (the keep_bal filter around line 430) and only
+            * THEN computes group sizes and raises the small-group warning and
+            * the never-treated-too-small stop -- its own comment at line 527
+            * reads "more error handling after we have balanced the panel".
+            * csdid measured the groups in the prescan above, i.e. BEFORE this
+            * drop. Balancing only removes rows, so every group size was
+            * overstated and both refusals fired strictly less often than R's:
+            * on the same unbalanced panel R stopped and csdid estimated.
+            *
+            * Re-scan the reduced sample. Everything the scan produces is then
+            * a description of the sample that will actually be estimated: the
+            * group-size warning list (1112-1125), the never-treated-too-small
+            * stop (1126-1131), the no-never-treated fallback warning
+            * (1132-1137) and the No-valid-groups refusal (1080-1086). It is
+            * one extra pass, taken only when balancing actually dropped a
+            * unit.
+            *
+            * Residual, deliberately not closed here: R applies two further
+            * transformations before it measures -- the no-never-treated period
+            * filter with its tlist recompute, and the first-period-treated
+            * unit drop -- which this scan does not model. The kernel does
+            * model both, and re-raises the never-treated-too-small refusal on
+            * the fully final sample (src/mata/csdid.mata, csdid_basic_attgt),
+            * so the refusal itself is exact; what can still differ from R is
+            * the composition of the display-only warning LIST.
+            * ---------------------------------------------------------------
+            capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', 0, "`bal_drop'", "`ps_gcounts'")
+            if _rc {
+                local prescan_rc = _rc
+                display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
+                ereturn clear
+                exit `prescan_rc'
+            }
         }
+    }
+    * ---------------------------------------------------------------------
+    * The all-zero screen on the fvrevar-expanded dummies ran against `touse'
+    * as it stood BEFORE two sample reductions that can empty a surviving
+    * dummy: the covariate-missingness unit drop above, and the bal(full)
+    * drop just above that. A level of i.state whose only units are dropped
+    * therefore left an identically-zero column in the covariate list, which
+    * reaches the 2x2 regressions as an exactly collinear regressor and blanks
+    * cells with a per-cell "singular or numerically ill-conditioned" warning
+    * -- where R, which builds its model matrix on the already-reduced data,
+    * simply never creates the column and estimates normally.
+    *
+    * Re-run the screen here, where `touse' is final. Only fvrevar's own
+    * generated columns (`__' prefix) are screened, exactly as before: a
+    * user-supplied variable that happens to be all zero is the user's to
+    * keep.
+    *
+    * RESIDUAL, deliberately not closed: fvrevar also chose the BASE level
+    * against the pre-drop sample. If the drops empty the base level instead
+    * of a non-base one, the surviving dummies partition the final sample and
+    * are collinear with the intercept the kernel prepends -- which this
+    * screen cannot see, because no single column is all zero. Rebuilding the
+    * factor expansion on the final sample is the fix for that case and is a
+    * larger change; it is recorded rather than attempted here.
+    * ---------------------------------------------------------------------
+    if `"`xvars_expanded'"' != "" {
+        local xvars_rescreened ""
+        local xvars_dropped_late 0
+        foreach xv of local xvars_expanded {
+            if substr("`xv'", 1, 2) == "__" {
+                quietly summarize `xv' if `touse', meanonly
+                if r(N) > 0 & r(min) == 0 & r(max) == 0 {
+                    local ++xvars_dropped_late
+                    continue
+                }
+            }
+            local xvars_rescreened "`xvars_rescreened' `xv'"
+        }
+        if `xvars_dropped_late' > 0 local xvars_expanded "`xvars_rescreened'"
     }
 
     * -----------------------------------------------------------------------
-    * The engine is loaded HERE, before the first call to any csdid Mata
-    * function. It used to load further down, after the structural checks
-    * and the group-size block; because those run inside -capture-, a
-    * "function not found" was swallowed silently and the checks simply
-    * did not run.
-    * Load the Mata engine. Preference order, fastest first:
-    *   1. already resident (nothing to do)
-    *   2. the precompiled library lcsdid.mlib shipped with the package - Stata
-    *      indexes l*.mlib along the adopath, but a library installed during the
-    *      current session is not seen until the index is rebuilt, so retry once
-    *      after `mata mlib index'
-    *   3. compile csdid.mata from source (~0.8s per session; the fallback for
-    *      installations without the library, or where it was built by an
-    *      incompatible Stata version)
-    capture mata: csdid__mean(J(1, 1, 0))
-    if _rc {
-        capture quietly mata: mata mlib index
-        capture mata: csdid__mean(J(1, 1, 0))
-    }
-    if _rc {
-        capture quietly findfile csdid.mata
-        if _rc {
-            display as error "csdid Mata source not found on adopath"
-            exit 499
-        }
-        quietly do "`r(fn)'"
-    }
-    * The library path stores functions only, so the engine's globals are not
-    * created by loading it; initialise them explicitly. Idempotent - it is a
-    * no-op once done, so the Mata result cache is never reset mid-session.
-    quietly mata: csdid__globals_init()
+    * A second, character-for-character copy of the engine loader used to sit
+    * here, with a comment claiming it ran "before the first call to any csdid
+    * Mata function". That stopped being true when the prescan was hoisted:
+    * the first Mata calls are the loader itself and csdid__prescan, both well
+    * above this point, so the copy could never do anything. Gone, together
+    * with the globals initialisation it introduced, which now sits with the
+    * loader that actually runs.
+    * -----------------------------------------------------------------------
 
     * EUX-001 (repaired): csdid_basic_attgt() was the one kernel in this file
     * still reached with nothing between it and the user, so its data-shape
@@ -978,13 +1093,18 @@ program define csdid, eclass sortpreserve
         scalar `eux_gvary' = 0
         scalar `eux_cvary' = 0
         scalar `eux_dup' = 0
-        tempname eux_flags
+        * These four used to be a SECOND full Mata pass over id, time, gvar
+        * and cluster, purely to compare adjacent rows within a unit --
+        * measured at 0.19s of a 0.79s run on 600,000 rows. csdid__prescan
+        * already reads time and gvar, so it computes them now and this block
+        * reads the answers. The prescan is re-run on the reduced sample
+        * whenever bal(full) dropped a unit, and both calls precede this
+        * point, so the flags describe the FINAL estimation sample either way.
         capture {
-            mata: csdid__panel_shape_flags("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", "`eux_flags'")
-            scalar `eux_nunit' = `eux_flags'[1, 1]
-            scalar `eux_gvary' = `eux_flags'[1, 2]
-            scalar `eux_cvary' = `eux_flags'[1, 3]
-            scalar `eux_dup'   = `eux_flags'[1, 4]
+            scalar `eux_nunit' = __csdid_ps_shape_nunit
+            scalar `eux_gvary' = __csdid_ps_shape_gvary
+            scalar `eux_cvary' = __csdid_ps_shape_cvary
+            scalar `eux_dup'   = __csdid_ps_shape_dup
         }
         if scalar(`eux_nunit') == 1 {
             display as error "ivar() identifies only one unit in the estimation sample; csdid needs at least two units (a treated unit and a comparison unit) to form a 2x2 comparison. Check that ivar() names the panel identifier and is not constant."
@@ -1015,7 +1135,6 @@ program define csdid, eclass sortpreserve
     * tempvar and r(): no sort, no observation changes. The noisy-only
     * diagnostics below reuse them, so noisy runs do no duplicated work.
     local min_time = __csdid_ps_tmin
-    local max_time = __csdid_ps_tmax
     * DS-02 (repaired): the ATT(g,t) coefficient names are built literally from
     * the g, t and base-period VALUES (g2004___2005_2003), so a time axis in
     * epoch seconds or %tc milliseconds produced a 35-character name and the run
@@ -1032,15 +1151,16 @@ program define csdid, eclass sortpreserve
         if `nmlen' > `name_tw' local name_tw = `nmlen'
     }
     local name_gw = 0
-    local name_bw = 0
     foreach nmval in `=__csdid_ps_gmin' `=__csdid_ps_gmax' {
         local nmtxt : display %21.0f `nmval'
         local nmlen = strlen(strtrim("`nmtxt'"))
         if `nmlen' > `name_gw' local name_gw = `nmlen'
-        local nmtxt : display %21.0f `=`nmval' - 1'
-        local nmlen = strlen(strtrim("`nmtxt'"))
-        if `nmlen' > `name_bw' local name_bw = `nmlen'
     }
+    * The base period pasted into the name is the reference period the cell
+    * used, which is always an OBSERVED period (previous_time returns a member
+    * of the time grid), so the time range bounds its width. Sizing it from
+    * g - 1 described a value that is not necessarily a period at all.
+    local name_bw = `name_tw'
     * "g" + g + "___" + t + "_" + base
     local name_maxlen = 1 + `name_gw' + 3 + `name_tw' + 1 + `name_bw'
     if `name_maxlen' > 32 {
@@ -1128,16 +1248,38 @@ program define csdid, eclass sortpreserve
         ereturn clear
         exit 459
     }
-    if `diagnostics_noisy' {
-        if `never_count' == 0 & "`notyet'" == "" {
-            if `__n_treated' > 0 {
-                display as text "warning: No never-treated group available; using the latest treated cohort as never-treated, matching R did fallback behavior."
-            }
-        }
-        if __csdid_ps_firstper > 0 {
-            display as text "warning: Units treated in the first period are dropped."
+    * Both of these announce a change to the SAMPLE or the ESTIMAND, so they
+    * follow the rule stated at the bal() drop above: error-styled, which is
+    * the one channel a caller's `quietly' does not suppress, and ungated. R
+    * raises both through warning(), which is not suppressible either.
+    * Previously they were doubly hidden -- `as text' AND gated on
+    * diagnostics_noisy -- so under `quietly csdid ...' the comparison group
+    * silently became the latest treated cohort, or a set of units silently
+    * left the sample, with nothing said.
+    *
+    * The small-group warning above is deliberately NOT changed: it is
+    * advisory and changes neither the sample nor the estimand, and the noisy
+    * gate there is a decision already recorded in the comment above it.
+    if `never_count' == 0 & "`notyet'" == "" {
+        if `__n_treated' > 0 {
+            display as error "warning: No never-treated group available; using the latest treated cohort as never-treated, matching R did fallback behavior."
         }
     }
+    if __csdid_ps_firstper > 0 {
+        display as error "warning: Units treated in the first period are dropped."
+    }
+    * csdid__prescan returns its scalar outputs through GLOBAL Stata scalars,
+    * and nothing dropped them: every csdid run left __csdid_ps_tmin,
+    * __csdid_ps_tmax, __csdid_ps_gmin, __csdid_ps_gmax, __csdid_ps_ntime,
+    * __csdid_ps_never, __csdid_ps_firstper, __csdid_ps_nunits,
+    * __csdid_ps_incunits and __csdid_ps_incobs standing in the user's
+    * session. This is the last read of any of them; the Wald block below
+    * ends the same way.
+    capture scalar drop __csdid_ps_tmin __csdid_ps_tmax __csdid_ps_gmin ///
+        __csdid_ps_gmax __csdid_ps_ntime __csdid_ps_never ///
+        __csdid_ps_firstper __csdid_ps_nunits __csdid_ps_incunits ///
+        __csdid_ps_incobs __csdid_ps_shape_nunit __csdid_ps_shape_gvary ///
+        __csdid_ps_shape_cvary __csdid_ps_shape_dup
 
     local fast_requested = ("`fast'" != "")
     local fast_auto = ("`fast_mode'" == "auto")
@@ -1159,11 +1301,26 @@ program define csdid, eclass sortpreserve
     local performance_resolved = cond(`store_large', "full", "lean")
 
     tempname attgt inffunc group_prob unit_group cluster_vec nclusters fast_used panel_balanced panel_ntime cache_token profile bootstrap_profile bootstrap_kernel_profile
-    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'")
+    * The kernel writes the settled estimation sample here: touse minus the two
+    * drops only it models -- the periods the no-never-treated fallback removes,
+    * and the units treated at or before the first usable period. e(N) and
+    * e(sample) are taken from this rather than from touse, so that the count,
+    * the marker and e(N_units) describe one sample instead of three.
+    tempvar use_mark
+    quietly generate byte `use_mark' = 0
+    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'")
     local csdid_rc = _rc
     if `csdid_rc' {
         ereturn clear
         exit `csdid_rc'
+    }
+    * From here on, the estimation sample is what the kernel actually used.
+    * Falls back to the touse count only if the marker is unusable, which would
+    * mean the kernel returned without writing it.
+    quietly count if `use_mark'
+    if r(N) > 0 {
+        local sample_N = r(N)
+        quietly replace `touse' = 0 if !`use_mark'
     }
     foreach required_matrix in `attgt' `group_prob' {
         capture confirm matrix `required_matrix'
@@ -1196,6 +1353,35 @@ program define csdid, eclass sortpreserve
     local bootstrap_accelerator_file ""
     local bootstrap_accelerator_rc 0
     if `bstrap' {
+        * -------------------------------------------------------------------
+        * Stata 14 and 15 cap classic-matrix dimensions with `set matsize',
+        * whose default is 400; Stata 16 removed the cap and ignores the
+        * setting. Every bootstrap path writes at least one biters-row Stata
+        * matrix, and a seeded run builds a 1 x 625 RNG-state matrix BEFORE
+        * the kernel runs, so on a stock Stata 14/15 the default run --
+        * reps(1000), bootstrap on unless analytical -- had no working path
+        * at all: it died with a bare r(908) after the whole estimation had
+        * been computed, naming nothing.
+        *
+        * Gated on the version, or it would refuse the entire modern user
+        * base, where c(matsize) still reports 400 and nothing is wrong.
+        *
+        * This REFUSES rather than raising matsize itself. Raising it is not
+        * universally possible -- Stata/IC 14/15 caps matsize at 800, below
+        * the default reps(1000) -- and an estimation command has no business
+        * silently changing a global setting the user did not ask about. The
+        * message names the exact command to type and the alternative.
+        * -------------------------------------------------------------------
+        if c(stata_version) < 16 {
+            local matsize_need = `biters'
+            if "`boot_seed'" != "" & 625 > `matsize_need' local matsize_need = 625
+            if `matsize_need' > c(matsize) {
+                display as error "this Stata version limits matrix dimensions with -set matsize- (currently `=c(matsize)'), and this bootstrap needs at least `matsize_need'`=cond("`boot_seed'" != "" & `biters' < 625, " for the seeded random-number state", "")'."
+                display as error "Type -set matsize `matsize_need'- and rerun, or lower reps(), or specify analytical for analytical standard errors. Stata/IC caps matsize at 800, so on that flavour reps() must be 800 or fewer."
+                ereturn clear
+                exit 908
+            }
+        }
         tempname boot_attgt boot_draws boot_crit boot_pointcrit boot_rng_state
         local boot_rng_arg ""
         if "`boot_seed'" != "" {
@@ -1275,6 +1461,43 @@ program define csdid, eclass sortpreserve
             local plugin_rc 0
             local plugin_if_vars ""
             local plugin_k = rowsof(`attgt')
+
+            * #6. These scratch variables carry the influence functions to the
+            * plugin, which reads `in 1/nc' -- one row per unit, or per cluster
+            * when clustering. Stata variables span the whole dataset, so on a
+            * panel the other rows are allocated and never touched: measured on
+            * 600,000 rows, 60,000 units and 40 cells, 183.1MB allocated for
+            * 18.3MB of data, and 0.140s just to create them.
+            *
+            * The dataset is therefore trimmed to the rows the plugin reads for
+            * the duration of the call. That is safe precisely here: the only
+            * thing the preparation step reads from the DATA is the time
+            * variable, at original row positions, and it does that only when
+            * ivar() is absent -- i.e. under repeated cross sections, where
+            * every row is its own unit and nc is already the whole dataset, so
+            * nothing is trimmed. The wasteful case and the data-reading case
+            * are disjoint.
+            *
+            * Everything else the call touches is a matrix or a Mata global,
+            * both of which preserve/restore leaves alone. If the row count
+            * guessed here were ever too small the store would fail, plugin_rc
+            * would be set, and the run would fall back to the Mata bootstrap
+            * with identical results -- a slow path, not a wrong one.
+            *
+            * Two other routes were measured and rejected. The plugin's matrix
+            * input task would need an nc x k Stata matrix, and st_matrix() is
+            * quadratic in rows: 0.015s at 2,000 rows, 0.328s at 10,000, 3.0s
+            * at 30,000, against a flat 0.003s for st_store(). Batching the
+            * columns would work -- the multiplier draw depends on the
+            * replication and the row, not the column, so resetting the state
+            * per batch reproduces it -- but it rewrites the seeded bootstrap
+            * for less benefit than this.
+            local plugin_rows = `group_prob'[1, 3]
+            if "`cluster'" != "" local plugin_rows = scalar(`nclusters')
+            preserve
+            if `plugin_rows' < _N & "`boot_time'" == "" {
+                quietly keep in 1/`plugin_rows'
+            }
             forvalues plugin_col = 1/`plugin_k' {
                 tempvar plugin_if_var
                 capture generate double `plugin_if_var' = .
@@ -1315,6 +1538,9 @@ program define csdid, eclass sortpreserve
                 local bootstrap_accelerator_rc = `plugin_rc'
             }
             capture drop `plugin_if_vars'
+            * back to the full sample; everything produced above lives in
+            * matrices and Mata globals, which restore does not touch
+            restore
         }
 
         if !`plugin_success' {
@@ -1336,9 +1562,16 @@ program define csdid, eclass sortpreserve
     }
     mata: st_matrix("`profile'", CSDID_PROFILE)
 
-    matrix colnames `attgt' = group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre
+    * base_time is the reference period each cell was differenced against. It
+    * is appended, so the nine documented columns keep their positions.
+    matrix colnames `attgt' = group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre base_time
     matrix colnames `group_prob' = group prob n_units
     matrix colnames `profile' = seconds calls work
+    * `if_assembly' is instrumented now. It was declared and never written, so
+    * e(profile) reported a flat zero for the segment that actually dominates
+    * a large fit: at 600,000 repeated-cross-section units and 40 cells the
+    * profiled phases accounted for 1.16s of a 3.60s run, and the assembly was
+    * all of the missing two thirds.
     matrix rownames `profile' = setup cell_extract model_fit if_assembly cache_post cluster bootstrap aggregation
     if `store_large' {
         * F-001/F-022 (repaired): on the allow_unbalanced path csdid_basic_attgt
@@ -1565,37 +1798,55 @@ program define csdid, eclass sortpreserve
     forvalues i = 1/`=rowsof(`attgt')' {
         local post_g = `attgt'[`i', 1]
         local post_t = `attgt'[`i', 2]
-        local post_e = `attgt'[`i', 3]
         local post_att = `attgt'[`i', 4]
-        local post_se = `attgt'[`i', 5]
         if missing(`post_att') continue
-        if abs(`post_e' + 1) < 1e-8 continue
+        * The one cell that must not enter e(b)/e(V) is the universal-base
+        * NORMALISATION row, whose ATT is 0 by construction with an
+        * identically-zero influence function. The kernel marks it: column 10
+        * (base_time) holds the reference period the cell was differenced
+        * against, and it equals the cell's own time on exactly that row (see
+        * the note at src/mata/csdid.mata, csdid_basic_attgt). The old test
+        * `abs(post_e + 1) < 1e-8' assumed the reference period is always one
+        * time unit before g, which is false under anticipation(),
+        * base_period(varying), and - at DEFAULT settings - on any panel whose
+        * periods are not unit-spaced. On those runs it let the fabricated zero
+        * into e(b) (making e(V) singular by construction) and dropped a
+        * genuine cell instead. Both matrix elements are compared directly, not
+        * through locals, so no display-format rounding enters the test.
+        if `attgt'[`i', 10] == `attgt'[`i', 2] continue
 
-        local post_base = `post_g' - 1
         local post_gtxt : display %21.0f `post_g'
         local post_ttxt : display %21.0f `post_t'
-        local post_btxt : display %21.0f `post_base'
+        * The last field of the coefficient name is documented as the base
+        * period, so it is read from base_time rather than assumed to be g-1.
+        local post_btxt : display %21.0f `attgt'[`i', 10]
         local post_gtxt = strtrim("`post_gtxt'")
         local post_ttxt = strtrim("`post_ttxt'")
         local post_btxt = strtrim("`post_btxt'")
         local post_cname "g`post_gtxt'___`post_ttxt'_`post_btxt'"
 
-        if missing(`post_se') local post_v 0
-        else local post_v = `post_se' ^ 2
-
         local ++post_k
         if `post_k' == 1 {
             matrix `post_b' = (`post_att')
-            matrix `post_V' = (`post_v')
         }
         else {
             matrix `post_b' = `post_b', (`post_att')
-            matrix `post_V' = (`post_V', J(rowsof(`post_V'), 1, 0))
-            matrix `post_V' = (`post_V' \ J(1, `post_k', 0))
-            matrix `post_V'[`post_k', `post_k'] = `post_v'
         }
         local post_names "`post_names' `post_cname'"
     }
+    * post_V used to be built here, one bordered row and column per cell:
+    * Theta(K^3) element copies and 2(K-1) reallocations through Stata's
+    * classic-matrix layer, K the number of named cells. Every element of it
+    * was then overwritten by csdid_post_attgt_v below, which builds the whole
+    * matrix from the influence functions or the bootstrap draws. The build
+    * was pure waste -- seconds to tens of seconds on the large staggered
+    * designs where K reaches several hundred -- and its `missing se -> 0'
+    * fallback was not load-bearing either: that decision lives in
+    * csdid__rescale_v_to_se, on the path this file always takes.
+    *
+    * A placeholder is still needed for the tempname to exist when
+    * csdid_post_attgt_v is handed its name.
+    if `post_k' > 0 matrix `post_V' = J(`post_k', `post_k', 0)
     * DS-03 (PARTIAL - see the note below): when every 2x2 cell fails, the loop
     * above names nothing, and csdid returned rc 0 with e(cmd)=="csdid" and
     * e(N) posted but NO e(b)/e(V) at all, and with no message saying so - an
@@ -1627,7 +1878,7 @@ program define csdid, eclass sortpreserve
             display as text "warning: every ATT(g,t) cell failed to estimate - all `n_attgt' group-time cells are missing - so no coefficient vector was posted and postestimation commands (csdid_stats, estat, test, lincom, predict) have nothing to work with. Common causes are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim (pscoretrim()) that empties every comparison group, comparison groups with too few units, and an outcome with no variation. Check the covariate list and pscoretrim(), or rerun with method(reg). The ATT(g,t) table is still available in e(attgt)."
         }
         else {
-            display as text "warning: no ATT(g,t) coefficient could be named - every estimable cell is a normalised base period (event_time = -1) - so no coefficient vector was posted. Check baseperiod() and anticipation(). The ATT(g,t) table is still available in e(attgt)."
+            display as text "warning: no ATT(g,t) coefficient could be named - every estimable cell is a normalised base period - so no coefficient vector was posted. Check baseperiod() and anticipation(). The ATT(g,t) table is still available in e(attgt), where the base period of each cell is reported in the base_time column."
         }
     }
     if `post_k' > 0 {
@@ -1711,6 +1962,13 @@ program define csdid, eclass sortpreserve
     ereturn local control_group = cond("`notyet'" != "", "notyettreated", "nevertreated")
     ereturn local method "`method'"
     ereturn local method_requested "`method_requested'"
+    * e(weightvar) names a TEMPVAR that no longer exists once the command
+    * returns, so it can identify nothing after the fact. The weight the user
+    * actually typed is what a reader needs, and it is what every official
+    * estimation command stores: e(wtype) is the weight type and e(wexp) the
+    * expression, including its leading `='.
+    ereturn local wtype "`weight'"
+    ereturn local wexp `"`exp'"'
     ereturn local weightvar "`wvar'"
     ereturn local base_period "`base_period'"
     ereturn local fix_weights "`fix_weights'"
@@ -1805,7 +2063,16 @@ program define csdid, eclass sortpreserve
     if `display_noisy' Display, level(`level')
 
     if "`agg_type'" != "" {
-        csdid_stats, type(dynamic) na_rm
+        * agg() used to pass an undeclared `na_rm' here, which csdid_stats
+        * matched as an alias of dropmissing. So `csdid ..., agg(event)'
+        * averaged away every failed ATT(g,t) cell and reported a number,
+        * while the SAME aggregation typed by hand -- `csdid_stats,
+        * type(dynamic)' -- refused, and so does R's aggte(), whose na.rm
+        * defaults to FALSE. That is a silent estimand change on the one
+        * aggregation route a user reaches without asking for an aggregation
+        * command. The flag is now the user's to set, under the same name
+        * csdid_stats and estat use, and agg() refuses exactly as they do.
+        csdid_stats, type(dynamic) `dropmissing'
         * agg() posts by design: after `csdid, agg(event)' e(b)/e(V) hold the
         * aggregated coefficients (documented). The estat routes pass `post'
         * only when the user asks for it.
@@ -1836,6 +2103,10 @@ program define Display
     syntax [, Level(cilevel)]
     tempname out
     matrix `out' = e(attgt)
+    * base_time (column 10) is a posting-layer marker, not part of the printed
+    * ATT(g,t) table; print the nine documented columns so the displayed table
+    * is unchanged. It remains readable in e(attgt).
+    if colsof(`out') > 9 matrix `out' = `out'[1..., 1..9]
     display as text _newline "Group-time average treatment effects"
     * -------------------------------------------------------------------
     * DS-10 (repaired): nothing in the printed output said how the standard
@@ -1927,8 +2198,13 @@ program define _csdid_save_rif
         local ntp = strofreal(`ATT'[`j', 7], "%21.0g")
         local nct = strofreal(`ATT'[`j', 8], "%21.0g")
         local ncp = strofreal(`ATT'[`j', 9], "%21.0g")
+        * base_time: the reference period this cell was differenced against.
+        * Without it a reloaded artifact cannot tell the universal-base
+        * normalisation row from a genuine cell, nor name a coefficient with
+        * the base period the run actually used.
+        local bt = strofreal(`ATT'[`j', 10], "%21.0g")
         label variable rif`j' "RIF group=`g' time=`t' event_time=`e'"
-        char rif`j'[csdid_attgt] "`g' `t' `e' `a' `s' `ntt' `ntp' `nct' `ncp'"
+        char rif`j'[csdid_attgt] "`g' `t' `e' `a' `s' `ntt' `ntp' `nct' `ncp' `bt'"
     }
     char _dta[csdid_artifact] "rif"
     char _dta[csdid_cmdline] `"`e(cmdline)'"'
@@ -1947,6 +2223,13 @@ program define _csdid_save_rif
     * `csdid_stats using <rif>, balance()' works instead of refusing; artifacts
     * written before this char existed still get the clean rc 498 refusal.
     char _dta[csdid_time_first] "`=e(time_first)'"
+    * #20. These rows record the aggregation weights the estimation used, and
+    * csdid_stats checks them on load. The audit called for widening the format
+    * here too, on the grounds that `=exp' expansion truncates to about eight
+    * significant digits; measured, it does not -- it writes sixteen
+    * (.1620512820512821), which is at most an ulp off the double and orders
+    * inside the tolerance the check uses. Left alone rather than churn a
+    * shipped artifact field for nothing.
     local ngp = rowsof(`GP')
     char _dta[csdid_group_prob_rows] "`ngp'"
     forvalues i = 1/`ngp' {

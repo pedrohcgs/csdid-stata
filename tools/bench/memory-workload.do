@@ -23,8 +23,12 @@ else if "`scenario'" == "seeded_plugin" {
 }
 else if "`scenario'" == "unbalanced_plugin" {
     import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-unbalanced.csv", clear asdouble
+    * bal(none) is what puts this on the allow_unbalanced path, which is the
+    * path the scenario is named for and asserts below. Without it the command
+    * balanced the panel, reported panel_mode "panel", and the assertion could
+    * never hold -- so this scenario has never measured the kernel it claims to.
     quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) ///
-        reps(1000) rseed(20260709) pointwise
+        reps(1000) rseed(20260709) pointwise bal(none)
     assert "`e(panel_mode)'" == "allow_unbalanced"
     assert "`e(bootstrap_accelerator)'" == "plugin"
 }
@@ -48,7 +52,11 @@ else if "`scenario'" == "large_panel" {
     generate double y = .4 * x1 - .2 * x2 + .08 * time + .015 * id / 1000 + ///
         (time >= g & g > 0) * (.45 + .05 * (time - g)) + sin(id / 19)
     quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr)
-    assert e(large_store) == 0
+    * e(large_store) was retired when the storage results were unified onto
+    * e(storage); this asserted the removed scalar, which is always missing, so
+    * the scenario could not pass. "lean" is the same claim in the current
+    * vocabulary: the large panel must not materialise the influence functions.
+    assert "`e(storage)'" == "lean"
 }
 else {
     display as error "unknown memory workload: `scenario'"

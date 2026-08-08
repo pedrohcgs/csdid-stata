@@ -1,0 +1,16 @@
+{
+  "date": "2026-08-07",
+  "started": "13:39",
+  "stata_binary": "/Applications/StataNow/StataMP.app/Contents/MacOS/stata-mp",
+  "stata": "StataNow/MP 19.5",
+  "stata_born_date": "29 Jul 2026",
+  "platform": "Mac (Apple Silicon)",
+  "platform_detail": "Unix; Darwin 25.5.0",
+  "candidate_commit": "6d84be8b5ebdcac5e9fb9b73cc41a6aeff81f587",
+  "legacy_root": "~/Documents/GitHub/csdid-stata-legacy",
+  "legacy_commit": "fdbae25521a941314af8d84ec0c93fb0596daa8e",
+  "trials": 10,
+  "tiers_run_here": [],
+  "ladder_run_here": true,
+  "seeded_from": "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/run1/scalebench-results.csv"
+}

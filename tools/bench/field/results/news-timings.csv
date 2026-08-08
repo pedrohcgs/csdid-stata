@@ -1,0 +1,12 @@
+claim,detail,seconds,source
+boot199,added over analytical,.023,warm-run
+estat_event,n=20000,.063,warm-run
+estat_event,n=100000,.257,warm-run
+saverif,n=20000,.274,warm-run
+rcs400k,T=20 G=12,3.232,warm-run
+panel350k,dr cov=none,.389,warmup-discarded
+panel350k,dr cov=x,.697,warmup-discarded
+panel350k,reg cov=none,.394,warmup-discarded
+panel350k,reg cov=x,.515,warmup-discarded
+panel350k,ipw cov=none,.444,warmup-discarded
+panel350k,ipw cov=x,.738,warmup-discarded

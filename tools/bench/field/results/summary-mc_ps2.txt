@@ -1,0 +1,66 @@
+rows: 31064   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  bal_ps2    csdid dr              464  +0.0017  0.0785  0.0784  0.0793   0.950
+  bal_ps2    csdid ipw             464  -0.0355  0.1139  0.1192  0.0985   0.963
+  bal_ps2    csdid reg             500  -0.0010  0.0737  0.0737  0.0762   0.948
+  bal_ps2    jwdid                 500  +0.0006  0.0591  0.0590  0.0570   0.942
+  bal_ps2    did_imputation        500  +0.0006  0.0591  0.0590  0.0570   0.944
+  bal_ps2    did_multiplegt_dyn    500  +0.0662  0.0708  0.0968  0.0686   0.838
+  bal_ps2    lpdid                 500  -0.1360  0.0659  0.1511  0.0677   0.482
+  bal_ps2    flexdid               500  -0.0005  0.0665  0.0664  0.0943   0.998
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  bal_ps2    csdid dr              464  +0.0006  0.0883  0.0882  0.0859   0.948
+  bal_ps2    csdid ipw             464  -0.0937  0.2460  0.2630  0.1564   0.966
+  bal_ps2    csdid reg             500  -0.0009  0.0817  0.0817  0.0812   0.950
+  bal_ps2    jwdid                 500  +0.0013  0.0712  0.0711  0.0649   0.924
+  bal_ps2    did_imputation        500  +0.0013  0.0712  0.0711  0.0649   0.924
+  bal_ps2    did_multiplegt_dyn    500  +0.2290  0.0935  0.2473  0.0876   0.280
+  bal_ps2    lpdid                 500  -0.1124  0.0736  0.1343  0.0725   0.656
+  bal_ps2    flexdid               500  -0.0009  0.0778  0.0777  0.1060   0.988
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  bal_ps2    csdid dr              464  -0.0028  0.0873  0.0872  0.0891   0.968
+  bal_ps2    csdid ipw             464  -0.1445  0.3589  0.3865  0.2130   0.959
+  bal_ps2    csdid reg             500  -0.0052  0.0790  0.0791  0.0841   0.962
+  bal_ps2    jwdid                 500  -0.0028  0.0710  0.0710  0.0700   0.954
+  bal_ps2    did_imputation        500  -0.0028  0.0710  0.0710  0.0699   0.952
+  bal_ps2    did_multiplegt_dyn    500  +0.4769  0.1239  0.4927  0.1197   0.030
+  bal_ps2    lpdid                 500  -0.0195  0.0736  0.0761  0.0764   0.960
+  bal_ps2    flexdid               500  -0.0052  0.0790  0.0791  0.1154   0.996
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  bal_ps2    csdid dr              464  -0.0002  0.0745  0.0744  0.0746   0.959
+  bal_ps2    csdid ipw             464  -0.0912  0.2305  0.2476  0.1460   0.968
+  bal_ps2    csdid reg             500  -0.0023  0.0684  0.0683  0.0709   0.966
+  bal_ps2    flexdid               500  +0.1219  0.0644  0.1378  0.0892   0.796
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  bal_ps2    csdid dr                 500     464       36
+  bal_ps2    csdid ipw                500     464       36
+  bal_ps2    csdid reg                500     500        0
+  bal_ps2    jwdid                    500     500        0
+  bal_ps2    did_imputation           500     500        0
+  bal_ps2    did_multiplegt_dyn       500     500        0
+  bal_ps2    lpdid                    500     500        0
+  bal_ps2    flexdid                  500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 181, in <module>
+    main(sys.argv[1])
+    ~~~~^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 177, in main
+    cells(rows, regs, pkgs)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 144, in cells
+    cov = [1 if abs(e - rtruth) <= 1.959964 * s else 0
+                        ^^^^^^
+NameError: name 'rtruth' is not defined. Did you mean: 'truth'?

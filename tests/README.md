@@ -6,7 +6,7 @@ run by hand as part of normal work.
 
 | Directory | What it holds |
 | --- | --- |
-| `stata/` | The suite proper: `test-*.do` cover the package's own behaviour, `stata/r/` mirror the tests of the R reference implementation, and `stata/python/` mirror those of the Python one. 112 files. |
+| `stata/` | The suite proper: `test-*.do` cover the package's own behaviour, `stata/r/` mirror the tests of the R reference implementation, and `stata/python/` mirror those of the Python one. |
 | `fixtures/` | Frozen inputs and expected outputs. Each fixture directory holds `inputs/`, `expected/` and a `metadata/manifest.json` recording how it was generated and what it is compared against. |
 | `meta/` | Checks that the project describes itself correctly — that a manifest names files that exist, that versions agree, that a ledger row has the evidence it claims. These fail when documentation and reality drift apart, which no amount of estimator testing would catch. |
 | `installation/` | A small check that a distributed copy installs into a clean Stata session and runs. Copied into the release bundle. |

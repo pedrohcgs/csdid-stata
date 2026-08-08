@@ -1,0 +1,56 @@
+rows: 16000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  unitroot   csdid bal(none)       500  +0.0024  0.0469  0.0470  0.0551   0.972
+  unitroot   jwdid                 500  +0.0013  0.0622  0.0621  0.0586   0.936
+  unitroot   did_imputation        500  +0.0013  0.0622  0.0621  0.0585   0.936
+  unitroot   did_multiplegt_dyn    500  +0.0024  0.0469  0.0470  0.0464   0.940
+  unitroot   lpdid                 500  -0.1284  0.0463  0.1365  0.0498   0.248
+  unitroot   flexdid               500  +0.0024  0.0538  0.0538  0.1299   1.000
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  unitroot   csdid bal(none)       500  +0.0067  0.0809  0.0811  0.0843   0.958
+  unitroot   jwdid                 500  +0.0058  0.0960  0.0961  0.0919   0.938
+  unitroot   did_imputation        500  +0.0058  0.0960  0.0961  0.0918   0.938
+  unitroot   did_multiplegt_dyn    500  +0.0067  0.0809  0.0811  0.0788   0.946
+  unitroot   lpdid                 500  -0.0944  0.0790  0.1230  0.0796   0.784
+  unitroot   flexdid               500  +0.0070  0.0874  0.0876  0.1519   1.000
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  unitroot   csdid bal(none)       500  +0.0098  0.1161  0.1164  0.1151   0.952
+  unitroot   jwdid                 500  +0.0087  0.1293  0.1295  0.1229   0.938
+  unitroot   did_imputation        500  +0.0087  0.1293  0.1295  0.1227   0.936
+  unitroot   did_multiplegt_dyn    500  +0.0098  0.1161  0.1164  0.1113   0.942
+  unitroot   lpdid                 500  +0.0098  0.1161  0.1164  0.1123   0.950
+  unitroot   flexdid               500  +0.0098  0.1161  0.1164  0.1736   0.996
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  unitroot   csdid bal(none)       500  +0.0063  0.0763  0.0765  0.0791   0.958
+  unitroot   flexdid               500  +0.1326  0.0957  0.1635  0.1262   0.900
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  unitroot   csdid bal(none)          500     500        0
+  unitroot   jwdid                    500     500        0
+  unitroot   did_imputation           500     500        0
+  unitroot   did_multiplegt_dyn       500     500        0
+  unitroot   lpdid                    500     500        0
+  unitroot   flexdid                  500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 181, in <module>
+    main(sys.argv[1])
+    ~~~~^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 177, in main
+    cells(rows, regs, pkgs)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 144, in cells
+    cov = [1 if abs(e - rtruth) <= 1.959964 * s else 0
+                        ^^^^^^
+NameError: name 'rtruth' is not defined. Did you mean: 'truth'?

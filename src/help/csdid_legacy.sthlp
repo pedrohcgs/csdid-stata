@@ -31,15 +31,28 @@ treatment indicator. It is fully supported.
 {pstd}
 The result is 0 for units never treated within the sample and the first treated
 period otherwise, which is exactly the coding {cmd:csdid} requires. The
-treatment indicator must take at most two values.
+treatment indicator must take at most two values, and the untreated state must
+be coded 0 -- that is what makes a never-treated unit come out as cohort 0.
+An indicator coded {cmd:1}/{cmd:2}, or {cmd:-1}/{cmd:1}, would otherwise give
+every unit a positive cohort and leave the data with no never-treated units at
+all, so {cmd:csgvar} refuses it with return code {cmd:r(459)}, naming the two
+values it found. More than two values is the same refusal. The treated value
+itself is free: {cmd:0}/{cmd:5} works as well as {cmd:0}/{cmd:1}.
 {p_end}
 
 {phang2}{cmd:. csgvar gvar = treated, tvar(year) ivar(county)}{p_end}
 {phang2}{cmd:. csdid y, ivar(county) time(year) gvar(gvar)}{p_end}
 
 {pstd}
-{cmd:_gcsgvar} is the internal helper {cmd:csgvar} calls. Do not call it
-directly.
+The same cohort variable is available as an {helpb egen} function, which is
+what {cmd:_gcsgvar.ado} provides:
+{p_end}
+
+{phang2}{cmd:. egen gvar = csgvar(treated), tvar(year) ivar(county)}{p_end}
+
+{pstd}
+The two forms are the same computation -- {cmd:csgvar} forwards to
+{cmd:_gcsgvar} -- so they accept the same options and raise the same refusals.
 {p_end}
 
 
@@ -67,6 +80,19 @@ Nothing in {cmd:csdid} calls any of them, so their presence costs nothing:
 Stata compiles an ado file only when its command is first invoked.
 {p_end}
 
+
+{pstd}
+{bf:What the deprecated commands refuse rather than ignore.} Each of them
+parsed options it then discarded. {cmd:csdid_table} accepted {cmd:level()},
+{cmd:noci}, {cmd:cformat()} and {cmd:sformat()} and consulted none of them --
+its number formats are fixed and its bounds come from {cmd:e(cband)} at
+whatever level {cmd:csdid} was run with, so {cmd:csdid_table, level(90)}
+printed a 90% heading over bounds computed at another level. It now refuses
+those four with return code 198. {cmd:dipt} parsed {cmd:cluster()} and never
+passed it on, so it returned unclustered standard errors without saying so;
+it forwards it now, and its weight specification, which made every weighted
+call a syntax error, is fixed.
+{p_end}
 
 {marker replacements}{...}
 {title:What to use instead}

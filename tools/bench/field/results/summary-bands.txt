@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/bandsum.py", line 119, in <module>
+    main(sys.argv[1], sys.argv[2])
+                      ~~~~~~~~^^^
+IndexError: list index out of range

@@ -258,5 +258,7 @@ run_stata tests/stata/test-f068.do
 run_stata tests/stata/test-f069.do
 run_stata tests/stata/test-f070.do
 run_stata tests/stata/test-f071.do
+run_stata tests/stata/test-f072.do
+run_stata tests/stata/test-f073.do
 run_stata tests/stata/test-release-hardening.do
 run_stata tests/stata/test-release-failure-modes.do

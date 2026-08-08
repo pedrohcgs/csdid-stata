@@ -1,0 +1,66 @@
+rows: 26000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  rcs        csdid bal(none)       500  -0.0010  0.1135  0.1134  0.1106   0.946
+  rcs        jwdid                 500  -0.0031  0.0917  0.0917  0.0851   0.924
+  rcs        did_imputation        500  -0.0045  0.0909  0.0909  0.0837   0.918
+  rcs        flexdid               500  -0.0033  0.0963  0.0963  0.0988   0.962
+  rcsvar     csdid bal(none)       500  +0.0017  0.1233  0.1232  0.1238   0.948
+  rcsvar     jwdid                 500  -0.1658  0.0937  0.1904  0.0893   0.534
+  rcsvar     did_imputation        500  -0.1670  0.0935  0.1913  0.0882   0.524
+  rcsvar     flexdid               500  -0.1673  0.1025  0.1961  0.1053   0.640
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  rcs        csdid bal(none)       500  +0.0047  0.1178  0.1178  0.1195   0.956
+  rcs        jwdid                 500  +0.0027  0.0974  0.0974  0.0979   0.948
+  rcs        did_imputation        500  +0.0006  0.0944  0.0943  0.0952   0.946
+  rcs        flexdid               500  +0.0022  0.1052  0.1052  0.1127   0.962
+  rcsvar     csdid bal(none)       500  -0.0004  0.1414  0.1413  0.1317   0.928
+  rcsvar     jwdid                 500  +0.0618  0.1176  0.1328  0.1076   0.892
+  rcsvar     did_imputation        500  +0.0598  0.1160  0.1304  0.1051   0.886
+  rcsvar     flexdid               500  +0.0617  0.1308  0.1445  0.1260   0.922
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  rcs        csdid bal(none)       500  +0.0055  0.1207  0.1207  0.1229   0.948
+  rcs        jwdid                 500  +0.0028  0.1021  0.1021  0.1047   0.950
+  rcs        did_imputation        500  +0.0003  0.0995  0.0994  0.1014   0.950
+  rcs        flexdid               500  +0.0032  0.1131  0.1131  0.1219   0.960
+  rcsvar     csdid bal(none)       500  +0.0014  0.1374  0.1372  0.1292   0.954
+  rcsvar     jwdid                 500  +0.2302  0.1147  0.2571  0.1087   0.454
+  rcsvar     did_imputation        500  +0.2272  0.1136  0.2540  0.1048   0.434
+  rcsvar     flexdid               500  +0.2304  0.1402  0.2697  0.1370   0.602
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  rcs        csdid bal(none)       500  +0.0031  0.1001  0.1001  0.1011   0.956
+  rcs        flexdid               500  +0.1254  0.0902  0.1544  0.0928   0.720
+  rcsvar     csdid bal(none)       500  +0.0009  0.1154  0.1153  0.1104   0.948
+  rcsvar     flexdid               500  +0.2260  0.0961  0.2455  0.0947   0.340
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  rcs        csdid bal(none)          500     500        0
+  rcs        jwdid                    500     500        0
+  rcs        did_imputation           500     500        0
+  rcs        flexdid                  500     500        0
+  rcsvar     csdid bal(none)          500     500        0
+  rcsvar     jwdid                    500     500        0
+  rcsvar     did_imputation           500     500        0
+  rcsvar     flexdid                  500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid-stata-porting/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 181, in <module>
+    main(sys.argv[1])
+    ~~~~^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid-stata-porting/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 177, in main
+    cells(rows, regs, pkgs)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid-stata-porting/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 144, in cells
+    cov = [1 if abs(e - rtruth) <= 1.959964 * s else 0
+                        ^^^^^^
+NameError: name 'rtruth' is not defined. Did you mean: 'truth'?

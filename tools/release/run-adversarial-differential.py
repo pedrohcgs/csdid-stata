@@ -209,7 +209,17 @@ def write_r_script(path: Path, scenarios: list[Scenario]) -> None:
         "build <- args[[1]]",
         "as_num <- function(x) if (is.null(x)) NA_real_ else as.numeric(x)[1]",
         "write_vcov <- function(out, name) {",
-        "  keep <- which(!is.na(out$att) & abs((out$t - out$group) + 1) > 1e-8)",
+        # Keep every cell the oracle estimated. This used to drop event time -1
+        # as well, which is wrong on both counts: under base_period="varying" --
+        # which is what every vcov scenario here uses -- there is no
+        # normalisation row at all, and (g, g-1) is an ordinary pre-trend
+        # estimate that R reports and csdid posts. Dropping it discarded three
+        # real cells from R's side while csdid kept them, so the two key sets
+        # could only agree while the Stata side dropped the same three by the
+        # same stale rule. Under a universal base R does emit a normalisation
+        # row, but no scenario here compares vcov under one; if that changes,
+        # this needs the base period rather than the event time.
+        "  keep <- which(!is.na(out$att))",
         "  V <- as.matrix(out$V_analytical) / out$n",
         "  rows <- list()",
         "  ix <- 1L",
@@ -342,7 +352,17 @@ def write_stata_script(path: Path, scenarios: list[Scenario]) -> None:
                     "local post_k = 0",
                     "forvalues i = 1/`=rowsof(A)' {",
                     "    if missing(A[`i', 4]) continue",
-                    "    if abs(A[`i', 3] + 1) < 1e-8 continue",
+                    # The reference cell is the one the KERNEL marked, read from
+                    # base_time (column 10), exactly as the posting loop in
+                    # csdid.ado does. This used to drop event time -1, which is
+                    # only the same cell under a universal base with no
+                    # anticipation; every scenario here defaults to
+                    # base_period="varying", so the two rules disagree and this
+                    # labelled e(V)'s rows with the wrong (group, time) pairs.
+                    # The pairing is a permutation of the right one, so the key
+                    # SET still matched and the "keys differ" guard never fired
+                    # -- it surfaced as covariance differences around 1e-3.
+                    "    if A[`i', 10] == A[`i', 2] continue",
                     "    local ++post_k",
                     "    if `post_k' == 1 matrix `P' = (A[`i', 1], A[`i', 2])",
                     "    else matrix `P' = (`P' \\ (A[`i', 1], A[`i', 2]))",

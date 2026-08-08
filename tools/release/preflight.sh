@@ -16,7 +16,9 @@
 #   preflight.sh --ab         force the legacy A/B even if production code is unchanged
 #   preflight.sh --list       show what would run, and why each tier exists
 #
-# This runs the ENTIRE Stata suite (117 tests). There is no second command to
+# This runs the ENTIRE Stata suite -- every .do under tests/stata, counted at
+# run time rather than written down here, because a number in a comment goes
+# stale silently. There is no second command to
 # remember: `preflight.sh` is the whole thing. The unit tier once globbed only
 # tests/stata/test-*.do, leaving the 55 inherited R/Python parity tests to be
 # run by hand -- so a green preflight said nothing about parity.
@@ -155,7 +157,7 @@ if have "$STATA"; then
     run unit "inherited-py: $(basename "$t" .do)" stata_do "$t"
   done
 else
-  block unit "full Stata suite (117 tests)" "$STATA not on PATH (set STATA_CMD)"
+  block unit "full Stata suite ($(find tests/stata -name '*.do' | wc -l | tr -d ' ') tests)" "$STATA not on PATH (set STATA_CMD)"
 fi
 
 # ---------------------------------------------------------------- tier: docs
@@ -245,7 +247,15 @@ if [ "$RELEASE" = "1" ]; then
   fi
 fi
 
-LEGACY_REF="${CSDID_LEGACY_REFERENCE:-$(cd "$ROOT/.." && pwd)/GitHub/csdid-stata}"
+# The A/B baseline. tools/bench/run-legacy-candidate-ab.py reads
+# $CSDID_LEGACY_ROOT; this script used to set only $CSDID_LEGACY_REFERENCE and
+# never pass it on, so supplying the checkout the documented way left the A/B
+# looking at its compiled-in default -- the PUBLIC repository, which is no
+# longer the legacy source -- and failing with "legacy csdid.ado not found"
+# while a correct checkout sat unused. Both spellings are accepted and the one
+# the consumer actually reads is exported.
+LEGACY_REF="${CSDID_LEGACY_ROOT:-${CSDID_LEGACY_REFERENCE:-$(cd "$ROOT/.." && pwd)/GitHub/csdid-stata}}"
+export CSDID_LEGACY_ROOT="$LEGACY_REF"
 
 # The A/B measures the shipping code against Version 1.82 and nothing else. It
 # is also 90 of preflight's 105 minutes. So it runs when the code it measures
@@ -269,8 +279,8 @@ except Exception:
     print('')
 " 2>/dev/null)"
 fi
-if [ ! -d "$LEGACY_REF" ] || ! have "$STATA"; then
-  block deep "legacy A/B certification" "no legacy checkout at $LEGACY_REF"
+if [ ! -d "$LEGACY_REF/codes" ] || ! have "$STATA"; then
+  block deep "legacy A/B certification" "no legacy checkout with codes/ at $LEGACY_REF (set CSDID_LEGACY_ROOT)"
 elif [ "$FORCE_AB" != "1" ] && [ "$RELEASE" != "1" ] && [ -n "$AB_LAST" ] && [ "$AB_LAST" = "$PROD_DIGEST" ]; then
   unchanged deep "legacy A/B certification" \
     "production code identical to the run that certified it (${PROD_DIGEST:0:12}); --ab forces it"

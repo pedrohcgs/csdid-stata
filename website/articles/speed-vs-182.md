@@ -20,7 +20,9 @@ compute the same numbers and differ only in how long they take. The
 workload is a doubly robust event study with clustered standard errors
 throughout (the same specification in every table below). Timings depend
 on the machine they were taken on, so the ratios travel better than the
-seconds do.
+seconds do. All the timings on this page were measured on 7 August 2026 with
+StataNow/MP 19.5 on a 10-core Apple M1 Max, in the same session as the
+[main speed tables](csdid-against-the-field.html#speed).
 
 <div class="note" markdown="1">
 Because 2.0.0 is pinned to the old defaults here, the times in the
@@ -33,16 +35,18 @@ same engine under different estimand settings.
 
 | n (T=10, G=4) | rows | 1.82 | 2.0.0 | gain |
 | --- | ---: | ---: | ---: | ---: |
-| 1,000 | 10,000 | 1.81s | 0.05s | 35x |
-| 5,000 | 50,000 | 5.34s | 0.16s | 33x |
-| 20,000 | 200,000 | 23.7s | 0.61s | 39x |
-| 50,000 | 500,000 | 74.8s | 1.23s | **61x** |
-| 100,000 | 1,000,000 | not run | 2.34s | — |
+| 1,000 | 10,000 | 2.04s | 0.03s | 62x |
+| 5,000 | 50,000 | 6.17s | 0.14s | 45x |
+| 20,000 | 200,000 | 25.1s | 0.38s | 66x |
+| 50,000 | 500,000 | 83.7s | 0.80s | **104x** |
+| 100,000 | 1,000,000 | not run | 1.78s | &mdash; |
+
+<p class="table-note" markdown="span">Version 1.82 was not timed in every cell &mdash; 100,000: skipped by the 120s cap; projection basis: measured 500k legacy call 83.6790s x 2.05 rows.</p>
 
 The gain grows with the sample size, and then the comparison stops: at a
 million rows, Version 1.82 projected past two and a half minutes per run,
 so we did not run it and the last row reports 2.0.0 alone, which does the
-same cell in 2.3 seconds.
+same cell in 1.78 seconds.
 
 ## By number of periods
 
@@ -52,37 +56,37 @@ while 2.0.0's grows about linearly in them:
 
 | T (n=5,000, G=4) | rows | 1.82 | 2.0.0 | gain |
 | --- | ---: | ---: | ---: | ---: |
-| 5 | 25,000 | 1.44s | 0.09s | 16x |
-| 10 | 50,000 | 5.35s | 0.17s | 32x |
-| 20 | 100,000 | 24.4s | 0.31s | 80x |
-| 40 | 200,000 | 129.4s | 0.62s | **208x** |
+| 5 | 25,000 | 1.76s | 0.07s | 25x |
+| 10 | 50,000 | 6.50s | 0.13s | 50x |
+| 20 | 100,000 | 28.7s | 0.28s | 102x |
+| 40 | 200,000 | 134.5s | 0.40s | **334x** |
 
 At forty periods (a monthly panel over three and a half years), Version
-1.82 takes over two minutes and 2.0.0 takes six tenths of a second.
+1.82 takes over two minutes and 2.0.0 takes four tenths of a second.
 
 ## By number of cohorts
 
 | G (n=5,000, T=20) | rows | 1.82 | 2.0.0 | gain |
 | --- | ---: | ---: | ---: | ---: |
-| 3 | 100,000 | 19.1s | 0.30s | 63x |
-| 6 | 100,000 | 37.7s | 0.39s | 96x |
-| 12 | 100,000 | 82.1s | 0.64s | **129x** |
+| 3 | 100,000 | 20.2s | 0.18s | 114x |
+| 6 | 100,000 | 48.1s | 0.41s | 118x |
+| 12 | 100,000 | 99.0s | 0.41s | **240x** |
 
 Only the number of adoption dates changes here. The data size is the same
-in every row, so the growth down the 1.82 column is the cost of the extra
+in every row, so the growth down the Version 1.82 column is the cost of the extra
 ATT(g,t) cells that more cohorts imply.
 
 ## By sampling scheme
 
-| scheme (n=10,000, T=10, G=4) | 1.82 | 2.0.0 | gain |
-| --- | ---: | ---: | ---: |
-| balanced panel | 10.7s | 0.31s | 34x |
-| unbalanced panel (pair balancing, both) | 8.53s | 0.38s | 22x |
-| repeated cross sections | 7.77s | 1.47s | 5.3x |
+| scheme (n=10,000, T=10, G=4) | rows | 1.82 | 2.0.0 | gain |
+| --- | ---: | ---: | ---: | ---: |
+| balanced panel | 100,000 | 12.5s | 0.19s | **65x** |
+| unbalanced panel (15% of rows deleted) | 85,219 | 11.4s | 0.25s | 45x |
+| repeated cross sections | 100,000 | 12.2s | 0.72s | 17x |
 
-Repeated cross sections were Version 1.82's fastest path, so the gain
-there is the smallest on this page: 5x at one end of the comparison and
-208x at the other (the two extremes across all four tables).
+Repeated cross sections are the sampling scheme where 2.0.0 gains least,
+and they set the low end of this page: 17x there against 334x at forty
+periods, which are the two extremes across all four tables.
 
 ## Where the workload gains were certified
 

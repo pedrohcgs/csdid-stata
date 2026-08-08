@@ -17,7 +17,29 @@ script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "to
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 
-jel_root <- Sys.getenv("JEL_DID_REFERENCE", file.path(path.expand("~"), "Documents/GitHub/JEL-DiD"))
+# Resolution order, identical in every generator that needs the JEL checkout:
+# $JEL_DID_REFERENCE, then the sibling GitHub/JEL-DiD checkout, then the /tmp
+# path an earlier version of these scripts used as its only default. Two of
+# these generators used to accept ONLY the /tmp path, so a perfectly good
+# sibling checkout still stopped the run -- and because that stop happened
+# midway through tests/run-smoke.sh, every gate after it silently never ran.
+jel_candidates <- c(
+  Sys.getenv("JEL_DID_REFERENCE", ""),
+  file.path(path.expand("~"), "Documents/GitHub/JEL-DiD"),
+  "/tmp/jel-did-reference"
+)
+jel_candidates <- jel_candidates[nzchar(jel_candidates)]
+jel_found <- jel_candidates[dir.exists(jel_candidates)]
+if (length(jel_found) == 0) {
+  stop(
+    paste0(
+      "JEL reference checkout not found. Set JEL_DID_REFERENCE, or create one of:\n  ",
+      paste(jel_candidates, collapse = "\n  ")
+    ),
+    call. = FALSE
+  )
+}
+jel_root <- jel_found[1]
 fixture <- file.path(root, "tests/fixtures/parity/f044")
 dir.create(file.path(fixture, "expected/contract"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "metadata"), recursive = TRUE, showWarnings = FALSE)

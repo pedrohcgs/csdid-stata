@@ -28,7 +28,7 @@ results{p_end}
 Display the group-time ATT(g,t) table
 
 {p 8 16 2}
-{cmd:estat} {cmd:attgt}
+{cmd:estat} {cmd:attgt} [{cmd:,} {opt sav:ing(filename)} {opt replace}]
 
 {pstd}
 Display the event-study coefficients
@@ -158,9 +158,9 @@ event times. Both bounds must be numeric. See
 commands operate on the aggregation rather than on the ATT(g,t) cells. It works
 on {cmd:event} and on all four aggregations; the coefficient names are listed
 under {help csdid_estat##post:Posting the aggregation}. Without {cmd:post},
-every one of the five restores the coefficient vector that was posted before it
-ran, so a display-only aggregation never changes what {cmd:test} or
-{cmd:lincom} would act on.
+none of the five touches {cmd:e(b)} or {cmd:e(V)} at all -- the displayed
+table is built from {cmd:r(table)} directly -- so a display-only aggregation
+never changes what {cmd:test} or {cmd:lincom} would act on.
 
 {marker opt_level}{...}
 {phang}
@@ -187,7 +187,9 @@ aggregation subcommands.
 than printing something that cannot be saved.
 
 {phang}
-{opt replace} allows {cmd:saving()} to overwrite an existing file.
+{opt replace} allows {cmd:saving()} to overwrite an existing file. On its own
+it means nothing, so it is refused with return code 198 rather than accepted
+and dropped.
 
 
 {marker remarks}{...}
@@ -270,6 +272,12 @@ not be estimated, so it should be seen before it is averaged away. {cmd:tidy}
 and {cmd:glance} export an aggregation rather than computing one, so they do not
 accept {cmd:dropmissing}; specify it on the aggregation before exporting.
 
+{pstd}
+{opt from(#)} was a lower bound on event time in Stata {cmd:csdid} Version
+1.82. It is rejected with return code 198 and a message naming the
+replacement; see {helpb csdid_stats}. Use {cmd:window(}{it:# #}{cmd:)} on
+{cmd:estat event} instead.
+
 {marker window}{...}
 {title:Event windows}
 
@@ -277,7 +285,10 @@ accept {cmd:dropmissing}; specify it on the aggregation before exporting.
 {cmd:window()} is forwarded to {helpb csdid_stats##opt_window:csdid_stats}, so
 it behaves exactly as it does there -- including the fact that on
 {cmd:estat simple} and {cmd:estat group} only the upper bound bites, by
-restricting which post-treatment cells are averaged. The reported overall
+restricting which post-treatment cells are averaged, and the fact that on
+{cmd:estat calendar} it does not bite at all: the calendar aggregation is over
+periods, not event times, so a window on it is warned about and ignored and
+the full calendar aggregation is reported. The reported overall
 effect is recomputed over the window, and the coefficient vector covers exactly
 the event times present in the data. No
 coefficient is fabricated for an event time that does not exist, and none is
@@ -379,6 +390,15 @@ re-run {cmd:csdid}.
 {cmd:point_conf_high}. The {cmd:conf_*} columns use the reported critical value
 -- simultaneous under the default bootstrap -- and the {cmd:point_conf_*}
 columns use the pointwise one, so both bands are available without recomputing.
+
+{pstd}
+Those are the ATT(g,t) critical values, taken from {cmd:e(boot_attgt)} under a
+bootstrap and from the normal quantile at {cmd:e(level)} otherwise. They do
+{bf:not} change when an aggregation is computed first: an aggregation's
+critical value is a maximum over its own effects, not over the ATT(g,t) cells,
+and banding this table with it would be reporting the wrong band. After
+{helpb csdid_stats:csdid_stats using} the run is analytical by construction and
+the bands are the normal quantile at the level stored in the artifact.
 
 {pstd}
 {cmd:estat tidy} after an aggregation writes one row per aggregated effect,
@@ -511,8 +531,7 @@ following in {cmd:e()}:
 
 {synoptset 26 tabbed}{...}
 {p2col 5 26 29 2: Matrices}{p_end}
-{synopt:{cmd:e(b)}}aggregated effects, when {cmd:post} is specified (and,
-transiently, whenever {cmd:estat event} builds its table){p_end}
+{synopt:{cmd:e(b)}}aggregated effects, only when {cmd:post} is specified{p_end}
 {synopt:{cmd:e(V)}}covariance matrix of the aggregated effects, from their
 influence functions or from the bootstrap draws{p_end}
 {p2colreset}{...}

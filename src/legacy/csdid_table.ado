@@ -1,11 +1,29 @@
-*! v1.1 Small change on Width. Based on variable length
+*! csdid_table 2.0.0 30jul2026
 program csdid_table, rclass 
     * DEPRECATED in csdid 2.0.0. Shipped only so existing do-files keep
     * running; it is not covered by the parity suite and will be removed in
     * a future release. Replacement: the table csdid prints directly, or estat tidy, saving().
     display as text "note: csdid_table is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
+	version 14
+	* level(), noci, cformat() and sformat() were parsed and then never
+	* consulted: the table's number formats are hardcoded below, the CI
+	* columns are always printed, and the bounds come from e(cband), which
+	* was banded at whatever level csdid was run with. So `csdid_table,
+	* level(90)' printed "[90% conf. interval]" over bounds computed at some
+	* other level -- silently mislabelled numbers, which is worse than a
+	* refused option. This command is frozen, so the honest form is to refuse
+	* what it cannot honour rather than accept and drop it.
 	syntax [, level(int `c(level)') noci cformat(string) sformat(string) *]
+	local ct_bad ""
+	if `level' != `c(level)' local ct_bad "`ct_bad' level()"
+	if "`ci'" != "" local ct_bad "`ct_bad' noci"
+	if `"`cformat'"' != "" local ct_bad "`ct_bad' cformat()"
+	if `"`sformat'"' != "" local ct_bad "`ct_bad' sformat()"
+	if "`ct_bad'" != "" {
+		display as error "csdid_table is a frozen Version 1.82 helper and does not honour:`ct_bad'. Its confidence bounds come from e(cband) at the level csdid was run with, and its number formats are fixed. Use the table csdid prints, or estat tidy, saving(), for control over either."
+		exit 198
+	}
 *set trace on
 	_get_diopts diopts rest, `options'
 

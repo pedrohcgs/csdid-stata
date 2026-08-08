@@ -1,4 +1,4 @@
-*! v1.1 csdid_rif
+*! csdid_rif 2.0.0 30jul2026
 * Corrects Aggregation when data is missing
 
 * v1 csdid_rif
@@ -36,10 +36,17 @@ real matrix mboot_any(real matrix rif, real scalar reps, bwtype) {
 		}
 	}
 	else if (bwtype==2) {
+		// Rademacher multipliers. This branch used to read `rbinomial(n,
+		// ...)' -- there is no `n' in this function, the row count is
+		// `nrows' -- so any call with wbtype=2 aborted on an undefined
+		// symbol. It never fired only because the single caller hardcodes
+		// bwtype=1 and exposes no option for it. Fixed rather than deleted:
+		// the branch is one symbol away from correct and the sibling
+		// clustered routine has the same shape.
 		coord1=1
 		mdsize_eff = mdsize
 		for(i=1;i<=reps;i=i+mdsize){
-			wmult = (1:-2*rbinomial(n,mdsize_eff,1,0.5) ) 
+			wmult = (1:-2*rbinomial(nrows,mdsize_eff,1,0.5) ) 
 			ccrd = (coord1,1) \ ( coord1+mdsize_eff-1 ,ncols)
 			coord1=coord1+mdsize_eff
  			bsmean[|ccrd|]=cross(rr,wmult )':/nrows	
@@ -63,7 +70,7 @@ real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv) {
 	real matrix sclv, wmult
 	sclv=uniqrows(clv)
 	nn=rows(sclv)
-	st_numscalar("cln_", nn)		
+	st_numscalar("__csdid_rif_nclust", nn)		
 
 	mdsize = min((reps, max( (1,floor(1e7/nrows)) )))
 
@@ -71,8 +78,9 @@ real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv) {
  	if (bwtype==1) {
  		coord1=1
 		mdsize_eff = mdsize
+		// a bare `nn' statement used to sit here, which PRINTS the cluster
+		// count into the middle of the user's output on every call
 		for(i=1;i<=reps;i=i+mdsize){
-			nn
 		    wmult=(rbinomial(nn,mdsize_eff,1,k1))
 			wmult=k2:-sqrt(5)*wmult[clv,] 
 			//wmult[clv] this is kind of merge. 
@@ -199,12 +207,21 @@ void fix_rif(real matrix rif){
 	
 }
 
-void make_tbl(string scalar rifv, clv, touse, cband_,
+// #63: the results used to be shuttled out through the fixed global Stata
+// names bb_, VV_ and cln_, so a user with a matrix of either name lost it
+// silently. The coefficient and variance matrices now arrive by name, the way
+// cband_ already did; the cluster count keeps a global because it is also set
+// deeper in mboot_anyc(), but it is namespaced so it cannot collide.
+void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 			  real scalar setype, ci, reps, wbtype){
 	real matrix nobs, clvar
 	real scalar cln
 	rif=st_data(.,rifv,touse)
-	if (sum(rif:==.)>=0) fix_rif(rif)
+	// `>= 0' is a tautology -- a sum of a 0/1 matrix always is -- so fix_rif
+	// ran on every call, rescaling and re-centring the whole RIF matrix even
+	// when nothing was missing. With no missings the rescale factor is
+	// exactly 1, so the result was mathematically rif but not bitwise rif.
+	if (sum(rif:==.)>0) fix_rif(rif)
 	 
 	bb=mean(rif)
 	nobs=rows(rif)
@@ -217,8 +234,9 @@ void make_tbl(string scalar rifv, clv, touse, cband_,
 	if ( setype ==2 ) {
 		clvar = st_data(.,clv,touse)
 		clusterse((rif:-bb),clvar,VV,cln)
-		cln
-		st_numscalar("cln_", cln)
+		// was: a bare `cln' statement, which PRINTS the cluster count
+		// into the middle of the user's output on every clustered call.
+		st_numscalar("__csdid_rif_nclust", cln)
 	}
 	real matrix cband
 	// wboot w / wo cluster
@@ -228,8 +246,8 @@ void make_tbl(string scalar rifv, clv, touse, cband_,
 		
 	}
 	
-	st_matrix("bb_",bb)
-	st_matrix("VV_",VV)
+	st_matrix(bmat_,bb)
+	st_matrix(vmat_,VV)
  } 
 end
   program define Display
@@ -268,6 +286,7 @@ end
     * dataset, or csdid_stats using <file> for the saved-RIF path.
     display as text "note: csdid_rif is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
+	version 14
 	syntax varlist [if] [in], [  cluster(varname) level(real 95) reps(int 999) wboot seed(string) ]
 	tempvar touse
 	qui:gen byte `touse'=0
@@ -289,14 +308,14 @@ end
 		local rtype 3
 		if "`seed'"!="" set seed `seed'
 	}
-	tempname cband
+	tempname cband bmat vmat
 	local tlevel = `level'/100
-	 mata:make_tbl("`varlist'"," `cluster'","`touse'","`cband'",`rtype',`tlevel', `reps', 1)	
+	 mata:make_tbl("`varlist'"," `cluster'","`touse'","`cband'","`bmat'","`vmat'",`rtype',`tlevel', `reps', 1)	
 	// rename 
-	matrix colname bb_= `varlist'
-	matrix colname VV_= `varlist'
-	matrix rowname VV_= `varlist'
-	ereturn post bb_ VV_
+	matrix colname `bmat' = `varlist'
+	matrix colname `vmat' = `varlist'
+	matrix rowname `vmat' = `varlist'
+	ereturn post `bmat' `vmat'
 	ereturn local cmd csdid_rif
 	capture confirm matrix `cband'
 	if _rc==0 {
@@ -309,10 +328,10 @@ end
 	if `rtype'==2 ereturn local vcetype Robust
 	if `rtype'==3 ereturn local vcetype WBoot
 	ereturn local clustvar `ocluster'
-	capture  confirm scalar cln_
+	capture  confirm scalar __csdid_rif_nclust
 	if _rc==0 {
-		ereturn scalar N_clust = cln_
-		scalar drop cln_
+		ereturn scalar N_clust = __csdid_rif_nclust
+		scalar drop __csdid_rif_nclust
 	}
 	Display, level(`level')
 	

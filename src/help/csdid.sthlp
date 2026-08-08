@@ -122,6 +122,8 @@ instead of the bootstrap{p_end}
 {synopt:{opt l:evel(#)}}set confidence level; default is {cmd:level(95)}{p_end}
 {synopt:{opt agg(event)}}immediately compute and post the event-study
 aggregation{p_end}
+{synopt:{opt dropm:issing}}let {cmd:agg()} aggregate over the estimated cells
+when some ATT(g,t) cells are missing{p_end}
 
 {syntab:Saving {help csdid##opt_saving:[+]}}
 {synopt:{opt saverif(filename)}}save the influence functions as a Stata
@@ -214,7 +216,12 @@ Source, issue tracker, and release notes are at
 {phang}
 {opth time(varname)} specifies the numeric time-period variable. It is
 required. Periods need not be consecutive integers, but they must be ordered
-sensibly on the number line.
+sensibly on the number line, and every value must be {bf:1 or more}. A time
+axis starting at 0 -- the common {cmd:0, 1, 2, ...} coding -- is refused with
+return code 198, because {cmd:gvar() == 0} is reserved to mean never treated
+and a period 0 would be indistinguishable from it. Shift both axes so they
+start at 1; a monotone relabelling of the periods leaves every estimate
+unchanged.
 
 {pmore}
 The period and cohort {it:values} are pasted into the ATT(g,t) coefficient
@@ -232,7 +239,8 @@ estimate unchanged.
 {phang}
 {opth gvar(varname)} specifies the numeric variable holding the first period
 in which each unit is treated. Never-treated units must have {cmd:gvar()}
-equal to {cmd:0}. Negative values are an error. {cmd:gvar()} must be constant
+equal to {cmd:0}; every treated cohort must be {bf:1 or more}. Negative values
+are an error. {cmd:gvar()} must be constant
 within a unit. It encodes
 the staggered-adoption design: treatment is absorbing, so a unit with
 {cmd:gvar()} equal to {it:g} is treated in every period from {it:g} onward.
@@ -394,6 +402,22 @@ values is an error. The
 replication count actually used is stored in both {cmd:e(biters)} and
 {cmd:e(reps)}.
 
+{pmore}
+Values of 20 or fewer are refused with return code 198: that many multiplier
+draws cannot support a standard error, and cannot support a simultaneous
+critical value at all. This is a deliberate refusal rather than a silently
+unreliable answer.
+
+{pmore}
+On Stata 14 and 15 only, the bootstrap also needs {helpb matsize:set matsize}
+at least as large as {cmd:reps()} -- and at least 625 when a seed is given,
+for the random-number state -- because those versions cap the dimension of a
+Stata matrix. {cmd:csdid} checks before estimating and refuses with return
+code 908 and the exact {cmd:set matsize} command to type, rather than running
+the whole estimation and failing at the end. Stata 16 and later removed the
+cap and are unaffected. Stata/IC 14 and 15 cap {cmd:matsize} at 800, so on
+that flavour {cmd:reps()} must be 800 or fewer.
+
 {phang}
 {opt rseed(#)} sets the bootstrap seed. {it:#} must be a positive integer.
 Seeding is what makes a run reproducible: the same seed reproduces the same
@@ -444,6 +468,16 @@ same thing. Other aggregation types are not available here; run
 {helpb csdid_stats} or {helpb csdid_estat} instead, which is also the more
 flexible route for event studies because it supports windows and balanced
 event-time samples.
+
+{phang}
+{opt dropmissing} lets the {cmd:agg()} aggregation run when some ATT(g,t)
+cells could not be estimated, averaging over the cells that were. Without it a
+missing cell stops the aggregation with return code 498 and a message saying
+how many cells are missing out of how many -- the same rule
+{helpb csdid_stats} and {helpb csdid_estat} follow. A dropped cell changes
+which group-time effects the reported average is over, so it is yours to ask
+for. {cmd:dropmissing} is only meaningful together with {cmd:agg()}; on its
+own it is refused rather than ignored.
 
 {marker opt_saving}{...}
 {dlgtab:Saving}
@@ -498,9 +532,11 @@ feeds {cmd:csdid_stats using} at any later time.
 
 {phang}
 {opt fast} and {opt nofast} force or forbid the optimized Mata kernels.
-{cmd:e(fast_used)} and {cmd:e(compute_path)} report which surface actually
-ran. Use these only to isolate a performance question or a suspected numerical
-issue.
+{cmd:e(fast_used)} records whether the optimized kernels were {it:permitted}
+-- it is 1 on every run that did not specify {cmd:nofast}, whether or not the
+narrow kernel was eligible for the data at hand -- and {cmd:e(compute_path)}
+names the computation surface selected for the data layout. Neither reports
+which kernel executed. Use them only to isolate a performance question.
 
 {marker opt_panel}{...}
 {dlgtab:Panel structure}
@@ -524,6 +560,13 @@ computation with the matching standard-error accounting.{p_end}
 Whenever a mode discards observations, {cmd:csdid} reports how many units and
 how many observations were dropped. Changing the estimand is acceptable;
 changing it silently is not. The resolved layout is in {cmd:e(panel_mode)}.
+
+{phang2}
+{cmd:bal()} balances a {it:panel}, so it needs {cmd:ivar()}. Without it every
+observation is its own unit and there is nothing to balance:
+{cmd:bal(full)} and {cmd:bal(pair)} are refused with return code 198 rather
+than accepted and ignored. {cmd:bal(none)} is what the no-{cmd:ivar()} path
+does anyway and stays accepted.
 
 {phang2}
 {cmd:bal(full)} is the default because estimating on the units observed in
@@ -614,6 +657,15 @@ The unbalanced-panel vocabulary is {cmd:bal(full)}, {cmd:bal(pair)} and
 each 2x2 comparison separately and is reported as {cmd:pair-balanced} in
 {cmd:e(panel_mode)}. See {it:{help csdid##opt_panel:Panel structure}} for what
 each mode does. Nothing else is accepted inside {cmd:bal()}.
+
+{phang}
+{opt from(#)} was a lower bound on event time for the simple, group and
+calendar aggregations. It is rejected with return code 198 and a message
+naming the replacement, on {cmd:csdid}, {helpb csdid_stats} and
+{helpb csdid_estat} alike. There is no equivalent: those three aggregations
+are defined from event time 0 upward, so a lower bound below that has nothing
+to restrict and a bound above it would silently redefine the estimand. Use
+{cmd:window(}{it:# #}{cmd:)} with {cmd:type(dynamic)} for an event-time window.
 
 {phang}
 {cmd:dryrun} was an internal option in the legacy package. It is rejected with
@@ -808,7 +860,9 @@ at whether the post-treatment path moves.
 size of every cohort as the number of observations in the cohort divided by
 the number of time periods, that is, the average number of units per period.
 Any cohort averaging fewer than {it:k} + 5 units per
-period, where {it:k} is the number of covariates, triggers
+period, where {it:k} is the number of covariate {it:terms} in
+{it:indepvars} -- a factor-variable term such as {cmd:i.region} counts once,
+however many indicators it expands to -- triggers
 
 {pmore}
 {cmd:warning: Some groups in your dataset have very few observations...}
@@ -1029,6 +1083,15 @@ period, one underscore, and the base period: ATT(2004, 2005) with base period
 individual cells and on linear combinations of them.
 
 {pstd}
+The base period in the name is the reference period the cell was actually
+differenced against, which is not in general {it:g - 1}: {cmd:anticipation(#)}
+moves it back, {cmd:base_period(varying)} makes it the period before {it:t},
+and on a panel whose periods are not one unit apart -- biennial or
+quinquennial data, for instance -- it is the previous {it:observed} period. It
+is reported per cell in the {cmd:base_time} column of {cmd:e(attgt)}, so the
+name and the table always agree.
+
+{pstd}
 {cmd:predict} and {cmd:margins} are {bf:not} supported after {cmd:csdid}.
 There is no linear index to predict from and no covariate profile to average
 over: {cmd:e(b)} is a vector of treatment effects, not regression
@@ -1081,15 +1144,24 @@ o {bf:Multiplier distribution.} The bootstrap draws Rademacher multipliers.
 an error rather than being silently coerced to something else.{p_end}
 
 {phang2}
-o {bf:Reference cells in e(b).} Cells at event time {it:-1} are reported in
+o {bf:Reference cells in e(b).} Under a universal base period the cell whose
+period {it:is} the reference period is normalised to zero. It is reported in
 {cmd:e(attgt)} but excluded from {cmd:e(b)} and {cmd:e(V)}, so that the posted
 coefficients are estimable and the covariance matrix is not singular by
-construction.{p_end}
+construction. The excluded cell is identified from the {cmd:base_time} column
+of {cmd:e(attgt)} -- it is the row whose {cmd:base_time} equals its own
+{cmd:time} -- and not from event time {it:-1}, which names the reference cell
+only when the reference period happens to be exactly one time unit before
+{it:g}. Cells with a missing estimate are excluded as well. Note that a
+genuine cell can still have a missing standard error when its influence
+function is degenerate; its variance is then posted as zero.{p_end}
 
 {phang2}
 o {bf:Immediate aggregation.} {cmd:agg()} accepts only {cmd:event} and
 {cmd:dynamic}. The simple, group, and calendar aggregations are computed by
-{helpb csdid_stats}.{p_end}
+{helpb csdid_stats}. A missing ATT(g,t) cell stops the aggregation unless
+{cmd:dropmissing} is specified, exactly as it does on every other aggregation
+route.{p_end}
 
 {phang2}
 o {bf:Covariate missing for a whole period.} {cmd:csdid} refuses and names the
@@ -1098,10 +1170,13 @@ change in the estimation sample is yours to make. See
 {help csdid##remarks_data:What csdid requires of the data}.{p_end}
 
 {phang2}
-o {bf:Negative period or cohort codes.} {cmd:csdid} refuses them, because
-{cmd:gvar() == 0} is reserved for never-treated units. Shift the axis so that
-it is nonnegative; a monotone relabelling of the periods leaves the estimates
-unchanged.{p_end}
+o {bf:Period or cohort codes below 1.} {cmd:csdid} refuses them, because
+{cmd:gvar() == 0} is reserved for never-treated units, so a period 0 would be
+indistinguishable from that reservation. This covers negative values and
+{it:also} an exactly-0 period, which the common {cmd:0, 1, 2, ...} time coding
+produces. Shift the axes so that {bf:both start at 1} -- making them merely
+nonnegative is not enough; a monotone relabelling of the periods leaves the
+estimates unchanged.{p_end}
 
 {phang2}
 o {bf:Very large period or cohort codes.} {cmd:csdid} refuses when they would
@@ -1148,7 +1223,8 @@ recommends. See
 Legacy option spellings that still work, each with a message:
 {cmd:method(dripw)}, {cmd:method(stdipw)}, {cmd:asinr}, {cmd:never},
 {cmd:long}, {cmd:long2}, and the top-level bootstrap shorthand.
-{cmd:method(drimp)}, {cmd:method(aipw)}, and {cmd:dryrun} are rejected. Each is
+{cmd:method(drimp)}, {cmd:method(aipw)}, {cmd:from()} and {cmd:dryrun} are
+rejected. Each is
 described under {help csdid##opt_legacy:Legacy compatibility} above; the
 option-by-option migration guide is online at
 {browse "https://github.com/pedrohcgs/csdid-stata":github.com/pedrohcgs/csdid-stata}.
@@ -1269,7 +1345,12 @@ estimate.
 
 {synoptset 32 tabbed}{...}
 {p2col 5 32 35 2: Scalars}{p_end}
-{synopt:{cmd:e(N)}}number of observations used{p_end}
+{synopt:{cmd:e(N)}}number of observations used, that is the estimation
+sample: observations selected by {cmd:if}, {cmd:in} and the weight, less
+any dropped by {opt bal(full)}, less the units treated in the first usable
+period and the periods removed when no never-treated group exists. This is
+the sample {cmd:e(sample)} marks, and it satisfies
+{cmd:e(N)} = {cmd:e(N_units)} {c 215} {cmd:e(N_time)} on a balanced panel{p_end}
 {synopt:{cmd:e(N_units)}}number of units (panel) or observations (repeated
 cross sections) entering the influence function{p_end}
 {synopt:{cmd:e(N_attgt)}}number of ATT(g,t) cells, that is rows of
@@ -1342,7 +1423,14 @@ unseeded {it:(conditional: bootstrap)}{p_end}
 cross sections{p_end}
 {synopt:{cmd:e(clustervar)}}name of the {cmd:cluster()} variable, empty if
 none{p_end}
-{synopt:{cmd:e(weightvar)}}internal weight variable, empty if unweighted{p_end}
+{synopt:{cmd:e(wtype)}}weight type as typed ({cmd:iweight}), empty if
+unweighted{p_end}
+{synopt:{cmd:e(wexp)}}weight expression as typed, including the leading
+{cmd:=}; empty if unweighted{p_end}
+{synopt:{cmd:e(weightvar)}}name of the internal temporary weight variable,
+empty if unweighted. It is a tempvar and does not survive the command; use
+{cmd:e(wtype)} and {cmd:e(wexp)} to recover what was typed
+{it:(diagnostic)}{p_end}
 {synopt:{cmd:e(panel_mode)}}{cmd:panel}, {cmd:allow_unbalanced},
 {cmd:repeated-cross-section}, or {cmd:pair-balanced}{p_end}
 {synopt:{cmd:e(control_group)}}{cmd:nevertreated} or {cmd:notyettreated}{p_end}
@@ -1373,14 +1461,16 @@ none{p_end}
 {it:(diagnostic)}{p_end}
 
 {p2col 5 32 35 2: Matrices}{p_end}
-{synopt:{cmd:e(b)}}posted ATT(g,t) coefficient vector, excluding event-time
-{cmd:-1} cells and cells with a missing estimate; absent when every cell is
-missing, in which case a warning says so{p_end}
+{synopt:{cmd:e(b)}}posted ATT(g,t) coefficient vector, excluding the
+normalised reference cells and cells with a missing estimate; absent when
+every cell is missing, in which case a warning says so{p_end}
 {synopt:{cmd:e(V)}}covariance matrix of {cmd:e(b)}{p_end}
 {synopt:{cmd:e(attgt)}}the full ATT(g,t) table, one row per cell, with columns
 {cmd:group}, {cmd:time}, {cmd:event_time}, {cmd:att}, {cmd:se},
-{cmd:n_treat_t}, {cmd:n_treat_pre}, {cmd:n_control_t}, and
-{cmd:n_control_pre}{p_end}
+{cmd:n_treat_t}, {cmd:n_treat_pre}, {cmd:n_control_t}, {cmd:n_control_pre},
+and {cmd:base_time} (the reference period the cell was differenced against;
+the row whose {cmd:base_time} equals its {cmd:time} is the normalised
+reference cell). The printed table shows the first nine columns{p_end}
 {synopt:{cmd:e(group_prob)}}one row per cohort, with columns {cmd:group},
 {cmd:prob} (the cohort's population share) and {cmd:n_units}{p_end}
 {synopt:{cmd:e(inffunc)}}unit-by-cell influence functions

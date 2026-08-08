@@ -54,7 +54,12 @@ if !_rc {
     assert "`e(bootstrap_accelerator_file)'" == "`expected_plugin'"
 }
 
-estat event, window(-2 2)
+* dropmissing is required and that is deliberate: this workflow leaves 5 of 12
+* cells unestimated, and the aggregation now refuses by name rather than
+* silently averaging the 7 that succeeded. The installation smoke exercises the
+* documented option, so it verifies the shipped behaviour rather than the one
+* the command had before.
+estat event, window(-2 2) dropmissing
 tempfile plotdata
 csdid_plot, saving("`plotdata'") replace
 confirm file "`plotdata'"
@@ -63,7 +68,10 @@ csdid_stats simple, dropmissing
 assert rowsof(e(aggte)) == 1
 
 drop if mod(id, 11) == 0 & inlist(year, 2, 5)
-csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) vce(cluster state) analytical
+* bal(none) is what selects the allow_unbalanced kernel. Without it the command
+* balances the panel and reports panel_mode "panel", so this assertion could
+* never hold and the smoke never covered the unbalanced path it names.
+csdid y x1 x2 [iw=w], id(id) time(year) gvar(first_treat) method(dr) vce(cluster state) analytical bal(none)
 assert "`e(panel_mode)'" == "allow_unbalanced"
 assert "`e(clustervar)'" == "state"
 assert e(N_attgt) > 0

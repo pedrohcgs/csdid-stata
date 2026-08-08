@@ -8,8 +8,8 @@ The following results are intended to be stable across compatible releases:
 
 | Result | Type | Stability | Notes |
 | --- | --- | --- | --- |
-| `e(attgt)` | matrix | stable | Group-time ATT table with group, time, event time, estimate, standard error, and counts. |
-| `e(b)` | matrix | stable | Posted coefficient vector for nonbase ATT(g,t) estimates when available. |
+| `e(attgt)` | matrix | stable | Group-time ATT table with group, time, event time, estimate, standard error, counts, and `base_time`. Columns 1-9 (`group`, `time`, `event_time`, `att`, `se`, `n_treat_t`, `n_treat_pre`, `n_control_t`, `n_control_pre`) keep their positions; column 10 `base_time` is the reference period the cell was differenced against, and the row whose `base_time` equals its own `time` is the universal-base normalised cell. The printed table shows columns 1-9. |
+| `e(b)` | matrix | stable | Posted coefficient vector for nonbase ATT(g,t) estimates when available. The excluded cell is the normalised reference cell identified by `base_time`, not by event time -1; each coefficient name carries the base period the cell actually used. |
 | `e(V)` | matrix | stable | Full posted covariance matrix aligned to `e(b)` when available. Analytical runs use influence-function covariance; clustered runs use cluster-summed influence functions; bootstrap runs use bootstrap-draw correlations rescaled to the reported SEs. |
 | `e(group_prob)` | matrix | stable | Treated-group probability and count metadata. |
 | `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` is requested; otherwise the influence functions stay in the Mata cache at every sample size. |
@@ -31,12 +31,24 @@ Stable scalars include `e(N)`, `e(N_units)`, `e(N_attgt)`, `e(N_groups)`,
 `e(N_time)`, `e(level)`, `e(bstrap)`, `e(cband)`, `e(biters)`, `e(pointwise)`,
 and `e(N_clusters)`.
 
+`e(N)` counts the estimation sample, not the observations handed to the
+command: it excludes units treated in the first usable period and the periods
+removed when no never-treated group exists, both of which the estimator drops
+before it computes anything. `e(sample)` marks exactly those observations, so
+`summarize ... if e(sample)` and `estat summarize` describe the sample the
+estimates come from, and on a balanced panel
+`e(N)` = `e(N_units)` * `e(N_time)`. Before 2.0.0 the count and the marker came
+from the pre-drop sample while `e(N_units)` came from the post-drop one, so the
+three could not all be right at once.
+
 `e(fast_mode)`, `e(compute_path)`, `e(fast_used)` and `e(mata_cache)` are
 **diagnostics, not stable results**, exactly as `help csdid` marks them: they
 describe which internal execution surface ran and may change as the engine is
 refined. `e(fast_used)=1` means optimized computation was allowed by the
 default `fast(auto)` or by explicit `fast`, and `e(compute_path)` reports the
-resolved optimized surface for the data layout. Neither is a promise that the
+resolved optimized surface for the data layout. `e(fast_used)` is therefore
+identical to `e(fast_allowed)` by construction: neither is a report of which
+kernel executed, and they must not be read as independent diagnostics. Neither is a promise that the
 narrowest internal balanced, unweighted, no-covariate kernel handled every
 cell; eligible cells may still use specialized or baseline Mata subroutines
 when required for parity. Do not branch econometric workflows on any of the

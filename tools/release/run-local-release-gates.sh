@@ -17,6 +17,7 @@ run_stata_do() {
 }
 
 python3 tools/validate-contract.py
+bash tools/release/lint-website.sh
 for f in tests/meta/*.sh; do
   bash "$f"
 done
@@ -28,6 +29,7 @@ run_stata_do tests/stata/test-bootstrap-plugin-integration.do
 run_stata_do tests/stata/test-f049.do
 run_stata_do tests/stata/test-f050.do
 run_stata_do tests/stata/test-f051.do
+run_stata_do tests/stata/test-agg-bootstrap-paths.do
 run_stata_do tests/stata/test-release-hardening.do
 run_stata_do tests/stata/test-release-failure-modes.do
 python3 tools/release/run-adversarial-differential.py

@@ -6,3 +6,8 @@ tools/plugin/_deps/
 dist/
 # python bytecode
 __pycache__/
+# local jekyll preview build
+website/_site/
+website/.jekyll-cache/
+# perf-differential snapshots (scratch)
+tools/bench/perfdiff/

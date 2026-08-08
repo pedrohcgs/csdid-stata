@@ -6,12 +6,12 @@ math: true
 
 We are living in a time where applied econometrics papers are commonly paired with Stata, R, or Python packages. On one hand, this is really great, as it substantially lowers the barrier to using modern econometric methods in concrete applications. Everything else equal, we all like fast and reliable implementations of econometrics papers. On the other hand, when multiple packages implementing related procedures are available, one may be tempted to try several of them, perhaps without going back to the original papers. This is where we enter some potentially dangerous territory. At the end of the day, do these different estimators even target the same causal parameter? Do they reflect similar notions of uncertainty to warrant comparisons in precision? These questions are very important for econometric theory and practice, as they can lead to never-ending discussions.
 
-When it comes to Difference-in-Differences (DiD), this is perhaps even more interesting and important, as DiD is arguably the most popular observational causal inference method in economics; [see here for some evidence](https://paulgp.com/econlit-pipeline/paper.html). In recent years we have seen a boom of modern DiD tools aimed at allowing for richer notions of heterogeneity than standard two-way fixed effects specifications, each paired with a companion Stata command: [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001) with `csdid` (this package), [Wooldridge (2025)](https://doi.org/10.1007/s00181-025-02807-z) with `jwdid`, [Borusyak, Jaravel, and Spiess (2024)](https://doi.org/10.1093/restud/rdae007) with `did_imputation`, de Chaisemartin and D'Haultfœuille ([2020](https://doi.org/10.1257/aer.20181169), [2026](https://doi.org/10.1162/rest_a_01414)) with `did_multiplegt_dyn`, [Dube et al. (2025)](https://doi.org/10.1002/jae.70000) with `lpdid`, [Sun and Abraham (2021)](https://doi.org/10.1016/j.jeconom.2020.09.006) with `eventstudyinteract`, and [Deb et al. (2026)](https://www.nber.org/papers/w33026) with `flexdid`, among others. For someone who has not been breathing the DiD literature every day, it is tempting to treat these packages as interchangeable ways to obtain "the" event study. But, as we discuss in this article, that is not always the case. Our main goal here is to compare what each command estimates and how it conducts inference. To that end, we use simulations that you can reproduce line by line. We focus **exclusively** on binary treatments and staggered designs here. We compare our `csdid` estimator with these Stata packages in their currently available version in `ssc` on July 31, 2026. For simplicity, we assume that (conditional) parallel trends hold in all periods and across all groups, and covariates are time-invariant (but their effects can be time-varying). We note that in this setting, none of these procedures we discuss is semiparametrically efficient [Chen, Sant'Anna, Xie (2025)](https://psantanna.com/files/Efficient_DiD.pdf).
+When it comes to Difference-in-Differences (DiD), this is perhaps even more interesting and important, as DiD is arguably the most popular observational causal inference method in economics; [see here for some evidence](https://paulgp.com/econlit-pipeline/paper.html). In recent years we have seen a boom of modern DiD tools aimed at allowing for richer notions of heterogeneity than standard two-way fixed effects specifications, each paired with a companion Stata command: [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001) with `csdid` (this package), [Wooldridge (2025)](https://doi.org/10.1007/s00181-025-02807-z) with `jwdid`, [Borusyak, Jaravel, and Spiess (2024)](https://doi.org/10.1093/restud/rdae007) with `did_imputation`, de Chaisemartin and D'Haultfœuille ([2020](https://doi.org/10.1257/aer.20181169), [2026](https://doi.org/10.1162/rest_a_01414)) with `did_multiplegt_dyn`, [Dube et al. (2025)](https://doi.org/10.1002/jae.70000) with `lpdid`, [Sun and Abraham (2021)](https://doi.org/10.1016/j.jeconom.2020.09.006) with `eventstudyinteract`, and [Deb et al. (2026)](https://www.nber.org/papers/w33026) with `flexdid`, among others. For someone who has not been breathing the DiD literature every day, it is tempting to treat these packages as interchangeable ways to obtain "the" event study. But, as we discuss in this article, that is not always the case. Our main goal here is to compare what each command estimates and how it conducts inference. To that end, we use simulations that you can reproduce line by line. We focus **exclusively** on binary treatments and staggered designs here. Stata itself also ships official commands for this setting, `xthdidregress` for panels and `hdidregress` for repeated cross sections, and we include them too: they are the commands a user reaches for without installing anything, so leaving them out would misrepresent the choice actually facing an applied researcher. We compare our `csdid` estimator with these Stata packages in their currently available version in `ssc` on July 31, 2026, and the official commands as shipped with StataNow/MP 19.5. For simplicity, we assume that (conditional) parallel trends hold in all periods and across all groups, and covariates are time-invariant (but their effects can be time-varying). We note that in this setting, none of these procedures we discuss is semiparametrically efficient [Chen, Sant'Anna, Xie (2025)](https://psantanna.com/files/Efficient_DiD.pdf).
 
 To summarize our findings (as this is not a mystery novel), it is worth pinpointing some broader cases:
 
 - ***Balanced panel data without covariates***: most of the point estimates agree across packages, though their standard errors may differ even when the point estimates are the same. This happens because some procedures treat the treatment group as fixed rather than random. Following [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001), `csdid` treats cohort membership as random, so uncertainty in the estimated cohort shares enters its standard errors; `eventstudyinteract` makes the same choice, and accounts for the sampling uncertainty of its estimated cohort shares. Most other packages condition on treatment assignments (excluding the experimental assignment as a special case), or deliberately report conservative standard errors when treatment effects are heterogeneous, as `did_imputation` documents. When it comes to point estimates, a notable exception is the `lpdid` package: by default it targets a different type of event study (ES) aggregation, therefore producing an inconsistent (and biased) estimate for the ES parameter as discussed in [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001) (and many others). By using its `rw` option, though, one can request to bypass this concern and target the same parameter.
-- ***Unbalanced panel without covariates***: by default, packages do not agree on the (population) weights used to aggregate ATT(g,t)'s into ES parameters, so they are often not even targeting the same parameter. This, per se, makes comparison across methods delicate. What reconciles several of these targets is not unbalancedness being random per se, as the missingness never depends on cohort, covariates, or potential outcomes in our simulations. It is an auxiliary (strong) condition that the missingness rate is the same in all periods, so that each period contributes an equally sized cross-section. We also note that packages behave differently in how they handle unbalanced panels (e.g., whether they impose some type of balancedness or none at all), which may be interesting.
+- ***Unbalanced panel without covariates***: by default, packages do not agree on the (population) weights used to aggregate ATT(g,t)'s into ES parameters, so they are often not even targeting the same parameter. This, per se, makes comparison across methods delicate. What reconciles several of these targets is not unbalancedness being random per se, as the missingness never depends on cohort, covariates, or potential outcomes in our simulations. It is an auxiliary (strong) condition that the missingness rate is the same in all periods, so that each period contributes an equally sized cross-section. We also note that packages behave differently in how they handle unbalanced panels: what they drop, what they keep, and &mdash; for the commands that take a treatment indicator rather than a cohort variable &mdash; whether missing rows silently change which cohort a unit belongs to. We document all of this, with every claim enforced in code, in [What a missing row does to each command](#what-a-missing-row-does-to-each-command).
 - ***Repeated cross-sectional data***: Some packages such as `eventstudyinteract`, `did_multiplegt_dyn`, and `lpdid` do not accommodate this sampling scheme. Others, such as `flexdid`, are built mainly targeting this case. Among those procedures that can handle it, `jwdid`, `did_imputation`, and `flexdid` share one aggregation scheme and `csdid` another, so they do not generally target the same ES parameter. As in the unbalanced panel data case, comparability is restored by the same auxiliary condition: that every period contributes an equally sized cross-section.
 - ***The role of covariates***: Not all packages accommodate general heterogeneous treatment effects with respect to covariates, or covariate-specific trends in untreated outcomes. `csdid`, `jwdid`, `flexdid`, and `did_imputation` allow for that. `did_multiplegt_dyn` relies on a different parallel trends assumption, based on outcomes residualized on the *first differences* of the covariates in a linear model, with the covariate coefficient fixed across cohorts and periods. What that assumption rules out can be practically important: any role for time-invariant covariates, which first differencing annihilates; covariate effects on untreated trends that differ across periods, since a single coefficient is imposed across them; and continuous covariates, which the documented fallback `trends_nonparam()` cannot match on at all. `lpdid` and `eventstudyinteract` impose an additional separability condition between covariates and cohorts, too, and are not suitable to capture richer notions of heterogeneity. In [One design that tells them apart](#one-design-that-tells-them-apart) we construct a single balanced panel data generating process, with conditional parallel trends holding exactly, in which all of these restrictions bind at once.
 - ***Speed***: `csdid` tends to be faster than the other packages in most of our designs, though sometimes (but definitely not always) the differences are in the milliseconds. The gains depend on the number of observations, cohorts, and time periods, as well as on whether the panel is balanced or not. Speed is nice, of course, but we emphasize that being clear about target parameters and sources of uncertainty matters more.
@@ -64,6 +64,7 @@ In some sections, especially when we want to stress the role of some aspects of 
 <li><a href="#what-each-command-is-actually-computing">The command map</a></li>
 <li><a href="#speed">Speed</a></li>
 <li><a href="#reliability-part-i-no-covariates">Reliability I — no covariates</a></li>
+<li><a href="#what-a-missing-row-does-to-each-command">Missing rows</a></li>
 <li><a href="#reliability-part-ii-covariates-and-the-case-for-doubly-robust">Reliability II — covariates and DR</a></li>
 <li><a href="#one-design-that-tells-them-apart">One design that tells them apart</a></li>
 <li><a href="#precision">Precision</a></li>
@@ -127,6 +128,8 @@ cohort shares enters its standard errors. The same is true for covariates. `did_
 touched in passing is the aggregation weights. Every summary parameter these
 commands report is a weighted average of the
 ATT(g,t) building blocks; the weights, however, differ across commands. We focus on event study aggregations as they are arguably the most popular ones:
+
+<p class="table-title" markdown="span">Event-study aggregation weights, by command</p>
 
 | command                                                    | a cohort's weight at event time e | the weight moves when...    |
 | ------------------------------------------------------------ | ----------------------------------- | ----------------------------- |
@@ -228,46 +231,53 @@ sampling scheme.
 
 ## Speed
 
-At the sample sizes used in many applications, all of these commands are
-fast enough on a balanced panel, and that is genuinely good news. Where the
-computational differences start to matter is when the same analysis is
-bootstrapped, or repeated over many specifications, and in the larger and
-richer designs we report below.
+We all like fast commands, that is for sure. All else equal, faster is always better. So, for a moment, let's ignore everything else and focus *exclusively* on speed to see how things currently are in the Stata DiD space. First, the good news: at the sample sizes used in many applications, all the Stata commands we discuss here are fast. Some are faster than others, but the differences, especially with balanced panel data, are not material. They can matter if you are doing bootstrap, repeating over many specifications, or in the larger and richer designs we discuss below. But again, we want to commend all researchers behind these commands: it is not common to have this many options, running this fast!
 
-A word on how we time things. Each entry is the median of 10 timed runs,
-after discarding one warmup run; the warmup is needed because the first
-`csdid` call in a session loads a library that then stays available for later
-calls. All timings include event-study estimation and clustered standard
-errors, and we report the number of units (n), periods (T), cohorts (G), and
-the resulting number of rows. Where you see a dash, a timing was not
-obtained, and the relevant note explains why.
+Now, let's talk about speed! And that should start with how we time these commands. Every speed entry we report is the median of 10 timed runs, after excluding one warmup run that loads libraries and plugins. What sits inside the timer is the estimation call with clustered standard errors, and what that call actually does differs across commands in two ways that are worth knowing before reading any number. First, `csdid` and `jwdid` estimate and then aggregate, so their `estat` step happens after the clock stops; every other command returns the event study from the single timed call. Second, `csdid`, `jwdid`, and `eventstudyinteract` estimate every underlying cell &mdash; all the ATT(g,t)'s, or the full saturated set of cohort-by-relative-time interactions &mdash; while `lpdid`, `did_multiplegt_dyn`, and `did_imputation` estimate only the horizons we ask for. We did not impose either difference; it is how the commands are built. But it explains a good part of what you will see below as the number of periods and cohorts grows, so it is only fair to say it up front. We report the number of units (n), periods (T), cohorts (G), and
+the resulting number of rows, as these levers impact speed directly. We separately discuss balanced panels, unbalanced panels, and repeated cross-sections. All the timings in this section were measured on 7 August 2026 with StataNow/MP 19.5 on a 10-core Apple M1 Max, in a single session, so entries are comparable across tables.
 
 ### Balanced panel: analytical and default inference
 
-One thing worth flagging before reading any speed table: the default
-inference procedures are not the same across commands, so a naive comparison
-is not apples to apples. The next table therefore times the same `csdid`
-specification in two ways. The first uses pointwise analytical standard
-errors; the second uses 999 multiplier-bootstrap draws and simultaneous
-confidence bands. The package default is 1,000 draws, so this timing differs
-from the default by a single draw. The macOS accelerator that ships with the
-package was active here; on other platforms the same calculations are carried
-out in Mata and produce the same numerical results.
+We start delving into the balanced panel data case. The first thing we highlight here is that different commands have different defaults. `csdid` uses bootstrap-based inference as the default, as that is necessary to conduct simultaneous/uniform inference across event times and groups. Most of the other packages use analytical/plug-in inference procedures, and, therefore, comparing `csdid` and all these other packages is not an apples to apples comparison. Yet, speed matters!
 
-| n (T=10, G=4) |      rows | analytical | default inference: 999 draws + uniform bands |
-| --------------- | ----------: | -----------: | ---------------------------------------------: |
-| 100           |     1,000 |       0.01 |                                         0.04 |
-| 1,000         |    10,000 |       0.04 |                                         0.07 |
-| 10,000        |   100,000 |       0.26 |                                         0.32 |
-| 100,000       | 1,000,000 |       1.80 |                                     **2.38** |
+To clear this bar, our first comparison is within `csdid` only. We compare speeds using analytical standard errors (and turning off uniform confidence bands) with 999 multiplier-bootstrap-based procedures, allowing for uniform confidence bands.
 
-At one million rows, analytical inference takes 1.80 seconds and the default
-takes 2.38 seconds. So adding the multiplier bootstrap and uniform bands costs
-about half a second, or 32%, and even then the default remains faster than the
-pointwise analytical timing of every other command at this sample size. Of
-course, the levels here depend on your computer and Stata version. What
-travels across machines is the difference between the two columns, not the
-individual timings.
+<p class="table-title" markdown="span">`csdid` on a balanced panel, seconds to estimate all ATT(g,t)</p>
+
+| n (T=10, G=4) | rows | `csdid` | `csdid` default |
+| --- | ---: | ---: | ---: |
+| 100 | 1,000 | 0.01 | 0.06 |
+| 1,000 | 10,000 | 0.02 | 0.08 |
+| 10,000 | 100,000 | 0.14 | 0.20 |
+| 100,000 | 1,000,000 | 1.31 | 1.50 |
+
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call, so that every column buys the same deliverable.</p>
+
+At one million rows, analytical inference takes 1.31 seconds and the
+bootstrap-based default takes 1.50 seconds. The timing cost to get uniform
+confidence bands and address concerns about multiple testing is fairly low! To
+us, this should be a no-brainer, but we are the authors of the package!
+
+With that caveat on the table, here is the comparison across packages on the
+same fully balanced ladder, with `csdid` at analytical clustered standard
+errors as in every other cross-package table.
+
+<p class="table-title" markdown="span">Balanced panel, seconds per run</p>
+
+| n (T=10, G=4) | rows | `csdid` | `lpdid` | `jwdid` | `eventstudyinteract` | `did_imputation` | `did_multiplegt_dyn` | `xthdidregress` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 10,000 | 0.02 | 0.24 | 0.36 | 0.30 | 0.82 | 1.06 | 0.65 |
+| 10,000 | 100,000 | 0.14 | 1.02 | 1.75 | 1.88 | 4.35 | 6.12 | 5.13 |
+| 100,000 | 1,000,000 | 1.21 | 8.57 | 12.0 | 14.2 | 45.7 | 62.1 | 68.2 |
+
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call, so that every column buys the same deliverable.</p>
+
+At one million rows, `lpdid` takes about 7 times as long as `csdid`, `jwdid`
+about 10 times, `eventstudyinteract` about 12 times, and `did_imputation`
+about 38 times. Stata's own `xthdidregress` is the slowest column here, at
+about 56 times. Reading the two tables together: `csdid` at its shipped
+default &mdash; bootstrap, uniform bands, and all &mdash; still comes in at
+under a fifth of the next-fastest command's analytical run at this size.
 
 ### Unbalanced panels
 
@@ -285,64 +295,98 @@ because it estimates on a smaller sample, whose size is disclosed, and not
 because it uses a faster algorithm. We report it because it is the default,
 but its timing is the timing for that smaller sample.
 
-| n (T=10, G=4) |    rows | `csdid bal(none)` | `csdid bal(pair)` | `csdid bal(full)` | `jwdid` | `lpdid` | `did_imputation` |
-| --------------- | --------: | ------------------: | ------------------: | ------------------: | --------: | --------: | -----------------: |
-| 1,000         |   8,500 |              0.10 |              0.04 |              0.02 |    0.20 |    0.32 |             0.57 |
-| 10,000        |  85,000 |              0.69 |              0.29 |              0.11 |    0.70 |    0.85 |             3.85 |
-| 100,000       | 850,000 |          **3.79** |              2.07 |              0.89 |    6.28 |    5.83 |             38.0 |
+<p class="table-title" markdown="span">Unbalanced panel, 15% of rows deleted, seconds per run</p>
+
+| n (T=10, G=4) | rows | `csdid bal(full)` | `csdid bal(pair)` | `csdid bal(none)` | `lpdid` | `jwdid` | `eventstudyinteract` | `did_imputation` | `did_multiplegt_dyn` | `xthdidregress` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 8,496 | 0.02 | 0.03 | 0.06 | 0.20 | 0.32 | 0.27 | 0.70 | 0.95 | 0.90 |
+| 10,000 | 85,219 | 0.09 | 0.21 | 0.37 | 0.81 | 1.47 | 1.50 | 4.47 | 4.87 | 7.15 |
+| 100,000 | 849,905 | 0.93 | 1.65 | 3.08 | 6.03 | 11.2 | 13.1 | 39.2 | 60.5 | 104.6 |
+
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call, so that every column buys the same deliverable.</p>
 
 ### Repeated cross sections
 
 The next table reports times with and without one covariate, each command
 again invoked at its own documented covariate specification.
 
-| n per period (T=10, G=4) |      rows |  `csdid` | `flexdid` | `jwdid` | `did_imputation` |
-| -------------------------- | ----------: | ---------: | ----------: | --------: | -----------------: |
-| 1,000                    |    10,000 |     0.12 |      0.19 |    0.16 |             0.24 |
-| 10,000                   |   100,000 |     0.86 |      0.71 |    0.76 |             1.48 |
-| 100,000                  | 1,000,000 |     5.56 |      5.53 |    7.22 |             20.9 |
-| with a covariate:        |           |          |           |         |                  |
-| 1,000                    |    10,000 |     0.18 |      0.33 |    0.35 |             0.27 |
-| 10,000                   |   100,000 |     1.18 |      1.03 |    1.74 |             1.58 |
-| 100,000                  | 1,000,000 | **6.70** |      7.41 |   17.96 |             21.5 |
+<p class="table-title" markdown="span">Repeated cross sections, seconds per run</p>
 
-Without covariates, `flexdid` is the fastest command at 100,000 rows (0.71
-seconds, compared with 0.86 for `csdid`). At one million rows, `flexdid` and
-`csdid` take 5.53 and 5.56 seconds, respectively. With one covariate,
-`csdid` is fastest at one million rows: 6.70 seconds, compared with 7.41 for
-`flexdid`, 17.96 for `jwdid`, and 21.5 for `did_imputation`. For `jwdid`,
-adding this covariate increases the timing by a factor of about 2.5. These
-experiments use one covariate, and we do not extrapolate this ordering to
-specifications with many covariates.
+| n per period (T=10, G=4) | rows | `csdid` | `flexdid` | `jwdid` | `did_imputation` | `hdidregress` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 10,000 | 0.08 | 0.17 | 0.33 | 0.26 | 1.02 |
+| 10,000 | 100,000 | 0.60 | 0.81 | 2.32 | 1.61 | 5.58 |
+| 100,000 | 1,000,000 | 6.02 | 7.08 | 13.0 | 20.2 | 74.1 |
+| with a covariate: | |  |  |  |  |  |
+| 1,000 | 10,000 | 0.11 | 0.27 | 0.60 | 0.29 | 1.06 |
+| 10,000 | 100,000 | 0.74 | 1.22 | 3.19 | 1.73 | 5.81 |
+| 100,000 | 1,000,000 | 7.39 | 10.3 | 25.7 | 21.2 | 75.2 |
+
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call, so that every column buys the same deliverable.</p>
+
+`csdid` is the fastest command in this table at every size, with and without
+the covariate, though the margin over `flexdid` is not large: 0.60 against
+0.81 seconds at 100,000 rows, and 6.02 against 7.08 seconds at one million.
+With one covariate the gap widens a little, to 7.39 against 10.3 seconds at
+one million rows, with 25.7 for `jwdid` and 21.2 for `did_imputation`. For
+`jwdid`, adding this covariate roughly doubles the timing. Stata's own
+`hdidregress` is the slowest column, about 12 times `csdid` at one million
+rows, and almost the only command here whose timing barely moves when the
+covariate is added &mdash; 74.1 to 75.2 seconds. These experiments use one covariate, and
+we do not extrapolate this ordering to specifications with many covariates.
 
 ### More periods, more cohorts
 
 Sample size is not the only determinant of computation time. We next vary
 the number of periods while holding n = 10,000 fixed.
 
-| T (n=10,000, G=4) |    rows |  `csdid` | `jwdid` | `lpdid` | `did_imputation` |
-| ------------------- | --------: | ---------: | --------: | --------: | -----------------: |
-| 5                 |  50,000 |     0.13 |    0.26 |    0.55 |             1.44 |
-| 10                | 100,000 |     0.26 |    0.67 |    1.05 |             3.44 |
-| 20                | 200,000 |     0.52 |    2.76 |    1.92 |             8.99 |
-| 40                | 400,000 | **1.07** |    12.1 |    3.66 |             20.0 |
+<p class="table-title" markdown="span">Growing the number of periods, seconds per run</p>
 
-The timing for `csdid` is approximately linear in T, whereas the timing for
-`jwdid` grows faster than linearly over this range. At T=40, `csdid` takes
-1.07 seconds, whereas `jwdid` takes 12.1 seconds and `did_imputation` takes
-20.0 seconds. These are gaps of about 11 and 19 times, respectively, and can
-matter when a researcher considers many specifications.
+| T (n=10,000, G=4) | rows | `csdid` | `lpdid` | `jwdid` | `did_imputation` | `did_multiplegt_dyn` | `eventstudyinteract` | `xthdidregress` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 5 | 50,000 | 0.08 | 0.46 | 0.70 | 1.81 | 1.84 | 0.42 | 1.24 |
+| 10 | 100,000 | 0.14 | 0.95 | 1.61 | 4.11 | 5.33 | 1.60 | 5.19 |
+| 20 | 200,000 | 0.25 | 1.81 | 4.77 | 8.76 | 12.9 | 7.52 | 30.3 |
+| 40 | 400,000 | 0.55 | 4.04 | 18.3 | 25.5 | 40.4 | 48.5 | &mdash; |
 
-Increasing the number of cohorts has a smaller effect for all commands. At
-200,000 rows, increasing G from 3 to 18 raises the `csdid` timing from 0.45
-to 1.52 seconds because more ATT(g,t) cells must be estimated and reported.
-Across this exercise, `csdid` remains about four times faster than `jwdid`
-and `did_imputation`; `lpdid` is closer when G is large.
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call, so that every column buys the same deliverable. Cells with no entry were not timed &mdash; `xthdidregress` at 40: single warmup call took 166.8s.</p>
+
+The timing for `csdid` is approximately linear in T, whereas `jwdid` and
+`eventstudyinteract` grow faster than linearly over this range. At T=40,
+`csdid` takes 0.55 seconds, `jwdid` takes 18.3 seconds and `did_imputation`
+takes 25.5 seconds &mdash; gaps of about 34 and 47 times. `xthdidregress` has
+no entry at T=40 because a single call took 166.8 seconds, past the cap this
+harness puts on one call, so it was measured once and not timed properly. The
+gaps matter when a researcher considers many specifications.
+
+The number of cohorts is the other lever, and it separates the commands more
+sharply than the number of periods does, because every extra adoption date
+adds ATT(g,t) cells that some commands estimate and others do not.
+
+<p class="table-title" markdown="span">Growing the number of cohorts, seconds per run</p>
+
+| G (n=10,000, T=20) | rows | `csdid` | `lpdid` | `did_imputation` | `did_multiplegt_dyn` | `jwdid` | `xthdidregress` | `eventstudyinteract` |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 3 | 200,000 | 0.23 | 2.08 | 13.6 | 11.8 | 4.10 | 18.4 | 5.16 |
+| 6 | 200,000 | 0.33 | 1.96 | 9.82 | 12.6 | 8.96 | 42.3 | 20.0 |
+| 12 | 200,000 | 0.50 | 2.28 | 7.48 | 13.6 | 12.6 | 88.9 | 77.4 |
+| 18 | 200,000 | 0.52 | 2.14 | 6.94 | 12.6 | 13.0 | 95.2 | 114.5 |
+
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call, so that every column buys the same deliverable.</p>
+
+The data size is identical in every row here; only the number of adoption
+dates changes. `csdid` goes from 0.23 to 0.52 seconds across the range, and
+`lpdid` barely moves, because it estimates only the horizons asked for. The
+commands that estimate every underlying cell pay for the extra cohorts:
+`eventstudyinteract` goes from 5.16 to 114.5 seconds and `xthdidregress` from
+18.4 to 95.2. Reading this table next to the periods table above is the
+clearest illustration of the point made at the top of this section &mdash;
+what a command is asked to compute matters more than how fast it computes.
 
 We do not include separate aggregation timings: after estimation,
 `estat event` takes about a quarter of a second at the table's main
 sizes and just under three seconds at one million rows. The comparison with `csdid` Version
-1.82, where the measured speed gains range from 16x to 208x depending on the
+1.82, where the measured speed gains range from 17x to 334x depending on the
 design, is reported separately:
 [Speed against Version 1.82](speed-vs-182.html).
 
@@ -372,6 +416,8 @@ first becomes relevant.
 
 We first consider a balanced panel. Every command can be applied in this
 design, and all except `lpdid` are centered around the population target.
+
+<p class="table-title" markdown="span">Balanced panel, no covariates: bias and coverage at e=0</p>
 
 | estimator            | bias at e=0 | 95% coverage |
 | ---------------------- | ------------: | -------------: |
@@ -428,6 +474,8 @@ population, treatment assignment, outcomes, and composition remain
 unchanged. The stationarity condition in Callaway and Sant'Anna (2021,
 Assumption B.1) holds exactly. The only failure is the auxiliary condition
 that each period contributes an equally sized cross-section.
+
+<p class="table-title" markdown="span">Unequal period sizes: bias and coverage at e=0</p>
 
 | estimator                  | bias at e=0 | 95% coverage |
 | ---------------------------- | ------------: | -------------: |
@@ -509,6 +557,8 @@ The next table is based on the documentation for each command, rather than
 on a simulation. It records what the command reports and what information is
 available for reconstructing the reported estimates.
 
+<p class="table-title" markdown="span">What each command reports</p>
+
 |                      | reports every ATT(g,t)        | weights stated in closed form | target fixed under sampling | balance choice explicit                     | uniform bands |
 | ---------------------- | ------------------------------- | ------------------------------- | ----------------------------- | --------------------------------------------- | --------------- |
 | `csdid`              | yes                           | yes                           | yes                         | yes (`bal()`, disclosed in `e(panel_mode)`) | yes           |
@@ -531,6 +581,108 @@ stability of the target in the preceding experiments. This is an
 interpretation of the commands' design, however, and not a result established
 by the simulations.
 
+## What a missing row does to each command
+
+The aggregation weights above are one consequence of an unbalanced panel.
+There is a second one, and it operates even where the weights agree: the
+commands do not process a missing outcome row the same way, and the
+differences start before any estimation happens. Every claim in this
+section is enforced by an assertion in the code appendix's missingness
+scripts &mdash; if any package behaved differently from what we say here,
+those scripts would stop with an error rather than run.
+
+The mechanism is the command's *interface*. `csdid`, `jwdid`,
+`did_imputation`, and `eventstudyinteract` take a cohort variable (or
+user-built cohort dummies): they believe what you tell them about when each
+unit was first treated, whether or not the corresponding rows are observed.
+`xthdidregress`, `did_multiplegt_dyn`, and `lpdid` take only a treatment
+*indicator*, so they must infer each unit's treatment date from the rows
+they can see &mdash; and at that step, a missing row and a not-yet-treated
+row look identical. A unit whose actual first treated period is one of the
+missing rows is classified as if treatment started later.
+
+<p class="table-title" markdown="span">How each command processes a missing outcome row</p>
+
+| command              | what is dropped                      | unit missing its base period                 | cohort labels                |
+| -------------------- | ------------------------------------ | -------------------------------------------- | ---------------------------- |
+| `csdid bal(full)`    | whole units not seen in every period | dropped with the rest of its unit, loudly    | trusted                      |
+| `csdid bal(pair)`    | per 2x2: units missing either period | out of every post cell; still in shares      | trusted                      |
+| `csdid bal(none)`    | nothing                              | still contributes at t (cross-section cells) | trusted                      |
+| `jwdid`              | observations only                    | kept; unit FE uses its other pre rows        | trusted                      |
+| `did_imputation`     | non-imputable treated observations   | kept if any untreated row remains            | trusted                      |
+| `eventstudyinteract` | observations only                    | kept (no per-unit anchoring)                 | trusted (user dummies)       |
+| `xthdidregress`      | per 2x2, on derived labels           | excluded from its cohort's cells             | *derived from observed rows* |
+| `did_multiplegt_dyn` | treated side anchored at base        | entire treated history unusable              | *derived from observed rows* |
+| `lpdid`              | per window endpoint                  | its whole event, at every horizon            | *derived from observed rows* |
+
+The sharpest way to see the difference is one deleted row. Take a balanced
+panel and remove a single observation: one cohort-4 unit's period-4 row,
+its first treated period. That unit still has every row needed for its
+cohort's later comparisons &mdash; it is observed at the base period and at
+the later dates. The cohort-variable commands use exactly that: the unit
+drops out of the one comparison that needed the deleted row and keeps
+contributing everywhere else, as cohort 4. All three indicator-based
+commands lose the unit's entire treated history: we verified that their
+estimates on the damaged panel are identical, digit for digit, to estimates
+on a panel with the unit deleted outright.
+
+For `xthdidregress` we can say precisely why, because we reconstructed its
+cells. On unbalanced data its ATT(g,t) is the same paired two-period
+comparison `csdid bal(pair)` uses &mdash; computed on the *derived* cohort
+labels. Rebuild the paired cells with the derived labels and you reproduce
+its coefficients to machine precision (1e-16 in our checks); rebuild them
+with the true labels and you get `csdid bal(pair)`. In our unbalanced
+design, with 15% of rows missing at random, 242 of 1,615 treated units
+carry the wrong label &mdash; each treated unit is relabeled exactly when
+its first treated period is among the missing rows, so the fraction tracks
+the missingness rate &mdash; and the label switch alone moves the event
+study by up to 0.05, with a sign that varies across horizons. As in Part I,
+averaging across event times would hide this rather than reveal it.
+
+The good news: `xthdidregress` has a built-in solution. Its `usercohort()`
+option lets you supply the cohort variable directly, and its documentation
+recommends exactly this when "there are gaps in the estimation sample, but
+you know a group was treated at the time when the gap is present." We
+verified the remedy is complete: with `usercohort()` supplying the true
+cohorts, all 22 post-treatment cells in our design match the hand-built
+true-label pair cells and match `csdid, method(reg) nevertreated bal(pair)`
+to machine precision. If your panel has gaps, use it &mdash; with
+never-treated units coded 0, not missing (missing exits with an internal
+error in the current release). `did_multiplegt_dyn` and `lpdid` have no
+analogous option, because their interfaces have no cohort input to
+override; we also note that their papers do not discuss unbalanced panels
+in the first place, so we document their behavior here as a curiosity that
+users should be aware of, not as a criticism of either command.
+
+Two disclosures about our own side, in the same spirit. First, `csdid`
+keeps every unit in the estimated cohort shares even when missingness
+leaves no cell that can use its outcomes; that is deliberate &mdash; the
+shares are a cross-sectional quantity and keeping them complete is what
+holds the target parameter fixed &mdash; but it means a unit can influence
+the weights without influencing any ATT(g,t). Second, `jwdid`, which
+otherwise trusts your cohort variable, silently deletes any treated unit
+whose retained rows all fall at or after its treatment date (it reads such
+a unit as always treated); in our 15%-missingness panel this removed 15
+observations without a message, and no documented option restores them.
+
+If you work with an unbalanced panel, one three-line check tells you
+whether any of this matters for your data:
+
+<!-- This runs against the reader's own panel, using their id, D, t and gvar,
+     so there is no dataset it could be executed against from a clean session. -->
+<!-- norun -->
+```stata
+bysort id: egen first_obs_treated = min(cond(D == 1, t, .))
+generate byte relabeled = (first_obs_treated != gvar) if gvar > 0
+tabulate relabeled
+```
+
+Units flagged here are the ones an indicator-based command will classify
+into a different cohort than your `gvar` says. If the count is zero, the
+issue is moot for your data; if it is not, you now know which commands to
+handle with care &mdash; and for `xthdidregress`, which option to reach
+for.
+
 ## Reliability, part II: covariates, and the case for doubly robust
 
 Covariates are often included in a DiD analysis because treated cohorts
@@ -544,6 +696,8 @@ the covariates, so the population targets remain the same as before.
 
 We first use a balanced panel and correctly specify every working model. The
 next table reports bias and coverage at e=0 over 500 replications.
+
+<p class="table-title" markdown="span">Covariates, all working models correctly specified: bias and coverage at e=0</p>
 
 | estimator            |       bias | coverage |
 | ---------------------- | -----------: | ---------: |
@@ -636,6 +790,8 @@ specified outcome regressions omit a nonlinear term. The table reports bias
 and coverage at e=1. This is a common type of specification error, not an
 exotic one.
 
+<p class="table-title" markdown="span">Misspecified outcome model: bias and coverage at e=1</p>
+
 | estimator            |       bias | coverage |
 | ---------------------- | -----------: | ---------: |
 | `csdid dr`           |     -0.058 |     0.94 |
@@ -686,6 +842,8 @@ covariate is skewed, the resulting specification error is related to the
 untreated trend. The outcome model remains linear in the observed covariate
 and is correctly specified. Only the treatment-probability model is wrong.
 The table again reports bias and coverage at e=1.
+
+<p class="table-title" markdown="span">Misspecified propensity score: bias and coverage at e=1</p>
 
 | estimator            |       bias | coverage |
 | ---------------------- | -----------: | ---------: |
@@ -866,6 +1024,8 @@ treatment-effect heterogeneity can leak into the adjustment.
 Bias and coverage of nominal 95% intervals at each event time, over 100
 replications with $$n=2{,}000$$:
 
+<p class="table-title" markdown="span">One design, every command: bias / coverage by event time</p>
+
 | estimator | e=0 | e=1 | e=2 |
 | --- | --- | --- | --- |
 | `csdid reg` | -0.002 / 0.97 | -0.006 / 0.97 | -0.013 / 0.95 |
@@ -1011,6 +1171,8 @@ the estimators have a common target, and consider two designs. The
 population and the 500 simulation draws are the same; only the within-unit
 errors change.
 
+<p class="table-title" markdown="span">Two error processes, standard deviation of the event-study estimate</p>
+
 | errors    | `csdid` sd | `jwdid`/`did_imputation` sd | tighter              |
 | ----------- | -----------: | ----------------------------: | ---------------------- |
 | iid       |      0.067 |                       0.052 | poolers, by ~22%     |
@@ -1047,6 +1209,8 @@ reports uniform confidence bands based on the multiplier bootstrap by
 default. None of the other commands in this comparison provides a uniform
 band option. The next table reports joint coverage for the three
 post-treatment event times in the balanced-panel design.
+
+<p class="table-title" markdown="span">Joint coverage of the post-treatment path</p>
 
 |                                      | joint coverage of ES(0), ES(1), ES(2) |
 | -------------------------------------- | --------------------------------------: |

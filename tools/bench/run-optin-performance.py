@@ -59,8 +59,8 @@ if bench_memory_mb > 10000 scalar bench_memory_mb = bench_memory_mb / (1024 * 10
 assert _N == 500000
 assert e(fast_auto) == 1
 assert e(fast_used) == 1
-assert e(large_store) == 0
-assert "`e(performance_resolved)'" == "lean"
+assert "`e(storage)'" == "lean"
+assert e(mata_cache) == 1
 assert bench_seconds <= 900
 assert bench_memory_mb <= 6000
 post `benchpost' ("large_panel") (_N) (.) (bench_seconds) ///
@@ -92,7 +92,7 @@ assert e(fast_auto) == 1
 assert e(fast_used) == 1
 assert e(bstrap) == 1
 assert e(biters) == 999
-assert e(large_store) == 0
+assert "`e(storage)'" == "lean"
 confirm matrix e(boot_attgt)
 confirm matrix e(boot_draws)
 assert bench_seconds <= 180

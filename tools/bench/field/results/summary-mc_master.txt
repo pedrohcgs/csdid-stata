@@ -1,0 +1,73 @@
+rows: 19500   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  master     csdid dr              500  -0.0001  0.0857  0.0856  0.0913   0.970
+  master     csdid reg             500  -0.0019  0.0792  0.0791  0.0867   0.974
+  master     jwdid                 500  -0.0006  0.0637  0.0636  0.0600   0.928
+  master     jwdid uncond          500  -0.0006  0.0637  0.0636  0.0759   0.980
+  master     did_imputation        500  -0.0006  0.0637  0.0636  0.0624   0.938
+  master     eventstudyinteract    500  +1.0364  0.1293  1.0444  0.1487   0.000
+  master     did_multiplegt_dyn    500  +0.5889  0.1139  0.5998  0.1163   0.000
+  master     lpdid                 500  +0.2953  0.1128  0.3161  0.1220   0.306
+  master     lpdid rw              500  +0.5889  0.1139  0.5998  0.1240   0.000
+  master     dcdh_tnp              500  +0.3261  0.1074  0.3433  0.1049   0.126
+  master     lpdid_ctl             500  +0.3275  0.1160  0.3474  0.1258   0.246
+  master     lpdid_rw_ctl          500  +0.7738  0.1336  0.7852  0.1483   0.000
+  master     sa_xt                 500  -0.1219  0.0659  0.1386  0.0745   0.646
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  master     csdid dr              500  -0.0006  0.0994  0.0993  0.1048   0.962
+  master     csdid reg             500  -0.0015  0.0936  0.0935  0.1010   0.964
+  master     jwdid                 500  +0.0001  0.0837  0.0836  0.0690   0.884
+  master     jwdid uncond          500  +0.0001  0.0837  0.0836  0.0924   0.972
+  master     did_imputation        500  +0.0001  0.0837  0.0836  0.0765   0.926
+  master     eventstudyinteract    500  +0.6554  0.1974  0.6844  0.1978   0.078
+  master     did_multiplegt_dyn    500  +0.1987  0.1834  0.2703  0.1753   0.782
+  master     lpdid                 500  -0.0851  0.1840  0.2026  0.1860   0.934
+  master     lpdid rw              500  +0.1987  0.1834  0.2703  0.1843   0.806
+  master     dcdh_tnp              500  +0.0096  0.1774  0.1775  0.1667   0.916
+  master     lpdid_ctl             500  -0.1971  0.1665  0.2579  0.1693   0.760
+  master     lpdid_rw_ctl          500  +0.4909  0.2127  0.5349  0.2212   0.422
+  master     sa_xt                 500  -0.3375  0.0803  0.3470  0.0870   0.014
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  master     csdid dr              500  -0.0055  0.1101  0.1101  0.1223   0.976
+  master     csdid reg             500  -0.0066  0.1033  0.1034  0.1183   0.978
+  master     jwdid                 500  -0.0046  0.0966  0.0966  0.0738   0.862
+  master     jwdid uncond          500  -0.0046  0.0966  0.0966  0.1127   0.982
+  master     did_imputation        500  -0.0046  0.0966  0.0966  0.0948   0.956
+  master     eventstudyinteract    500  -0.5676  0.1598  0.5896  0.1555   0.052
+  master     did_multiplegt_dyn    500  -0.5676  0.1598  0.5896  0.1509   0.044
+  master     lpdid                 500  -0.5676  0.1598  0.5896  0.1520   0.044
+  master     lpdid rw              500  -0.5676  0.1598  0.5896  0.1520   0.044
+  master     dcdh_tnp              500  -0.5289  0.1586  0.5521  0.1479   0.070
+  master     lpdid_ctl             500  -1.1892  0.1328  1.1966  0.1269   0.000
+  master     lpdid_rw_ctl          500  -0.7974  0.1474  0.8109  0.1424   0.000
+  master     sa_xt                 500  -0.5945  0.0947  0.6020  0.1077   0.000
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  master     csdid dr                 500     500        0
+  master     csdid reg                500     500        0
+  master     jwdid                    500     500        0
+  master     jwdid uncond             500     500        0
+  master     did_imputation           500     500        0
+  master     eventstudyinteract       500     500        0
+  master     did_multiplegt_dyn       500     500        0
+  master     lpdid                    500     500        0
+  master     lpdid rw                 500     500        0
+  master     dcdh_tnp                 500     500        0
+  master     lpdid_ctl                500     500        0
+  master     lpdid_rw_ctl             500     500        0
+  master     sa_xt                    500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+
+== ATT(g,t) cells: worst |bias| over the post grid ==

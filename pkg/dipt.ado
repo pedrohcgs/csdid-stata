@@ -1,5 +1,7 @@
+*! dipt 2.0.0 30jul2026
 **program drop dipt
 program dipt, eclass
+    version 14
     * DEPRECATED in csdid 2.0.0. Shipped only so existing do-files keep
     * running; it is not covered by the parity suite and will be removed in
     * a future release. Replacement: no replacement; it was never part of the documented surface.
@@ -12,39 +14,21 @@ syntax varlist(fv ts) [if] [iw pw fw], [cluster(passthru) from(passthru)]
 gettoken y xvar:varlist
 marksample touse
 
+* cluster() was parsed and then never passed to mlexp, so `dipt y x,
+* cluster(id)' returned rc 0 with UNCLUSTERED standard errors and said
+* nothing. A silently ignored option that changes reported standard errors is
+* not the same defect class as a silently ignored formatting option.
+*
+* The weight spec was also inverted -- `[`exp'`weight']' expands `[iw=w]' to
+* `[=w iweight]' -- so every weighted call was a syntax error. Stata's idiom
+* is `[`weight'`exp']'.
 mlexp (`y'*{xb:`xvar' _cons}-(`y'==0)*exp({xb:}))  ///
-					if `touse' [`exp'`weight'],  ///
+					if `touse' [`weight'`exp'],  ///
 					 derivative(/xb=`y'-(`y'==0)*exp({xb:})) ///
-                     `from'
+                     `from' `cluster'
                      
 end                     
 
-program dipt0, eclass
-
-syntax varlist(fv ts) [if] [iw pw fw], [cluster(passthru) *] 
-
-// ML
-gettoken y xvar:varlist
-marksample touse
-
-mlexp ({xb:`xvar' _cons}-(`y'==0)*exp({xb:}))  ///
-					if `touse' [`exp'`weight'],  ///
-					 derivative(/xb=1-(`y'==0)*exp({xb:})) ///
-                     `options'
-                     
-end 
-
-program dipt1, eclass
-
-syntax varlist(fv ts) [if] [iw pw fw], [cluster(passthru) *] 
-
-// ML
-gettoken y xvar:varlist
-marksample touse
-
-mlexp ({xb:`xvar' _cons}-(`y'==1)*exp({xb:}))  ///
-					if `touse' [`exp'`weight'],  ///
-					 derivative(/xb=1-(`y'==1)*exp({xb:})) ///
-                     `options'
-                     
-end 
+* dipt0 and dipt1 were defined here and called by nothing, in this file or
+* anywhere else in the package. They carried the same inverted weight spec as
+* dipt did, so neither could have run weighted either.

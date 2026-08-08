@@ -8,7 +8,7 @@ adopath ++ "`root'/src/mata"
 
 confirm file "`root'/tests/fixtures/parity/f026/expected/new-stata/ereturn.json"
 
-global F026_ATTGT_COLS "group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre"
+global F026_ATTGT_COLS "group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre base_time"
 global F026_GP_COLS "group prob n_units"
 global F026_UG_COLS "id group weight"
 global F026_AGGTE_COLS "egt att se overall_att overall_se"
@@ -22,7 +22,7 @@ program define f026_assert_attgt_matrices
 
     matrix A = e(attgt)
     assert rowsof(A) == 6
-    assert colsof(A) == 9
+    assert colsof(A) == 10
     local cn : colnames A
     assert "`cn'" == "$F026_ATTGT_COLS"
     local rn : rownames A

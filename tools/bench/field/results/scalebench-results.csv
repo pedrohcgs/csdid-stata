@@ -1,0 +1,173 @@
+scan,n_units,T,cohorts,rows,pkg,median_seconds,trials,ok,note
+E_default,100,10,4,1000,csdid_analytical,0.0080,10,1,H=5; G_real=4; nevertreated=24%; cov=none; min=0.0080; max=0.0090; agg=0.0025; as published in the speed tables: analytical clustered SEs
+E_default,100,10,4,1000,csdid_boot999,0.0585,10,1,H=5; G_real=4; nevertreated=24%; cov=none; min=0.0550; max=0.0760; agg=0.0260; shipped-default inference: wboot reps(999) rseed(20260729) simultaneous bands; accelerator=plugin/plugin-active accel_secs=0.0100; fit=0.032s agg=0.025s
+E_default,1000,10,4,10000,csdid_analytical,0.0235,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.0220; max=0.0450; agg=0.0040; as published in the speed tables: analytical clustered SEs
+E_default,1000,10,4,10000,csdid_boot999,0.0765,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.0700; max=0.0880; agg=0.0275; shipped-default inference: wboot reps(999) rseed(20260729) simultaneous bands; accelerator=plugin/plugin-active accel_secs=0.0100; fit=0.047s agg=0.027s
+E_default,10000,10,4,100000,csdid_analytical,0.1360,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.1320; max=0.1580; agg=0.0180; as published in the speed tables: analytical clustered SEs
+E_default,10000,10,4,100000,csdid_boot999,0.2010,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.1940; max=0.2360; agg=0.0460; shipped-default inference: wboot reps(999) rseed(20260729) simultaneous bands; accelerator=plugin/plugin-active accel_secs=0.0100; fit=0.151s agg=0.049s
+E_default,100000,10,4,1000000,csdid_analytical,1.3065,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=1.2450; max=1.3750; agg=0.1575; as published in the speed tables: analytical clustered SEs
+E_default,100000,10,4,1000000,csdid_boot999,1.4955,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=1.4800; max=1.6340; agg=0.2225; shipped-default inference: wboot reps(999) rseed(20260729) simultaneous bands; accelerator=plugin/plugin-active accel_secs=0.0100; fit=1.299s agg=0.231s
+G_bal,1000,10,4,10000,csdid_analytical,0.0230,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.0210; max=0.0380; agg=0.0040; as published in the speed tables: analytical clustered SEs
+G_bal,1000,10,4,10000,jwdid,0.3565,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.3170; max=0.4240; agg=0.2260
+G_bal,1000,10,4,10000,did_imputation,0.8250,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.7400; max=1.0690; ; N=9799; autosample requested; nothing dropped
+G_bal,1000,10,4,10000,lpdid,0.2385,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.2130; max=0.2840
+G_bal,1000,10,4,10000,eventstudyinteract,0.2990,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.2430; max=0.3610; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+G_bal,1000,10,4,10000,did_multiplegt_dyn,1.0640,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.9780; max=1.2200
+G_bal,1000,10,4,10000,xthdid,0.6455,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.5690; max=0.7260; agg=0.0080; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+G_bal,10000,10,4,100000,csdid_analytical,0.1390,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.1300; max=0.1680; agg=0.0170; as published in the speed tables: analytical clustered SEs
+G_bal,10000,10,4,100000,jwdid,1.7500,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.6350; max=1.7990; agg=1.0710
+G_bal,10000,10,4,100000,did_imputation,4.3510,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=4.1860; max=4.4410; ; N=98002; autosample requested; nothing dropped
+G_bal,10000,10,4,100000,lpdid,1.0210,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.9560; max=1.0470
+G_bal,10000,10,4,100000,eventstudyinteract,1.8785,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.7650; max=2.0470; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+G_bal,10000,10,4,100000,did_multiplegt_dyn,6.1170,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=5.5360; max=7.4190
+G_bal,10000,10,4,100000,xthdid,5.1320,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=4.7980; max=5.4540; agg=0.0340; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+G_bal,100000,10,4,1000000,csdid_analytical,1.2135,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=1.1860; max=1.2270; agg=0.1395; as published in the speed tables: analytical clustered SEs
+G_bal,100000,10,4,1000000,jwdid,12.0355,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=11.9250; max=12.4250; agg=6.8080
+G_bal,100000,10,4,1000000,did_imputation,45.7400,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=44.0360; max=50.1440; ; N=979845; autosample requested; nothing dropped
+G_bal,100000,10,4,1000000,lpdid,8.5715,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=8.5290; max=9.2350
+G_bal,100000,10,4,1000000,eventstudyinteract,14.2260,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=14.0570; max=16.1360; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+G_bal,100000,10,4,1000000,did_multiplegt_dyn,62.1385,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=61.0000; max=69.0000
+G_bal,100000,10,4,1000000,xthdid,68.2220,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=67.2480; max=70.7910; agg=0.3270; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+A_unbal,1000,10,4,8496,csdid_balfull,0.0160,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.0150; max=0.0200; agg=0.0030; bal(full) is the shipped default; drops units not observed in every period; csdid shipped default bal(full); used_N=1870
+A_unbal,1000,10,4,8496,csdid_balpair,0.0330,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.0320; max=0.0440; agg=0.0040; bal(pair): per-comparison balancing; Version 1.82's estimand; csdid bal(pair); per-comparison balancing; used_N=8496
+A_unbal,1000,10,4,8496,csdid_balnone,0.0575,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.0540; max=0.0680; agg=0.0040; bal(none); same rows as the rivals
+A_unbal,1000,10,4,8496,jwdid,0.3170,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.3040; max=0.3320; agg=0.1935
+A_unbal,1000,10,4,8496,did_imputation,0.7020,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.6890; max=0.7200; ; N=8318; autosample requested; nothing dropped
+A_unbal,1000,10,4,8496,lpdid,0.1980,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.1900; max=0.2590
+A_unbal,1000,10,4,8496,eventstudyinteract,0.2735,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.2620; max=0.2850; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+A_unbal,1000,10,4,8496,did_multiplegt_dyn,0.9535,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.9380; max=0.9690
+A_unbal,1000,10,4,8496,xthdid,0.9030,10,1,H=5; G_real=4; nevertreated=18.9%; cov=none; min=0.8900; max=1.0470; agg=0.0100; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+A_unbal,10000,10,4,85219,csdid_balfull,0.0920,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=0.0900; max=0.1000; agg=0.0060; bal(full) is the shipped default; drops units not observed in every period; csdid shipped default bal(full); used_N=20600
+A_unbal,10000,10,4,85219,csdid_balpair,0.2075,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=0.2010; max=0.2210; agg=0.0170; bal(pair): per-comparison balancing; Version 1.82's estimand; csdid bal(pair); per-comparison balancing; used_N=85219
+A_unbal,10000,10,4,85219,csdid_balnone,0.3735,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=0.3620; max=0.4290; agg=0.0160; bal(none); same rows as the rivals
+A_unbal,10000,10,4,85219,jwdid,1.4740,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=1.4460; max=1.5920; agg=0.8465
+A_unbal,10000,10,4,85219,did_imputation,4.4710,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=4.4250; max=4.6840; ; N=83446; autosample requested; nothing dropped
+A_unbal,10000,10,4,85219,lpdid,0.8135,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=0.7950; max=0.8560
+A_unbal,10000,10,4,85219,eventstudyinteract,1.5045,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=1.4710; max=1.5450; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+A_unbal,10000,10,4,85219,did_multiplegt_dyn,4.8665,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=4.8060; max=5.0250
+A_unbal,10000,10,4,85219,xthdid,7.1470,10,1,H=5; G_real=4; nevertreated=19.9%; cov=none; min=7.0490; max=7.2490; agg=0.0445; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+A_unbal,100000,10,4,849905,csdid_balfull,0.9265,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=0.8370; max=1.0380; agg=0.0400; bal(full) is the shipped default; drops units not observed in every period; csdid shipped default bal(full); used_N=197490
+A_unbal,100000,10,4,849905,csdid_balpair,1.6530,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=1.5960; max=2.3450; agg=0.1460; bal(pair): per-comparison balancing; Version 1.82's estimand; csdid bal(pair); per-comparison balancing; used_N=849905
+A_unbal,100000,10,4,849905,csdid_balnone,3.0805,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=3.0460; max=3.1180; agg=0.1380; bal(none); same rows as the rivals
+A_unbal,100000,10,4,849905,jwdid,11.1770,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=11.1080; max=11.6130; agg=5.8035
+A_unbal,100000,10,4,849905,did_imputation,39.2280,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=39.1060; max=44.5760; ; N=832313; autosample requested; nothing dropped
+A_unbal,100000,10,4,849905,lpdid,6.0295,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=5.9960; max=6.1340
+A_unbal,100000,10,4,849905,eventstudyinteract,13.1365,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=12.9500; max=13.3290; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+A_unbal,100000,10,4,849905,did_multiplegt_dyn,60.4545,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=59.6330; max=64.2080
+A_unbal,100000,10,4,849905,xthdid,104.6275,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=102.4710; max=106.9300; agg=0.4550; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+B_rcs,1000,10,4,10000,csdid,0.0805,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.0770; max=0.0870; agg=0.0165
+B_rcs,1000,10,4,10000,flexdid,0.1695,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.1660; max=0.1790; vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option
+B_rcs,1000,10,4,10000,jwdid,0.3275,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.3200; max=0.3520; agg=0.2110
+B_rcs,1000,10,4,10000,did_imputation,0.2550,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=0.2460; max=0.2730; ; N=5559; autosample dropped: tau0 tau1 tau2 tau3 tau4 tau5
+B_rcs,1000,10,4,10000,hdid,1.0195,10,1,H=5; G_real=4; nevertreated=18.8%; cov=none; min=1.0000; max=1.0780; agg=0.0260; Stata 19.5 native; repeated cross sections; arm=ra
+B_rcs,1000,10,4,10000,csdid_cov,0.1115,10,1,H=5; G_real=4; nevertreated=18.8%; cov=x; min=0.1050; max=0.1240; agg=0.0160
+B_rcs,1000,10,4,10000,flexdid_cov,0.2740,10,1,H=5; G_real=4; nevertreated=18.8%; cov=x; min=0.2630; max=0.2920; vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option
+B_rcs,1000,10,4,10000,jwdid_cov,0.6000,10,1,H=5; G_real=4; nevertreated=18.8%; cov=x; min=0.5740; max=0.6660; agg=0.3505
+B_rcs,1000,10,4,10000,did_imputation_cov,0.2925,10,1,H=5; G_real=4; nevertreated=18.8%; cov=x; min=0.2760; max=0.3140; ; N=5559; autosample dropped: tau0 tau1 tau2 tau3 tau4 tau5
+B_rcs,10000,10,4,100000,csdid,0.6005,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.5870; max=0.6430; agg=0.1385
+B_rcs,10000,10,4,100000,flexdid,0.8105,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.8000; max=0.8920; vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option
+B_rcs,10000,10,4,100000,jwdid,2.3190,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.6800; max=2.8900; agg=1.3675
+B_rcs,10000,10,4,100000,did_imputation,1.6100,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.5940; max=1.6290; ; N=55939; autosample dropped: tau0 tau1 tau2 tau3 tau4 tau5
+B_rcs,10000,10,4,100000,hdid,5.5785,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=5.5130; max=5.6780; agg=0.2525; Stata 19.5 native; repeated cross sections; arm=ra
+B_rcs,10000,10,4,100000,csdid_cov,0.7430,10,1,H=5; G_real=4; nevertreated=19.8%; cov=x; min=0.7160; max=0.7690; agg=0.1355
+B_rcs,10000,10,4,100000,flexdid_cov,1.2190,10,1,H=5; G_real=4; nevertreated=19.8%; cov=x; min=1.2060; max=1.2460; vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option
+B_rcs,10000,10,4,100000,jwdid_cov,3.1855,10,1,H=5; G_real=4; nevertreated=19.8%; cov=x; min=3.1220; max=3.3580; agg=1.5180
+B_rcs,10000,10,4,100000,did_imputation_cov,1.7270,10,1,H=5; G_real=4; nevertreated=19.8%; cov=x; min=1.6980; max=1.7980; ; N=55939; autosample dropped: tau0 tau1 tau2 tau3 tau4 tau5
+B_rcs,100000,10,4,1000000,csdid,6.0230,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=5.9460; max=6.1760; agg=1.4955
+B_rcs,100000,10,4,1000000,flexdid,7.0800,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=6.9440; max=8.8120; vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option
+B_rcs,100000,10,4,1000000,jwdid,13.0470,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=12.9780; max=13.3920; agg=6.7310
+B_rcs,100000,10,4,1000000,did_imputation,20.1615,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=20.0370; max=23.0680; ; N=560196; autosample dropped: tau0 tau1 tau2 tau3 tau4 tau5
+B_rcs,100000,10,4,1000000,hdid,74.0775,10,1,H=5; G_real=4; nevertreated=20.1%; cov=none; min=71.6950; max=76.2250; agg=3.2085; Stata 19.5 native; repeated cross sections; arm=ra
+B_rcs,100000,10,4,1000000,csdid_cov,7.3875,10,1,H=5; G_real=4; nevertreated=20.1%; cov=x; min=7.0950; max=9.9190; agg=1.5550
+B_rcs,100000,10,4,1000000,flexdid_cov,10.3410,10,1,H=5; G_real=4; nevertreated=20.1%; cov=x; min=10.0640; max=11.2110; vce(cluster) as in every column; overall displayed at estimation; no band or bootstrap option
+B_rcs,100000,10,4,1000000,jwdid_cov,25.7065,10,1,H=5; G_real=4; nevertreated=20.1%; cov=x; min=25.2730; max=27.9020; agg=9.8100
+B_rcs,100000,10,4,1000000,did_imputation_cov,21.2390,10,1,H=5; G_real=4; nevertreated=20.1%; cov=x; min=21.1590; max=24.3730; ; N=560196; autosample dropped: tau0 tau1 tau2 tau3 tau4 tau5
+C_periods,10000,5,4,50000,csdid,0.0785,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=0.0760; max=0.0830; agg=0.0120
+C_periods,10000,5,4,50000,jwdid,0.6970,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=0.6780; max=0.7450; agg=0.4335
+C_periods,10000,5,4,50000,did_imputation,1.8080,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=1.7780; max=1.9080; ; N=50000; autosample requested; nothing dropped
+C_periods,10000,5,4,50000,lpdid,0.4645,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=0.4530; max=0.4810
+C_periods,10000,5,4,50000,eventstudyinteract,0.4165,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=0.4050; max=0.5320; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+C_periods,10000,5,4,50000,did_multiplegt_dyn,1.8370,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=1.7710; max=1.8960
+C_periods,10000,5,4,50000,xthdid,1.2400,10,1,H=3; G_real=4; nevertreated=19.8%; cov=none; min=1.2130; max=1.3750; agg=0.0170; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+C_periods,10000,10,4,100000,csdid,0.1350,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.1300; max=0.1450; agg=0.0160
+C_periods,10000,10,4,100000,jwdid,1.6115,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.5750; max=1.7040; agg=1.0030
+C_periods,10000,10,4,100000,did_imputation,4.1110,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=4.0550; max=4.1990; ; N=98002; autosample requested; nothing dropped
+C_periods,10000,10,4,100000,lpdid,0.9515,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.9350; max=1.0100
+C_periods,10000,10,4,100000,eventstudyinteract,1.6010,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.5650; max=1.6820; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+C_periods,10000,10,4,100000,did_multiplegt_dyn,5.3340,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=5.0690; max=8.6860
+C_periods,10000,10,4,100000,xthdid,5.1940,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=5.0940; max=5.4910; agg=0.0320; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+C_periods,10000,20,4,200000,csdid,0.2490,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.2340; max=0.2710; agg=0.0175
+C_periods,10000,20,4,200000,jwdid,4.7665,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=4.5850; max=4.9470; agg=2.2625
+C_periods,10000,20,4,200000,did_imputation,8.7605,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=8.6680; max=8.8980; ; N=147919; autosample requested; nothing dropped
+C_periods,10000,20,4,200000,lpdid,1.8060,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=1.7770; max=1.8690
+C_periods,10000,20,4,200000,eventstudyinteract,7.5175,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=7.3490; max=13.0080; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+C_periods,10000,20,4,200000,did_multiplegt_dyn,12.8740,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=11.5360; max=14.7470
+C_periods,10000,20,4,200000,xthdid,30.2900,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=29.1570; max=33.3940; agg=0.0770; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+C_periods,10000,40,4,400000,csdid,0.5450,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=0.4930; max=0.5910; agg=0.0195
+C_periods,10000,40,4,400000,jwdid,18.3040,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=17.7670; max=23.4160; agg=6.6585
+C_periods,10000,40,4,400000,did_imputation,25.4520,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=25.1120; max=29.5800; ; N=243659; autosample requested; nothing dropped
+C_periods,10000,40,4,400000,lpdid,4.0370,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=3.9130; max=4.1850
+C_periods,10000,40,4,400000,eventstudyinteract,48.5070,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=46.7980; max=62.5710; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+C_periods,10000,40,4,400000,did_multiplegt_dyn,40.4325,10,1,H=5; G_real=4; nevertreated=19.8%; cov=none; min=39.2870; max=42.6130
+C_periods,10000,40,4,400000,xthdid,.,0,-1,Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command; not timed: single warmup call took 166.8s; past the 120s cap; H=5; G_real=4; nevertreated=19.8%; cov=none; min=.; max=.; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command; not timed: single warmup call took 166.8s; past the 120s cap
+D_cohorts,10000,20,3,200000,csdid,0.2310,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=0.2230; max=0.3000; agg=0.0160
+D_cohorts,10000,20,3,200000,jwdid,4.1045,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=3.7570; max=4.2420; agg=1.9485
+D_cohorts,10000,20,3,200000,did_imputation,13.5725,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=12.1520; max=20.1050; ; N=147527; autosample requested; nothing dropped
+D_cohorts,10000,20,3,200000,lpdid,2.0835,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=2.0080; max=2.2480
+D_cohorts,10000,20,3,200000,eventstudyinteract,5.1550,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=4.4870; max=6.1820; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+D_cohorts,10000,20,3,200000,did_multiplegt_dyn,11.7960,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=11.0610; max=12.9980
+D_cohorts,10000,20,3,200000,xthdid,18.3710,10,1,H=5; G_real=3; nevertreated=25%; cov=none; min=17.2390; max=22.4330; agg=0.0560; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+D_cohorts,10000,20,6,200000,csdid,0.3285,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=0.2860; max=0.3740; agg=0.0255
+D_cohorts,10000,20,6,200000,jwdid,8.9585,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=8.6990; max=10.0410; agg=4.8250
+D_cohorts,10000,20,6,200000,did_imputation,9.8225,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=8.8780; max=20.9270; ; N=152867; autosample requested; nothing dropped
+D_cohorts,10000,20,6,200000,lpdid,1.9610,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=1.8560; max=2.1600
+D_cohorts,10000,20,6,200000,eventstudyinteract,20.0330,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=17.6830; max=25.0410; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+D_cohorts,10000,20,6,200000,did_multiplegt_dyn,12.6060,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=11.6920; max=13.5700
+D_cohorts,10000,20,6,200000,xthdid,42.2895,10,1,H=5; G_real=6; nevertreated=14.2%; cov=none; min=41.0850; max=46.0810; agg=0.1275; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+D_cohorts,10000,20,12,200000,csdid,0.4960,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=0.4240; max=0.5760; agg=0.0580
+D_cohorts,10000,20,12,200000,jwdid,12.5715,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=11.7320; max=13.4140; agg=5.7370
+D_cohorts,10000,20,12,200000,did_imputation,7.4760,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=6.5140; max=11.7020; ; N=172333; autosample requested; nothing dropped
+D_cohorts,10000,20,12,200000,lpdid,2.2780,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=2.1960; max=2.4920
+D_cohorts,10000,20,12,200000,eventstudyinteract,77.3965,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=73.0640; max=87.9430; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+D_cohorts,10000,20,12,200000,did_multiplegt_dyn,13.5750,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=12.4860; max=18.0060
+D_cohorts,10000,20,12,200000,xthdid,88.8700,10,1,H=5; G_real=12; nevertreated=7.4%; cov=none; min=83.0990; max=91.3840; agg=0.3175; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+D_cohorts,10000,20,18,200000,csdid,0.5190,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=0.4470; max=0.7260; agg=0.0410
+D_cohorts,10000,20,18,200000,jwdid,12.9520,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=12.2040; max=14.5860; agg=5.7150
+D_cohorts,10000,20,18,200000,did_imputation,6.9435,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=5.9150; max=13.8180; ; N=181089; autosample requested; nothing dropped
+D_cohorts,10000,20,18,200000,lpdid,2.1415,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=2.0600; max=2.2150
+D_cohorts,10000,20,18,200000,eventstudyinteract,114.5130,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=112.5080; max=116.1890; never-treated control cohort (the command takes no not-yet-treated option); dummy build timed
+D_cohorts,10000,20,18,200000,did_multiplegt_dyn,12.5595,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=12.2810; max=17.4990
+D_cohorts,10000,20,18,200000,xthdid,95.2230,10,1,H=5; G_real=14; nevertreated=26.3%; cov=none; min=90.3800; max=103.1010; agg=0.3710; Stata 19.5 native; arm=ra; vce(cluster) as in every column; cohort derived by the command
+F_n,1000,10,4,10000,csdid_200,0.0330,7,1,H=5; G_real=4; nevertreated=18.8%; scheme=balanced; cov=x; min=0.0320; max=0.0530; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_n,1000,10,4,10000,csdid_182,2.0390,7,1,H=5; G_real=4; nevertreated=18.8%; scheme=balanced; cov=x; min=1.9030; max=2.4010; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_n,5000,10,4,50000,csdid_200,0.1370,7,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=0.1220; max=0.1580; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_n,5000,10,4,50000,csdid_182,6.1730,5,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=5.8510; max=6.6100; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_n,20000,10,4,200000,csdid_200,0.3810,7,1,H=5; G_real=4; nevertreated=19.9%; scheme=balanced; cov=x; min=0.3340; max=0.4020; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_n,20000,10,4,200000,csdid_182,25.1240,3,1,H=5; G_real=4; nevertreated=19.9%; scheme=balanced; cov=x; min=24.6470; max=26.4640; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_n,50000,10,4,500000,csdid_200,0.8040,7,1,H=5; G_real=4; nevertreated=20.1%; scheme=balanced; cov=x; min=0.7690; max=1.0090; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_n,50000,10,4,500000,csdid_182,83.6790,2,1,H=5; G_real=4; nevertreated=20.1%; scheme=balanced; cov=x; min=82.8260; max=84.5320; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_n,100000,10,4,1000000,csdid_200,1.7820,7,1,H=5; G_real=4; nevertreated=20.1%; scheme=balanced; cov=x; min=1.7400; max=1.8950; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_n,100000,10,4,1000000,csdid_182,.,0,0,skipped by the 120s cap; projection basis: measured 500k legacy call 83.6790s x 2.05 rows
+F_T,5000,5,4,25000,csdid_200,0.0700,7,1,H=3; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=0.0630; max=0.0760; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_T,5000,5,4,25000,csdid_182,1.7590,7,1,H=3; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=1.6920; max=1.8100; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_T,5000,10,4,50000,csdid_200,0.1310,7,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=0.1030; max=0.1990; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_T,5000,10,4,50000,csdid_182,6.4980,5,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=6.4230; max=7.2880; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_T,5000,20,4,100000,csdid_200,0.2820,7,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=0.1940; max=0.3710; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_T,5000,20,4,100000,csdid_182,28.6850,3,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=28.6560; max=29.3410; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_T,5000,40,4,200000,csdid_200,0.4030,7,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=0.3720; max=0.5400; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_T,5000,40,4,200000,csdid_182,134.4935,2,1,H=5; G_real=4; nevertreated=19.3%; scheme=balanced; cov=x; min=131.9220; max=137.0650; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_G,5000,20,3,100000,csdid_200,0.1780,7,1,H=5; G_real=3; nevertreated=24.5%; scheme=balanced; cov=x; min=0.1730; max=0.1970; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_G,5000,20,3,100000,csdid_182,20.2330,3,1,H=5; G_real=3; nevertreated=24.5%; scheme=balanced; cov=x; min=20.1230; max=20.3160; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_G,5000,20,6,100000,csdid_200,0.4070,7,1,H=5; G_real=6; nevertreated=13.7%; scheme=balanced; cov=x; min=0.2680; max=0.5510; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_G,5000,20,6,100000,csdid_182,48.0590,3,1,H=5; G_real=6; nevertreated=13.7%; scheme=balanced; cov=x; min=46.2060; max=48.8990; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_G,5000,20,12,100000,csdid_200,0.4120,7,1,H=5; G_real=12; nevertreated=6.800000000000001%; scheme=balanced; cov=x; min=0.3750; max=0.4410; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_G,5000,20,12,100000,csdid_182,98.9940,2,1,H=5; G_real=12; nevertreated=6.800000000000001%; scheme=balanced; cov=x; min=92.6110; max=105.3770; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_scheme,10000,10,4,100000,csdid_200,0.1920,7,1,H=5; G_real=4; nevertreated=19.8%; scheme=balanced; cov=x; min=0.1790; max=0.2390; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying)
+F_scheme,10000,10,4,100000,csdid_182,12.5060,3,1,H=5; G_real=4; nevertreated=19.8%; scheme=balanced; cov=x; min=12.2690; max=12.5970; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_scheme,10000,10,4,85219,csdid_200,0.2530,7,1,H=5; G_real=4; nevertreated=19.9%; scheme=unbalanced; cov=x; min=0.2280; max=0.3790; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying) bal(pair)
+F_scheme,10000,10,4,85219,csdid_182,11.3910,3,1,H=5; G_real=4; nevertreated=19.9%; scheme=unbalanced; cov=x; min=10.1860; max=12.0590; 1.82 method(dripw) agg(event) clustered; analytical is its default
+F_scheme,10000,10,4,100000,csdid_200,0.7200,7,1,H=5; G_real=4; nevertreated=19.8%; scheme=rcs; cov=x; min=0.6800; max=0.7310; 2.0 method(dr) analytical agg(event) clustered; pinned nevertreated base_period(varying) rcs
+F_scheme,10000,10,4,100000,csdid_182,12.2000,3,1,H=5; G_real=4; nevertreated=19.8%; scheme=rcs; cov=x; min=9.7650; max=12.6430; 1.82 method(dripw) agg(event) clustered; analytical is its default
+B_rcs,1000,10,4,10000,hdid_cov,1.0580,10,1,H=5; G_real=4; nevertreated=18.8%; cov=x; min=1.0260; max=1.1130; agg=0.0265; Stata 19.5 native; repeated cross sections; arm=ra
+B_rcs,10000,10,4,100000,hdid_cov,5.8100,10,1,H=5; G_real=4; nevertreated=19.8%; cov=x; min=5.7300; max=5.9980; agg=0.2490; Stata 19.5 native; repeated cross sections; arm=ra
+B_rcs,100000,10,4,1000000,hdid_cov,75.2135,10,1,H=5; G_real=4; nevertreated=20.1%; cov=x; min=73.4490; max=77.7280; agg=3.0615; Stata 19.5 native; repeated cross sections; arm=ra

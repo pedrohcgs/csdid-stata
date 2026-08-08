@@ -44,7 +44,7 @@ We caveat that one should be careful when comparing `csdid` estimates with DiD e
 
 ## Speed
 
-This version of `csdid` is substantially faster than versions 1.XX (including version 1.81 and the `csdid2` variant). It can sometimes be 200x faster than version 1.82, for example. We have documented these speed gains [here](articles/speed-vs-182.html). Our understanding is that, so far, we are the fastest implementation of staggered DiD in Stata. That is, we have a strong package, with a lot of options and strong statistical guarantees, that is also fast!
+This version of `csdid` is substantially faster than versions 1.XX (including version 1.81 and the `csdid2` variant). It can sometimes be 300x faster than Version 1.82, for example. We have documented these speed gains [here](articles/speed-vs-182.html). Our understanding is that, so far, we are the fastest implementation of staggered DiD in Stata. That is, we have a strong package, with a lot of options and strong statistical guarantees, that is also fast!
 
 ## Also in R and Python
 

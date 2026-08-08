@@ -1,0 +1,12 @@
+{
+  "date": "2026-08-07",
+  "script": "simmc.do 1000 500 mc.csv",
+  "units": 1000,
+  "draws": 500,
+  "stata": "StataNow/MP 19.5",
+  "platform": "Mac (Apple Silicon)",
+  "commit": "71b1e984d210e3048c9aaf9a7962391326894b34",
+  "note": "Monte Carlo behind the article's reliability tables, re-run against the engine after the 2026-08-06 and 08-07 changes. Option arms (jwdid uncond, lpdid rw, did_imputation wtr, eventstudyinteract) come from separate scripts and are added in a companion file.",
+  "raw_rows": 72000,
+  "raw_not_committed": "The 72,000-row per-replication CSV is 4MB and is not committed; the summary this directory carries is what the checker reads. Regenerate the raw file with the script named above, from the bench folder of the code appendix."
+}

@@ -1,0 +1,124 @@
+rows: 72000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0044  0.0671  0.0672  0.0721   0.966
+  balanced   jwdid                 500  +0.0042  0.0522  0.0523  0.0537   0.960
+  balanced   did_imputation        500  +0.0042  0.0522  0.0523  0.0536   0.960
+  balanced   did_multiplegt_dyn    500  +0.0044  0.0671  0.0672  0.0656   0.944
+  balanced   lpdid                 500  -0.1265  0.0664  0.1428  0.0676   0.522
+  varmiss    csdid bal(none)       500  +0.0028  0.1042  0.1041  0.1046   0.954
+  varmiss    csdid bal(pair)       500  +0.0028  0.1042  0.1041  0.1046   0.954
+  varmiss    jwdid                 500  -0.1641  0.0722  0.1793  0.0698   0.356
+  varmiss    did_imputation        500  -0.1645  0.0719  0.1795  0.0715   0.380
+  varmiss    did_multiplegt_dyn    500  -0.2931  0.1011  0.3100  0.0967   0.156
+  varmiss    lpdid                 500  -0.3983  0.0985  0.4103  0.0994   0.018
+  unbalanced csdid bal(none)       500  +0.0017  0.0931  0.0930  0.0942   0.944
+  unbalanced csdid bal(pair)       500  +0.0061  0.0940  0.0941  0.0983   0.952
+  unbalanced jwdid                 500  +0.0321  0.0698  0.0768  0.0674   0.910
+  unbalanced did_imputation        500  +0.0315  0.0706  0.0773  0.0693   0.928
+  unbalanced did_multiplegt_dyn    500  +0.0068  0.0974  0.0975  0.0938   0.952
+  unbalanced lpdid                 500  -0.1245  0.0956  0.1569  0.0970   0.738
+  rcs        csdid bal(none)       500  -0.0043  0.0988  0.0988  0.0931   0.926
+  rcs        jwdid                 500  -0.0035  0.0831  0.0831  0.0760   0.906
+  rcs        did_imputation        500  -0.0035  0.0831  0.0831  0.0758   0.906
+  rcs        did_multiplegt_dyn      - unsupported/empty
+  rcs        lpdid                   - unsupported/empty
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0067  0.0748  0.0750  0.0760   0.946
+  balanced   jwdid                 500  +0.0073  0.0625  0.0629  0.0603   0.940
+  balanced   did_imputation        500  +0.0073  0.0625  0.0629  0.0602   0.940
+  balanced   did_multiplegt_dyn    500  +0.0067  0.0748  0.0750  0.0699   0.926
+  balanced   lpdid                 500  -0.0939  0.0738  0.1194  0.0717   0.726
+  varmiss    csdid bal(none)       500  +0.0011  0.1129  0.1128  0.1109   0.944
+  varmiss    csdid bal(pair)       500  +0.0011  0.1129  0.1128  0.1109   0.944
+  varmiss    jwdid                 500  +0.0680  0.0836  0.1076  0.0798   0.864
+  varmiss    did_imputation        500  +0.0672  0.0854  0.1086  0.0816   0.854
+  varmiss    did_multiplegt_dyn    500  -0.2661  0.1348  0.2982  0.1288   0.436
+  varmiss    lpdid                 500  -0.3735  0.1429  0.3998  0.1459   0.272
+  unbalanced csdid bal(none)       500  +0.0044  0.0971  0.0971  0.0999   0.970
+  unbalanced csdid bal(pair)       500  +0.0084  0.1055  0.1057  0.1043   0.958
+  unbalanced jwdid                 500  +0.0359  0.0771  0.0850  0.0755   0.926
+  unbalanced did_imputation        500  +0.0354  0.0807  0.0880  0.0771   0.906
+  unbalanced did_multiplegt_dyn    500  +0.0126  0.1151  0.1157  0.1113   0.944
+  unbalanced lpdid                 500  -0.0886  0.1218  0.1505  0.1234   0.880
+  rcs        csdid bal(none)       500  +0.0007  0.1029  0.1028  0.0994   0.944
+  rcs        jwdid                 500  +0.0019  0.0862  0.0861  0.0853   0.948
+  rcs        did_imputation        500  +0.0019  0.0862  0.0861  0.0852   0.950
+  rcs        did_multiplegt_dyn      - unsupported/empty
+  rcs        lpdid                   - unsupported/empty
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0046  0.0743  0.0743  0.0787   0.968
+  balanced   jwdid                 500  +0.0053  0.0646  0.0648  0.0650   0.960
+  balanced   did_imputation        500  +0.0053  0.0646  0.0648  0.0649   0.960
+  balanced   did_multiplegt_dyn    500  +0.0046  0.0743  0.0743  0.0729   0.948
+  balanced   lpdid                 500  +0.0046  0.0743  0.0743  0.0744   0.954
+  varmiss    csdid bal(none)       500  +0.0065  0.1061  0.1062  0.1089   0.960
+  varmiss    csdid bal(pair)       500  +0.0065  0.1061  0.1062  0.1089   0.960
+  varmiss    jwdid                 500  +0.2321  0.0795  0.2453  0.0789   0.162
+  varmiss    did_imputation        500  +0.2318  0.0802  0.2452  0.0799   0.166
+  varmiss    did_multiplegt_dyn    500  -0.0792  0.1343  0.1558  0.1284   0.894
+  varmiss    lpdid                 500  -0.0793  0.1448  0.1650  0.1478   0.932
+  unbalanced csdid bal(none)       500  +0.0009  0.0978  0.0977  0.1036   0.966
+  unbalanced csdid bal(pair)       500  -0.0008  0.1089  0.1088  0.1082   0.944
+  unbalanced jwdid                 500  +0.0310  0.0831  0.0887  0.0810   0.924
+  unbalanced did_imputation        500  +0.0302  0.0838  0.0890  0.0824   0.930
+  unbalanced did_multiplegt_dyn    500  -0.0003  0.1201  0.1200  0.1152   0.928
+  unbalanced lpdid                 500  -0.0022  0.1248  0.1247  0.1287   0.954
+  rcs        csdid bal(none)       500  +0.0047  0.1018  0.1018  0.1036   0.954
+  rcs        jwdid                 500  +0.0066  0.0892  0.0893  0.0922   0.958
+  rcs        did_imputation        500  +0.0066  0.0892  0.0893  0.0920   0.958
+  rcs        did_multiplegt_dyn      - unsupported/empty
+  rcs        lpdid                   - unsupported/empty
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0052  0.0627  0.0629  0.0666   0.966
+  varmiss    csdid bal(none)       500  +0.0035  0.0928  0.0927  0.0937   0.954
+  varmiss    csdid bal(pair)       500  +0.0035  0.0928  0.0927  0.0937   0.954
+  unbalanced csdid bal(none)       500  +0.0023  0.0823  0.0823  0.0865   0.960
+  unbalanced csdid bal(pair)       500  +0.0046  0.0824  0.0825  0.0833   0.956
+  rcs        csdid bal(none)       500  +0.0004  0.0884  0.0883  0.0849   0.938
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  balanced   csdid bal(none)          500     500        0
+  balanced   jwdid                    500     500        0
+  balanced   did_imputation           500     500        0
+  balanced   did_multiplegt_dyn       500     500        0
+  balanced   lpdid                    500     500        0
+  varmiss    csdid bal(none)          500     500        0
+  varmiss    csdid bal(pair)          500     500        0
+  varmiss    jwdid                    500     500        0
+  varmiss    did_imputation           500     500        0
+  varmiss    did_multiplegt_dyn       500     500        0
+  varmiss    lpdid                    500     500        0
+  unbalanced csdid bal(none)          500     500        0
+  unbalanced csdid bal(pair)          500     500        0
+  unbalanced jwdid                    500     500        0
+  unbalanced did_imputation           500     500        0
+  unbalanced did_multiplegt_dyn       500     500        0
+  unbalanced lpdid                    500     500        0
+  rcs        csdid bal(none)          500     500        0
+  rcs        jwdid                    500     500        0
+  rcs        did_imputation           500     500        0
+  rcs        did_multiplegt_dyn       500       0      500
+  rcs        lpdid                    500       0      500
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+Traceback (most recent call last):
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid-stata-porting/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 181, in <module>
+    main(sys.argv[1])
+    ~~~~^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid-stata-porting/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 177, in main
+    cells(rows, regs, pkgs)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid-stata-porting/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 144, in cells
+    cov = [1 if abs(e - rtruth) <= 1.959964 * s else 0
+                        ^^^^^^
+NameError: name 'rtruth' is not defined. Did you mean: 'truth'?

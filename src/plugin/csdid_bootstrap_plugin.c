@@ -19,38 +19,13 @@ typedef struct {
     int index;
 } csdid_mt_state;
 
-/* R's sqrt(.Machine$double.eps) * 10, which is `sqrt(epsilon(1)) * 10' in
-   Mata. This threshold MUST track src/mata/csdid.mata's zero_tol: the two
-   screens decide the same thing about the same columns. */
-#define CSDID_ZERO_TOL 1.4901161193847656e-7
-
-/* Kahan-Babuska-Neumaier compensated summation.
-
-   The degeneracy screen used to accumulate in `long double', which is not one
-   type across the release targets: arm64 Darwin makes it a 53-bit double,
-   x86_64 and mingw give the x87 64-bit type, aarch64 Linux gives IEEE
-   binary128. The universal macOS bundle is built -arch arm64 -arch x86_64, so
-   the SAME shipped file evaluated this one threshold at two different
-   precisions in its two slices, and none of the four matched the Mata twin,
-   which computes the same quantity with quadcross(). Whether a borderline
-   influence-function column counted as degenerate could therefore depend on
-   which slice the user's machine loaded.
-
-   Compensated summation in plain `double' is identical on every target and is
-   far closer to quadcross() than any of those widths. Do not "simplify" this
-   back to a wider accumulator: width is the defect, not the cure. */
-static void csdid_kbn_add(double *sum, double *comp, double term)
-{
-    double t = *sum + term;
-
-    if (fabs(*sum) >= fabs(term)) {
-        *comp += (*sum - t) + term;
-    }
-    else {
-        *comp += (term - t) + *sum;
-    }
-    *sum = t;
-}
+/* This file no longer decides degeneracy. It once accumulated each column's
+   sum of squares here and compared it against sqrt(.Machine$double.eps)*10 --
+   in `long double', which is a different width on each release target, so the
+   universal macOS bundle answered the same borderline question two ways in its
+   two slices. The screen is gone rather than merely widened: R judges a
+   dimension degenerate from the DRAWS (mboot l142), which Mata does after this
+   plugin returns. Do not reintroduce a pre-draw tolerance here. */
 
 static int csdid_parse_positive_int(const char *text, const char *label, int *out)
 {
@@ -263,12 +238,17 @@ static int csdid_run_integers(int argc, char *argv[])
     return csdid_store_state(state_matrix, &rng);
 }
 
-/* #53. Both tasks read their influence functions and screen out the degenerate
-   columns with the same code: the same two overflow guards, the same three
-   allocations, the same row-major fill, the same missing-value test, and the
-   same compensated sum of squares against the same threshold -- which appeared
-   twice as a bare literal before it was named. It was written out twice. One
-   copy now.
+/* #53. Both tasks read their influence functions and screen out the columns
+   that cannot be drawn with the same code: the same two overflow guards, the
+   same three allocations, the same row-major fill and the same missing-value
+   test. It was written out twice. One copy now.
+
+   A column is undrawable only when it carries a missing value -- a failed
+   (g,t) cell. Degeneracy itself is judged AFTER the draws, in Mata, by the
+   test R's mboot applies (colSums(bres^2) > sqrt(.Machine$double.eps)*10,
+   mboot l142). This screen used to apply that same absolute tolerance to the
+   influence-function sums of squares instead, which is tighter than R's by
+   biters/observations and dropped columns R keeps.
 
    `task' only prefixes the diagnostics, so the aggregate task still says which
    task failed. The buffers are handed back even on failure, because the caller
@@ -287,7 +267,7 @@ static int csdid_read_and_screen(
     double *influence;
     double *sums;
     unsigned char *active;
-    double value, sumsq, sumsq_comp;
+    double value;
     size_t influence_count;
     int j, obs, rc;
     char msg[256];
@@ -321,8 +301,6 @@ static int csdid_read_and_screen(
 
     for (j = 0; j < effects; ++j) {
         active[j] = 1;
-        sumsq = 0.0;
-        sumsq_comp = 0.0;
         for (obs = 0; obs < observations; ++obs) {
             if (use_variables) {
                 rc = SF_vdata(j + 1, first_obs + obs, &value);
@@ -332,15 +310,7 @@ static int csdid_read_and_screen(
             }
             if (rc) return rc;
             influence[(size_t)obs * (size_t)effects + (size_t)j] = value;
-            if (SF_is_missing(value)) {
-                active[j] = 0;
-            }
-            else {
-                csdid_kbn_add(&sumsq, &sumsq_comp, value * value);
-            }
-        }
-        if (!active[j] || (sumsq + sumsq_comp) <= CSDID_ZERO_TOL) {
-            active[j] = 0;
+            if (SF_is_missing(value)) active[j] = 0;
         }
     }
     return 0;
@@ -366,7 +336,6 @@ static int csdid_run_bootstrap_core(
     size_t influence_count;
     uint32_t current;
     double value, sign, scale;
-    double sumsq, sumsq_comp;
     /* SF_in1() is a function call and cannot change during the read; it was
        re-evaluated once per element. Only meaningful on the variables path. */
     ST_int first_obs = 0;
@@ -533,7 +502,6 @@ static int csdid_run_bootstrap_agg_vars(int argc, char *argv[])
     size_t influence_count;
     uint32_t current;
     double value, sign, scale;
-    double sumsq, sumsq_comp;
 
     /* Arity is the ONLY thing that used to select between the variables path
        and the matrix path, and the dispatcher accepted two task names for

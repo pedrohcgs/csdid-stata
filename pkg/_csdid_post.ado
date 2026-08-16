@@ -64,6 +64,7 @@ program define _csdid_post_aggte, eclass
 
     local names ""
     local k = 0
+    local renamed = 0
     local has_agg_if 0
     local overall_col 0
     local post_if_src "e(agg_inffunc)"
@@ -85,8 +86,8 @@ program define _csdid_post_aggte, eclass
         if !_rc {
             tempname aggif_probe
             capture mata: st_numscalar("`aggif_probe'", ///
-                (CSDID_LAST_AGG_TOKEN == st_numscalar("e(mata_cache_token)")) * ///
-                cols(CSDID_LAST_AGG_INFFUNC))
+                (csdid_cache_agg_token() == st_numscalar("e(mata_cache_token)")) * ///
+                csdid_cache_agg_cols())
             if !_rc {
                 if scalar(`aggif_probe') > 0 & scalar(`aggif_probe') < . {
                     local has_agg_if 1
@@ -110,27 +111,37 @@ program define _csdid_post_aggte, eclass
 
             * F-045: dynamic (or an explicit eventnames request) keeps the
             * historical Tm#/Tp# names; group -> G#; calendar -> T#.
+            * round() ROUNDED the axis value, so on a non-integer event-time,
+            * cohort or period axis distinct rows collapsed onto one name and
+            * test/lincom resolved silently to the first column carrying it.
+            * %21.0g is injective on the value; "." is not usable in a
+            * coefficient name, so it becomes "_". The sign of an event time is
+            * carried by the m/p prefix, not by the formatted field.
+            local evtxt : display %21.0g abs(`ev')
+            local evtxt = strtrim("`evtxt'")
+            if substr("`evtxt'", 1, 1) == "." local evtxt "0`evtxt'"
+            local evtxt = subinstr("`evtxt'", ".", "_", .)
             if "`atype'" == "dynamic" | "`eventnames'" != "" {
-                if `ev' < 0 {
-                    local abs_ev = abs(round(`ev'))
-                    local cname "Tm`abs_ev'"
-                }
-                else {
-                    local pos_ev = round(`ev')
-                    local cname "Tp`pos_ev'"
-                }
+                local cname = cond(`ev' < 0, "Tm", "Tp") + "`evtxt'"
             }
             else if "`atype'" == "group" {
-                local cname "G`=round(`ev')'"
+                local cname "G`evtxt'"
             }
             else {
-                local cname "T`=round(`ev')'"
+                local cname "T`evtxt'"
             }
 
             if missing(`se') local vval 0
             else local vval = `se' ^ 2
 
             local ++k
+            * e(V) cannot carry a missing diagonal - `ereturn post' rejects it
+            * with r(504) - so a row with no standard error is posted with a
+            * zero row and column, exactly as csdid__rescale_v_to_se does for
+            * ATT(g,t). r(table) must NOT report that zero as an estimated
+            * variance: R's tidy() reports NA there, and Stata's own convention
+            * for a zero-variance coefficient blanks se/z/p/ll/ul.
+            local semiss`k' = missing(`se')
             if `k' == 1 {
                 matrix `B' = (`att')
                 matrix `V' = (`vval')
@@ -142,6 +153,13 @@ program define _csdid_post_aggte, eclass
                 matrix `V' = (`V' \ J(1, `k', 0))
                 matrix `V'[`k', `k'] = `vval'
                 matrix `MAP' = `MAP', (`i')
+            }
+            * Residue the format cannot cover: a name past Stata's
+            * 32-character limit, and two axis values whose "_" substitution
+            * reassembles the same string.
+            if strlen("`cname'") > 32 | strpos(" `names' ", " `cname' ") {
+                local cname "eff_`k'"
+                local ++renamed
             }
             local names "`names' `cname'"
         }
@@ -158,6 +176,7 @@ program define _csdid_post_aggte, eclass
                 "Post_avg", cond("`atype'" == "simple", "ATT", "Overall"))
 
             local ++k
+            local semiss`k' = missing(`post_se')
             if `k' == 1 {
                 matrix `B' = (`post_att')
                 matrix `V' = (`post_v')
@@ -176,10 +195,20 @@ program define _csdid_post_aggte, eclass
     }
 
     if `k' == 0 exit
+    if `renamed' > 0 {
+        display as text "note: `renamed' aggregated effect(s) could not be given a unique name within Stata's 32-character limit and are named eff_# instead. e(aggte) reports the event time, cohort or period of every row."
+    }
     if `has_agg_if' {
         local post_cluster ""
         capture confirm matrix e(cluster_vec)
         if !_rc local post_cluster "e(cluster_vec)"
+        * Same token the aggregate-IF fallback above requires: without it the
+        * Mata cluster cache was adopted on a row-count match alone, so an
+        * unrelated clustered csdid run in between silently supplied the
+        * off-diagonals of THIS estimation's e(V).
+        local post_token .
+        capture confirm scalar e(mata_cache_token)
+        if !_rc local post_token = e(mata_cache_token)
         local post_boot ""
         local use_boot 0
         capture confirm scalar e(bstrap)
@@ -188,7 +217,7 @@ program define _csdid_post_aggte, eclass
             capture confirm matrix e(agg_boot_draws)
             if !_rc local post_boot "e(agg_boot_draws)"
         }
-        mata: csdid_post_mapped_v("`post_if_src'", "`post_cluster'", "`post_boot'", `use_boot', "`MAP'", "`V'")
+        mata: csdid_post_mapped_v("`post_if_src'", "`post_cluster'", "`post_boot'", `use_boot', "`MAP'", "`V'", `post_token')
     }
     matrix colnames `B' = `names'
     matrix colnames `V' = `names'
@@ -234,7 +263,10 @@ program define _csdid_post_aggte, eclass
     forvalues j = 1/`k' {
         matrix `T'[1, `j'] = `EB'[1, `j']
         local v = `EV'[`j', `j']
-        if !missing(`v') & `v' >= 0 {
+        * A row whose SE is missing was posted with variance 0, which is not
+        * the same statement as an estimated variance of 0: se, z, p, ll and ul
+        * stay missing (rows 8/9 follow Stata's own zero-variance convention).
+        if !missing(`v') & `v' >= 0 & !`semiss`j'' {
             local se = sqrt(`v')
             matrix `T'[2, `j'] = `se'
             if `se' > 0 {
@@ -243,8 +275,8 @@ program define _csdid_post_aggte, eclass
             }
             matrix `T'[5, `j'] = `EB'[1, `j'] - `bandcrit' * `se'
             matrix `T'[6, `j'] = `EB'[1, `j'] + `bandcrit' * `se'
-            matrix `T'[8, `j'] = `bandcrit'
         }
+        if !missing(`v') & `v' >= 0 matrix `T'[8, `j'] = `bandcrit'
         matrix `T'[9, `j'] = 0
     }
     matrix colnames `T' = `names'
@@ -346,7 +378,7 @@ program define _csdid_post_replace_bv, eclass
     * next one added cannot vanish the same way.
     local scalar_names N N_units N_attgt N_groups N_time anticipation pscoretrim ///
         bstrap biters cband pointwise fast_requested fast_auto fast_allowed fast_used crit_val point_crit_val ///
-        N_clusters level agg_cluster_fallback agg_level N_aggte time_first ///
+        N_clusters level agg_level agg_cband N_aggte time_first ///
         allow_unbalanced mata_cache mata_cache_token ///
         wald_stat wald_df wald_pvalue
     * (F-055's separate handling of performance_auto_threshold is gone with

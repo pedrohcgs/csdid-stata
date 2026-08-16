@@ -12,7 +12,23 @@ capture mkdir "`personal'"
 sysdir set PLUS "`plus'"
 sysdir set PERSONAL "`personal'"
 
+* ---------------------------------------------------------------------------
+* Coexistence with the csdid2 package, which distributes lcsdid.mlib. Our
+* library is lcsdid_v2.mlib precisely so the two installs cannot overwrite
+* each other; simulate an existing csdid2 install by planting a foreign
+* lcsdid.mlib in PLUS before installing, and prove it survives untouched.
+* ---------------------------------------------------------------------------
+capture mkdir "`plus'/l"
+mata: mata mlib create lcsdid, dir("`plus'/l") replace
+confirm file "`plus'/l/lcsdid.mlib"
+checksum "`plus'/l/lcsdid.mlib"
+local foreign_checksum = r(checksum)
+
 net install csdid, from("`root'") replace
+confirm file "`plus'/l/lcsdid_v2.mlib"
+confirm file "`plus'/l/lcsdid.mlib"
+checksum "`plus'/l/lcsdid.mlib"
+assert r(checksum) == `foreign_checksum'
 which csdid
 which csdid_estat
 which csdid_stats

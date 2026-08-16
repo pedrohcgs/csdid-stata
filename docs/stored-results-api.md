@@ -19,17 +19,34 @@ The following results are intended to be stable across compatible releases:
 | `e(boot_draws)` | matrix | diagnostic-adjacent | Present for bootstrap runs when stored. Draw ordering is not a portable reproducibility contract. |
 | `e(aggte)` | matrix | stable | Posted by `csdid_stats` and `estat` aggregation commands. |
 | `e(agg_inffunc)` | matrix | conditional stable | Aggregation influence functions, subject to the same storage policy as ATT(g,t) IFs. |
+| `e(boot_aggte)` | matrix | stable when present | Bootstrap aggregation output when the aggregation ran under the bootstrap. |
+| `e(agg_boot_draws)` | matrix | diagnostic-adjacent | Aggregation bootstrap draws; same caveat as `e(boot_draws)`. |
+| `e(boot_rng_state)` | matrix | replay | The bootstrap RNG state (1 x 625). Exists so `csdid_stats`/`estat` can replay the identical draw stream; not a user-facing result. |
 
 ## Stable Macros And Scalars
 
 Stable macros include `e(cmd)`, `e(cmdline)`, `e(version)`, `e(method)`,
 `e(method_requested)`, `e(control_group)`, `e(base_period)`, `e(panel_mode)`,
 `e(timevar)`, `e(gvar)`, `e(idvar)`, `e(clustervar)`, `e(weightvar)`,
-`e(fix_weights)`, `e(boot_dist)`, `e(boot_seed)`, and `e(storage)`.
+`e(fix_weights)`, `e(boot_dist)`, `e(boot_dist_requested)`, `e(boot_seed)`,
+`e(storage)`, `e(yname)`, `e(wtype)`, `e(wexp)`, `e(rif_file)`, and — after an
+aggregation — `e(agg_type)` and `e(agg_clustervar)`.
 
 Stable scalars include `e(N)`, `e(N_units)`, `e(N_attgt)`, `e(N_groups)`,
-`e(N_time)`, `e(level)`, `e(bstrap)`, `e(cband)`, `e(biters)`, `e(pointwise)`,
-and `e(N_clusters)`.
+`e(N_time)`, `e(N_aggte)`, `e(level)`, `e(agg_level)`, `e(agg_cband)`,
+`e(bstrap)`, `e(cband)`, `e(biters)`, `e(pointwise)`, `e(N_clusters)`,
+`e(anticipation)`,
+`e(pscoretrim)`, `e(time_first)`, `e(allow_unbalanced)`, `e(crit_val)`,
+`e(point_crit_val)`, and — when the pre-test ran — `e(wald_stat)`,
+`e(wald_df)`, and `e(wald_pvalue)`.
+
+Stata-convention interoperability results exist so that `estout`, `etable`,
+`estat`, and `predict` machinery work without csdid-specific knowledge:
+`e(depvar)` (same value as `e(yname)`), `e(vce)`, `e(vcetype)`, `e(reps)`
+(same value as `e(biters)`), `e(rseed)` (same value as `e(boot_seed)`),
+`e(estat_cmd)`, `e(predict)`, `e(properties)`, and `e(marginsnotok)`. The
+csdid-named result is the canonical one of each pair; the convention alias is
+stable but exists for third-party packages, not for csdid workflows.
 
 `e(N)` counts the estimation sample, not the observations handed to the
 command: it excludes units treated in the first usable period and the periods
@@ -41,7 +58,18 @@ estimates come from, and on a balanced panel
 from the pre-drop sample while `e(N_units)` came from the post-drop one, so the
 three could not all be right at once.
 
-`e(fast_mode)`, `e(compute_path)`, `e(fast_used)` and `e(mata_cache)` are
+`e(cband)` and `e(agg_cband)` answer different questions and are both stable.
+`e(cband)` is the estimation's band request and governs the ATT(g,t) table.
+`e(agg_cband)` reports the band the aggregation in `e(aggte)` actually carries,
+which is 0 whenever the aggregation is banded pointwise however the estimation
+was banded: `type(simple)`, whose single overall effect has no simultaneous
+band distinct from the pointwise one, and an estimation whose settled time grid
+has two periods. It is posted by every aggregation route, so code that draws
+bands by hand should read `e(agg_cband)`, not `e(cband)`, after `csdid_stats`,
+`estat` *type*, or `csdid ..., agg()`.
+
+`e(fast_mode)`, `e(compute_path)`, `e(fast_used)`, `e(fast_requested)`,
+`e(fast_auto)`, `e(fast_allowed)` and `e(mata_cache)` are
 **diagnostics, not stable results**, exactly as `help csdid` marks them: they
 describe which internal execution surface ran and may change as the engine is
 refined. `e(fast_used)=1` means optimized computation was allowed by the

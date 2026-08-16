@@ -87,6 +87,27 @@ earlier versions estimated. If it fires, `notyet` uses not-yet-treated units as
 the comparison group and does not depend on the never-treated group being large. This
 changes *whether the command runs*, never an estimate.
 
+**A panel that is not shaped like a panel is refused, and the message says
+which variable is at fault.** With `ivar()` supplied, Version 2.0.0 makes three
+checks before it estimates anything, each its own error: a unit may appear at
+most once per period, `gvar()` must be constant within a unit (treatment timing
+is irreversible), and `cluster()`, when given, must be constant within a unit
+too.
+
+The middle one is new. Version 1.82 estimated a panel in which a unit's cohort
+changed from one period to the next — a treatment history that has no reading.
+The other two were already stopped, but by the machinery underneath the command
+rather than by the command: a duplicated row surfaced as `repeated time values
+within panel` and a moving cluster as `panels are not nested within clusters`,
+neither of which mentions `csdid` or the option that caused it. The sample must
+also contain at least two distinct units; that case used to fail with a
+conformability error from inside the estimator.
+
+All three are judged on the estimation sample, and before `bal(full)` balances
+the panel, so a fault inside a unit that balancing would drop is still reported
+instead of disappearing with the unit. Like the refusal above, this changes
+*whether the command runs*, never an estimate.
+
 ### Stored results
 
 **`e()` carries the estimation contract; unit-level objects stay internal.**
@@ -134,8 +155,11 @@ as Stata matrices, and `saverif()` writes the durable dataset that
 - **`saving()` on every `estat` subcommand**, which writes what that subcommand
   computed to a dataset — the same option `margins`, `simulate` and `graph`
   take, so there is no separate export command.
-- **`csdid_plot, saving()`** exports plot-ready data so you keep control of the
-  graph styling.
+- **`csdid_plot, saving()`** exports plot-ready data — estimates, band bounds,
+  and axis values — so you can draw the figure with `twoway` exactly as you
+  want it. A bare `csdid_plot` still draws: ATT(g,t) panels by cohort, or the
+  active event-study, cohort, or calendar aggregation. Unlike Version 1.82, that drawn
+  graph takes no styling options; `saving()` is the styling route.
 - **Transformation and factor covariates** in the covariate list.
 - **No external dependencies.** Version 1.82 required `drdid` from SSC; 2.0.0 requires
   nothing beyond Stata itself.

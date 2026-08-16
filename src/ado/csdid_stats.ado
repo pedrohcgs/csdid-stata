@@ -360,7 +360,6 @@ program define csdid_stats, eclass
     }
     local na_rm_flag = ("`na_rm'" != "")
     local use_cluster = ("`e(clustervar)'" != "")
-    local agg_cluster_fallback = 0
     if "`agg_cluster'" != "" {
         if "`e(clustervar)'" == "`agg_cluster'" {
             local use_cluster = 1
@@ -403,15 +402,12 @@ program define csdid_stats, eclass
     * Mata cache through the same empty-name convention the bootstrap
     * plumbing already uses (see _csdid_post.ado and csdid_post_mapped_v).
     local agg_store_large = (`use_cache' == 0)
-    capture mata: csdid__mean(J(1, 1, 0))
-    if _rc {
-        capture quietly findfile csdid.mata
-        if _rc {
-            display as error "csdid Mata source not found on adopath"
-            exit 499
-        }
-        quietly do "`r(fn)'"
-    }
+    * The engine, by the same rules csdid uses. `csdid_stats using <riffile>'
+    * is the one route that reaches the engine with no csdid before it, so it
+    * is also the one route where the library's stamp has to be read here or
+    * not at all, and where the search order has never been settled by an
+    * earlier command in the session.
+    _csdid_engine_load
     if `use_cache' {
         capture confirm scalar e(mata_cache)
         if _rc | e(mata_cache) != 1 {
@@ -453,9 +449,36 @@ program define csdid_stats, eclass
     capture confirm scalar e(bstrap)
     local bstrap = 0
     if !_rc local bstrap = e(bstrap)
+    * ---------------------------------------------------------------------
+    * The simultaneous band is an AGGREGATION-level decision in R, and it is
+    * not always e(cband). Two cases where R computes no band critical value
+    * and reports the pointwise normal quantile instead:
+    *
+    *   type(simple)  compute.aggte.R:288-322 returns an object with no
+    *                 crit.val.egt at all, and AGGTEobj.R:80-83 bands the
+    *                 overall ATT at qnorm(1-alp/2).
+    *   two periods   pre_process_did.R:523 sets cband <- FALSE on the
+    *                 SETTLED time grid, which reaches compute.aggte through
+    *                 DIDparams (l.117-118) and skips the mboot band call in
+    *                 all three windowed branches (l.366/510/643).
+    *
+    * The estimation's own e(cband) is untouched: att_gt keeps its local
+    * cband TRUE in both cases (att_gt.R:291/694), so the ATT(g,t) band stays
+    * simultaneous. Only the aggregation reads the local below, and R draws
+    * no band block in these cases either, so passing it to the kernels is
+    * what keeps the draw stream aligned, not only the reported crit.
+    * ---------------------------------------------------------------------
+    local agg_simple = ("`type'" == "simple")
+    local cband = 0
+    capture confirm scalar e(cband)
+    if !_rc local cband = e(cband)
+    if `cband' & `agg_simple' local cband = 0
+    capture confirm scalar e(N_time)
+    if !_rc {
+        if `cband' & e(N_time) == 2 local cband = 0
+    }
     if `bstrap' {
         local biters = e(biters)
-        local cband = e(cband)
         * Same cap, same gate as the estimation stage: the aggregation
         * bootstrap writes biters-row Stata matrices too, and biters is
         * INHERITED from e(biters), so a run that got past csdid on a raised
@@ -488,43 +511,33 @@ program define csdid_stats, eclass
             mata: st_matrix("`boot_rng_state'", csdid__bmisc_rng_init(`e(boot_seed)'))
             local boot_rng_arg "`boot_rng_state'"
         }
+        * The draw policy and the four names the results come back in are the
+        * same at all three aggregate-bootstrap kernel call sites below -- the
+        * replication count and the level the ESTIMATION settled on, the draw
+        * distribution, the seeded state, and the names for the table, the
+        * draws and the two critical values. They are written once here so the
+        * three cannot drift apart; the arguments that differ (which influence
+        * functions, and the cluster vector) stay at each call.
+        local agg_boot_args `"`biters', (100 - `level') / 100, `cband', "`boot_dist'", "`boot_rng_arg'", "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", "`agg_pointcrit'", `agg_simple'"'
         local agg_boot_accel "mata"
         local agg_boot_status "mata-unseeded"
         local agg_boot_rc 0
         local agg_plugin_success 0
-        * F-004 extension: type(simple) is not the only aggregation whose IF
-        * is one effect column duplicated as the overall column -- a
-        * one-effect event window (estat event, window(0 0)) produces the
-        * same degeneracy. R runs a single mboot serving both columns there,
-        * which the Mata kernels replicate through their simple_duplicate
-        * rule; the plugin would draw an independent second block that R
-        * never draws. The numeric test below is the same one the kernels
-        * apply, so plugin and Mata can never disagree on this case.
-        local agg_dupcol 0
-        if `use_cache' {
-            capture mata: st_local("agg_dupcol", strofreal( ///
-                cols(CSDID_LAST_AGG_INFFUNC) == 2 & ///
-                max(abs(CSDID_LAST_AGG_INFFUNC[., 1] :- CSDID_LAST_AGG_INFFUNC[., 2])) <= sqrt(epsilon(1)) * 10))
-        }
-        else {
-            capture mata: st_local("agg_dupcol", strofreal( ///
-                cols(st_matrix("`agg_inffunc'")) == 2 & ///
-                max(abs(st_matrix("`agg_inffunc'")[., 1] :- st_matrix("`agg_inffunc'")[., 2])) <= sqrt(epsilon(1)) * 10))
-        }
-        if "`agg_dupcol'" == "" local agg_dupcol 0
-        * the two shapes where effect and overall are the same column
-        local agg_dupcol_rule = ("`type'" == "simple" | `agg_dupcol')
+        * type(simple) is the ONLY aggregation whose overall column reuses
+        * the effect column's draws: R computes it with one getSE/mboot call
+        * (compute.aggte.R:310). A one-effect event or group window has a
+        * bit-identically duplicated influence matrix and is still given its
+        * own mboot block for the overall se (compute.aggte.R:414/546/680),
+        * so the shape of the influence matrix must not decide this.
         if "$CSDID_BOOT_PLUGIN_DISABLE" == "1" {
             local agg_boot_status "mata-plugin-disabled"
         }
         else if "`boot_rng_arg'" != "" & "`boot_dist'" == "rademacher" & ///
             "`e(bootstrap_accelerator)'" == "plugin" {
-            * F-004, resolved rather than avoided. When the aggregate influence
-            * function is one column duplicated -- type(simple) always, and a
-            * one-effect event window (window(0 0)) by the numeric test above --
-            * R's aggte runs a SINGLE mboot whose draws serve both the effect
-            * and the overall column. The plugin draws the overall column from
-            * its own stream, which R never draws, so using it unchanged made
+            * F-004, resolved rather than avoided. For type(simple) R's aggte
+            * runs a SINGLE mboot whose draws serve both the effect and the
+            * overall column. The plugin draws the overall column from its own
+            * stream, which R never draws, so using it unchanged made
             * overall_se diverge.
             *
             * type(simple) was therefore excluded outright, which left the
@@ -571,7 +584,7 @@ program define csdid_stats, eclass
                 * rows; measured 48s at 100,000 units). The plugin reads them
                 * from temp variables, exactly as the estimation stage does.
                 local agg_plugin_k 0
-                capture mata: st_local("agg_plugin_k", strofreal(cols(CSDID_LAST_AGG_INFFUNC)))
+                capture mata: st_local("agg_plugin_k", strofreal(csdid_cache_agg_cols()))
                 if `agg_plugin_k' < 2 local agg_plugin_rc 498
                 local agg_plugin_effects = `agg_plugin_k' - 1
                 local agg_plugin_if_vars ""
@@ -611,7 +624,7 @@ program define csdid_stats, eclass
                     local agg_plugin_rc = _rc
                     if `agg_plugin_rc' == 1 exit 1
                 }
-                if !`agg_plugin_rc' & `agg_dupcol_rule' {
+                if !`agg_plugin_rc' & `agg_simple' {
                     * The duplicate rule, applied to the plugin's output: the
                     * overall column IS the effect column, not a second draw.
                     capture matrix `agg_plugin_independent'[1, `agg_plugin_k'] = ///
@@ -658,7 +671,7 @@ program define csdid_stats, eclass
             * c(max_matdim) rows, which made the old route take minutes on
             * any platform where the plugin does not run -- unseeded fits,
             * non-rademacher draws, and every OS without the shipped plugin.
-            capture mata: csdid_bootstrap_aggte_direct("`aggte'", "`agg_unit_src'", "`agg_time_src'", `use_cluster', `biters', (100 - `level') / 100, `cband', "`boot_dist'", "`boot_rng_arg'", "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", "`agg_pointcrit'")
+            capture mata: csdid_bootstrap_aggte_direct("`aggte'", "`agg_unit_src'", "`agg_time_src'", `use_cluster', `agg_boot_args')
             local agg_boot_kernel_rc = _rc
             if `agg_boot_kernel_rc' == 1 exit 1
             if `agg_boot_kernel_rc' {
@@ -685,79 +698,88 @@ program define csdid_stats, eclass
             * materializing. The c(max_matdim) exposure it advertised is real
             * but lives on the saved-RIF LOAD, where it is now refused by name
             * (see _csdid_stats_load_rif).
-        local boot_agg_if "`agg_inffunc'"
-        local boot_agg_cluster_vec ""
-        if `use_cluster' {
-            tempname boot_agg_cluster_raw
-            capture confirm matrix e(cluster_vec)
-            if !_rc {
-                matrix `boot_agg_cluster_raw' = e(cluster_vec)
+            local boot_agg_if "`agg_inffunc'"
+            local boot_agg_cluster_vec ""
+            if `use_cluster' {
+                tempname boot_agg_cluster_raw
+                capture confirm matrix e(cluster_vec)
+                if !_rc {
+                    matrix `boot_agg_cluster_raw' = e(cluster_vec)
+                }
+                else {
+                    * EUX-001: an empty Mata cluster cache would otherwise abort
+                    * with raw Mata frames instead of a named refusal. The return
+                    * code is not enough to detect it: the reader answers an empty
+                    * matrix when no csdid has run in this session, and st_matrix()
+                    * writes nothing for an empty matrix WITHOUT setting _rc
+                    * (measured), so a missing cache would slip past a plain -if
+                    * _rc- and surface later as a raw r(111) on a matrix that was
+                    * never created. Confirm the matrix arrived instead.
+                    capture mata: st_matrix("`boot_agg_cluster_raw'", csdid_cache_cluster_vec())
+                    capture confirm matrix `boot_agg_cluster_raw'
+                    if _rc {
+                        display as error "the clustered bootstrap needs the cluster information from the csdid run; rerun csdid with storeall before csdid_stats"
+                        exit 498
+                    }
+                }
+                local boot_agg_cluster_vec "`boot_agg_cluster_raw'"
+            }
+            else if "`e(idvar)'" != "" {
+                * F-001/F-022 (repaired, donor label F-003): the allow_unbalanced
+                * aggregation bootstrap must consume multiplier draws in R's
+                * unbalanced unit order. The repaired estimation stage carries the
+                * draw-order key INSIDE the unit/group map itself (4th column =
+                * each unit's first-appearance period), so the map this call
+                * already passes is the augmented one on every storage mode:
+                * full storage posts the 4-column e(unit_group), and lean storage
+                * leaves e(unit_group) empty so csdid_boot_reorder_r falls back to
+                * the 4-column cached unit map. csdid_boot_reorder_r then
+                * branches on cols >= 4. The donor's separate e(unit_group_boot)
+                * export is therefore not required; it is still preferred here if
+                * present, and the confirm guard falls back to e(unit_group) so no
+                * storage mode can reference an unposted matrix (the donor's
+                * unguarded st_matrix on lean storage was the r(3301) crash).
+                local boot_agg_unit "e(unit_group)"
+                if "`e(panel_mode)'" == "allow_unbalanced" {
+                    capture confirm matrix e(unit_group_boot)
+                    if !_rc local boot_agg_unit "e(unit_group_boot)"
+                }
+                tempname boot_agg_if_ordered boot_agg_cluster_ordered
+                capture mata: csdid_boot_reorder_r("`boot_agg_unit'", ///
+                    "`agg_inffunc'", "", "`boot_agg_if_ordered'", ///
+                    "`boot_agg_cluster_ordered'")
+                local csdid_rc = _rc
+                if `csdid_rc' {
+                    display as error "csdid_stats could not put the aggregate influence functions in bootstrap draw order; rerun csdid before csdid_stats"
+                    exit `csdid_rc'
+                }
+                local boot_agg_if "`boot_agg_if_ordered'"
             }
             else {
-                * EUX-001: an unset CSDID_LAST_CLUSTER_VEC would otherwise
-                * abort with raw Mata frames instead of a named refusal.
-                capture mata: st_matrix("`boot_agg_cluster_raw'", CSDID_LAST_CLUSTER_VEC)
-                if _rc {
-                    display as error "the clustered bootstrap needs the cluster information from the csdid run; rerun csdid with storeall before csdid_stats"
-                    exit 498
+                tempname boot_agg_if_ordered boot_agg_cluster_ordered
+                capture mata: csdid_boot_reorder_rc_r("`e(timevar)'", ///
+                    "e(unit_group)", "`agg_inffunc'", "", ///
+                    "`boot_agg_if_ordered'", "`boot_agg_cluster_ordered'")
+                local csdid_rc = _rc
+                if `csdid_rc' {
+                    display as error "csdid_stats could not put the aggregate influence functions in bootstrap draw order; rerun csdid before csdid_stats"
+                    exit `csdid_rc'
                 }
+                local boot_agg_if "`boot_agg_if_ordered'"
             }
-            local boot_agg_cluster_vec "`boot_agg_cluster_raw'"
-        }
-        else if "`e(idvar)'" != "" {
-            * F-001/F-022 (repaired, donor label F-003): the allow_unbalanced
-            * aggregation bootstrap must consume multiplier draws in R's
-            * unbalanced unit order. The repaired estimation stage carries the
-            * draw-order key INSIDE the unit/group map itself (4th column =
-            * each unit's first-appearance period), so the map this call
-            * already passes is the augmented one on every storage mode:
-            * full storage posts the 4-column e(unit_group), and lean storage
-            * leaves e(unit_group) empty so csdid_boot_reorder_r falls back to
-            * the 4-column CSDID_LAST_UNIT_GROUP. csdid_boot_reorder_r then
-            * branches on cols >= 4. The donor's separate e(unit_group_boot)
-            * export is therefore not required; it is still preferred here if
-            * present, and the confirm guard falls back to e(unit_group) so no
-            * storage mode can reference an unposted matrix (the donor's
-            * unguarded st_matrix on lean storage was the r(3301) crash).
-            local boot_agg_unit "e(unit_group)"
-            if "`e(panel_mode)'" == "allow_unbalanced" {
-                capture confirm matrix e(unit_group_boot)
-                if !_rc local boot_agg_unit "e(unit_group_boot)"
-            }
-            tempname boot_agg_if_ordered boot_agg_cluster_ordered
-            capture mata: csdid_boot_reorder_r("`boot_agg_unit'", ///
-                "`agg_inffunc'", "", "`boot_agg_if_ordered'", ///
-                "`boot_agg_cluster_ordered'")
-            local csdid_rc = _rc
-            if `csdid_rc' {
-                display as error "csdid_stats could not put the aggregate influence functions in bootstrap draw order; rerun csdid before csdid_stats"
-                exit `csdid_rc'
-            }
-            local boot_agg_if "`boot_agg_if_ordered'"
-        }
-        else {
-            tempname boot_agg_if_ordered boot_agg_cluster_ordered
-            capture mata: csdid_boot_reorder_rc_r("`e(timevar)'", ///
-                "e(unit_group)", "`agg_inffunc'", "", ///
-                "`boot_agg_if_ordered'", "`boot_agg_cluster_ordered'")
-            local csdid_rc = _rc
-            if `csdid_rc' {
-                display as error "csdid_stats could not put the aggregate influence functions in bootstrap draw order; rerun csdid before csdid_stats"
-                exit `csdid_rc'
-            }
-            local boot_agg_if "`boot_agg_if_ordered'"
-        }
-        }
-        if !`agg_plugin_success' & !`agg_direct_done' {
             * EUX-001: capture + re-raise so a bootstrap-kernel refusal
             * ("BMisc bootstrap RNG state is invalid", "stored aggregate
             * influence functions do not match aggregation results") cannot
             * drag Mata frames into the user's log.
+            *
+            * The two kernels stay two: one scales by the unit count and the other
+            * by the cluster count, and they are named separately from outside this
+            * file, so which one runs is decided here.
             if `use_cluster' {
-                capture mata: csdid_bootstrap_aggte_cluster("`aggte'", "`boot_agg_if'", "`boot_agg_cluster_vec'", `biters', (100 - `level') / 100, `cband', "`boot_dist'", "`boot_rng_arg'", "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", "`agg_pointcrit'")
+                capture mata: csdid_bootstrap_aggte_cluster("`aggte'", "`boot_agg_if'", "`boot_agg_cluster_vec'", `agg_boot_args')
             }
             else {
-                capture mata: csdid_bootstrap_aggte("`aggte'", "`boot_agg_if'", `biters', (100 - `level') / 100, `cband', "`boot_dist'", "`boot_rng_arg'", "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", "`agg_pointcrit'")
+                capture mata: csdid_bootstrap_aggte("`aggte'", "`boot_agg_if'", `agg_boot_args')
             }
             local agg_boot_kernel_rc = _rc
             if `agg_boot_kernel_rc' {
@@ -798,7 +820,7 @@ program define csdid_stats, eclass
         local overall_se_missing = missing(`aggte'[1, 5])
     }
     if `n_se_total' > 0 & `n_se_missing' == `n_se_total' & `overall_se_missing' {
-        display as text "note: every standard error in this type(`type') aggregation is missing. The ATT(g,t) estimates it aggregates have no usable standard errors, which usually means the influence functions are degenerate for these cells (a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance). The point estimates below are still the aggregation of the ATT(g,t) estimates."
+        display as text "note: every standard error in this type(`type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance. The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
     }
     local n_aggte = rowsof(`aggte')
     ereturn matrix aggte = `aggte'
@@ -819,12 +841,18 @@ program define csdid_stats, eclass
     }
     ereturn local agg_type "`type'"
     ereturn local agg_clustervar "`agg_cluster'"
-    ereturn scalar agg_cluster_fallback = `agg_cluster_fallback'
     ereturn scalar agg_level = `level'
     ereturn scalar N_aggte = `n_aggte'
+    * The band the table below actually carries, which is NOT e(cband):
+    * type(simple) and a two-period grid are banded pointwise however the
+    * estimation was asked to band ATT(g,t) (see the note above). Reading
+    * e(cband) after an aggregation therefore describes the estimation, not
+    * the aggregation; this is the machine-readable form of the header line
+    * Display writes from the same local.
+    ereturn scalar agg_cband = `cband'
 
     local display_noisy = c(noisily)
-    if `display_noisy' Display, level(`level')
+    if `display_noisy' Display, level(`level') cband(`cband')
 end
 
 * EUX-001 helper. Reproduces csdid_aggte()'s own refusal diagnosis on the ado
@@ -954,7 +982,7 @@ end
 
 program define Display
     version 14
-    syntax [, Level(cilevel)]
+    syntax [, Level(cilevel) CBand(integer 0)]
     tempname out
     matrix `out' = e(aggte)
     display as text _newline "Aggregated treatment effects"
@@ -974,13 +1002,14 @@ program define Display
     * the argument that was already being passed in.
     * -------------------------------------------------------------------
     local inf_line ""
+    local unseeded 0
     if "`e(vce)'" == "bootstrap" {
         local inf_line "Std. errors: multiplier bootstrap, `=e(biters)' reps"
         if "`e(rseed)'" != "" {
             local inf_line "`inf_line', rseed(`e(rseed)')"
         }
         else {
-            local inf_line "`inf_line', no seed set (not reproducible)"
+            local unseeded 1
         }
     }
     else {
@@ -991,20 +1020,17 @@ program define Display
         capture confirm scalar e(N_clusters)
         if !_rc local inf_line "`inf_line' (`=e(N_clusters)' clusters)"
     }
+    * The aggregation's own band decision, not e(cband): type(simple) and a
+    * two-period grid are banded pointwise (see the caller), and the header
+    * has to say which band the table below it carries.
     local band_kind "pointwise"
-    capture confirm scalar e(cband)
-    if !_rc {
-        if e(cband) == 1 local band_kind "simultaneous"
-    }
+    if `cband' == 1 local band_kind "simultaneous"
     display as text "`inf_line'; `level'% `band_kind' bands"
-    * The aggregation can be forced off the estimation's cluster variable;
-    * when that happened, say so rather than let the line above imply the
-    * aggregation clustered the same way the estimation did.
-    capture confirm scalar e(agg_cluster_fallback)
-    if !_rc {
-        if e(agg_cluster_fallback) == 1 {
-            display as text "note: the aggregation could not cluster on `e(clustervar)' and used unclustered inference"
-        }
+    * The estimation side prints the same line; see the note above its copy in
+    * csdid.ado for why an unseeded bootstrap gets a sentence rather than a
+    * label.
+    if `unseeded' {
+        display as text "Note: no rseed() set, so these standard errors change slightly between runs; add rseed(#) to reproduce them."
     }
     matlist `out', names(columns) format(%10.6g)
 end
@@ -1013,12 +1039,27 @@ program define _csdid_stats_load_rif, eclass
     version 14
     syntax using/
 
-    tempname IF UG ATT GP
+    tempname IF UG ATT GP CL
     preserve
     use `"`using'"', clear
     if "`: char _dta[csdid_artifact]'" != "rif" {
         display as error "saved file is not a csdid RIF artifact"
         exit 498
+    }
+    * AGG-03: without this marker the file cannot say whether the estimation
+    * clustered, and aggregating it would report i.i.d. standard errors for a
+    * clustered run with nothing on screen to say so. Refuse by name instead.
+    if "`: char _dta[csdid_cluster_recorded]'" != "1" {
+        display as error "saved RIF artifact does not record whether the estimation clustered, so aggregating it could report unclustered standard errors for a clustered run. Re-run csdid with saverif() to rewrite the file."
+        exit 498
+    }
+    local rif_clustervar "`: char _dta[csdid_clustervar]'"
+    if "`rif_clustervar'" != "" {
+        capture confirm variable cluster
+        if _rc {
+            display as error "saved RIF artifact records clustering on `rif_clustervar' but its cluster column is missing; the file in using() was written by csdid but has been modified since"
+            exit 498
+        }
     }
     * SP-12: the artifact-contract checks either side of these two are specific
     * and rc 498 ("saved file is not a csdid RIF artifact", "... does not
@@ -1073,6 +1114,7 @@ program define _csdid_stats_load_rif, eclass
     }
 
     mkmat `rifvars', matrix(`IF')
+    if "`rif_clustervar'" != "" mkmat cluster, matrix(`CL')
     capture confirm variable weight
     if _rc {
         mkmat id group, matrix(`UG')
@@ -1191,18 +1233,27 @@ program define _csdid_stats_load_rif, eclass
     * RIF. Absent on artifacts written before this char existed; the Mata guard
     * then refuses cleanly with rc 498 rather than aborting.
     local time_first "`: char _dta[csdid_time_first]'"
+    local N_clusters "`: char _dta[csdid_N_clusters]'"
     restore
 
     matrix colnames `ATT' = group time event_time att se n_treat_t n_treat_pre n_control_t n_control_pre base_time
     matrix colnames `GP' = group prob n_units
     matrix colnames `UG' = id group weight
     matrix colnames `IF' = `rifvars'
+    if "`rif_clustervar'" != "" matrix colnames `CL' = cluster
 
     ereturn clear
     ereturn matrix attgt = `ATT'
     ereturn matrix inffunc = `IF'
     ereturn matrix group_prob = `GP'
     ereturn matrix unit_group = `UG'
+    * AGG-03: the aggregation clusters off e(clustervar)/e(cluster_vec), so
+    * reposting both is what makes `csdid_stats using' reproduce the standard
+    * errors of the estimation that wrote the file rather than its i.i.d. ones.
+    if "`rif_clustervar'" != "" {
+        ereturn matrix cluster_vec = `CL'
+        ereturn local clustervar "`rif_clustervar'"
+    }
     ereturn local cmd "csdid"
     ereturn local estat_cmd "csdid_estat"
     * predict is never valid after csdid; csdid_p is the guard that says so
@@ -1229,5 +1280,8 @@ program define _csdid_stats_load_rif, eclass
     * clean "re-run csdid before using balance_e" refusal.
     if "`time_first'" != "" & !missing(real("`time_first'")) {
         ereturn scalar time_first = real("`time_first'")
+    }
+    if "`rif_clustervar'" != "" & "`N_clusters'" != "" {
+        ereturn scalar N_clusters = real("`N_clusters'")
     }
 end

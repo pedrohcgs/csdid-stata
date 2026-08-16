@@ -32,7 +32,7 @@ Contents:
 | `att_gt()` | `csdid` |
 | `aggte()` | `csdid_stats`, or `estat` after `csdid` (`csdid_estat`) |
 | `tidy()` / `glance()` | `estat tidy` / `estat glance` |
-| `ggdid()` | `csdid_plot` (writes plot **data**; you draw the graph) |
+| `ggdid()` | `csdid_plot` (draws a default graph; `saving()` writes plot **data** for custom graphs) |
 | `summary()` | the table `csdid` and `csdid_stats` print, and `estat attgt` |
 | the `MP` object | the `e()` results left by `csdid` |
 | the `AGGTEobj` object | the `e()` results left by `csdid_stats` |
@@ -206,7 +206,7 @@ calendar, and `ATT` for simple.
 
 | R | Stata | Notes |
 | --- | --- | --- |
-| `ggdid(mp)` | `csdid_plot, saving(f) replace` after `csdid` | Writes ATT(g,t) plot data; you draw it. See `help csdid_plot`. |
+| `ggdid(mp)` | `csdid_plot` after `csdid` | Draws the ATT(g,t) panels; `saving(f)` writes the plot data instead. See `help csdid_plot`. |
 | `ggdid(agg)` | `csdid_plot, saving(f) replace` after `csdid_stats` | Same for the active aggregation. `type(simple)` has no plot in either package (R stops, Stata exits 498, same message). |
 | `ggdid(..., group = c(...))` | `group(numlist)` | Same fallback behavior and message when a requested cohort does not exist. |
 | `tidy(mp)`, `tidy(agg)` | `estat tidy, saving(f) replace` | Same columns (order may differ), with `.` replaced by `_` in the Stata variable names (`std_error`, `conf_low`, `point_conf_high`, ...) and the R spelling kept as the variable label. Same `term` strings, including `ATT(Average)` / `ATT(simple average)`, and the same leading `Average` row for group aggregation. |
@@ -260,10 +260,11 @@ standard errors that do not account for clustering at all; `csdid_stats` exits
 with return code 498 and tells you to re-run `csdid` with the cluster you want.
 Neither behavior is wrong, but the Stata one cannot be missed in a log.
 
-**6.4 Plotting produces data, not a figure.**
-`ggdid()` returns a `ggplot` object with a fixed theme. `csdid_plot` writes a
-dataset with the estimates, band bounds, x values, and pre/post labels, and
-leaves rendering to `twoway`. Styling options are rejected rather than ignored.
+**6.4 Plot styling goes through the exported data.**
+`ggdid()` returns a `ggplot` object with a fixed theme. A bare `csdid_plot`
+draws a default, unstyled graph; `csdid_plot, saving()` writes a dataset with
+the estimates, band bounds, x values, and pre/post labels and leaves rendering
+to `twoway`. Styling options are rejected rather than ignored on both paths.
 
 **6.5 Numeric identifiers are required.**
 R accepts any `idname` column type. Stata requires `ivar()`, `time()`, `gvar()`,

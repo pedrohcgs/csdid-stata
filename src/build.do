@@ -1,8 +1,25 @@
 version 15
+capture mkdir build
+
+* ---------------------------------------------------------------------------
+* The library's stamp.
+*
+* csdid_mlib_version() ships in the source reading "2.0.0|source". The copy
+* compiled into the library says which Stata compiled it instead, because that
+* is what csdid.ado cannot find out any other way and what it has to know: a
+* library built by a newer Stata than the one running has every name the
+* loader probes and fails later, inside an estimation. The substitution
+* happens in a COPY, so the source file -- which ships as the fallback and is
+* compiled by whatever Stata loads it -- keeps the word it should.
+* ---------------------------------------------------------------------------
+tempfile stamped
+filefilter "src/mata/csdid.mata" "`stamped'", ///
+    from("2.0.0|source") to("2.0.0|`c(stata_version)'") replace
 mata: mata clear
 mata: mata set matastrict on
-do src/mata/csdid.mata
-capture mkdir build
+do "`stamped'"
+mata: st_local("built_stamp", csdid_mlib_version())
+assert "`built_stamp'" == "2.0.0|`c(stata_version)'"
 
 * ---------------------------------------------------------------------------
 * Precompiled Mata library.
@@ -11,20 +28,32 @@ capture mkdir build
 * lines of Mata source on the first csdid call of every Stata session.
 * Measured on mpdta: first call 0.799s vs 0.024s for subsequent calls, i.e.
 * ~0.77s of pure compilation that every user pays once per session (on a
-* 38,890-row panel, 2.26s -> 1.51s end to end). Shipping lcsdid.mlib removes
-* it. Results are unchanged by construction: identical source, compiled ahead
-* of time rather than on demand (verified bit-identical on mpdta).
+* 38,890-row panel, 2.26s -> 1.51s end to end). Shipping lcsdid_v2.mlib
+* removes it. Results are unchanged by construction: identical source,
+* compiled ahead of time rather than on demand (verified bit-identical on
+* mpdta).
 *
 * Stata indexes l*.mlib found along the adopath, so the library is picked up
 * automatically once installed; csdid.ado retains the source fallback for
 * installations where the library is absent or was built by an incompatible
 * Stata version.
+*
+* The library is named lcsdid_v2, NOT lcsdid: the csdid2 package distributes
+* a library called lcsdid.mlib, so shipping the same filename would make the
+* two packages overwrite each other's library on installation.
+*
+* `complete' makes the add REFUSE a class definition that is not whole, rather
+* than saving the part it has. The engine carries three, and a partially
+* serialised class does not fail at load: it fails later, inside a user's
+* estimation, on whichever member did not travel. Trading that for a build
+* that stops here is not a close call.
 * ---------------------------------------------------------------------------
-mata: mata mlib create lcsdid, dir("build") replace
-mata: mata mlib add lcsdid *(), dir("build")
+mata: mata mlib create lcsdid_v2, dir("build") replace
+mata: mata mlib add lcsdid_v2 *(), dir("build") complete
 mata: mata mlib index
 copy src/ado/csdid.ado build/csdid.ado, replace
 copy src/ado/_csdid_post.ado build/_csdid_post.ado, replace
+copy src/ado/_csdid_engine_load.ado build/_csdid_engine_load.ado, replace
 copy src/ado/csdid_estat.ado build/csdid_estat.ado, replace
 copy src/ado/csdid_stats.ado build/csdid_stats.ado, replace
 copy src/ado/csdid_plot.ado build/csdid_plot.ado, replace
@@ -70,12 +99,14 @@ capture erase build/csdid.pkg
 * which loads the runtime from there.
 * ---------------------------------------------------------------------------
 capture mkdir pkg
-foreach f in csdid.ado _csdid_post.ado csdid_estat.ado csdid_stats.ado csdid_plot.ado csdid_p.ado ///
+foreach f in csdid.ado _csdid_post.ado _csdid_engine_load.ado csdid_estat.ado csdid_stats.ado csdid_plot.ado csdid_p.ado ///
              csgvar.ado _gcsgvar.ado csdid_rif.ado csdid_table.ado dipt.ado tsvmat.ado {
     copy "build/`f'" "pkg/`f'", replace
 }
 copy build/csdid.mata pkg/csdid.mata, replace
-copy build/lcsdid.mlib pkg/lcsdid.mlib, replace
+capture erase build/lcsdid.mlib
+capture erase pkg/lcsdid.mlib
+copy build/lcsdid_v2.mlib pkg/lcsdid_v2.mlib, replace
 foreach f in csdid.sthlp csdid_postestimation.sthlp csdid_estat.sthlp csdid_stats.sthlp csdid_plot.sthlp ///
              csdid_legacy.sthlp {
     copy "build/`f'" "pkg/`f'", replace

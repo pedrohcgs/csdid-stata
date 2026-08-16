@@ -1,11 +1,9 @@
-* F071 -- the duplicate-column aggregations use the plugin, and still obey the
-* single-draw rule that F-004 protects.
+* F071 -- type(simple) uses the plugin, and still obeys the single-draw rule
+* that F-004 protects.
 *
-* When the aggregate influence function is one column duplicated -- type(simple)
-* always, and a one-effect event window (window(0 0)) by the numeric test the
-* command applies -- the effect column and the overall column are the same
-* vector. R's aggte runs a SINGLE mboot whose draws serve both. The plugin
-* draws the overall column from its own stream, which R never draws.
+* For type(simple) R's aggte runs a SINGLE mboot whose draws serve both the
+* effect and the overall column. The plugin draws the overall column from its
+* own stream, which R never draws.
 *
 * type(simple) was therefore excluded from the plugin outright, which left the
 * simplest aggregation as the slowest: 1.081s against 0.350s for group on
@@ -13,13 +11,20 @@
 * -- draw column one, copy it to the overall column -- so the plugin can be
 * used and the same rule applied to its output. It now runs at 0.183s.
 *
-* Two things have to hold, and both are asserted here:
+* The rule is a property of the TYPE. A one-effect event window (window(0 0))
+* also has a bit-identically duplicated influence matrix, and R still gives its
+* overall column an mboot block of its own (compute.aggte.R:546), so it is
+* carried here as the discriminating control: same shape, different rule.
 *
-*   1. the overall column IS the effect column, not a second draw. Under the
-*      rule they are equal to the LAST BIT, so this is an exact test: if the
-*      plugin's own overall block were ever read again, they would differ in
-*      roughly the fifteenth digit and this would fail.
-*   2. the plugin and the Mata kernels agree, since the Mata path is the one
+* Three things have to hold, and all three are asserted here:
+*
+*   1. under type(simple) the overall column IS the effect column, not a second
+*      draw. Under the rule they are equal to the LAST BIT, so this is an exact
+*      test: if the plugin's own overall block were ever read again, they would
+*      differ in roughly the fifteenth digit and this would fail.
+*   2. under the one-effect event window the overall column is NOT the effect
+*      column, because R draws it separately.
+*   3. the plugin and the Mata kernels agree, since the Mata path is the one
 *      the R-parity fixtures pin.
 
 version 15
@@ -88,10 +93,11 @@ foreach spec in "simple|notyet wboot(reps(999) rseed(20260806))|" ///
     assert "`macc'" == "mata"
     assert rowsof(`P') == rowsof(`M')
 
-    * 1. the single-draw rule, exactly
+    * 1. the single-draw rule, exactly -- and only where R applies it
     forvalues i = 1 / `= rowsof(`P')' {
-        assert `P'[`i', `C_SE'] == `P'[`i', `C_OSE']
         assert `P'[`i', `C_ATT'] == `P'[`i', `C_OATT']
+        if "`agg'" == "simple" assert `P'[`i', `C_SE'] == `P'[`i', `C_OSE']
+        else assert `P'[`i', `C_SE'] != `P'[`i', `C_OSE']
     }
 
     * 2. the two accelerators agree
@@ -112,4 +118,4 @@ foreach spec in "simple|notyet wboot(reps(999) rseed(20260806))|" ///
 
 assert `nchecked' == 4
 
-display as text "test-f071: duplicate-column aggregations run on the plugin, overall column exact, plugin vs mata agree"
+display as text "test-f071: type(simple) runs on the plugin with an exact overall column, a one-effect window draws its own, plugin vs mata agree"

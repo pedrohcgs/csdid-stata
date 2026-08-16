@@ -82,6 +82,61 @@ program define ps_time, rclass
     return scalar max = `hi'
 end
 
+* ---------------------------------------------------------------------------
+* The same protocol for an AGGREGATION, which is a different shape of
+* measurement: the estimation that has to run first is not what is being
+* timed, so it sits outside the timer and inside the replicate.
+*
+* Every other cell in this file, and every cell of the other two timing
+* instruments the refactor gates on, is an estimation. The stage that rewrote
+* the aggregation path therefore had no cell that could see a regression in
+* it; this is that cell.
+*
+* reps() consecutive aggregations sit under one timer and the result is
+* divided by reps(), because Stata's timer resolves to 1ms and one aggregation
+* on a design this size is a few milliseconds. Repeating it is also what a
+* user does: estat event, then estat group, then estat calendar, each reading
+* the same stored results back.
+*
+* Aggregating reads the influence functions back, and where they were left is
+* the whole difference between the two routes. Under lean storage they stay in
+* Mata and the aggregation reads the cache; under storeall they were posted to
+* a Stata matrix and are read back across the classic-matrix layer, which is
+* quadratic in the number of units (measured in csdid__Agg::store: 4s at
+* 25,000, 148s at 100,000). So the storeall cell is capped by its caller at a
+* size where that crossing is a fraction of a second and the aggregation is
+* still what dominates.
+* ---------------------------------------------------------------------------
+program define ps_time_agg, rclass
+    version 15
+    syntax , EST(string) AGG(string) DATA(string) [REPS(integer 10)]
+
+    quietly use "`data'", clear
+    capture quietly `est'
+    capture quietly `agg'
+    local t1 = .
+    local t2 = .
+    local t3 = .
+    forvalues k = 1/3 {
+        quietly use "`data'", clear
+        capture quietly `est'
+        timer clear 9
+        timer on 9
+        forvalues r = 1/`reps' {
+            capture quietly `agg'
+        }
+        timer off 9
+        quietly timer list 9
+        local t`k' = r(t9) / `reps'
+    }
+    local lo = min(`t1', `t2', `t3')
+    local hi = max(`t1', `t2', `t3')
+    local md = `t1' + `t2' + `t3' - `lo' - `hi'
+    return scalar median = `md'
+    return scalar min = `lo'
+    return scalar max = `hi'
+end
+
 tempname fh
 file open `fh' using "`root'/tools/bench/perfscale/`tag'.csv", write replace
 file write `fh' "tag,cell,nunits,nobs,seconds,min,max" _n
@@ -110,6 +165,23 @@ foreach n of local nlist {
 
     ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet wboot(reps(199) rseed(20260806))")
     file write `fh' "`tag',panel_reg_wboot,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
+
+    local est_lean "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical"
+    ps_time_agg, data("`d'") est("`est_lean'") agg("estat event")
+    file write `fh' "`tag',agg_dynamic,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
+
+    ps_time_agg, data("`d'") est("`est_lean'") agg("estat group")
+    file write `fh' "`tag',agg_group,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
+
+    * The storeall route reads the influence functions back out of a Stata
+    * matrix, and that crossing is quadratic in the unit count, so above this
+    * size the cell would measure the crossing rather than the aggregation.
+    if `n' <= 5000 {
+        ps_time_agg, data("`d'") reps(5) ///
+            est("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical storeall") ///
+            agg("estat event")
+        file write `fh' "`tag',agg_storeall,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
+    }
 }
 file close `fh'
 

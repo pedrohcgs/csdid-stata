@@ -58,11 +58,10 @@ events <- data.frame(
     "csdid_stats_invalid_type",
     "csdid_estat_no_prior",
     "csdid_estat_tidy_requires_saving",
-    "csdid_plot_requires_saving",
     "csdid_plot_simple_unavailable",
     "no_observations"
   ),
-  return_code = c(198, 198, 198, 198, 198, 198, 459, 198, 301, 198, 301, 198, 198, 498, 2000),
+  return_code = c(198, 198, 198, 198, 198, 198, 459, 198, 301, 198, 301, 198, 498, 2000),
   event_type = "error",
   offending_option = c(
     "method(bad)",
@@ -77,7 +76,6 @@ events <- data.frame(
     "type(bad)",
     "prior-results",
     "tidy",
-    "saving()",
     "type(simple)",
     "sample"
   ),
@@ -94,7 +92,6 @@ events <- data.frame(
     "type() must be one of simple, group, dynamic/event, or calendar",
     "csdid_estat requires prior csdid results",
     "tidy requires saving(filename)",
-    "csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace",
     "Plot method not available for this type of aggregation",
     "no observations"
   ),

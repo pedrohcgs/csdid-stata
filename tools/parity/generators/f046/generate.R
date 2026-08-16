@@ -46,9 +46,9 @@ events <- data.frame(
     "wboot(wbtype(mammen))"
   ),
   message_normalized = c(
-    "csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)",
-    "csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)",
-    "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet",
+    "csdid legacy compatibility: method(dripw) is retired; running method(dr), which is the same estimator. Use method(dr) in new code.",
+    "csdid legacy compatibility: method(stdipw) is retired; running method(ipw), which is the same estimator. Use method(ipw) in new code.",
+    "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group.",
     "wboot() currently supports only R-compatible rademacher multipliers"
   ),
   canonical_behavior = c(

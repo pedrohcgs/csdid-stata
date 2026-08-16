@@ -42,12 +42,12 @@ confirm file "`root'/tests/fixtures/parity/f029/expected/r/events.json"
 confirm file "`root'/tests/fixtures/parity/f029/metadata/manifest.json"
 
 import delimited using "`root'/tests/fixtures/parity/f029/expected/r/events.csv", clear varnames(1)
-assert _N == 15
+assert _N == 14
 foreach key in invalid_method invalid_base_period invalid_fix_weights ///
     fix_weights_requires_panel negative_anticipation negative_iweight ///
     duplicate_unit_time unsupported_option csdid_stats_no_prior ///
     csdid_stats_invalid_type csdid_estat_no_prior ///
-    csdid_estat_tidy_requires_saving csdid_plot_requires_saving ///
+    csdid_estat_tidy_requires_saving ///
     csdid_plot_simple_unavailable no_observations {
     quietly count if event_key == "`key'"
     assert r(N) == 1
@@ -189,17 +189,16 @@ f029_assert_failure using "`evlog'", ///
     actual(`actual') ///
     message("tidy requires saving(filename)")
 
+* A bare csdid_plot draws the default graph; saving() remains the plot-data
+* export path. The requires-saving refusal is gone from the error surface.
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
-capture log close f029event
-log using "`evlog'", text replace name(f029event)
+capture graph drop _all
 capture noisily csdid_plot
-local actual = _rc
-log close f029event
-f029_assert_failure using "`evlog'", ///
-    rc(198) ///
-    actual(`actual') ///
-    message("csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace")
+assert _rc == 0
+quietly graph dir
+assert `"`r(list)'"' != ""
+capture graph drop _all
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
@@ -224,3 +223,16 @@ f029_assert_failure using "`evlog'", ///
     rc(2000) ///
     actual(`actual') ///
     message("no observations")
+
+* Two messages introduced with the reworded output surface, pinned so a future
+* edit cannot silently drop them: the unseeded-bootstrap note naming rseed(),
+* and the no-never-treated fallback naming what happens to the sample.
+import delimited using "`root'/examples/data/mpdta.csv", clear asdouble
+capture log close f029event
+log using "`evlog'", text replace name(f029event)
+csdid lemp if first_treat != 0 & first_treat != 2007, id(countyreal) time(year) gvar(first_treat) nevertreated wboot(reps(29))
+log close f029event
+f029_assert_log_contains using "`evlog'", ///
+    message("add rseed(#) to reproduce")
+f029_assert_log_contains using "`evlog'", ///
+    message("using the latest treated cohort as never-treated, and dropping periods after it")

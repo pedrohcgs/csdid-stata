@@ -63,7 +63,7 @@ capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) asinr nevertrea
 local actual_rc = _rc
 log close f036event
 assert `actual_rc' == 0
-f036_assert_log_contains using "`evlog'", message("csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet")
+f036_assert_log_contains using "`evlog'", message("csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group.")
 
 csdid_stats, type(dynamic) min_e(-1) max_e(1) balance_e(1) na_rm
 assert "`e(agg_type)'" == "dynamic"

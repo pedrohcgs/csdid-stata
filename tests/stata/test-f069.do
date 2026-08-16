@@ -82,7 +82,7 @@ log close
 f069_expect, logfile("`lg'") ///
     fragments("multiplier~bootstrap,~199~reps" "rseed(20260806)" ///
               "clustered~on~countyreal" "90%~simultaneous~bands") ///
-    absent("no~seed~set")
+    absent("no~rseed()~set")
 
 * ---------------------------------------------------------------------------
 * 2. Unseeded bootstrap: the header has to say so. This is the case the
@@ -96,8 +96,8 @@ log using "`lg'", text replace
 csdid_stats simple
 log close
 f069_expect, logfile("`lg'") ///
-    fragments("multiplier~bootstrap,~199~reps" "no~seed~set~(not~reproducible)") ///
-    absent("rseed(")
+    fragments("multiplier~bootstrap,~199~reps" "no~rseed()~set" ///
+              "add~rseed(#)~to~reproduce")
 
 * ---------------------------------------------------------------------------
 * 3. Analytical: named as such, and not described as a bootstrap.
@@ -124,9 +124,8 @@ csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) notyet ///
     wboot(reps(199)) level(90)
 log close
 f069_expect, logfile("`lg'") ///
-    fragments("multiplier~bootstrap,~199~reps" "no~seed~set~(not~reproducible)" ///
-              "90%") ///
-    absent("rseed(")
+    fragments("multiplier~bootstrap,~199~reps" "no~rseed()~set" ///
+              "add~rseed(#)~to~reproduce" "90%")
 
 quietly use "`mp'", clear
 capture log close _all

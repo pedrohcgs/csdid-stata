@@ -11,6 +11,5 @@
 "csdid_stats_invalid_type",198,"error","type(bad)","type() must be one of simple, group, dynamic/event, or calendar"
 "csdid_estat_no_prior",301,"error","prior-results","csdid_estat requires prior csdid results"
 "csdid_estat_tidy_requires_saving",198,"error","tidy","tidy requires saving(filename)"
-"csdid_plot_requires_saving",198,"error","saving()","csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace"
 "csdid_plot_simple_unavailable",498,"error","type(simple)","Plot method not available for this type of aggregation"
 "no_observations",2000,"error","sample","no observations"

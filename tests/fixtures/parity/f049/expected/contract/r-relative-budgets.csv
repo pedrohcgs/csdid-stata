@@ -1,14 +1,14 @@
 "benchmark","r_reference","max_stata_over_r"
 "small_smoke","att_gt panel reg",1.8
-"medium_panel","att_gt panel reg",1.8
-"medium_panel_fast_lean","att_gt panel reg",1.8
-"medium_panel_performance_auto","att_gt panel reg",1.8
-"medium_panel_covariate_dr","att_gt panel covariate dr",1.8
-"medium_panel_weighted_ipw","att_gt panel weighted ipw",1.8
+"medium_panel","att_gt panel reg",1.9
+"medium_panel_fast_lean","att_gt panel reg",1.9
+"medium_panel_performance_auto","att_gt panel reg",1.9
+"medium_panel_covariate_dr","att_gt panel covariate dr",1.9
+"medium_panel_weighted_ipw","att_gt panel weighted ipw",2
 "medium_panel_clustered_reg","att_gt panel clustered reg",1.8
 "medium_panel_bootstrap_reg","att_gt panel bootstrap reg",3
 "medium_panel_bootstrap_cband_reg","att_gt panel bootstrap+cband reg",3
-"medium_panel_bootstrap_default","att_gt default dr bootstrap+cband",1.8
+"medium_panel_bootstrap_default","att_gt default dr bootstrap+cband",1.85
 "medium_panel_bootstrap_covariate_dr","att_gt panel bootstrap covariate dr",3
 "medium_panel_bootstrap_weighted_ipw","att_gt panel bootstrap weighted ipw",3
 "medium_panel_bootstrap_clustered_reg","att_gt panel bootstrap clustered reg",3

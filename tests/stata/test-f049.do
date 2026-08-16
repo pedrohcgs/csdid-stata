@@ -344,6 +344,10 @@ assert P[1, 2] >= 1
 assert P[7, 2] == 1
 assert BP[3, 3] > 0
 assert BP[4, 2] == 1
+* result_post is a measured duration, not an unwired row: it reported missing
+* on every plugin-accelerated run while still claiming one call.
+assert !missing(BP[6, 1])
+assert BP[6, 2] == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert "`e(bootstrap_accelerator_status)'" == "plugin-active"
 assert e(bootstrap_accelerator_rc) == 0
@@ -395,6 +399,8 @@ assert e(fast_used) == 1
 assert "`e(bootstrap_accelerator)'" == "plugin"
 assert BP[3, 3] > 0
 assert BP[4, 2] == 1
+assert !missing(BP[6, 1])
+assert BP[6, 2] == 1
 assert "`e(storage)'" == "lean"
 assert f049_seconds <= 5
 assert f049_memory_mb <= 1800

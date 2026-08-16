@@ -14,10 +14,8 @@ program define csdid_plot
         display as error `"unsupported option(s): `options'"'
         exit 198
     }
-    if `"`saving'"' == "" {
-        display as error "csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace"
-        exit 198
-    }
+    * Without saving(), draw. With saving(), export the plot dataset and draw
+    * nothing -- scripted exports stay exactly as they were.
     * SP-04 fix: saving() took its whole argument as a filename, so the
     * standard saving(filename, replace) idiom returned rc 0 after writing a
     * file literally called "filename, replace.dta" (csdid_plot.sthlp:114-116
@@ -54,6 +52,14 @@ program define csdid_plot
         }
     }
 
+    local drawplot 0
+    if `"`savefile'"' == "" {
+        tempfile csdid_plotdata
+        local savefile `"`csdid_plotdata'"'
+        local dorepl replace
+        local drawplot 1
+    }
+
     capture confirm matrix e(aggte)
     if _rc {
         _csdid_plot_attgt using `"`savefile'"', `dorepl' group(`plotgroup')
@@ -65,6 +71,9 @@ program define csdid_plot
         * back to all, with the same note as the attgt branch); for other
         * aggregation types the option is meaningless and says so out loud.
         _csdid_plot_aggte using `"`savefile'"', `dorepl' group(`plotgroup')
+    }
+    if `drawplot' {
+        _csdid_plot_draw using `"`savefile'"'
     }
 end
 
@@ -193,4 +202,49 @@ program define _csdid_plot_aggte
     save `"`using'"', `replace'
     restore
     }
+end
+
+* Draw the default graph from a plot dataset built by either subprogram above.
+* One graph, standard scheme, no styling surface: customisation goes through
+* the saving() export and twoway, as documented in the help file.
+program define _csdid_plot_draw
+    version 14
+    syntax using/
+
+    preserve
+    quietly use `"`using'"', clear
+    local ptype = plot_type[1]
+    local xt "Time"
+    local yt "ATT"
+    local byopt ""
+    if "`ptype'" == "attgt" {
+        local yt "ATT(g,t)"
+        local byopt by(group, note("") legend(position(6)))
+    }
+    else if "`ptype'" == "aggte_dynamic" local xt "Periods to treatment"
+    else if "`ptype'" == "aggte_group" local xt "Group first treated"
+
+    * A series can be absent (a group-type aggregation has no pre rows, a
+    * two-period panel may have no pre estimates), and an empty if-subset
+    * aborts twoway; assemble only the series that exist.
+    local plots ""
+    local legorder ""
+    local j 0
+    foreach s in Pre Post {
+        local color = cond("`s'" == "Pre", "navy", "maroon")
+        quietly count if series == "`s'" & !missing(estimate)
+        if r(N) {
+            local plots `"`plots' (rcap ci_high ci_low x if series == "`s'", lcolor(`color')) (scatter estimate x if series == "`s'", mcolor(`color'))"'
+            local j = `j' + 2
+            local legorder `"`legorder' `j' "`s'-treatment""'
+        }
+    }
+    if `"`plots'"' == "" {
+        display as error "nothing to plot: every estimate is missing"
+        restore
+        exit 498
+    }
+    twoway `plots', yline(0, lpattern(dash) lcolor(gs8)) ///
+        xtitle("`xt'") ytitle("`yt'") legend(order(`legorder')) `byopt'
+    restore
 end

@@ -1,10 +1,9 @@
 #!/usr/bin/env Rscript
 
-suppressPackageStartupMessages(library(did))
-
 args <- commandArgs(trailingOnly = TRUE)
 root <- if (length(args) >= 1) args[[1]] else getwd()
 root <- normalizePath(root, mustWork = TRUE)
+source(file.path(root, "tools/parity/generators/oracle-check.R"))
 
 fixture <- file.path(root, "tests/fixtures/parity/f049")
 outdir <- file.path(root, "build/f049")

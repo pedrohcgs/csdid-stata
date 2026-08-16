@@ -24,7 +24,7 @@
 {title:Title}
 
 {p2colset 5 20 22 2}{...}
-{p2col :{cmd:csdid_plot} {hline 2}}Export plot data from {cmd:csdid} group-time
+{p2col :{cmd:csdid_plot} {hline 2}}Draw or export plots of {cmd:csdid} group-time
 average treatment effects{p_end}
 {p2colreset}{...}
 
@@ -33,23 +33,28 @@ average treatment effects{p_end}
 {title:Syntax}
 
 {p 8 15 2}
-{cmd:csdid_plot}{cmd:,} {opth sav:ing(filename)} [{opt replace} {opt group(numlist)}]
+{cmd:csdid_plot} [{cmd:,} {opth sav:ing(filename)} {opt replace} {opt group(numlist)}]
 
 {pstd}
-The same syntax exports two different things. Run directly after {cmd:csdid},
-it exports ATT(g,t) plot data; run after an aggregation has been computed with
-{helpb csdid_stats} or {helpb csdid_estat}, it exports plot data for that
-aggregation. See {help csdid_plot##description:Description}.
+Without {opt sav:ing()}, {cmd:csdid_plot} draws the graph; with
+{opt sav:ing()} it writes the plot data to a dataset and draws nothing.
+
+{pstd}
+The same syntax covers two plots. Run directly after {cmd:csdid}, it plots the
+ATT(g,t) estimates; run after an aggregation has been computed with
+{helpb csdid_stats} or {helpb csdid_estat}, it plots that aggregation. See
+{help csdid_plot##description:Description}.
 
 {synoptset 24 tabbed}{...}
 {synopthdr}
 {synoptline}
 {syntab:Main}
-{synopt :{opth sav:ing(filename)}}name of the plot-data dataset to write; required{p_end}
+{synopt :{opth sav:ing(filename)}}write the plot data to {it:filename} instead of
+drawing the graph{p_end}
 {synopt :{opt replace}}overwrite {it:filename} if it already exists{p_end}
 
 {syntab:Selection {help csdid_plot##opt_group:[+]}}
-{synopt :{opt group(numlist)}}restrict the exported rows to the listed treatment
+{synopt :{opt group(numlist)}}restrict the plotted rows to the listed treatment
 cohorts; applies to ATT(g,t) and group-type aggregation plots only{p_end}
 {synoptline}
 {p2colreset}{...}
@@ -66,19 +71,25 @@ See {help csdid_plot##remarks:Remarks}.{p_end}
 {title:Description}
 
 {pstd}
-{cmd:csdid_plot} writes a small Stata dataset containing everything needed to
-draw a Callaway and Sant'Anna (2021) event-study or group-time plot: the point
-estimates, the confidence-band bounds, the x-axis values, and pre-/post-treatment
-labels. It does not draw a graph and it does not impose a graph style. You draw
-the picture yourself with {helpb twoway} (or any other tool), which means the
-appearance of the figure is entirely under your control and the numbers behind
-it are inspectable, storable, and reproducible.
+{cmd:csdid_plot} draws a Callaway and Sant'Anna (2021) event-study or group-time
+plot: the point estimates as markers, the confidence bands as capped spikes, a
+dashed line at zero, and the pre-treatment estimates in a different color from
+the post-treatment ones. The graph is drawn in the current scheme and takes no
+styling options.
 
 {pstd}
-Which plot data are written depends on what is currently in {cmd:e()}:
+{opt sav:ing()} writes the same picture as numbers instead. It exports a small
+Stata dataset containing everything the figure shows -- the point estimates, the
+confidence-band bounds, the x-axis values, and the pre-/post-treatment labels --
+and draws nothing. That is the route to a figure of your own design: you draw it
+with {helpb twoway} (or any other tool), so the appearance is entirely under your
+control and the numbers behind it are inspectable, storable, and reproducible.
+
+{pstd}
+Which plot you get depends on what is currently in {cmd:e()}:
 
 {p2colset 5 40 42 2}{...}
-{p2col :{it:what is in e()}}{it:what is exported}{p_end}
+{p2col :{it:what is in e()}}{it:what is plotted}{p_end}
 {p2line}
 {p2col :{cmd:csdid} results, no aggregation}ATT(g,t) by cohort and calendar period{p_end}
 {p2col :{cmd:type(dynamic)} aggregation}event study: ATT by length of exposure{p_end}
@@ -89,9 +100,14 @@ Which plot data are written depends on what is currently in {cmd:e()}:
 {p2colreset}{...}
 
 {pstd}
+On the ATT(g,t) plot the cohorts are arranged in panels, one per treatment
+cohort, with the x axis running over calendar periods; on an aggregation plot
+the x axis is event time, cohort, or calendar period, as the case may be.
+
+{pstd}
 The rule is mechanical: if the matrix {cmd:e(aggte)} is present, the active
-aggregation is exported; otherwise the ATT(g,t) table {cmd:e(attgt)} is
-exported. {cmd:e(aggte)} is posted by {helpb csdid_stats}, by
+aggregation is plotted; otherwise the ATT(g,t) table {cmd:e(attgt)} is
+plotted. {cmd:e(aggte)} is posted by {helpb csdid_stats}, by
 {cmd:estat dynamic}/{cmd:group}/{cmd:calendar}/{cmd:event} (see
 {helpb csdid_estat}), and by {cmd:csdid, agg(event)}. To go back to the
 ATT(g,t) plot after an aggregation, rerun {cmd:csdid}.
@@ -107,8 +123,10 @@ and {helpb restore}) and does not modify {cmd:e()}.
 {dlgtab:Main}
 
 {phang}
-{opth sav:ing(filename)} is required. It names the Stata dataset that
-{cmd:csdid_plot} writes; {cmd:.dta} is added if {it:filename} has no extension.
+{opth sav:ing(filename)} switches {cmd:csdid_plot} from drawing to exporting. It
+names the Stata dataset that {cmd:csdid_plot} writes; {cmd:.dta} is added if
+{it:filename} has no extension. No graph is drawn when {opt sav:ing()} is
+specified.
 
 {pmore}
 Both spellings of {cmd:replace} work. {cmd:csdid_plot, saving(myplot) replace}
@@ -128,20 +146,21 @@ filename in front of it.
 {dlgtab:Selection}
 
 {phang}
-{opt group(numlist)} restricts the exported rows to the listed treatment
+{opt group(numlist)} restricts the plotted rows to the listed treatment
 cohorts, that is, to the listed values of the {cmd:gvar()} variable. It is
-useful when a design has many cohorts and you want one figure per subset.
+useful when a design has many cohorts and you want one figure per subset. It
+applies to the drawn graph and to the {opt sav:ing()} export alike.
 
 {phang2}
-On the ATT(g,t) export, {cmd:group()} keeps the rows whose {cmd:group} value is
+On the ATT(g,t) plot, {cmd:group()} keeps the rows whose {cmd:group} value is
 in {it:numlist}.
 
 {phang2}
-On a {cmd:type(group)} aggregation export, {cmd:group()} keeps the rows whose
+On a {cmd:type(group)} aggregation plot, {cmd:group()} keeps the rows whose
 cohort is in {it:numlist}.
 
 {phang2}
-On {cmd:type(dynamic)} and {cmd:type(calendar)} aggregation exports,
+On {cmd:type(dynamic)} and {cmd:type(calendar)} aggregation plots,
 {cmd:group()} is not meaningful - those aggregations have no cohort dimension
 left - and {cmd:csdid_plot} says so out loud:
 
@@ -150,24 +169,25 @@ left - and {cmd:csdid_plot} says so out loud:
 
 {phang2}
 If none of the requested cohorts exists in the results, {cmd:csdid_plot} does
-not fail and does not write an empty dataset. It reports
+not fail and does not produce an empty figure or an empty dataset. It reports
 
 {pmore2}
 {it:Some of the specified groups do not exist in the data. Reporting all available groups.}
 
 {pmore}
-and exports every available cohort.
+and falls back to every available cohort.
 
 
 {marker remarks}{...}
 {title:Remarks}
 
 {pstd}
-{cmd:csdid_plot} exports plot {it:data}, not a graph. That is a deliberate
-design choice, and it has three consequences worth stating plainly.
+{cmd:csdid_plot} gives you one picture with no dials, or the plot {it:data} with
+every dial. That is a deliberate design choice, and it has three consequences
+worth stating plainly.
 
 {phang}
-{bf:1. No graph is drawn and no styling option is accepted.} Options such as
+{bf:1. The drawn graph takes no styling options.} Options such as
 {cmd:title()}, {cmd:xtitle()}, {cmd:legend()}, {cmd:name()}, {cmd:style()}, or
 {cmd:color()} are rejected with
 
@@ -175,15 +195,16 @@ design choice, and it has three consequences worth stating plainly.
 {it:unsupported option(s): ...}
 
 {pmore}
-and return code 198. Pass those options to {helpb twoway} instead, when you draw
-the exported data. Nothing about the appearance of a csdid figure is baked into
-this package.
+and return code 198. The graph {cmd:csdid_plot} draws is a quick look at the
+estimates in the current scheme. For a figure you control, export with
+{opt sav:ing()} and pass those options to {helpb twoway} yourself. Nothing about
+the appearance of a publication csdid figure is baked into this package.
 
 {phang}
 {bf:2. The exported numbers are the numbers.} Every quantity a reader would see
 in the figure - point estimate, lower bound, upper bound, and whether the
-interval excludes zero - is a variable in the dataset, so a referee, a coauthor,
-or your future self can check the figure against the estimates without
+interval excludes zero - is a variable in the exported dataset, so a referee, a
+coauthor, or your future self can check the figure against the estimates without
 reverse-engineering a graph.
 
 {phang}
@@ -205,24 +226,24 @@ reported confidence level{p_end}
 {p2colreset}{...}
 
 {pmore}
-Exactly: the ATT(g,t) export uses {cmd:e(crit_val)} (falling back to the normal
-quantile at {cmd:e(level)} if it is missing). An aggregation export uses
+Exactly: the ATT(g,t) plot uses {cmd:e(crit_val)} (falling back to the normal
+quantile at {cmd:e(level)} if it is missing). An aggregation plot uses
 {cmd:e(crit_val)} when the estimation used the bootstrap, and otherwise the
 normal quantile at {cmd:e(agg_level)}, the level the aggregation itself
 reported. That distinction matters only if you asked for a {cmd:level()}
 different from the estimation level under analytical inference.
 
 {pmore}
-Either way, the exported band is the band of the aggregation that is active
-when {cmd:csdid_plot} runs, at the level that aggregation reported. Because
-{helpb csdid_stats} and {helpb csdid_estat} recompute the aggregation every
-time -- bootstrap inference included -- re-running the aggregation at a
-different {cmd:level()} and exporting again gives a band at the new level, not
+Either way, the band drawn or exported is the band of the aggregation that is
+active when {cmd:csdid_plot} runs, at the level that aggregation reported.
+Because {helpb csdid_stats} and {helpb csdid_estat} recompute the aggregation
+every time -- bootstrap inference included -- re-running the aggregation at a
+different {cmd:level()} and plotting again gives a band at the new level, not
 the old one.
 
 {pmore}
 Because the csdid default is a multiplier bootstrap with simultaneous bands, by
-default the exported interval is a {it:uniform} band that covers all reported
+default the plotted interval is a {it:uniform} band that covers all reported
 effects simultaneously with probability {cmd:e(level)}/100 - it is wider than a
 pointwise 95% interval, and {cmd:significant} therefore marks
 uniform-band significance, not a pointwise test. If you want pointwise
@@ -240,9 +261,10 @@ treated/comparison cell counts are {it:not} in the plot dataset; they are one co
 {title:Plot-data schema}
 
 {pstd}
-The exported dataset always has exactly these eleven variables, in this order.
-The schema is identical for all plot types, so the same graph code can be reused
-across figures.
+The dataset written by {opt sav:ing()} always has exactly these eleven
+variables, in this order. The schema is identical for all plot types, so the
+same graph code can be reused across figures, and the graph {cmd:csdid_plot}
+draws for you is built from these same eleven columns.
 
 {synoptset 16 tabbed}{...}
 {synopthdr:variable}
@@ -296,12 +318,13 @@ were not estimated.
 {title:Notes on the exported series}
 
 {pstd}
-{cmd:csdid_plot} writes a dataset rather than rendering a graph, so the styling
-is yours: draw it with {cmd:twoway} and whatever theme, colors, reference line,
-and {cmd:by(group)} faceting you prefer. The variables it writes, including how
+Once {opt sav:ing()} has written the dataset, the styling is yours: draw it with
+{cmd:twoway} and whatever theme, colors, reference line, and {cmd:by(group)}
+faceting you prefer. The variables it writes, including how
 {cmd:ci_low}/{cmd:ci_high} and {cmd:series} are built, are documented under
 {it:{help csdid_plot##schema:Plot-data schema}} above; what follows is
-the handful of behaviours that are easy to be surprised by.
+the handful of behaviours that are easy to be surprised by, and they apply to
+the drawn graph as much as to the export.
 
 {phang2}
 o {bf:type(simple) has no plot.} A simple aggregation is a single number, so
@@ -309,23 +332,37 @@ there is nothing to plot; {cmd:csdid_plot} exits with return code 498 and a
 message saying so.{p_end}
 
 {phang2}
-o {bf:Unknown cohorts} named in {cmd:group()} are reported and the export falls
-back to every available cohort.{p_end}
+o {bf:Unknown cohorts} named in {cmd:group()} are reported and {cmd:csdid_plot}
+falls back to every available cohort.{p_end}
 
 {phang2}
-o {cmd:group()} is honored on {cmd:type(group)} aggregation exports as well as
-on group-time exports, and {cmd:csdid_plot} reports when it is ignoring it.{p_end}
+o {cmd:group()} is honored on {cmd:type(group)} aggregation plots as well as
+on group-time plots, and {cmd:csdid_plot} reports when it is ignoring it.{p_end}
 
 {marker legacy}{...}
 {title:Relationship to legacy Stata csdid Version 1.82}
 
 {pstd}
-Legacy {cmd:csdid_plot} drew a graph directly and accepted styling options
-({cmd:style()}, {cmd:title()}, {cmd:xtitle()}, {cmd:ytitle()}, {cmd:name()},
-{cmd:color*}, {cmd:lwidth*}, {cmd:legend()}). Those options are
-{bf:not accepted} here and are not silently ignored: they raise error 198. The
-migration is mechanical - export the data, then pass your old styling options to
-{cmd:twoway}. Instead of
+Both versions draw a graph. Legacy {cmd:csdid_plot} also accepted styling
+options ({cmd:style()}, {cmd:title()}, {cmd:xtitle()}, {cmd:ytitle()},
+{cmd:name()}, {cmd:color*}, {cmd:lwidth*}, {cmd:legend()}). Those options are
+{bf:not accepted} here and are not silently ignored: they raise error 198.
+Version 2.0.0 draws one standard-scheme graph with no styling surface at all,
+and hands you the numbers instead when you want a figure of your own.
+
+{pstd}
+So if all you want is the picture, the command is now shorter than it was.
+Where legacy {cmd:csdid_plot} on plain {cmd:csdid} results answered
+{it:Please specify group} and drew nothing until you named one,
+
+{phang2}{cmd:. csdid_plot}{p_end}
+
+{pstd}
+draws every cohort, and after {cmd:estat event} it draws the event study.
+
+{pstd}
+For styling, the migration is mechanical - export the data, then pass your old
+styling options to {cmd:twoway}. Instead of
 
 {phang2}{cmd:. csdid_plot, group(2004) title("Cohort 2004")}{p_end}
 
@@ -357,7 +394,20 @@ silently discarded. See {help csdid_postestimation} and {help csdid_legacy}.
 {phang2}{cmd:. generate double y = .3*(year - 2003) + .5*treated}{p_end}
 {phang2}{cmd:. replace y = y + .2*x + rnormal()}{p_end}
 
-{pstd}{bf:Estimate, then export ATT(g,t) plot data}{p_end}
+{pstd}{bf:Estimate, then draw the ATT(g,t) plot: one panel per cohort}{p_end}
+{phang2}{cmd:. csdid y x, ivar(id) time(year) gvar(gvar) ///}{break}
+{cmd:         wboot(reps(200) rseed(20260726))}{p_end}
+{phang2}{cmd:. csdid_plot}{p_end}
+
+{pstd}{bf:Draw the event study}{p_end}
+{phang2}{cmd:. estat event}{p_end}
+{phang2}{cmd:. csdid_plot}{p_end}
+
+{pstd}{bf:Draw one cohort only}{p_end}
+{phang2}{cmd:. csdid y x, ivar(id) time(year) gvar(gvar)}{p_end}
+{phang2}{cmd:. csdid_plot, group(2007)}{p_end}
+
+{pstd}{bf:Export ATT(g,t) plot data instead of drawing}{p_end}
 {phang2}{cmd:. csdid y x, ivar(id) time(year) gvar(gvar) ///}{break}
 {cmd:         wboot(reps(200) rseed(20260726))}{p_end}
 {phang2}{cmd:. csdid_plot, saving(attgt_plotdata) replace}{p_end}
@@ -375,7 +425,7 @@ silently discarded. See {help csdid_postestimation} and {help csdid_legacy}.
 {phang2}{cmd:. describe}{p_end}
 {phang2}{cmd:. list in 1/6, clean noobs}{p_end}
 
-{pstd}{bf:Draw the group-time figure: one panel per cohort, pre and post distinguished}{p_end}
+{pstd}{bf:Style your own group-time figure from the exported data}{p_end}
 {phang2}{cmd:. use attgt_plotdata, clear}{p_end}
 {phang2}{cmd:. twoway (rcap ci_high ci_low x if series == "Pre", lcolor(gs9)) ///}{break}
 {cmd:         (scatter estimate x if series == "Pre", mcolor(gs9)) ///}{break}
@@ -385,7 +435,7 @@ silently discarded. See {help csdid_postestimation} and {help csdid_legacy}.
 {cmd:         ytitle("ATT(g,t)") ///}{break}
 {cmd:         legend(order(2 "Pre-treatment" 4 "Post-treatment"))}{p_end}
 
-{pstd}{bf:Draw the event study with a shaded band}{p_end}
+{pstd}{bf:Style your own event study, with a shaded band}{p_end}
 {phang2}{cmd:. use event_plotdata, clear}{p_end}
 {phang2}{cmd:. twoway (rarea ci_high ci_low x, color(navy%20)) ///}{break}
 {cmd:         (connected estimate x, mcolor(navy) lcolor(navy)), ///}{break}
@@ -406,13 +456,13 @@ package.
 {pstd}
 {cmd:csdid_plot} stores nothing. It is not an {cmd:eclass} command: the
 estimation results left by {cmd:csdid}, {cmd:csdid_stats}, or {cmd:estat} are
-still in {cmd:e()} afterwards, unchanged, so you can export several plot
-datasets in a row and then continue with other postestimation commands. The
-data in memory are also unchanged.
+still in {cmd:e()} afterwards, unchanged, so you can draw several figures or
+export several plot datasets in a row and then continue with other
+postestimation commands. The data in memory are also unchanged.
 
 {pstd}
-Its output is the dataset named in {opt sav:ing()}, documented in
-{help csdid_plot##schema:Plot-data schema} above.
+Its output is a graph, or, under {opt sav:ing()}, the dataset named there,
+documented in {help csdid_plot##schema:Plot-data schema} above.
 
 
 {marker errors}{...}
@@ -423,9 +473,6 @@ Its output is the dataset named in {opt sav:ing()}, documented in
 {p2line}
 {p2col :{cmd:301}}No {cmd:csdid} results in {cmd:e()}:
 {it:csdid_plot requires prior csdid results}{p_end}
-{p2col :{cmd:198}}{opt sav:ing()} not specified:
-{it:csdid_plot requires saving(filename). To export plot data, run:}
-{it:csdid_plot, saving(filename) replace}{p_end}
 {p2col :{cmd:198}}An option that is not {cmd:saving()}, {cmd:replace}, or
 {cmd:group()} was given: {it:unsupported option(s): ...}{p_end}
 {p2col :{cmd:198}}Something other than {cmd:replace} follows the comma in
@@ -435,6 +482,8 @@ Its output is the dataset named in {opt sav:ing()}, documented in
 {it:saving() requires a filename before the comma, as in saving(myfile, replace)}{p_end}
 {p2col :{cmd:498}}The active aggregation is {cmd:type(simple)}:
 {it:Plot method not available for this type of aggregation}{p_end}
+{p2col :{cmd:498}}Every estimate to be drawn is missing:
+{it:nothing to plot: every estimate is missing}{p_end}
 {p2col :{cmd:602}}{it:filename} exists and {cmd:replace} was not specified{p_end}
 {p2line}
 {p2colreset}{...}
@@ -446,10 +495,12 @@ when no requested cohort exists. Both are described under
 {help csdid_plot##opt_group:group()}.
 
 {pstd}
-A successful export prints nothing. The scratch-dataset work
-{cmd:csdid_plot} does to build the file is silent, so neither observation-count
-notices nor a {cmd:more} prompt interrupts the export; the notes above are the
-only things it ever says on a run that succeeds.
+A successful {opt sav:ing()} export prints nothing and draws nothing. The
+scratch-dataset work {cmd:csdid_plot} does to build the file is silent, so
+neither observation-count notices nor a {cmd:more} prompt interrupts the export;
+the notes above are the only things it ever says on a run that succeeds. A
+successful bare {cmd:csdid_plot} likewise prints no text: its output is the
+graph.
 
 
 {marker references}{...}

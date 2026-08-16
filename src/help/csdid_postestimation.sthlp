@@ -50,8 +50,8 @@ one row per ATT(g,t) cell or per aggregated effect{p_end}
 model metadata{p_end}
 {synopt :{helpb csdid_stats}}aggregation with the full option set, including
 {cmd:balance()} and saved influence functions{p_end}
-{synopt :{helpb csdid_plot}}export plot-ready data for user-controlled
-graphs{p_end}
+{synopt :{helpb csdid_plot}}draw the plot, or export plot-ready data for
+user-controlled graphs{p_end}
 {synoptline}
 {p2colreset}{...}
 
@@ -262,12 +262,13 @@ the estimate, standard error, test statistic, p-value, and both the reported and
 the pointwise confidence limits. Add {cmd:replace} to overwrite.
 
 {phang}
-{helpb csdid_plot} writes plot-ready data -- {cmd:plot_type}, {cmd:series},
-{cmd:x}, {cmd:x_label}, {cmd:estimate}, {cmd:ci_low}, {cmd:ci_high}, the
-group/time/event-time identifiers, and {cmd:significant} -- for the ATT(g,t)
-results or for the active dynamic, group, or calendar aggregation. Graph
-rendering stays under your control: the exported dataset is a normal Stata
-dataset that {helpb twoway} can draw directly.
+{helpb csdid_plot} draws the ATT(g,t) plot or the active dynamic, group, or
+calendar aggregation. With {cmd:saving()} it writes the plot data instead --
+{cmd:plot_type}, {cmd:series}, {cmd:x}, {cmd:x_label}, {cmd:estimate},
+{cmd:ci_low}, {cmd:ci_high}, the group/time/event-time identifiers, and
+{cmd:significant} -- and draws nothing. That is how graph styling stays under
+your control: the exported dataset is a normal Stata dataset that
+{helpb twoway} can draw directly.
 
 {pstd}
 {cmd:saving()} exports what the subcommand computed, so put {cmd:window()},

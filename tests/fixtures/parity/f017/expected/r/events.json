@@ -81,6 +81,6 @@
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "asinr",
-    "message_normalized": "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
+    "message_normalized": "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
   }
 ]

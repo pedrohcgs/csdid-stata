@@ -161,6 +161,9 @@ run_stata tests/stata/r/test-edge-cases.do
 run_stata tests/stata/r/test-audit-fixes.do
 run_stata tests/stata/r/test-mboot-cluster.do
 run_stata tests/stata/r/test-mboot-postprocess.do
+run_stata tests/stata/r/test-missing-cell-se.do
+run_stata tests/stata/test-boot-degenerate-screen.do
+run_stata tests/stata/test-agg-cband-parity.do
 run_stata tests/stata/r/test-modelmatrix-hoist.do
 run_stata tests/stata/test-f016.do
 run_stata tests/stata/r/test-mutation-safety.do
@@ -260,5 +263,35 @@ run_stata tests/stata/test-f070.do
 run_stata tests/stata/test-f071.do
 run_stata tests/stata/test-f072.do
 run_stata tests/stata/test-f073.do
+run_stata tests/stata/test-f074.do
+run_stata tests/stata/test-pair-cell-and-balance-order.do
+run_stata tests/stata/test-rc-bucket-order.do
+run_stata tests/stata/test-agg-boot-named-route.do
+run_stata tests/stata/test-pscoretrim-binding.do
+run_stata tests/stata/test-ipw-trim-diagnostic.do
 run_stata tests/stata/test-release-hardening.do
 run_stata tests/stata/test-release-failure-modes.do
+# The lean cache belongs to ONE estimation, and every gate above runs inside a
+# single session, where a stale cache and a fresh one are told apart by a
+# counter. Two sessions are not: this one saves an estimation in one Stata
+# process, restores it in another, and requires the aggregation to refuse the
+# cache standing in the second rather than report its standard errors under the
+# first one's point estimates.
+run_stata tests/stata/test-cache-token-session.do
+# Everything above loads the engine from src/mata/csdid.mata. This one builds
+# the compiled library and runs a separate Stata process against it, which is
+# the configuration the installed package actually has.
+run_stata tests/stata/test-mlib-session.do
+
+# What a session pays ONCE. Every other timing gate here either estimates once
+# per fresh process or estimates repeatedly in one warmed session, so none of
+# them can see a cost a session pays a single time -- and the first csdid of a
+# session pays a great deal a single time. This one compares the first run of a
+# command with the steady-state run of the same command in the same session.
+python3 tools/bench/run-session-warmup.py
+
+# The suite is only green if it REACHED HERE. `set -e' stops it at the first
+# failure, and a run that stopped early has run neither the gates below the
+# stopping point nor this line; "every do-file passed" said about such a run is
+# a statement about the do-files that ran, not about the suite.
+echo "SMOKE-SUITE-COMPLETE"

@@ -137,7 +137,7 @@ dataset for later use by {helpb csdid_stats}{p_end}
 {synopt:{opt nofast}}force the baseline Mata kernels{p_end}
 
 {syntab:Legacy compatibility {help csdid##opt_legacy:[+]}}
-{synopt:{opt asinr}}accepted as a no-op{p_end}
+{synopt:{opt asinr}}accepted and ignored{p_end}
 {synopt:{opt never}}legacy spelling of {opt nevertreated}{p_end}
 {synopt:{opt long}, {opt long2}}deprecated event-study layout aliases{p_end}
 {synoptline}
@@ -284,7 +284,11 @@ would change the estimand.
 {opt pscoretrim(#)} sets the propensity-score trimming level used by
 {cmd:method(dr)} and {cmd:method(ipw)}. Comparison observations whose
 estimated propensity score is at or above {it:#} are dropped from that cell;
-treated observations are never dropped. {it:#} must be greater than 0, and the
+treated observations are never dropped. Without covariates the estimated score
+is the same constant for every observation, so the trim is all or nothing, and
+a score exactly equal to {it:#} empties the comparison group: the cell is
+reported as missing, with a warning naming the trim.
+{it:#} must be greater than 0, and the
 default is {cmd:pscoretrim(.995)}. Specify {cmd:pscoretrim(1)} (or any larger
 value) to disable trimming entirely; this is the level earlier versions of
 {cmd:csdid} used by default. This is an overlap safeguard, not a specification
@@ -489,7 +493,10 @@ cohort, and weight columns and the metadata needed to aggregate later. Load it
 with {cmd:csdid_stats using} {it:filename} to produce aggregations without
 re-estimating. {opt replace} overwrites an existing file. The artifact is
 written from the internal influence functions, so it needs no storage
-option: it works the same under the default and under {cmd:storeall}.
+option: it works the same under the default and under {cmd:storeall}. When the
+estimation was clustered, the file also carries a {cmd:cluster} column and the
+cluster variable's name, so the aggregation reloaded from it clusters the same
+way the estimation did.
 
 {pmore}
 The destination is checked {it:before} estimation starts, as
@@ -548,7 +555,10 @@ accepted modes are:
 
 {p2colset 9 24 26 2}{...}
 {p2col:{cmd:bal(full)}}drop every unit not observed in all periods, so that a
-single balanced panel is used for all comparisons. This is the default.{p_end}
+single balanced panel is used for all comparisons. This is the default. When
+there are no never-treated units the late periods that carry no comparison
+group are removed first, so a unit is judged complete over the periods that are
+actually estimated on, not over the raw calendar.{p_end}
 {p2col:{cmd:bal(pair)}}balance each 2x2 comparison separately, keeping the
 units observed in both of that comparison's periods. Every unit stays in the
 sample; what varies is which units each individual comparison can use.{p_end}
@@ -633,7 +643,7 @@ running. All of them announce themselves. None of them changes a default.
 See {it:{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}}.
 
 {phang}
-{opt asinr} is accepted as a no-op with a message: it used to switch on an
+{opt asinr} is accepted and ignored, with a message: it used to switch on an
 alternative not-yet-treated pre-treatment selection, which is now governed by
 {cmd:notyet}.
 
@@ -787,13 +797,38 @@ exactly the same cases, and a refusal leaves {cmd:e()} cleared rather than
 posting a half-finished estimation.
 
 {pstd}
-{bf:Panel structure.} With {cmd:ivar()} supplied, each unit may appear at most
-once per period, {cmd:gvar()} must be constant within a unit (treatment timing
-is irreversible), and {cmd:cluster()}, when given, must also be constant within
-a unit. Each violation is a separate {cmd:r(459)} refusal. The sample must
-contain at least two distinct units: one unit cannot supply both sides of a
-two-by-two comparison, and that case now refuses by name instead of failing
-with a conformability error from the estimation kernel.
+{bf:Panel structure.} With {cmd:ivar()} supplied -- and without {cmd:rcs},
+which treats every observation as its own unit and so has no panel shape to
+check -- each unit may appear at most once per period, {cmd:gvar()} must be
+constant within a unit (treatment timing is irreversible), and {cmd:cluster()},
+when given, must also be constant within a unit. Each violation is a separate
+{cmd:r(459)} refusal, judged before {cmd:bal(full)} balances the panel, so a
+duplicate row, a reversal or a moving cluster inside a unit that balancing
+would drop still refuses rather than passing unnoticed. All three read the
+estimation sample rather than the dataset as supplied: {cmd:if} and {cmd:in},
+rows carrying a missing value, and the whole-unit covariate rule described
+below under {bf:Covariates on the panel path} each narrow it first. The sample
+must also contain at least two distinct units, counted after every one of those
+reductions and after {cmd:bal(full)}: one unit cannot supply both sides of a
+two-by-two comparison, so a panel that collapses to a single unit refuses by
+name.
+
+{pstd}
+{bf:Which period's covariates enter each comparison.} Every ATT(g,t) is a
+two-period comparison between the cell's base period and period {it:t}, and on
+the panel path the covariates enter as one row per unit, taken from the
+{bf:earlier} of those two periods. Under the default {cmd:baseperiod(universal)}
+that is {it:g}-1 for post-treatment cells and {it:t} itself for pre-treatment
+cells, whose base period {it:g}-1 lies after them; under
+{cmd:baseperiod(varying)} it is {it:g}-1 for post-treatment cells and
+{it:t}-1 for pre-treatment cells. With {cmd:anticipation(}{it:a}{cmd:)} the
+base period shifts back accordingly. On the repeated-cross-section and
+unbalanced-panel paths there is no differencing across periods, and each
+observation contributes its own period's covariate row. Time-invariant
+covariates are unaffected by any of this; for time-varying covariates it means
+post-treatment cells hold the covariates fixed at their pre-treatment base
+values, while pre-treatment cells use covariates measured within the
+pre-treatment window.
 
 {pstd}
 {bf:Covariates on the panel path.} A unit whose covariates are missing in any
@@ -1021,11 +1056,12 @@ the bootstrap then draws one multiplier per cluster.
 how the standard errors were produced: the bootstrap and its replication count
 and seed, or {cmd:analytical}; the clustering variable and the number of
 clusters when {cmd:cluster()} is used; and the level and kind of the reported
-bands. An unseeded bootstrap is labelled {cmd:no seed set (not reproducible)},
-which is the honest description: because the multipliers are redrawn, two
-identical unseeded commands give standard errors that differ by a few percent.
-Seed with {cmd:rseed()} whenever a number will be reported. The same facts are
-stored in {cmd:e(vce)}, {cmd:e(reps)}, {cmd:e(rseed)}, and {cmd:e(cband)}.
+bands. An unseeded bootstrap adds a second line saying that the standard errors
+change slightly between runs and that {cmd:rseed(#)} reproduces them: because
+the multipliers are redrawn, two identical unseeded commands give standard
+errors that differ by a few percent. Seed with {cmd:rseed()} whenever a number
+will be reported. The same facts are stored in {cmd:e(vce)}, {cmd:e(reps)},
+{cmd:e(rseed)}, and {cmd:e(cband)}.
 
 {marker remarks_pretest}{...}
 {pstd}
@@ -1061,10 +1097,12 @@ when the design turns on the assumption, with a sensitivity analysis.
 
 {pstd}
 The estimation engine is pure Mata. The package installs a precompiled Mata
-library, {cmd:lcsdid.mlib}, which is portable bytecode rather than a
+library, {cmd:lcsdid_v2.mlib}, which is portable bytecode rather than a
 platform-specific binary; it holds exactly the code in {cmd:csdid.mata} and
 only removes the cost of compiling that source on the first call of each
-session. On macOS the package also installs a compiled bootstrap accelerator,
+session. A library built by a newer Stata than the one running cannot be read
+by it; csdid says so once and uses {cmd:csdid.mata} instead, which gives the
+same results and costs only the compile it was there to remove. On macOS the package also installs a compiled bootstrap accelerator,
 which is used only for explicitly seeded Rademacher draws; its results are
 identical to the Mata path, including the full random-number state. Every
 other case -- every other platform, every unseeded or non-Rademacher draw, and
@@ -1081,6 +1119,16 @@ cells. Each coefficient is named by pasting the cohort, three underscores, the
 period, one underscore, and the base period: ATT(2004, 2005) with base period
 2003 is {cmd:g2004___2005_2003}. {cmd:test} and {cmd:lincom} therefore work on
 individual cells and on linear combinations of them.
+
+{pstd}
+Each name identifies exactly one cell. When the cohort or period axis is not
+integer valued, the value is written in full and its decimal point becomes an
+underscore, so ATT(2000.25, 2000.5) with base period 2000 is
+{cmd:g2000_25___2000_5_2000}. A cell that cannot be named this way -- because
+the name would pass Stata's 32-character limit, or would repeat a name already
+in use -- is named {cmd:att_}{it:#} instead and the run reports how many cells
+were affected. {cmd:e(attgt)} always reports the cohort, period and base period
+of every cell.
 
 {pstd}
 The base period in the name is the reference period the cell was actually
@@ -1476,8 +1524,9 @@ reference cell). The printed table shows the first nine columns{p_end}
 {synopt:{cmd:e(inffunc)}}unit-by-cell influence functions
 {it:(conditional: storeall)}{p_end}
 {synopt:{cmd:e(unit_group)}}one row per unit, with columns {cmd:id},
-{cmd:group}, {cmd:weight}, and, on unbalanced panels, an internal
-{cmd:first_period} column {it:(conditional: storeall)}{p_end}
+{cmd:group}, {cmd:weight}, and, on unbalanced panels and repeated cross
+sections, an internal {cmd:first_period} column
+{it:(conditional: storeall)}{p_end}
 {synopt:{cmd:e(cluster_vec)}}cluster identifier per unit; present only with
 {cmd:cluster()} and storeall{p_end}
 {synopt:{cmd:e(boot_attgt)}}bootstrap results, one row per ATT(g,t) cell, with
@@ -1625,7 +1674,25 @@ the critical value {cmd:e(crit_val)}. The band
 {it:ATThat(g,t) +/- crit_val x sehat(g,t)} then covers all ATT(g,t)
 simultaneously with asymptotic probability {it:1 - alpha}. {cmd:pointwise}
 replaces this critical value with the normal quantile, giving intervals with
-the nominal coverage one cell at a time only.
+the nominal coverage one cell at a time only. Cells whose 2x2 estimation
+failed carry no draws; they are excluded from the maximum, report missing
+standard errors, and do not disturb the bands of the cells that were
+estimated.
+
+{pstd}
+{bf:How e(V) is formed.} Stata's postestimation commands ({cmd:test},
+{cmd:lincom}, {cmd:nlcom}) read {cmd:e(V)}, and their single-cell results
+should reproduce the displayed table. Under the multiplier bootstrap
+{cmd:e(V)} is therefore assembled as {it:D C D}: {it:C} is the correlation
+matrix of the bootstrap draws for the posted cells, and {it:D} is the diagonal
+matrix of the reported (robust, interquartile-based) bootstrap standard
+errors. Its diagonal reproduces the printed standard errors exactly, it is
+positive semidefinite by construction, and its off-diagonal structure comes
+from the same draws that produced the confidence bands. Under
+{cmd:analytical} inference {cmd:e(V)} is the influence-function covariance
+directly, formed from cluster sums when {cmd:cluster()} is specified. A
+posted cell whose standard error is missing has its row and column of
+{cmd:e(V)} set to zero.
 
 {pstd}
 {bf:Parallel-trends pre-test.} Let {it:P} index the pre-treatment cells, those

@@ -57,7 +57,7 @@ write.csv(d, file.path(fixture, "inputs/input.csv"), row.names = FALSE, na = "")
 # long / long2 / asinr ARE genuine Version 1.82 options, so they stay: accepted,
 # working, and announcing their deprecation.
 long_message <- "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy layouts."
-asinr_message <- "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
+asinr_message <- "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
 
 removed <- c(
   "balanceall",

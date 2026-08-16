@@ -380,6 +380,20 @@ for that run; with simultaneous bands it exceeds the pointwise normal quantile.
 Both critical values are stored, in {cmd:e(crit_val)} and
 {cmd:e(point_crit_val)}.
 
+{pstd}
+Two aggregations are always banded pointwise, whatever the estimation asked
+for, and the header above the table says so. {cmd:type(simple)} reports a
+single overall effect, for which a simultaneous band over one effect is the
+pointwise interval; and when the estimation's time grid has only two periods
+there is one comparison to band, so the simultaneous band is not defined
+separately from the pointwise one. The ATT(g,t) table keeps the simultaneous
+band it was estimated with in both cases; only the aggregation is affected.
+
+{pstd}
+{cmd:e(agg_cband)} reports which band the aggregation just computed carries: 1
+simultaneous, 0 pointwise. Read it rather than {cmd:e(cband)}, which describes
+the estimation and stays 1 through both cases above.
+
 {marker rif}{...}
 {title:Aggregating a saved RIF file}
 
@@ -397,6 +411,16 @@ RIF file is analytical: bootstrap draws and the bootstrap random-number state
 are not saved. Second, the {cmd:using} form replaces the estimation results in
 {cmd:e()} with the reconstructed ones, so it should be run in a fresh
 postestimation state rather than on top of results you still need.
+
+{pstd}
+Clustering does travel with the file. A RIF written by a run with
+{cmd:cluster(}{it:clustvar}{cmd:)} carries the cluster identifiers, and
+{cmd:csdid_stats using} reports the same clustered standard errors as
+aggregating the estimation directly; {cmd:cluster(}{it:clustvar}{cmd:)} on the
+{cmd:using} form is accepted, and naming a different variable is refused, as it
+is for a live estimation. A file that does not record the clustering at all is
+refused by name rather than aggregated as if the estimation had been
+unclustered; re-run {cmd:csdid} with {cmd:saverif()} to rewrite it.
 
 {pstd}
 The confidence level travels with the file. {cmd:saverif()} records the level
@@ -460,8 +484,8 @@ results of the estimation itself are preserved, including {cmd:e(b)},
 {p2col 5 26 29 2: Scalars}{p_end}
 {synopt:{cmd:e(N_aggte)}}number of aggregated effects reported{p_end}
 {synopt:{cmd:e(agg_level)}}confidence level used for the aggregation{p_end}
-{synopt:{cmd:e(agg_cluster_fallback)}}always 0; a cluster mismatch is an error,
-never a silent fallback{p_end}
+{synopt:{cmd:e(agg_cband)}}1 if the band reported for this aggregation is
+simultaneous, 0 if it is pointwise{p_end}
 {synopt:{cmd:e(crit_val)}}the aggregation's own simultaneous critical value
 {it:(posted only under bootstrap inference)}{p_end}
 {synopt:{cmd:e(point_crit_val)}}the aggregation's own pointwise critical value

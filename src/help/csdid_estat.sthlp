@@ -134,7 +134,7 @@ and standard errors, or a posted coefficient vector.
 {pstd}
 {cmd:estat tidy} and {cmd:estat glance} write a Stata dataset of estimates and
 of model metadata, in a tidy column layout suited to tables and reporting.
-{helpb csdid_plot} exports plot-ready data.
+{helpb csdid_plot} draws the plot, or exports plot-ready data.
 
 
 {marker options}{...}
@@ -318,8 +318,18 @@ for event time {it:#}, and {cmd:Post_avg}{p_end}
 {p2colreset}{...}
 
 {pstd}
-The event-time coefficient vector includes the e = -1 reference period, whose
-effect is an estimated placebo and not identically zero. The posted covariance
+{it:#} is the event time, cohort or period itself, with a decimal point written
+as an underscore ({cmd:Tm0_25} for event time -0.25). An effect whose name
+would pass Stata's 32-character limit, or would repeat a name already in use,
+is named {cmd:eff_}{it:#} instead and the run reports how many were affected;
+{cmd:e(aggte)} always reports the event time, cohort or period of every row.
+
+{pstd}
+The event-time coefficient vector includes the e = -1 reference period, and what
+that row holds depends on the base period. Under the default
+{helpb csdid##opt_base:base_period(universal)} it is the normalisation itself:
+identically zero, with no standard error. Under {cmd:base_period(varying)} it is
+an estimated placebo, with a standard error of its own. The posted covariance
 matrix is not diagonal:
 it is built from the influence functions of the aggregated effects, or from the
 bootstrap draws under bootstrap inference, so {cmd:test} and {cmd:lincom}
@@ -337,6 +347,14 @@ stored side by side and compared.
 {cmd:post} is given, and it always describes the aggregation just computed. It
 is never left holding an earlier aggregation's numbers: if the command you typed
 fails or posts nothing, {cmd:r(table)} is cleared rather than left standing.
+
+{pstd}
+A row with no standard error -- the normalised base period under
+{helpb csdid##opt_base:base_period(universal)}, or an effect whose influence
+function is degenerate -- reports a missing standard error, z, p-value and
+confidence limits, exactly as the displayed table does. {cmd:e(V)} carries a
+zero row and column there, which is Stata's convention for a coefficient with
+no estimated variance, so {cmd:test} and {cmd:lincom} treat that term as known.
 
 {marker level}{...}
 {title:Confidence levels}

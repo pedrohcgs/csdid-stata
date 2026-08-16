@@ -49,11 +49,25 @@ installed_fingerprint() {
 
 # ---------------------------------------------------------------- upstream
 resolve_checkout() {
-  if [ -n "$CHECKOUT" ] && [ -d "$CHECKOUT/.git" ]; then
+  # -e, not -d: in a linked git worktree .git is a FILE holding a gitdir
+  # pointer, so -d rejected every worktree. A rejected checkout fell through to
+  # the clone below and the run then compared the pinned inventory against
+  # upstream's DEVELOPMENT head while still printing "upstream", which reads as
+  # drift in the pin rather than what it was -- a different oracle. Whoever
+  # supplies a pinned checkout must get that checkout or a loud failure.
+  if [ -n "$CHECKOUT" ] && [ -e "$CHECKOUT/.git" ]; then
+    # A detached HEAD is the normal shape here (a release tag), where pull is a
+    # no-op; on a branch this keeps a supplied checkout current.
     git -C "$CHECKOUT" fetch --quiet origin 2>/dev/null || true
     git -C "$CHECKOUT" pull --quiet --ff-only 2>/dev/null || true
     echo "$CHECKOUT"; return
   fi
+  if [ -n "$CHECKOUT" ]; then
+    echo "CSDID_DID_UPSTREAM=$CHECKOUT is not a git checkout" >&2
+    return 1
+  fi
+  echo "   note: no pinned checkout supplied; cloning $UPSTREAM_URL at its" >&2
+  echo "         development head, which is NOT the released parity target" >&2
   local tmp; tmp="$(mktemp -d)"
   git clone --quiet --depth 50 "$UPSTREAM_URL" "$tmp/did" || return 1
   echo "$tmp/did"

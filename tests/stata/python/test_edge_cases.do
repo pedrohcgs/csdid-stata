@@ -144,7 +144,7 @@ py007_assert_any_finite_att
 
 import delimited using "`root'/tests/fixtures/parity/py007/inputs/first_period.csv", clear asdouble
 py007_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") ///
-    message("Units treated in the first period are dropped")
+    message("warning: dropped 981 unit(s) already treated in the first period.")
 py007_assert_any_finite_att
 
 foreach method in dr reg ipw {

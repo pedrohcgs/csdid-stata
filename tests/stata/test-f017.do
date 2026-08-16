@@ -97,7 +97,7 @@ assert e(N_time) == 4
 matrix Default = e(attgt)
 
 local long_msg "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
-local asinr_msg "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
+local asinr_msg "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
 tempfile evlog
 
 import delimited using "`root'/tests/fixtures/parity/f017/inputs/input.csv", clear asdouble

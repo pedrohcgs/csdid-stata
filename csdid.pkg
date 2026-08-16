@@ -51,6 +51,7 @@ d Distribution-Date: 20260730
 d
 f pkg/csdid.ado
 f pkg/_csdid_post.ado
+f pkg/_csdid_engine_load.ado
 f pkg/csdid_estat.ado
 f pkg/csdid_stats.ado
 f pkg/csdid_plot.ado
@@ -63,7 +64,7 @@ f pkg/dipt.ado
 f pkg/tsvmat.ado
 f pkg/csdid.mata
 f pkg/csdid_bootstrap_macosx.plugin
-f pkg/lcsdid.mlib
+f pkg/lcsdid_v2.mlib
 f pkg/csdid.sthlp
 f pkg/csdid_postestimation.sthlp
 f pkg/csdid_estat.sthlp

@@ -336,14 +336,16 @@ assert "`e(agg_type)'" == "calendar"
 matrix EVC = e(aggte)
 assert rowsof(EVC) > 0
 
-capture log close f051event
-log using "`evlog'", text replace name(f051event)
+* A bare csdid_plot draws the default graph -- here the calendar aggregation
+* left in e() by the estat calls above. saving() remains the plot-data export
+* and is exercised earlier in this file; there is no requires-saving refusal
+* left to assert.
+capture graph drop _all
 capture noisily csdid_plot
-local actual = _rc
-log close f051event
-assert `actual' == 198
-f051_assert_log_contains using "`evlog'", ///
-    message("csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace")
+assert _rc == 0
+quietly graph dir
+assert `"`r(list)'"' != ""
+capture graph drop _all
 
 capture log close f051event
 log using "`evlog'", text replace name(f051event)

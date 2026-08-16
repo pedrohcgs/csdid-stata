@@ -237,7 +237,7 @@ program define csdid_estat, eclass
                     if !missing(`agg_se_check'[`agg_i', `agg_se_col']) local agg_se_allmiss 0
                 }
                 if `agg_se_allmiss' {
-                    display as text "note: every standard error in this type(`agg_type') aggregation is missing. The ATT(g,t) estimates it aggregates have no usable standard errors, which usually means the influence functions are degenerate for these cells (a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance). The point estimates below are still the aggregation of the ATT(g,t) estimates."
+                    display as text "note: every standard error in this type(`agg_type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance. The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
                 }
             }
         }
@@ -281,7 +281,17 @@ program define csdid_estat, eclass
                 local have_show 1
             }
             if `"`subcmd'"' == `"event"' {
-                if `have_show' matlist `show_b', names(columns) format(%10.6g)
+                * The event table arrived with nothing above it: no title, and
+                * no statement of how the standard errors beneath it were
+                * produced. `csdid_stats, type(dynamic)' prints both, but its
+                * copy is inside the `quietly' this route runs, so a user who
+                * reached the same aggregation through estat saw a bare matrix.
+                * Same title, same header, from the same e() macros.
+                if `have_show' {
+                    display as text _newline "Aggregated treatment effects"
+                    _csdid_estat_inf_header, level(`level')
+                    matlist `show_b', names(columns) format(%10.6g)
+                }
             }
             else {
                 matlist e(aggte), names(columns) format(%10.6g)
@@ -338,10 +348,10 @@ program define csdid_estat, eclass
         }
         capture confirm matrix e(aggte)
         if _rc {
-            _csdid_estat_glance_attgt using `"`saving'"', `replace'
+            _csdid_estat_glance using `"`saving'"', `replace'
         }
         else {
-            _csdid_estat_glance_aggte using `"`saving'"', `replace'
+            _csdid_estat_glance using `"`saving'"', `replace' agg
         }
         exit
     }
@@ -363,6 +373,45 @@ end
 program define _csdid_estat_optdup
     version 14
     syntax [, SAVing(string) REPLACE WINDOW(string) POST Level(cilevel) DROPMissing]
+end
+
+* The inference header printed above the event table. It states the same facts
+* in the same order as the header csdid and csdid_stats print, and reads them
+* from the same place: the estimation's e() macros, which the aggregation
+* inherits, plus e(agg_cband) -- the band decision the aggregation itself made,
+* which is not e(cband) -- posted by the csdid_stats call this route just ran.
+program define _csdid_estat_inf_header
+    version 14
+    syntax , Level(cilevel)
+
+    local inf_line ""
+    local unseeded 0
+    if "`e(vce)'" == "bootstrap" {
+        local inf_line "Std. errors: multiplier bootstrap, `=e(biters)' reps"
+        if "`e(rseed)'" != "" {
+            local inf_line "`inf_line', rseed(`e(rseed)')"
+        }
+        else {
+            local unseeded 1
+        }
+    }
+    else {
+        local inf_line "Std. errors: analytical (influence function)"
+    }
+    if "`e(clustervar)'" != "" {
+        local inf_line "`inf_line'; clustered on `e(clustervar)'"
+        capture confirm scalar e(N_clusters)
+        if !_rc local inf_line "`inf_line' (`=e(N_clusters)' clusters)"
+    }
+    local band_kind "pointwise"
+    capture confirm scalar e(agg_cband)
+    if !_rc {
+        if e(agg_cband) == 1 local band_kind "simultaneous"
+    }
+    display as text "`inf_line'; `level'% `band_kind' bands"
+    if `unseeded' {
+        display as text "Note: no rseed() set, so these standard errors change slightly between runs; add rseed(#) to reproduce them."
+    }
 end
 
 * SP-07 helper. An rclass program replaces r() wholesale on exit, so calling
@@ -476,10 +525,18 @@ program define _csdid_estat_tidy_attgt
     }
 end
 
-program define _csdid_estat_glance_attgt
+program define _csdid_estat_glance
     version 14
-    syntax using/ [, REPLACE]
+    syntax using/ [, REPLACE AGG]
 
+    * One row of estimation metadata. The ATT(g,t) export and the aggregation
+    * export differ in one column: an aggregation names its type.
+    *
+    * That column is created FIRST, before the counts, because the saved file
+    * carries the variables in creation order and the aggregation export has
+    * always led with type - see the glance_aggte_* column lists in the f027
+    * export schema.
+    *
     * EUX-003/SP-06 fix: see _csdid_estat_tidy_attgt - the export block runs
     * -quietly- so the scratch-data chatter and the "Press any key" prompt do
     * not fire on the happy path. `display as error' still reaches the user.
@@ -487,6 +544,9 @@ program define _csdid_estat_glance_attgt
         preserve
         clear
         set obs 1
+        if "`agg'" != "" {
+            generate str16 type = "`e(agg_type)'"
+        }
         generate double nobs = e(N_units)
         generate double ngroup = e(N_groups)
         generate double ntime = e(N_time)
@@ -604,30 +664,6 @@ program define _csdid_estat_tidy_aggte
         label variable conf_high "conf.high"
         label variable point_conf_low "point.conf.low"
         label variable point_conf_high "point.conf.high"
-        save `"`using'"', `replace'
-        restore
-    }
-end
-
-program define _csdid_estat_glance_aggte
-    version 14
-    syntax using/ [, REPLACE]
-
-    * EUX-003/SP-06 fix: see _csdid_estat_tidy_attgt - the export block runs
-    * -quietly- so the scratch-data chatter and the "Press any key" prompt do
-    * not fire on the happy path. `display as error' still reaches the user.
-    quietly {
-        preserve
-        clear
-        set obs 1
-        generate str16 type = "`e(agg_type)'"
-        generate double nobs = e(N_units)
-        generate double ngroup = e(N_groups)
-        generate double ntime = e(N_time)
-        generate str32 control_group = "`e(control_group)'"
-        generate str32 est_method = "`e(method)'"
-        label variable control_group "control.group"
-        label variable est_method "est.method"
         save `"`using'"', `replace'
         restore
     }

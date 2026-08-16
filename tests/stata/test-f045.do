@@ -118,7 +118,7 @@ log close f045event
 assert `actual_rc' == 0
 matrix Asinr = e(attgt)
 assert mreldif(Asinr, BalancedDefault) < 1e-14
-f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet")
+f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group.")
 f045_append_defaults, scenario(asinr_noop) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
@@ -130,7 +130,7 @@ log close f045event
 assert `actual_rc' == 0
 matrix Dripw = e(attgt)
 assert mreldif(Dripw, ExplicitRDefault) < 1e-14
-f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)")
+f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: method(dripw) is retired; running method(dr), which is the same estimator. Use method(dr) in new code.")
 f045_append_defaults, scenario(method_dripw_alias) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble
@@ -146,7 +146,7 @@ log close f045event
 assert `actual_rc' == 0
 matrix Stdipw = e(attgt)
 assert mreldif(Stdipw, ExplicitIPW) < 1e-14
-f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)")
+f045_assert_log_contains using "`evlog'", message("csdid legacy compatibility: method(stdipw) is retired; running method(ipw), which is the same estimator. Use method(ipw) in new code.")
 f045_append_defaults, scenario(method_stdipw_alias) outfile("`actual_defaults'") append
 
 import delimited using "`root'/tests/fixtures/parity/f045/expected/new-stata/defaults.csv", clear varnames(1)

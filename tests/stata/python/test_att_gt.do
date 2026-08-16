@@ -317,7 +317,7 @@ capture noisily csdid y x, time(period) gvar(g) method(reg) analytical nevertrea
 local first_rc = _rc
 log close py003_first
 assert `first_rc' == 0
-py003_assert_log_contains using "`firstlog'", message("Units treated in the first period are dropped")
+py003_assert_log_contains using "`firstlog'", message("already treated in the first period")
 
 py003_run_fit, input("`dynamic'") method(reg) panel(1) base(varying)
 quietly csdid_stats, type(dynamic) min_e(-1) max_e(1) na_rm

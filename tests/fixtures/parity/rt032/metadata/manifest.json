@@ -1,0 +1,33 @@
+{
+  "matrix_id": "RT032",
+  "fixture_family": "missing-cell-inference",
+  "normative_source": "R did 2.5.1: a (g,t) cell whose 2x2 estimation fails carries NA att/se without contaminating any other cell's inference",
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt032/generate.R",
+      "path": "tools/parity/generators/rt032/generate.R"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "inputs/mpdta-gap.csv",
+      "rows": 2460,
+      "columns": 6
+    },
+    {
+      "path": "inputs/mpdta-drop2006.csv",
+      "rows": 2300,
+      "columns": 6
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0"
+    }
+  ],
+  "consumers": [
+    "tests/stata/r/test-missing-cell-se.do"
+  ]
+}

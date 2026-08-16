@@ -32,20 +32,20 @@
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "asinr",
-    "message_normalized": "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
+    "message_normalized": "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
   },
   {
     "event_key": "method_dripw_warning",
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "method(dripw)",
-    "message_normalized": "csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)"
+    "message_normalized": "csdid legacy compatibility: method(dripw) is retired; running method(dr), which is the same estimator. Use method(dr) in new code."
   },
   {
     "event_key": "method_stdipw_warning",
     "return_code": 0,
     "event_type": "warning",
     "offending_option": "method(stdipw)",
-    "message_normalized": "csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)"
+    "message_normalized": "csdid legacy compatibility: method(stdipw) is retired; running method(ipw), which is the same estimator. Use method(ipw) in new code."
   }
 ]

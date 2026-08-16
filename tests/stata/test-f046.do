@@ -67,7 +67,7 @@ assert document == "docs/legacy-migration-guide.md"
 
 tempfile evlog
 
-local dripw_msg "csdid legacy compatibility: method(dripw) is soft-deprecated; using R-compatible method(dr)"
+local dripw_msg "csdid legacy compatibility: method(dripw) is retired; running method(dr), which is the same estimator. Use method(dr) in new code."
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
@@ -79,7 +79,7 @@ assert "`e(method_requested)'" == "dripw"
 assert "`e(method)'" == "dr"
 f046_assert_log_contains using "`evlog'", message("`dripw_msg'")
 
-local stdipw_msg "csdid legacy compatibility: method(stdipw) is soft-deprecated; using R-compatible method(ipw)"
+local stdipw_msg "csdid legacy compatibility: method(stdipw) is retired; running method(ipw), which is the same estimator. Use method(ipw) in new code."
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
@@ -91,7 +91,7 @@ assert "`e(method_requested)'" == "stdipw"
 assert "`e(method)'" == "ipw"
 f046_assert_log_contains using "`evlog'", message("`stdipw_msg'")
 
-local asinr_msg "csdid legacy compatibility: asinr is accepted as a no-op; R-compatible not-yet selection is governed by notyet"
+local asinr_msg "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
 matrix Default = e(attgt)

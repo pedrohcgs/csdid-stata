@@ -178,6 +178,27 @@ fi
 # merely documented.
 run docs "version-naming convention" python3 tools/docs/check-version-convention.py
 
+# Does the live site actually serve what this source says?
+#
+# Every other website check reads the markdown in website/. None of them can
+# see psantanna.com/csdid, which is served from a different repository. The
+# source was corrected on 2026-08-07 and the live site kept serving the
+# superseded speed range for a day, with every gate green throughout.
+#
+# BLOCKED rather than PASS when the site checkout or Jekyll is missing: the
+# checker exits 2 for "could not run", which is not the same as agreement.
+SITE_ROOT="${CSDID_SITE_ROOT:-$HOME/Documents/GitHub/pedrohcgs.github.io}"
+if [ ! -d "$SITE_ROOT/.git" ]; then
+  block docs "published site matches source" \
+    "no site checkout at $SITE_ROOT (set CSDID_SITE_ROOT)"
+elif ! have jekyll; then
+  block docs "published site matches source" \
+    "jekyll not on PATH, so website/ cannot be built for comparison"
+else
+  run docs "published site matches source" \
+    env CSDID_SITE_ROOT="$SITE_ROOT" python3 tools/release/check-published-site.py
+fi
+
 # -------------------------------------------------------------- tier: parity
 # Regenerating the R oracles proves the committed expectations still match what
 # R produces today, rather than a fixture frozen against a since-changed R.

@@ -126,6 +126,24 @@ forvalues i = 1/`=rowsof(AE)' {
 }
 assert `found34'
 
+* The same warning on the same design, with the command run QUIETLY. A cell
+* that leaves the table is a change to what was estimated, so it is announced
+* on the channel `quietly' does not suppress -- the rule the ado layer already
+* follows for the sample-changing warnings it prints "as error". Written with
+* Mata's printf the line disappears here, and a scripted run loses cells with
+* nothing said; written with errprintf it survives.
+* (`quietly', not `capture quietly': -capture- suppresses every channel,
+* including the error channel, so it would hide the very thing under test.)
+tempfile quietlog
+log using "`quietlog'", text replace name(f062quiet)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) ///
+    nevertreated analytical bal(none)
+local rc_quiet = _rc
+log close f062quiet
+assert `rc_quiet' == 0
+f062_log_has using "`quietlog'", message("No available control units for group 3 in time period 4")
+assert r(found)
+
 * -----------------------------------------------------------------------
 * 3. Damaged RIF metadata is refused by name.
 * -----------------------------------------------------------------------

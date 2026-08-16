@@ -84,13 +84,6 @@
     "message_normalized": "tidy requires saving(filename)"
   },
   {
-    "event_key": "csdid_plot_requires_saving",
-    "return_code": 198,
-    "event_type": "error",
-    "offending_option": "saving()",
-    "message_normalized": "csdid_plot requires saving(filename). To export plot data, run: csdid_plot, saving(filename) replace"
-  },
-  {
     "event_key": "csdid_plot_simple_unavailable",
     "return_code": 498,
     "event_type": "error",

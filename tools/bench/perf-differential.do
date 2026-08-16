@@ -48,6 +48,14 @@ if "`tag'" == "" {
     exit 198
 }
 if "`size'" == "" local size "small"
+* The gate has two arms and the second one is this grid with the C accelerator
+* refused, because the default grid's bootstrap cells are answered by the
+* plugin and a change to the Mata kernel behind it would otherwise be compared
+* against nothing. csdid reads that switch as a Stata global, and the gate is
+* driven from the shell, so it is taken from the environment here rather than
+* edited into this file for a run and edited back out afterwards. Unset, the
+* global is empty and this is the default arm, unchanged.
+global CSDID_BOOT_PLUGIN_DISABLE : environment CSDID_BOOT_PLUGIN_DISABLE
 * ONE CELL PER PROCESS. csdid is measurably session-order dependent at the
 * last bit -- see session-order-1ulp-repro.do in the 2026-08-05 session folder
 * -- so cells run in one process contaminate each other, and a snapshot

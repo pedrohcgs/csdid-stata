@@ -97,7 +97,7 @@ py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) an
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/first-period-treated.csv", clear asdouble
-py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("Units treated in the first period are dropped")
+py008_expect_success_message, command("csdid y, ivar(id) time(period) gvar(g) analytical nevertreated") message("warning: dropped 250 unit(s) already treated in the first period.")
 assert e(N_attgt) > 0
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/missing-outcome.csv", clear asdouble

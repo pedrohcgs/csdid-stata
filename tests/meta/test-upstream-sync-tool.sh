@@ -3,16 +3,14 @@
 #
 # Two failure modes this guards against.
 #
-# First, shipping a maintenance script nobody has ever executed. This
-# repository has already found four legacy ado files and four meta gates that
-# were shipped or wired without ever running; a script you first invoke in
-# anger, two years later, when the reference implementation has moved and you
-# need it, is the same defect with a longer fuse.
+# First, shipping a maintenance script nobody has ever executed. A script first
+# invoked in anger, two years later, when the reference implementation has moved
+# and you need it, is a script whose first run is also its first test.
 #
-# Second, someone wiring the mutating path into the suite. `--upgrade`
-# reinstalls an R package over the network and rewrites every oracle. A test
-# that mutates what it is testing is not a test, and the project's dependency
-# policy is explicit that default offline tests must not install packages.
+# Second, the mutating path being wired into the suite. `--upgrade` reinstalls
+# an R package over the network and rewrites every oracle. A test that mutates
+# what it is testing is not a test, and the project's dependency policy is
+# explicit that default offline tests must not install packages.
 set -euo pipefail
 
 TOOL="tools/maint/sync-upstream-did.sh"

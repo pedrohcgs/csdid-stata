@@ -9,10 +9,9 @@
     fixture tools/bench/run-f049-ratio.py reads, and the only one of the two
     that can turn a run red.
 
-Nothing connected them. `medium_unbalanced_cov_weight_dr` sat at 1.8 in the
-spec while the gate allowed 3, from the day that row's budget was raised until
-somebody diffed all twenty-four rows by hand. The failure mode is silent in
-both directions: a spec that promises more than the gate demands makes the
+Nothing else connects them, and a budget is normally changed in one place at a
+time, so the two drift apart with no run to say so. The failure mode is silent
+in both directions: a spec that promises more than the gate demands makes the
 frozen document a fiction, and a spec that promises less than the gate demands
 means a regression can land inside the published promise and still pass.
 

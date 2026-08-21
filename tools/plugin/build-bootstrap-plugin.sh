@@ -73,10 +73,10 @@ esac
 
 # Place the freshly built binary where the package actually ships it.
 #
-# Nothing did this before: src/build.do copied the mata, the compiled library
-# and the help files into pkg/ and never the plugin, so pkg/ kept whatever was
-# put there by hand -- for nine days that was a binary without the all-zero
-# RNG-state guard, and net install ships pkg/.
+# src/build.do copies the mata, the compiled library and the help files into
+# pkg/ and not the plugin. Left to that, pkg/ keeps whatever binary was put
+# there by hand -- an old one, missing the all-zero RNG-state guard, say --
+# and net install ships pkg/.
 #
 # Done here rather than in build.do because Stata's `copy` does not preserve
 # the executable bit, and silently demoting the shipped plugin to 644 is its

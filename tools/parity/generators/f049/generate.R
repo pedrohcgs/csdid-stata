@@ -178,8 +178,8 @@ r_relative <- data.frame(
 	    "ggdid aggte calendar"
 	  ),
 	  # Row 15, medium_unbalanced_cov_weight_dr, carries 3 rather than the 1.8
-	  # the other non-bootstrap rows use. Owner decision, 2026-08-06, on measured
-	  # evidence: the repeated-cross-section doubly robust path with covariates
+	  # the other non-bootstrap rows use. The measured evidence for that:
+	  # the repeated-cross-section doubly robust path with covariates
 	  # spends most of its time in two propensity fits per cell, and R runs the
 	  # same two -- overlap_check_fail() fits unweighted, and R's per-cell guard
 	  # cache is disabled unless panel && nevertreated && fix_weights != "varying".
@@ -191,10 +191,10 @@ r_relative <- data.frame(
 	  # -- and that, not the ratio, is what a user experiences. 3 matches the
 	  # budget its own bootstrap sibling already carries.
 	  #
-	  # Six rows carry more than 1.8. Owner decision, 2026-08-16, on measured
-	  # evidence: twelve consecutive rounds of the gate's own two measurements
+	  # Six rows carry more than 1.8, also on measured evidence: twelve
+	  # consecutive rounds of the gate's own two measurements
 	  # (tools/bench/f049-ratio-distribution.py, raw rounds in
-	  # tools/bench/perfscale/f049-ratio-owner-budget.csv) put these six between
+	  # tools/bench/perfscale/f049-ratio-budget-rounds.csv) put these six between
 	  # 91% and 100.4% of 1.8, and medium_panel_weighted_ipw crossed it once.
 	  # The rule applied: a row whose observed maximum reached 90% of its budget
 	  # gets that maximum times 1.10, rounded up to the next 0.05; every other

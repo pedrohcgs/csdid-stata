@@ -4178,10 +4178,11 @@ end</code></pre>
 * CSV: scan, n_units, T, cohorts, rows, pkg, median_seconds, trials, ok, note
 * appended to scalebench-results.csv (smoke runs go to scalebench-smoke.csv).
 *
-* dcdh (did_multiplegt_dyn) runs everywhere its design support allows
-* (owner call, 05aug2026; it had been excluded for runtime). Cells whose
-* single warmup call exceeds the 120-second cap are recorded as not
-* timed, mirroring the Version 1.82 tier's skip rule.
+* dcdh (did_multiplegt_dyn) runs everywhere its design support allows, rather
+* than being excluded for runtime: a package left out of the grid because it is
+* slow is a package the grid cannot report on. Cells whose single warmup call
+* exceeds the 120-second cap are recorded as not timed, mirroring the Version
+* 1.82 tier's skip rule.
 * ---------------------------------------------------------------------------
 args tier smoke onlyn onlypkg
 

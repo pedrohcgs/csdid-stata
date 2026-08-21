@@ -85,7 +85,13 @@ open(p, "w").write(s2)
 PY
 
 cd "$WORK/bench"
+# scalebench.do sends a smoke run to its own file so smoke data can never be
+# mistaken for the results of record. This has to follow it: counting the
+# record file during a smoke run reports "rows so far: 0" after every tier and
+# then "no rows were measured", which reads as a broken harness when the run
+# in fact measured every cell it was asked for.
 CSV="$WORK/bench/scalebench-results.csv"
+[ "$SMOKE" = "1" ] && CSV="$WORK/bench/scalebench-smoke.csv"
 rm -f "$CSV"
 if [ -n "$SEED_CSV" ]; then
   [ -f "$SEED_CSV" ] || { echo "SEED_CSV=$SEED_CSV does not exist" >&2; exit 1; }
@@ -140,14 +146,29 @@ if [ "$(rows_so_far)" -lt 1 ]; then
   echo "the per-tier logs are in $WORK/bench" >&2
   exit 1
 fi
+# A smoke run measures one tiny cell per tier to prove the wiring. Those
+# numbers are real measurements of a toy design, which is exactly what must
+# never reach the published tables, so it reports and stops here.
+if [ "$SMOKE" = "1" ]; then
+  echo "smoke ok: $(rows_so_far) rows measured across the tiers; the results of"
+  echo "record and the article tables are deliberately left untouched."
+  exit 0
+fi
 mkdir -p "$RESULTS"
 cp "$CSV" "$RESULTS/scalebench-results.csv"
 
 python3 - "$RESULTS/metadata.json" "$STATA" "$LEGACY" "$ROOT" "$started" "$STATA_ID" "$SEED_CSV" "$TIERS" "$RUN_F" <<'PY'
-import json, subprocess, sys, platform, datetime
+import json, os, subprocess, sys, platform, datetime
 meta_path, stata, legacy, root, started, stata_id, seed_csv, tiers, run_f = sys.argv[1:10]
 def git(where, *a):
     return subprocess.run(["git", *a], cwd=where, capture_output=True, text=True).stdout.strip()
+
+# This record is committed and published. An absolute path in it describes the
+# filesystem of whoever ran the benchmark and describes nothing about the
+# measurement, so the two path fields keep the name and drop the location; the
+# commit recorded beside legacy_root is what actually identifies the checkout.
+def where(path):
+    return os.path.basename(os.path.normpath(path)) if path else path
 
 # "19.5|MP|Unix|Mac (Apple Silicon)|29 Jul 2026" -> "StataNow/MP 19.5"
 #
@@ -172,14 +193,14 @@ json.dump({
     "platform": machine_type or f"{platform.system()} {platform.machine()}",
     "platform_detail": f"{os_name}; {platform.system()} {platform.release()}",
     "candidate_commit": git(root, "rev-parse", "HEAD"),
-    "legacy_root": legacy,
+    "legacy_root": where(legacy),
     "legacy_commit": git(legacy, "rev-parse", "HEAD"),
     "trials": 10,
     "tiers_run_here": tiers.split(),
     "ladder_run_here": run_f == "1",
     # Rows carried in from an earlier invocation of the same scripts on this
     # machine, rather than re-measured. Empty when everything was measured here.
-    "seeded_from": seed_csv,
+    "seeded_from": where(seed_csv),
 }, open(meta_path, "w"), indent=2)
 print(f"wrote {meta_path}")
 PY

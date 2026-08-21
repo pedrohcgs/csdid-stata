@@ -5,10 +5,9 @@ set -euo pipefail
 # inst/spec/bench-budgets.yml, which is the frozen normative document, and once
 # in tests/fixtures/parity/f049/expected/contract/r-relative-budgets.csv, which
 # is what tools/bench/run-f049-ratio.py actually enforces. Only the second one
-# can fail a run, so the first can drift out of step with it and nothing says
-# so: a row was found carrying 1.8 in the spec while the gate allowed 3, a
-# disagreement that had stood since the row's budget was raised and that only a
-# hand diff of all twenty-four rows revealed.
+# can fail a run, so the enforced budget and the frozen spec can drift apart
+# silently: raising one row in the fixture leaves the spec promising a tighter
+# number than anything checks, and no run is any the wiser.
 #
 # This compares every row of the two, by name, in both directions.
 

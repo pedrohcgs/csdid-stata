@@ -154,7 +154,7 @@ def percentile(values, probability):
     return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
 
 
-# Owner-directed, 2026-08-07: 8% on peak RSS, raised from 3%.
+# 8% on peak RSS, raised from the 3% this gate used to enforce.
 #
 # The 3% bound was calibrated against Stata 17 baselines. On Stata 19.5 both
 # implementations use about 20% more memory -- measured on the same machine and
@@ -178,7 +178,7 @@ def percentile(values, probability):
 # four variations clear. Nothing measured occupies the 5-8% band, so the
 # sensitivity given up is to regressions no scenario here exhibits.
 RSS_TOLERANCE = 0.08
-# Owner-directed: 5% on time. The strict rule below required csdid to be
+# 5% on time. The strict rule below required csdid to be
 # PROVABLY faster on every workload, with the upper bound of the paired ratio
 # under 1.0. That was safe while the two sides were 5-29x apart, but it is a
 # regression gate with no headroom, and two like-for-like runs of unchanged code

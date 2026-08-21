@@ -1,8 +1,8 @@
 * test-agg-bootstrap-paths.do
 * ---------------------------------------------------------------------------
-* Guards for the estat-stage aggregate bootstrap, added with the 2026-08-05
-* plumbing fix (csdid_bootstrap_aggte_direct). Three failure classes, each
-* seeded red against the pre-fix source before the fix landed:
+* Guards for the estat-stage aggregate bootstrap and the Mata route it takes
+* (csdid_bootstrap_aggte_direct). Three failure classes, each seeded red
+* against a source without that route before this file was accepted:
 *
 *  1. SCALING. The Mata path used to push the n_units x k influence
 *     functions through named Stata matrices: quadratic in n (clustered

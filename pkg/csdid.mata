@@ -37,10 +37,10 @@ mata:
 //   20  Posting results back to Stata
 //
 // NAMING. `csdid_' (one underscore) means the function is reached from
-// outside this file. There are 29 of them; 25 are called from the ado layer,
+// outside this file. There are 30 of them; 26 are called from the ado layer,
 // and that set, with the CSDID_* globals the ado reads, is the engine's
 // public surface. `csdid__' (two underscores) means internal, and free to
-// restructure. Six of the 25 are the csdid_cache_* readers in section 3, and
+// restructure. Six of the 26 are the csdid_cache_* readers in section 3, and
 // a seventh, csdid_cache_validate, is what gates them: the ado asks the
 // engine object its questions through them rather than reading its state, so
 // the object itself stays internal and can be rearranged freely.
@@ -56,11 +56,11 @@ mata:
 // are pinned the same way, so grep tests/ and tools/ before renaming anything
 // in this file.
 //
-// HOW MANY NAMES, and why the count is worth keeping. 131 free functions and
+// HOW MANY NAMES, and why the count is worth keeping. 132 free functions and
 // three classes: `mata mlib add *()' writes one library member per free
-// function and ONE per class, so the compiled library holds 134 top-level
+// function and ONE per class, so the compiled library holds 135 top-level
 // names and the 27 class methods travel inside the three classdef entries
-// rather than beside them (161 members in all). Mata answers a global name it
+// rather than beside them (162 members in all). Mata answers a global name it
 // is not already holding by walking c(matalibs), so each free name is a
 // first-call lookup a session pays once and a method is not.
 //
@@ -2068,7 +2068,11 @@ void csdid__prescan(
     // bal(full) dropped a unit, and keeps the three VIOLATION flags from the
     // FIRST call -- the pre-balance sample, which is the one R checks them on
     // -- while the unit count comes from the last call, which describes the
-    // sample that will be estimated. They do NOT describe the sample the
+    // sample that will be estimated. The three flags are then widened once
+    // more, by csdid_shapescan below, onto the sample as it stood before the
+    // missingness screen; what the driver finally refuses on is the OR of the
+    // two, and that routine's header is where the per-check screens live.
+    // They do NOT describe the sample the
     // kernel finally estimates on, which is smaller again:
     // csdid__settle_sample() drops the periods from
     // the last cohort's onward, less anticipation, when no never-treated
@@ -2174,6 +2178,106 @@ void csdid__prescan(
     CSDID_ENGINE.ps_tlevels     = tlist
     CSDID_ENGINE.ps_glevels     = glist
     CSDID_ENGINE.ps_gcounts     = st_matrix(gcountname)
+}
+
+// ---------------------------------------------------------------------------
+// csdid_shapescan: the same three panel-shape violations csdid__prescan
+// measures, judged on the sample BEFORE the missingness screen.
+//
+// The scan above reads `touse', which has already lost the rows with a
+// missing outcome, covariate or weight. R runs validate_args() on the data as
+// the user handed it over (pre_process_did2.R:72-109, called at :736) and
+// removes incomplete rows only afterwards, in did_standardization() at :763.
+// A violation carried by a row that only csdid has dropped is therefore
+// refused by R and used to be estimated here -- measured on twelve designs
+// against did 2.5.1, among them a duplicated (id, time) whose second copy has
+// a missing outcome, a missing weight, a missing covariate or a missing gvar,
+// and a cohort reversal carried by the row with the missing covariate.
+//
+// The three screens are R's own and they are NOT the same screen, which is
+// the whole reason this cannot be one flag over one sample:
+//
+//   gvar reversal        rows whose id AND gvar are both present
+//                        (pre_process_did2.R:74-76). A reversal carried by a
+//                        row missing either one is not a reversal for R.
+//   duplicate (id, time) rows whose id AND time are both present (:81-83).
+//                        A missing gvar, outcome, covariate or weight on the
+//                        duplicate does not excuse it; a missing id or time
+//                        does.
+//   time-varying cluster every row, with no screen at all (:104-106). R asks
+//                        length(unique(col)) == 1 by id, so a cluster present
+//                        in one period and missing in another is two distinct
+//                        values and refuses, while a cluster missing in EVERY
+//                        period of a unit is one value and does not. Rows
+//                        with a missing id form a single group, the way
+//                        data.table groups NA -- verified, it refuses when
+//                        their clusters disagree.
+//
+// Every branch above is a measured witness, not a reading of the R source.
+//
+// Only the three VIOLATION flags are written. Everything else the prescan
+// reports describes the estimation sample and must keep coming from there.
+// ---------------------------------------------------------------------------
+void csdid_shapescan(
+    string scalar idname,
+    string scalar timename,
+    string scalar gname,
+    string scalar clname,
+    string scalar tousename)
+{
+    real colvector rowsel, idv, tv, gv, clv, sel, ord, sid, sval, same
+    real scalar n, m, sh_gvary, sh_cvary, sh_dup
+
+    sh_gvary = 0
+    sh_cvary = 0
+    sh_dup = 0
+    rowsel = csdid__selidx(st_data(., tousename) :!= 0)
+    n = rows(rowsel)
+    if (idname != "" & n > 1) {
+        idv = st_data(., idname)[rowsel]
+
+        // -- gvar reversal, over the rows carrying both an id and a gvar
+        gv = st_data(., gname)[rowsel]
+        sel = csdid__selidx((idv :< .) :& (gv :< .))
+        m = length(sel)
+        if (m > 1) {
+            // the row number is the final sort key for the same reason as in
+            // csdid__cluster_layout: Mata's order() is not stable across ties,
+            // and an id repeats once per period
+            ord = sel[order((idv[sel], (1 :: m)), (1, 2))]
+            sid = idv[ord]
+            sval = gv[ord]
+            same = (sid[2 :: m] :== sid[1 :: (m - 1)])
+            sh_gvary = any(same :& (sval[2 :: m] :!= sval[1 :: (m - 1)]))
+        }
+
+        // -- duplicate (id, time), over the rows carrying both an id and a time
+        tv = st_data(., timename)[rowsel]
+        sel = csdid__selidx((idv :< .) :& (tv :< .))
+        m = length(sel)
+        if (m > 1) {
+            ord = sel[order((idv[sel], tv[sel], (1 :: m)), (1, 2, 3))]
+            sid = idv[ord]
+            sval = tv[ord]
+            same = (sid[2 :: m] :== sid[1 :: (m - 1)])
+            sh_dup = any(same :& (sval[2 :: m] :== sval[1 :: (m - 1)]))
+        }
+
+        // -- time-varying cluster, over every row. A missing id groups with
+        // the other missing ids because Mata's `.' compares equal to `.', and
+        // a missing cluster differs from a present one for the same reason.
+        if (clname != "") {
+            clv = st_data(., clname)[rowsel]
+            ord = order((idv, (1 :: n)), (1, 2))
+            sid = idv[ord]
+            sval = clv[ord]
+            same = (sid[2 :: n] :== sid[1 :: (n - 1)])
+            sh_cvary = any(same :& (sval[2 :: n] :!= sval[1 :: (n - 1)]))
+        }
+    }
+    st_numscalar("__csdid_sh_gvary", sh_gvary)
+    st_numscalar("__csdid_sh_cvary", sh_cvary)
+    st_numscalar("__csdid_sh_dup", sh_dup)
 }
 // ===========================================================================
 // SECTION 9 -- ATT(g,t) CELL HELPERS
@@ -4776,9 +4880,9 @@ real matrix csdid__cluster_sums(real colvector cluster_vec, real matrix x)
 // It is passed BY ARGUMENT rather than memoised in a global on purpose. A
 // module-level cache keyed on the last cluster vector is exactly the kind of
 // state that makes a result depend on what ran before it, and this package
-// already has one such dependence on record (see
-// tools/bench/field/session-2026-08-05/session-order-1ulp-repro.do). The
-// caller owns the lifetime.
+// already has one such dependence on record: the unstable order() described
+// below, which moved a clustered standard error between two runs of the same
+// command in one session. The caller owns the lifetime.
 void csdid__cluster_layout(real colvector cluster_vec, real colvector ord, real matrix info)
 {
     real scalar n
@@ -4789,9 +4893,10 @@ void csdid__cluster_layout(real colvector cluster_vec, real colvector ord, real 
     // did earlier in the process. Cluster ids are nothing but ties, so the
     // per-cluster sums were being accumulated in an order that varied with
     // session history, and the clustered standard errors moved by an ulp
-    // between two runs of the identical command on the identical data.
-    // (Reproduction, before this fix:
-    // tools/bench/field/session-2026-08-05/session-order-1ulp-repro.do.)
+    // between two runs of the identical command on the identical data. To see
+    // it on a build without this second key: estimate a clustered
+    // specification, run any unrelated Mata sort in the same session, estimate
+    // the same specification again, and compare e(V) bit for bit.
     //
     // Ordering on (cluster, row) makes the permutation unique, so the sums
     // add in one fixed order forever. It also matches R, whose order() is a
@@ -6856,8 +6961,8 @@ void csdid_bmisc_labelse(
 // down a different branch. The eighteen lines they genuinely share are already
 // one routine (csdid__agg_assemble_bootout). What is left differs in the
 // arithmetic that produces every reported standard error, so unifying it would
-// put a scaling branch inside the loop that produces them -- see
-// docs/engine-refactor-charter.md.
+// put a scaling branch inside the loop that produces them, on the hot path, to
+// save eighteen lines that are already shared.
 //
 // Methods are entered once per aggregation or once per effect -- there are
 // tens of effects on the widest event study -- and never per unit or per draw:

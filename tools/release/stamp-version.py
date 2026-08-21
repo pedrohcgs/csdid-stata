@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Stamp one version + date across every place csdid records them.
 
-The version lived in ~13 hand-maintained places and had already drifted: the
-five .ado headers and five .sthlp headers carried two different dates
-(07jul2026 and 09jul2026) for the same release. Hand-editing that many sites is
-how a package ships claiming to be a version it is not.
+The version lives in ~13 places. Left hand-maintained they drift -- the five
+.ado headers and the five .sthlp headers can carry two different dates for the
+same release -- and hand-editing that many sites is how a package ships
+claiming to be a version it is not.
 
 Usage
     tools/release/stamp-version.py --check

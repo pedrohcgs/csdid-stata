@@ -22,7 +22,7 @@ set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 if [ "${SKIP_PREFLIGHT:-0}" = "1" ]; then
   echo "pre-push: SKIP_PREFLIGHT=1 set; preflight receipt NOT checked." >&2
-  echo "pre-push: record this in the PR, per docs/merge-protocol.md section 5." >&2
+  echo "pre-push: a skipped preflight is a gap; declare it rather than leave it silent." >&2
   exit 0
 fi
 bash "$ROOT/tools/release/check-preflight-receipt.sh" || {

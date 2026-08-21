@@ -71,11 +71,11 @@ assert abs(A[1,4] - 2) < 1e-12
 * ---------------------------------------------------------------------------
 * The compiled accelerator, run FROM THE INSTALLED PACKAGE.
 *
-* Every other plugin test runs against src/ through adopath, and the only
-* net-install test used analytical standard errors, so no test ever executed
-* the binary that net install actually delivers. That is how a shipped plugin
-* sat nine days behind its own C source, without the all-zero RNG-state guard,
-* while every gate stayed green.
+* Every other plugin test runs against src/ through adopath, and a net-install
+* test that uses analytical standard errors never executes the binary net
+* install actually delivers. Without this check the shipped plugin can lag its
+* own C source -- an old binary, missing the all-zero RNG-state guard, sitting
+* in pkg/ while every gate stays green.
 *
 * On macOS the accelerator must be the one that ran. Elsewhere no binary ships
 * and Mata is correct, so the assertion is that a documented status was
@@ -83,8 +83,8 @@ assert abs(A[1,4] - 2) < 1e-12
 * ---------------------------------------------------------------------------
 * The dataset above is perfectly deterministic -- every treated unit 0 then 2,
 * every control constant -- which gives the influence function zero variance
-* and trips a separate, pre-existing bootstrap defect (see
-* docs/behavior-decisions.md). Add variation so this check is about the
+* and trips a separate, pre-existing bootstrap defect. Add variation so this
+* check is about the
 * installed accelerator and not about that.
 quietly replace y = y + mod(id, 3) / 1000
 quietly csdid y, time(time) gvar(g) nevertreated base_period(varying) bal(none) ///

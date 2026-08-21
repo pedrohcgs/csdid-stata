@@ -3,14 +3,12 @@
 # Does the live site match this source?
 #
 # Every website gate here reads the markdown in website/. None of them reads
-# what psantanna.com/csdid actually serves, and those are different repositories.
-# On 2026-08-07 the source was corrected -- the published speed range paired one
-# table's floor with another's ceiling -- and the live site kept serving the
-# wrong figure until it was republished by hand a day later. Every gate stayed
-# green throughout, because none of them could see the published page.
-#
-# Same shape as the shipped plugin that sat nine days behind its own source: an
-# artifact nothing exercised.
+# what psantanna.com/csdid actually serves, and those are different
+# repositories. Correcting a figure in the source therefore does nothing to the
+# live page until someone republishes it, and every gate stays green in the
+# interval -- none of them can see the published page. The interval is however
+# long it takes to notice, which is the same failure as a shipped binary that
+# lags its own source: an artifact nothing exercises.
 #
 # Compares the BUILT html, file by file, against what the site repository holds.
 # Not a numbers-only spot check: a stale page usually differs in prose too, and

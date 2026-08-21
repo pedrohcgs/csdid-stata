@@ -5,9 +5,9 @@
 # The appendix opens by promising that every number in the comparison article
 # comes from one of the scripts reproduced on that page. That promise is only
 # as good as the two copies agreeing, and nothing about a fenced code block
-# announces that the script it shows has moved on. When this was first checked,
-# two blocks had drifted: the benchmark had gained Stata's native
-# xthdidregress and hdidregress columns and the published copies had not.
+# announces that the script it shows has moved on -- a benchmark gains a column
+# for Stata's native xthdidregress and hdidregress, and the published copy goes
+# on showing the version without them.
 #
 # Direction of truth: the file in the tree is what runs, so the file wins and
 # the appendix is regenerated from it. The reverse would let an edit made in a

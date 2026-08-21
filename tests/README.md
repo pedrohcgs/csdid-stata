@@ -35,5 +35,5 @@ bash tools/release/preflight.sh --fast   # the cheap consistency checks only
 bash tools/release/preflight.sh --list   # what would run, and why
 ```
 
-`--fast` is a pre-commit convenience and never a merge verdict. See
-`docs/merge-protocol.md`.
+`--fast` is a pre-commit convenience and never a merge verdict: it runs the
+spec tier only, and a full run is required before merge.

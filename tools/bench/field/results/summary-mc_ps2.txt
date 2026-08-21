@@ -54,13 +54,13 @@ rows: 31064   reps: 500
 == ATT(g,t) cells: bias and mean reported SE ==
   regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
 Traceback (most recent call last):
-  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 181, in <module>
+  File "mcsum.py", line 181, in <module>
     main(sys.argv[1])
     ~~~~^^^^^^^^^^^^^
-  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 177, in main
+  File "mcsum.py", line 177, in main
     cells(rows, regs, pkgs)
     ~~~~~^^^^^^^^^^^^^^^^^^
-  File "/private/tmp/claude-501/-Users-pedrosantanna-Documents-csdid/6c0c91a4-abe5-48b3-8309-296307e1aa31/scratchpad/reliability/bench/mcsum.py", line 144, in cells
+  File "mcsum.py", line 144, in cells
     cov = [1 if abs(e - rtruth) <= 1.959964 * s else 0
                         ^^^^^^
 NameError: name 'rtruth' is not defined. Did you mean: 'truth'?

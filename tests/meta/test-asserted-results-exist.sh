@@ -4,14 +4,16 @@ set -euo pipefail
 # Every e() result asserted by a release script must actually be posted by the
 # package.
 #
-# On 2026-07-30 e(large_store) was unified into e(storage). The opt-in
-# performance script kept asserting the old name, so it failed on a missing
-# scalar for nine days -- and because that script runs only from
-# run-platform-release-row.sh and not from preflight, nothing noticed until the
-# macOS platform row was regenerated for the release and could not be produced.
+# Renaming a stored result is a one-line edit in the poster and leaves every
+# script that asserts the old name failing on a missing scalar. e(large_store)
+# was unified into e(storage) exactly this way, and the opt-in performance
+# script went on asserting the old name: it runs from
+# run-platform-release-row.sh rather than from preflight, so the whole suite
+# stayed green and the break surfaced only when the macOS platform row was
+# needed for a release and could not be produced.
 #
-# Same shape as the shipped plugin that sat nine days behind its source: an
-# artifact required for release, produced by a path no gate exercised.
+# Same shape as a shipped binary that lags its own source: an artifact required
+# for release, produced by a path no gate exercises.
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"

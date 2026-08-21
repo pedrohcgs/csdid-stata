@@ -2,11 +2,23 @@
 # Lint the public website source for content that must never be displayed
 # on a public-facing page.
 #
-# Rule: no file-deletion commands (Stata `erase`, shell `rm`/`rmdir`/`del`)
+# Rule 1: no file-deletion commands (Stata `erase`, shell `rm`/`rmdir`/`del`)
 # anywhere in website markdown. The site's code snippets are read by people
 # who paste them into their own sessions; housekeeping commands that delete
 # files are not content, do not earn their space, and alarm readers.
-# (Removed wholesale on 2026-08-05; this gate keeps them out.)
+#
+# Rule 2: no corruption signature in the prose, delegated to
+# check-website-corruption.py. A page can be damaged by a tool editing at a
+# character offset computed against a version of the file it no longer has, and
+# what comes out still reads like prose: every other website gate passes on it,
+# because each reads only the tables and the numbers it owns and none of them
+# reads the sentences.
+#
+# Neither rule is one the site must be written around. Rule 1 names commands
+# the site has no reason to print. Rule 2 keys on the fixture ids that actually
+# exist in tests/fixtures/parity/ and exempts a token that is entirely
+# lowercase hex, so a git short hash in a sentence is not damage -- an earlier
+# version keyed on a SHAPE, and `see commit af123b` turned it red.
 #
 # Usage: lint-website.sh [site-root]   (default: website/)
 set -euo pipefail
@@ -26,5 +38,7 @@ if [ -n "$HITS" ]; then
   echo "Remove them; public pages never display housekeeping commands." >&2
   exit 1
 fi
+
+python3 "$ROOT/tools/release/check-website-corruption.py" "$SITE"
 
 echo "lint-website: OK ($(find "$SITE" -name '*.md' -not -path '*/_site/*' | wc -l | tr -d ' ') markdown files clean)"

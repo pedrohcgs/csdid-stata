@@ -1,10 +1,10 @@
 # PY019: R oracle for the Python csdid r_ref parity scenarios.
 #
 # These five reference files used to be copied verbatim out of the Python csdid
-# package (csdid/test_csdid/r_ref). They were built on another machine against
-# did 2.5.0, and ref_fixweights.csv carried the 2.5.0 fix_weights = "varying"
-# bug: every "varying" standard error in it is exactly 2x too large. That went
-# unnoticed because the Stata comparison passed `nose` and never checked those
+# package (csdid/test_csdid/r_ref). They were built elsewhere against did 2.5.0,
+# and ref_fixweights.csv carried the 2.5.0 fix_weights = "varying" bug: every
+# "varying" standard error in it is exactly 2x too large. Nothing here could
+# see that, because the Stata comparison passed `nose` and never checked those
 # SEs at all.
 #
 # They are now generated here, from the inputs frozen in this fixture, against

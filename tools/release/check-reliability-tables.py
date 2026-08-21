@@ -4,9 +4,9 @@
 # fresh Monte Carlo summary.
 #
 # The speed numbers are generated from a committed results file and gated. The
-# reliability numbers -- bias and coverage, 67 table rows -- are not: they were
-# computed on 2026-08-02 and the estimation engine changed on 08-06 and again
-# on 08-07. Nothing proved they still held.
+# reliability numbers -- bias and coverage, 67 table rows -- are not: they are
+# transcribed from a Monte Carlo that takes hours, so the estimation engine can
+# change underneath them with nothing to say whether they still hold.
 #
 # This does not rewrite anything. It reports, per cell, what the article says
 # and what the simulation now produces, so a number that moved is a decision

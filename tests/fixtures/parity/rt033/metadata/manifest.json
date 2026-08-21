@@ -1,0 +1,138 @@
+{
+  "matrix_id": "RT033",
+  "fixture_family": "shape-checks-before-missingness",
+  "normative_source": "R did 2.5.1: validate_args() decides gname irreversibility, duplicate (id, time) and time-varying clustervars on the data as supplied, before did_standardization() removes rows with missing or non-finite values; each check screens its own columns only",
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt033/generate.R",
+      "path": "tools/parity/generators/rt033/generate.R"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "inputs/gvar_kept.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/gvar_dropped.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/gvar_none.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_kept.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_dropped.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_none.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_kept.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_missing_one_period.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_dropped.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_none.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_weight.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_covariate.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_gvar.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_missing_time.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dup_missing_id.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/gvar_missing_gvar.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/gvar_missing_id.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_all_missing.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_missing_id_agree.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cluster_missing_id_differ.csv",
+      "rows": 48,
+      "columns": 7
+    },
+    {
+      "path": "inputs/order_dup_beats_cluster.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/order_gvar_beats_dup.csv",
+      "rows": 49,
+      "columns": 7
+    },
+    {
+      "path": "inputs/order_dup_beats_cluster_dropped.csv",
+      "rows": 49,
+      "columns": 7
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0"
+    }
+  ],
+  "consumers": [
+    "tests/stata/r/test-shape-checks-pre-screen.do"
+  ]
+}

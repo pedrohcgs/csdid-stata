@@ -4,13 +4,12 @@
 # hand-maintained enumeration (`local local_names'). A macro missing from it is
 # destroyed by `csdid ..., agg(event)' and by `estat <type>, post'.
 #
-# The sibling gate test-posting-scalar-coverage.sh has guarded the SCALARS
-# since two of them were lost this way. Macros had no such gate, and on
-# 2026-08-07 an automated review of the release pull request found e(wtype) and
-# e(wexp) -- the weight type and expression, both documented in csdid.sthlp as
-# how you recover what the user typed -- silently emptied by any post.
-#
-# Same defect class, same file, one enumeration over. This closes it.
+# The sibling gate test-posting-scalar-coverage.sh guards the SCALARS, which
+# were lost this way twice. Macros are the same defect class in the same file,
+# one enumeration over, and the loss is just as quiet: e(wtype) and e(wexp) --
+# the weight type and expression, both documented in csdid.sthlp as how you
+# recover what the user typed -- were emptied by any post while every other
+# gate stayed green.
 set -euo pipefail
 
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

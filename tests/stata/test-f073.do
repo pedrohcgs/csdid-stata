@@ -1,8 +1,8 @@
 * F073 -- degenerate designs must succeed or refuse BY NAME. Never abort.
 *
-* On 2026-08-07 a seeded multiplier bootstrap on a design with one ATT(g,t)
-* cell and an outcome with no within-group variation aborted with r(3200), a
-* raw Mata conformability error. Not a wrong answer -- a crash, on a command a
+* A seeded multiplier bootstrap on a design with one ATT(g,t) cell and an
+* outcome with no within-group variation used to abort with r(3200), a raw
+* Mata conformability error. Not a wrong answer -- a crash, on a command a
 * user had every right to run. It survived because no test drove the shapes
 * where kernels run out of things to work with.
 *

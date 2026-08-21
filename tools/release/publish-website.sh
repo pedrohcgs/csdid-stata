@@ -51,6 +51,21 @@ if ! git diff --quiet website || ! git diff --cached --quiet website; then
   exit 1
 fi
 
+# Untracked files publish too, and `git diff` cannot see them. Jekyll builds
+# every markdown file it finds under website/, so a working draft left beside
+# the page it was drafted from -- csdid-against-the-field-new.md was, carrying
+# its own front matter and an older paragraph -- becomes a second live article
+# at its own address, reviewed by nobody. The check above passed on exactly
+# that tree.
+UNTRACKED="$(git ls-files --others --exclude-standard -- website)"
+if [ -n "$UNTRACKED" ]; then
+  echo "website/ has untracked files, and Jekyll would publish each of them:" >&2
+  echo "$UNTRACKED" | sed 's/^/   /' >&2
+  echo "Commit them or move them out of website/; the published site" >&2
+  echo "corresponds to a recorded commit or it is not published." >&2
+  exit 1
+fi
+
 # The published numbers must already agree with the runs that produced them.
 # Publishing a page that fails its own gates is the failure this whole set of
 # checks exists to prevent.

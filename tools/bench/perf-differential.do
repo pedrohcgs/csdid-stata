@@ -57,9 +57,10 @@ if "`size'" == "" local size "small"
 * global is empty and this is the default arm, unchanged.
 global CSDID_BOOT_PLUGIN_DISABLE : environment CSDID_BOOT_PLUGIN_DISABLE
 * ONE CELL PER PROCESS. csdid is measurably session-order dependent at the
-* last bit -- see session-order-1ulp-repro.do in the 2026-08-05 session folder
-* -- so cells run in one process contaminate each other, and a snapshot
-* comparison then measures the change AND the contamination. The shell driver
+* last bit: the same cell can differ by 1 ulp according to what ran before it
+* in the same Stata session, so cells run in one process contaminate each
+* other, and a snapshot comparison then measures the change AND the
+* contamination. The shell driver
 * (perf-differential.sh) passes a cell name and starts a fresh Stata for each,
 * which removes the confound entirely. Running without a cell name still works
 * and does the whole grid in one process, which is fine for a quick look but

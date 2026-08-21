@@ -2,10 +2,9 @@
 #
 # This fixture used to consume expected/r/ref_sim.csv verbatim from the Python
 # csdid package (csdid/test_csdid/r_ref/sim/ref_sim.csv). That artifact was
-# generated on someone else's machine against did 2.5.0 -- the package's own
-# history describes it as "differential-testing audit fixes vs R did 2.5.0" --
-# so the numbers this repo compared against were neither attributable to a did
-# version we had verified nor reproducible here.
+# generated elsewhere, against did 2.5.0, in an environment this repository
+# cannot reconstruct -- so the numbers compared against were neither
+# attributable to a did version verified here nor reproducible here.
 #
 # It is now generated locally, from the input datasets frozen in this fixture,
 # against the same did the rest of the suite is pinned to. The recipe is the

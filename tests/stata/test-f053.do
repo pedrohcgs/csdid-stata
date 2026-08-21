@@ -1,8 +1,8 @@
 * F053 -- saving() on every estat subcommand.
 *
-* Owner-directed contract: saving() is how Stata writes a result to a file, so
-* it is an option on the thing being computed rather than a separate export
-* command. Every subcommand takes it, and each writes the result it displayed.
+* The contract: saving() is how Stata writes a result to a file, so it is an
+* option on the thing being computed rather than a separate export command.
+* Every subcommand takes it, and each writes the result it displayed.
 *
 * Before this, saving() worked on tidy and glance only. estat attgt refused it,
 * and the five aggregation subcommands PARSED it and then ignored it -- so

@@ -23,7 +23,8 @@
 # tests/stata/test-*.do, leaving the 55 inherited R/Python parity tests to be
 # run by hand -- so a green preflight said nothing about parity.
 #
-# See docs/merge-protocol.md for what a human still has to check by hand.
+# A green run means the mechanical checks passed, never that the change is
+# right; what a reviewer has to judge by hand is not in here.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -181,9 +182,9 @@ run docs "version-naming convention" python3 tools/docs/check-version-convention
 # Does the live site actually serve what this source says?
 #
 # Every other website check reads the markdown in website/. None of them can
-# see psantanna.com/csdid, which is served from a different repository. The
-# source was corrected on 2026-08-07 and the live site kept serving the
-# superseded speed range for a day, with every gate green throughout.
+# see psantanna.com/csdid, which is served from a different repository, so a
+# figure corrected in the source leaves the live page serving the superseded
+# one until it is republished, with every gate green throughout.
 #
 # BLOCKED rather than PASS when the site checkout or Jekyll is missing: the
 # checker exits 2 for "could not run", which is not the same as agreement.
@@ -337,7 +338,7 @@ if [ "$FAIL" -gt 0 ] || [ "$BLOCKED" -gt 0 ]; then
   echo ""
   echo "NOT MERGEABLE. A BLOCKED check is not a passing check: the prerequisite"
   echo "must be installed and the check actually run, or the gap recorded and"
-  echo "signed off per docs/merge-protocol.md."
+  echo "signed off before merge."
   exit 1
 fi
 MODE="full"

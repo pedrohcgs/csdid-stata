@@ -6,10 +6,10 @@ set -euo pipefail
 # holds only while the two copies agree, and a fenced code block gives no sign
 # that the script it shows has moved on.
 #
-# When this was first run, two blocks had drifted: the benchmark had gained
-# Stata's native xthdidregress and hdidregress columns and the published copies
-# had not. Twenty-three more scripts existed ONLY inside the markdown page,
-# where nothing can run or diff them.
+# The drift is ordinary: the benchmark gains a column -- Stata's native
+# xthdidregress and hdidregress, say -- and the published copy does not follow.
+# A script that exists ONLY inside the markdown page is worse still, because
+# nothing can run or diff it at all.
 #
 # The file in the tree is what runs, so the file wins.
 

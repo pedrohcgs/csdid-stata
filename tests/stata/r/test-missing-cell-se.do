@@ -85,10 +85,12 @@ rt032_assert_attgt_matches_r, actual("`drop_analytical'") expected("`fixture'/ex
 confirm scalar e(wald_pvalue)
 
 *-----------------------------------------------------------------------------
-* Part 3: gap data, Fernando's exact command -- clustered multiplier
-* bootstrap. Every estimable cell keeps a finite standard error, the failed
-* cells stay missing, the simultaneous critical value is computed from the
-* surviving cells, and e(V) carries no zeroed-out diagonal.
+* Part 3: gap data under a clustered multiplier bootstrap -- the route by which
+* a failed cell can reach every other cell, since they share one draw matrix
+* and one simultaneous critical value. Every estimable cell keeps a finite
+* standard error, the failed cells stay missing, the simultaneous critical
+* value is computed from the surviving cells, and e(V) carries no zeroed-out
+* diagonal.
 *-----------------------------------------------------------------------------
 import delimited using "`fixture'/inputs/mpdta-gap.csv", clear asdouble
 csdid lemp, cluster(countyreal) time(year) gvar(first_treat) rseed(20260814)

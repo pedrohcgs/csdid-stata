@@ -804,14 +804,28 @@ constant within a unit (treatment timing is irreversible), and {cmd:cluster()},
 when given, must also be constant within a unit. Each violation is a separate
 {cmd:r(459)} refusal, judged before {cmd:bal(full)} balances the panel, so a
 duplicate row, a reversal or a moving cluster inside a unit that balancing
-would drop still refuses rather than passing unnoticed. All three read the
-estimation sample rather than the dataset as supplied: {cmd:if} and {cmd:in},
-rows carrying a missing value, and the whole-unit covariate rule described
-below under {bf:Covariates on the panel path} each narrow it first. The sample
-must also contain at least two distinct units, counted after every one of those
-reductions and after {cmd:bal(full)}: one unit cannot supply both sides of a
-two-by-two comparison, so a panel that collapses to a single unit refuses by
-name.
+would drop still refuses rather than passing unnoticed.
+
+{pstd}
+All three are judged on the data as {cmd:if} and {cmd:in} leave it, before any
+row is set aside for carrying a missing value and before the whole-unit
+covariate rule described below under {bf:Covariates on the panel path}. A
+duplicated row is still a duplicated row when the second copy has no outcome,
+no weight or no covariate, and estimating it would report numbers from a
+dataset whose panel structure is not what it appears to be. Each check ignores
+only the rows that leave it nothing to compare: a duplicate needs both
+{cmd:ivar()} and {cmd:time()}, a reversal needs both {cmd:ivar()} and
+{cmd:gvar()}, and a row missing either one is passed over by that check alone.
+The {cmd:cluster()} check treats a missing cluster as a value in its own right,
+so a cluster recorded in one period and missing in another is a cluster that
+moves, while one missing in every period of a unit is not.
+
+{pstd}
+The sample must also contain at least two distinct units. That one is counted
+the other way round -- after every reduction and after {cmd:bal(full)} --
+because it describes the sample that will actually be estimated: one unit
+cannot supply both sides of a two-by-two comparison, so a panel that collapses
+to a single unit refuses by name.
 
 {pstd}
 {bf:Which period's covariates enter each comparison.} Every ATT(g,t) is a
@@ -915,6 +929,16 @@ The remedy the message names is {cmd:notyet}, which does not depend on the size
 of the never-treated group; you can also add never-treated units or use fewer
 covariates. The refusal is raised whether or not output is suppressed, so
 {cmd:quietly csdid ...} stops as well.
+
+{pstd}
+The warning is measured before two later reductions of the sample: the removal
+of periods that have no comparison group left, and the removal of units already
+treated in the first period. It can therefore name a cohort that the estimation
+goes on to drop, and on an unbalanced panel it can name one that is comfortably
+large once those periods are gone. Read it as a list of cohorts worth looking
+at, not as a list of cohorts that were estimated. The refusal below it is not
+affected: the never-treated group survives both reductions untouched, and
+periods are removed only when there is no never-treated group at all.
 
 {pstd}
 On a balanced panel this measure equals the number of distinct units. On an

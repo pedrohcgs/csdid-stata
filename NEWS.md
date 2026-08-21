@@ -103,10 +103,15 @@ neither of which mentions `csdid` or the option that caused it. The sample must
 also contain at least two distinct units; that case used to fail with a
 conformability error from inside the estimator.
 
-All three are judged on the estimation sample, and before `bal(full)` balances
-the panel, so a fault inside a unit that balancing would drop is still reported
-instead of disappearing with the unit. Like the refusal above, this changes
-*whether the command runs*, never an estimate.
+All three are judged on the data as `if` and `in` leave it, before any row is
+set aside for carrying a missing value and before `bal(full)` balances the
+panel. A duplicated row is still a duplicated row when the second copy has no
+outcome, no weight or no covariate, and a fault inside a unit that balancing
+would drop is still reported instead of disappearing with the unit. The
+two-distinct-units requirement is counted the other way round — after every
+reduction and after `bal(full)` — because it describes the sample that will
+actually be estimated. Like the refusal above, this changes *whether the
+command runs*, never an estimate.
 
 ### Stored results
 

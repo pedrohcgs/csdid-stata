@@ -846,6 +846,7 @@ program define csdid, eclass sortpreserve
         }
     }
     quietly count if `touse_initial' & !`touse'
+    local n_screened = r(N)
     if r(N) > 0 {
         local miss_dropped = r(N)
         * `as error' is a DISPLAY STYLE here, not an error. It is the only
@@ -870,6 +871,21 @@ program define csdid, eclass sortpreserve
     * estimate unchanged. gvar() is checked first so that data violating both
     * rules reports the cohort fault, which is the more surprising of the two.
     * DELIBERATE DIVERGENCE (approved): R estimates axes that run negative.
+    * That note is about the RC and the wording, and it is older than did
+    * 2.5.1, which refuses a negative gname of its own accord
+    * (pre_process_did2.R:54-59) -- so on this rule the two now agree on the
+    * verdict and differ only in the number.
+    *
+    * Where they do NOT agree is the sample, and this one is measured: R asks
+    * the question in validate_args, before rows with missing values are
+    * removed, and this asks it on `touse', where they already are. A unit
+    * whose cohort code is negative in every row and whose every row is
+    * screened out -- an outcome missing throughout, say -- stops in R and
+    * estimates here. The three panel-shape checks below were widened onto the
+    * pre-screen sample for exactly this reason; this check was not, because
+    * its rc, its wording and whether it should fire at all are an owner
+    * decision that the stale note above has to settle first. Recorded, not
+    * closed.
     quietly count if `touse' & `gvar' < 0
     if r(N) > 0 {
         display as error "gvar() negative values are not supported; gvar() must be 0 for never-treated units and 1 or more for treated cohorts. Shift the cohort and time axes so both start at 1 (for example, replace g = g - min_period + 1 for treated units and t = t - min_period + 1); a monotone relabelling of the periods leaves the estimates unchanged."
@@ -965,11 +981,6 @@ program define csdid, eclass sortpreserve
     * The at-least-two-units refusal is deliberately NOT here. It reads the
     * LAST scan, because it describes the sample that will actually be
     * estimated, and a design balanced down to one unit has to refuse.
-    *
-    * Residual, deliberately not closed here: `touse' has already lost the rows
-    * with missing outcome, covariates or weights, and R drops those AFTER
-    * validate_args (did_standardization's complete.cases). A violation
-    * confined to rows only csdid has dropped is therefore still not refused.
     local raw_shape_gvary = 0
     local raw_shape_cvary = 0
     local raw_shape_dup = 0
@@ -978,22 +989,76 @@ program define csdid, eclass sortpreserve
         local raw_shape_cvary = __csdid_ps_shape_cvary
         local raw_shape_dup = __csdid_ps_shape_dup
     }
-    * Wording, rc and check order are the estimation kernel's own; see the
-    * EUX-001 note below for why the kernel's copies are hoisted in front of it
-    * rather than left to fire from inside a Mata frame.
+    * -------------------------------------------------------------------
+    * The scan above reads `touse', which by now has lost the rows with a
+    * missing outcome, covariate or weight -- and R removes those only
+    * AFTER validate_args, in did_standardization. So a violation carried
+    * by a row that only csdid has dropped went unrefused: a duplicated
+    * (id, time) whose second copy has a missing outcome, a missing weight,
+    * a missing covariate or a missing gvar, a cohort reversal on the row
+    * with the missing covariate, and a cluster that is present in one
+    * period and missing in another all estimated here and stopped in R.
+    * csdid_shapescan re-decides the three flags on the sample as it stood
+    * before the screen, under R's own per-check screens, which are not the
+    * same screen for the three (see the routine's header).
+    *
+    * The three flags can only go from 0 to 1: that sample is a superset of
+    * `touse', so every violation the scan above found is still a violation
+    * here, and the pass is taken only when it can change an answer -- when
+    * the screen actually removed a row. `mark' rather than `touse_initial'
+    * because marksample screens missing WEIGHTS even under -zeroweight-,
+    * and R does not; `mark' with no weight is the if/in sample alone, which
+    * is what R is handed. Runs on complete data pay one macro comparison.
+    * -------------------------------------------------------------------
+    local shape_widen = ("`ivar'" != "" & `n_screened' > 0)
+    if "`ivar'" != "" & !`shape_widen' & "`wvar'" != "" {
+        quietly count if missing(`wvar')
+        local shape_widen = (r(N) > 0)
+    }
+    if `shape_widen' {
+        tempvar touse_raw
+        mark `touse_raw' `if' `in'
+        capture mata: csdid_shapescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse_raw'")
+        if _rc {
+            local shapescan_rc = _rc
+            display as error "csdid could not scan the estimation sample (Mata rc `shapescan_rc'); the data may be degenerate"
+            ereturn clear
+            exit `shapescan_rc'
+        }
+        if __csdid_sh_gvary == 1 local raw_shape_gvary = 1
+        if __csdid_sh_cvary == 1 local raw_shape_cvary = 1
+        if __csdid_sh_dup == 1 local raw_shape_dup = 1
+        capture scalar drop __csdid_sh_gvary __csdid_sh_cvary __csdid_sh_dup
+    }
+    * Wording and rc are the estimation kernel's own; see the EUX-001 note
+    * below for why the kernel's copies are hoisted in front of it rather than
+    * left to fire from inside a Mata frame.
+    *
+    * The ORDER is R's, and it is not the kernel's. R asks in one sequence --
+    * irreversible gvar, then duplicate (id, time), then time-varying cluster
+    * (pre_process_did2.R:74, :81, :104) -- while the kernel raises whichever
+    * of the three its single layout pass reaches first, which puts cluster
+    * ahead of duplicates. A design that breaks two rules at once then gets a
+    * different diagnosis from each: measured on a panel that both duplicates
+    * a row and moves a unit's cluster, R names the duplicate and csdid named
+    * the cluster. Both refuse either way; only the sentence the user is asked
+    * to act on differs, and it should be R's. The kernel keeps its own order
+    * because there the three are decided inside one pass over the rows, and
+    * because the checks here now read a SUPERSET of the kernel's sample, so
+    * on the panel path the kernel's copies no longer decide anything.
     if "`ivar'" != "" {
         if `raw_shape_gvary' == 1 {
             display as error "gvar() must be time-invariant within ivar(); treatment timing must be irreversible"
             ereturn clear
             exit 459
         }
-        if `raw_shape_cvary' == 1 {
-            display as error "cluster() must be time-invariant within ivar()"
+        if `raw_shape_dup' == 1 {
+            display as error "The value of ivar() must be unique within time(). Some units are observed more than once in a period."
             ereturn clear
             exit 459
         }
-        if `raw_shape_dup' == 1 {
-            display as error "The value of ivar() must be unique within time(). Some units are observed more than once in a period."
+        if `raw_shape_cvary' == 1 {
+            display as error "cluster() must be time-invariant within ivar()"
             ereturn clear
             exit 459
         }
@@ -1051,14 +1116,38 @@ program define csdid, eclass sortpreserve
             * one extra pass, taken only when balancing actually dropped a
             * unit.
             *
-            * Residual, deliberately not closed here: R applies two further
-            * transformations before it measures -- the no-never-treated period
-            * filter with its tlist recompute, and the first-period-treated
-            * unit drop -- which this scan does not model. The kernel does
-            * model both, and re-raises the never-treated-too-small refusal on
-            * the fully final sample (src/mata/csdid.mata, csdid_basic_attgt),
-            * so the refusal itself is exact; what can still differ from R is
-            * the composition of the display-only warning LIST.
+            * Residual, deliberately not closed here, and measured rather than
+            * assumed: R applies two further transformations before it measures
+            * -- the no-never-treated period filter with its tlist recompute,
+            * and the first-period-treated unit drop -- which this scan does not
+            * model. What that costs is the composition of the display-only
+            * warning LIST, and nothing else.
+            *
+            * Both causes push the SAME way, so the list csdid prints is R's
+            * list plus extras, never fewer: a cohort R has already dropped is
+            * still counted here, and on an unbalanced panel the denominator is
+            * the full period count where R's is the reduced one, which makes
+            * every cohort look smaller. Measured against did 2.5.1 on four
+            * designs with no never-treated group: R warns about nothing and
+            * csdid names cohort 1 (balanced, four units treated in the first
+            * period), R warns about nothing and csdid names cohorts 1 and 2
+            * (the same design with one unit missing its last period), R names
+            * cohort 0 and csdid names 0 and 1 (a small never-treated group
+            * alongside first-period-treated units).
+            *
+            * The REFUSALS that read the same measurement do not drift, and the
+            * reason is structural rather than lucky. never_small can only fire
+            * when a never-treated group exists, and R deletes periods only
+            * when one does NOT, so on every design that can reach the refusal
+            * R's denominator is this one; dropping first-period-treated units
+            * removes no period and no group-0 row. The third design above
+            * confirms it -- both stop with r(459) -- and the kernel re-raises
+            * the same refusal on the fully final sample anyway
+            * (src/mata/csdid.mata, csdid_basic_attgt).
+            *
+            * Modelling the two transformations here would put the kernel's own
+            * settling logic in a second place that can drift from it, to move
+            * one warning list. It is recorded rather than attempted.
             * ---------------------------------------------------------------
             capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', 0, "`bal_drop'", "`ps_gcounts'")
             if _rc {

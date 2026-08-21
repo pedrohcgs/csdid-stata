@@ -62,20 +62,19 @@ ARTICLES = {
 # Numbers in the speed prose that are not table cells. Each needs a reason.
 ALLOWED = {
     # (article stem, literal as written): why it is not in a table
-    ("csdid-against-the-field", "166.8 seconds"):
+    ("csdid-against-the-field", "120.1 seconds"):
         "the warmup call that put xthdidregress past this harness's per-call "
         "cap at T=40; it is recorded in that table's own note, which is why "
         "the cell is empty",
-    ("speed-vs-182", "4.9x"):
-        "from the legacy A/B certification, a different harness at fixed "
-        "sample size; reports/legacy-candidate-performance-certification.md",
-    ("speed-vs-182", "28x"):
-        "same certification as 4.9x -- the other end of its range",
-    ("csdid-against-the-field", "17x"):
+    ("speed-vs-182", "35x"):
+        "the top of the seven-trial A/B certification table shipped in the "
+        "package README, a different harness at fixed sample size; the page "
+        "cites that table's range rather than restating its rows",
+    ("csdid-against-the-field", "10x"):
         "the low end of the Version 1.82 page's range, not this article's "
         "tables; that cross-page claim is checked by "
         "tests/meta/test-website-speed-claims.sh",
-    ("csdid-against-the-field", "334x"):
+    ("csdid-against-the-field", "308x"):
         "the high end of the same range, checked by the same gate",
 }
 

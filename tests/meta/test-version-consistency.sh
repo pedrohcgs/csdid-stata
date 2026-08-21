@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# The version string lived in ~13 hand-maintained places and had already drifted:
-# the .ado and .sthlp headers carried two different dates (07jul2026 / 09jul2026)
-# for the same release. Use tools/release/stamp-version.py to set them together.
+# The version string lives in ~13 places that are otherwise hand-maintained, so
+# they drift: the .ado and .sthlp headers can end up carrying two different
+# dates for the same release, and nothing about the package says so. Use
+# tools/release/stamp-version.py to set them together.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"

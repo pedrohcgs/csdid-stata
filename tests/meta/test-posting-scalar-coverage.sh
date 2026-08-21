@@ -5,11 +5,11 @@
 # destroyed by `csdid ..., agg(event)' and by `estat <type>, post' -- silently,
 # because the printed output is produced before the post.
 #
-# This has now happened twice: F-055 lost time_first (so balance_e() broke
-# after any estat event), and the production audit found wald_stat/wald_df/
-# wald_pvalue lost (so a run that printed a pre-test p-value then failed
-# `confirm scalar e(wald_pvalue)', which help csdid names as the test for
-# "a p-value was printed"). The gate exists so there is no third time.
+# This has happened twice. F-055 lost time_first, so balance_e() broke after
+# any estat event; and wald_stat/wald_df/wald_pvalue went missing together, so
+# a run that printed a pre-test p-value then failed `confirm scalar
+# e(wald_pvalue)', which help csdid names as the test for "a p-value was
+# printed". The gate exists so there is no third time.
 set -euo pipefail
 
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

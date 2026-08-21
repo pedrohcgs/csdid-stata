@@ -162,6 +162,7 @@ run_stata tests/stata/r/test-audit-fixes.do
 run_stata tests/stata/r/test-mboot-cluster.do
 run_stata tests/stata/r/test-mboot-postprocess.do
 run_stata tests/stata/r/test-missing-cell-se.do
+run_stata tests/stata/r/test-shape-checks-pre-screen.do
 run_stata tests/stata/test-boot-degenerate-screen.do
 run_stata tests/stata/test-agg-cband-parity.do
 run_stata tests/stata/r/test-modelmatrix-hoist.do

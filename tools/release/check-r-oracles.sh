@@ -9,7 +9,7 @@
 # previously checked this.
 #
 # This is a cheap environment gate, not a regeneration. Regenerating fixtures is
-# a deliberate, reviewed act -- see docs/merge-protocol.md -- partly because
+# a deliberate, reviewed act, partly because
 # some generators overwrite committed inputs as a side effect.
 set -uo pipefail
 

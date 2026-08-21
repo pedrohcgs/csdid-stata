@@ -13,13 +13,11 @@ fixture-specific hashes during implementation.
 | `legacy-stata-lock.json` | Existing Stata source and command surface |
 | `jel-did-lock.json` | JEL empirical suite source, scripts, tables, figures, and dependency notes |
 | `stata-engineering-lock.json` | Mauricio Caceres Bravo and Sergio Correia engineering references |
-| `workflow-lock.json` | Goal-workflow reference source |
 | `../source-test-inventory.csv` | R/Python source test file hashes mapped to RT/PY rows |
 
-The implementation goal must extend these locks with fixture-specific
+Each generated parity artifact extends these locks with fixture-specific
 environment versions, generator commands, generator hashes, output hashes, RNG
-seeds, RNG kinds, and Stata executable metadata for each generated parity
-artifact.
+seeds, RNG kinds, and Stata executable metadata.
 
 ## Fixture Manifest Minimum Schema
 

@@ -89,6 +89,9 @@ RULES = (
     # A bare `#123' is not enough to go on: a hex colour in a plotting script
     # is written the same way. The reference has to name itself -- a cue word,
     # a `PR #' prefix, or a forge URL.
+    ("private-repo-name",
+     re.compile(r"csdid"),
+     "the name of the private development repository"),
     ("pull-request-reference",
      re.compile(r"(?i)\bpull request\b|\bmerge request\b|\bPR\s*#\s*\d+"
                 r"|\b(?:issue|issues|fixes|closes|resolves|reverts|see)"

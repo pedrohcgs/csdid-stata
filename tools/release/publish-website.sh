@@ -110,7 +110,7 @@ fi
 
 # ---- publish --------------------------------------------------------------
 git -C "$SITE_ROOT" add csdid
-git -C "$SITE_ROOT" commit -q -m "csdid: publish site from csdid@$SRC_COMMIT"
+git -C "$SITE_ROOT" commit -q -m "csdid: publish site @$SRC_COMMIT"
 BRANCH="$(git -C "$SITE_ROOT" rev-parse --abbrev-ref HEAD)"
 git -C "$SITE_ROOT" push origin "$BRANCH"
 echo "published: $CHANGED file(s) from $SRC_COMMIT to $BRANCH"

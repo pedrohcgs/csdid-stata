@@ -63,12 +63,40 @@ program _gcsgvar, sortpreserve
 			exit 459
 		}
 	}
+	* The cohort code is a value on the TIME axis, so it is computed in double
+	* and only then stored in the type the caller asked for. Both intermediate
+	* egens used to take egen's default type, which is float: a %tc axis or an
+	* epoch second exceeds float's 24-bit mantissa, so a cohort code above
+	* 16,777,216 was rounded on the way through and the rounded gvar was what
+	* the user handed to csdid. `typlist' was parsed and then discarded --
+	* `egen double g = csgvar(...)' produced a float -- so there was no way to
+	* ask for anything else either. The store follows the _gmean.ado idiom:
+	* build in a tempvar, `generate `typlist'' into the caller's variable.
 	qui: {
-		tempvar aux
-		bysort `touse' `ivar' `exp':egen `aux'=min(`tvar')
-		replace `aux'=0 if `exp'==0
-		by     `touse' `ivar':egen `varlist'=max(`aux')
-		replace `varlist'=. if `exp'==. | !`touse'
+		tempvar aux csg_gvar
+		bysort `touse' `ivar' `exp': egen double `aux' = min(`tvar')
+		replace `aux' = 0 if `exp' == 0
+		by     `touse' `ivar': egen double `csg_gvar' = max(`aux')
+		replace `csg_gvar' = . if `exp' == . | !`touse'
+		generate `typlist' `varlist' = `csg_gvar'
+	}
+
+	* Honouring the type means saying so when it cannot be honoured. A narrow
+	* type that rounds the cohort code is the failure this whole block is
+	* about, and it must not be the quiet one: the rounded gvar goes straight
+	* into csdid, where it is a wrong estimation sample reported with rc 0.
+	quietly count if `varlist' != `csg_gvar'
+	local csg_lost = r(N)
+	if `csg_lost' > 0 {
+		* On the egen route `varlist' is egen's own temporary and goes when
+		* this program does; on the command route it is the user's new
+		* variable, and a refusal must not leave a half-made one behind.
+		capture drop `varlist'
+		* Under egen dispatch `varlist' holds egen's internal tempvar, not the
+		* name the user typed, so the message names no variable at all rather
+		* than print __000000 at the user.
+		display as error "the cohort code does not fit in a `typlist' variable: `csg_lost' value(s) would be rounded, and a rounded cohort is a different treatment group. Ask for a wider type: egen double gvar = csgvar(...), or csgvar double gvar = ..., and rerun"
+		exit 198
 	}
 
 	label var `varlist' "Group Variable based on `exp'"

@@ -1,3 +1,4 @@
+*! csdid 2.0.0 30jul2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -59,8 +60,9 @@ mata:
 // HOW MANY NAMES, and why the count is worth keeping. 132 free functions and
 // three classes: `mata mlib add *()' writes one library member per free
 // function and ONE per class, so the compiled library holds 135 top-level
-// names and the 27 class methods travel inside the three classdef entries
-// rather than beside them (162 members in all). Mata answers a global name it
+// names and the 28 class methods travel inside the three classdef entries
+// rather than beside them (163 members in all: 21 methods on csdid__Agg,
+// 3 on csdid__Boot, 4 on csdid__Engine). Mata answers a global name it
 // is not already holding by walking c(matalibs), so each free name is a
 // first-call lookup a session pays once and a method is not.
 //

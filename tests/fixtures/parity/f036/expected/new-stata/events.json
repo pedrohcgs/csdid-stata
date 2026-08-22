@@ -8,7 +8,7 @@
   },
   {
     "event_key": "agg_not_yet",
-    "return_code": 498,
+    "return_code": 198,
     "event_type": "error",
     "offending_option": "agg(simple)",
     "message_normalized": "agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation"

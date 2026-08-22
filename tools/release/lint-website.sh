@@ -41,4 +41,23 @@ fi
 
 python3 "$ROOT/tools/release/check-website-corruption.py" "$SITE"
 
+# Rule 3: no model or model-vendor names on public pages. The site speaks about
+# csdid, not about how it was built; a vendor name in prose or a comment reads
+# as process residue. One exact URL is exempt -- the owner's own published
+# workflow page, credited in the stylesheet -- and the exemption is anchored to
+# the full URL so a bare vendor name cannot ride in on it.
+MODEL_PATTERN='(codex|copilot|chatgpt|claude|anthropic|gemini|openai|gpt-?[0-9]|llama-?[0-9])'
+ALLOWED_URL='psantanna\.com/claude-code-my-workflow'
+MHITS="$(grep -rniE "$MODEL_PATTERN" "$SITE" --include='*.md' --include='*.css' --include='*.html' \
+  | grep -v '/_site/' | grep -viE "$ALLOWED_URL" || true)"
+
+if [ -n "$MHITS" ]; then
+  echo "lint-website: FAIL — model or vendor name on a public page:" >&2
+  echo "$MHITS" >&2
+  echo "Public pages speak about csdid, not about the tools that built it." >&2
+  exit 1
+fi
+
 echo "lint-website: OK ($(find "$SITE" -name '*.md' -not -path '*/_site/*' | wc -l | tr -d ' ') markdown files clean)"
+
+

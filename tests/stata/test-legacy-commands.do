@@ -76,6 +76,46 @@ csgvar gvar05 = treated05, tvar(year) ivar(countyreal)
 assert gvar05 == gvar_built
 drop gvar05
 
+* ---- the requested storage type is the type you get ------------------------
+* `typlist' was parsed and thrown away: every route produced a float, whatever
+* was asked for. A cohort code is a value on the time axis, so on a %tc or
+* epoch-second axis float's 24-bit mantissa rounds it, and the rounded cohort
+* is a different treatment group handed to csdid with rc 0.
+foreach t in double long int {
+    egen `t' gvar_`t' = csgvar(treated), tvar(year) ivar(countyreal)
+    assert "`: type gvar_`t''" == "`t'"
+    assert gvar_`t' == gvar_built
+    drop gvar_`t'
+}
+csgvar float gvar_cmd_float = treated, tvar(year) ivar(countyreal)
+assert "`: type gvar_cmd_float'" == "float"
+drop gvar_cmd_float
+
+* with no type asked for, the command form gives double rather than `set type',
+* because the time axis is what the answer lives on
+csgvar gvar_default = treated, tvar(year) ivar(countyreal)
+assert "`: type gvar_default'" == "double"
+drop gvar_default
+
+* and a cohort code past float's exact range survives, to the unit
+preserve
+quietly replace year = 20000000 + year
+quietly replace firsttreat = 20000000 + firsttreat if firsttreat > 0
+quietly replace treated = (firsttreat > 0 & year >= firsttreat)
+csgvar gvar_big = treated, tvar(year) ivar(countyreal)
+assert "`: type gvar_big'" == "double"
+assert gvar_big == firsttreat
+quietly count if gvar_big > 16777216
+assert r(N) > 0
+drop gvar_big
+
+* a type that cannot hold it is refused rather than rounding in silence
+capture egen float gvar_narrow = csgvar(treated), tvar(year) ivar(countyreal)
+assert _rc == 198
+capture confirm variable gvar_narrow
+assert _rc != 0
+restore
+
 * ---- the deprecated commands load and announce themselves ------------------
 * Each must be loadable. A syntax error in a shipped ado is a packaging defect
 * even when the command is deprecated.

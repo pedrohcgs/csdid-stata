@@ -120,7 +120,10 @@ log using "`evlog'", text replace name(f036event)
 capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) agg(simple) nevertreated base_period(varying) bal(none)
 local actual_rc = _rc
 log close f036event
-assert `actual_rc' == 498
+* 198, like every other option-value refusal this command makes. It used to be
+* 498, which is reserved for situations with no other code, so a script
+* catching a mistyped option on _rc == 198 missed this one alone.
+assert `actual_rc' == 198
 f036_assert_log_contains using "`evlog'", message("agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation")
 
 quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) nevertreated base_period(varying) bal(none)

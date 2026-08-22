@@ -8,6 +8,18 @@
 * they diverged.
 program csgvar, sortpreserve
 	version 14
+	* Whether the user asked for a storage type has to be read off the command
+	* line, the way egen reads it, and before `syntax' runs: `syntax
+	* newvarname' fills `typlist' from `set type' when no type was given, so
+	* afterwards "no type" and "float" are the same string. The default here
+	* is double rather than `set type', because a cohort code is a value on
+	* the time axis -- a %tc axis or an epoch second exceeds float's 24-bit
+	* mantissa and would be rounded into a different treatment group.
+	gettoken csg_first : 0, parse(" =")
+	local csg_asked ""
+	if inlist("`csg_first'", "byte", "int", "long", "float", "double") ///
+		local csg_asked "`csg_first'"
 	syntax newvarname =/exp [if] [in], tvar(varname) ivar(varname)
+	if "`csg_asked'" == "" local typlist double
 	_gcsgvar `typlist' `varlist' = (`exp') `if' `in', tvar(`tvar') ivar(`ivar')
 end

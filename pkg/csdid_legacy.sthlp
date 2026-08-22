@@ -55,13 +55,25 @@ The two forms are the same computation -- {cmd:csgvar} forwards to
 {cmd:_gcsgvar} -- so they accept the same options and raise the same refusals.
 {p_end}
 
+{pstd}
+{bf:Storage type.} A cohort code is a value on your time axis, so
+{cmd:csgvar} computes it in {cmd:double} and stores it in the type you ask
+for. With no type asked for, {cmd:csgvar} gives you a {cmd:double}; the
+{helpb egen} form takes {cmd:egen}'s own default, which is whatever
+{cmd:set type} is, so write {cmd:egen double} when your time variable needs
+it. A type too narrow to hold the cohort code exactly is
+refused with return code {cmd:r(198)} rather than rounding it: a rounded
+cohort is a different treatment group, and {cmd:csdid} would estimate it
+without complaint. This matters on a {cmd:%tc} or epoch-second axis, where the
+values run past {cmd:float}'s exact range.
+{p_end}
+
 
 {marker deprecated}{...}
 {title:Deprecated commands}
 
 {pstd}
-{bf:These four commands are deprecated and will be removed in a future release
-of csdid.} They ship so that existing do-files keep running, and each prints a
+{bf:These four commands are deprecated and will be removed in a future release of csdid.} They ship so that existing do-files keep running, and each prints a
 notice when invoked. They are unsupported: they are kept only to ease migration
 away from csdid Version 1.82, and they should not be used in new work.
 {p_end}

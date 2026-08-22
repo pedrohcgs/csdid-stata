@@ -1,6 +1,6 @@
 "event_key","return_code","event_type","offending_option","message_normalized"
 "dryrun_rejected",198,"error","dryrun","dryrun is an internal legacy option and is unsupported"
-"agg_not_yet",498,"error","agg(simple)","agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation"
+"agg_not_yet",198,"error","agg(simple)","agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation"
 "pscoretrim_invalid",198,"error","pscoretrim(1)","pscoretrim() must be between 0 and 1"
 "from_unsupported",198,"error","from(-1)","unsupported option(s): from(-1)"
 "estat_style_unsupported",198,"error","csdid_estat tidy style(foo)","unsupported option(s): style(foo)"

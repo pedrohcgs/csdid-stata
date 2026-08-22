@@ -16,7 +16,15 @@ tempfile stamped
 filefilter "src/mata/csdid.mata" "`stamped'", ///
     from("2.0.0|source") to("2.0.0|`c(stata_version)'") replace
 mata: mata clear
+* All three compile-time settings are pinned, not just strictness. matalnum
+* keeps line numbers in the compiled code and DEFEATS the optimizer; a build
+* host that happened to have it on produced a library 16% larger with no error
+* and nothing in the suite able to notice, and mataoptimize off makes the
+* compiled engine slower in a way no numeric gate can see. What the shipped
+* library is must not depend on how the machine that built it was configured.
 mata: mata set matastrict on
+mata: mata set matalnum off
+mata: mata set mataoptimize on
 do "`stamped'"
 mata: st_local("built_stamp", csdid_mlib_version())
 assert "`built_stamp'" == "2.0.0|`c(stata_version)'"
@@ -84,6 +92,13 @@ copy src/help/csdid_postestimation.sthlp build/csdid_postestimation.sthlp, repla
 copy src/help/csdid_estat.sthlp build/csdid_estat.sthlp, replace
 copy src/help/csdid_stats.sthlp build/csdid_stats.sthlp, replace
 copy src/help/csdid_plot.sthlp build/csdid_plot.sthlp, replace
+* One-line `.h' aliases, so that a user who types the command name reaches
+* help by that name. Without them `help csgvar' -- the documented way to build
+* gvar() -- answered "help for csgvar not found" on an installation that has
+* csgvar.ado, and the same for the four deprecated commands.
+foreach f in csgvar csdid_rif csdid_table dipt tsvmat {
+    copy "src/help/`f'.sthlp" "build/`f'.sthlp", replace
+}
 capture erase build/stata.toc
 capture erase build/csdid.pkg
 
@@ -108,7 +123,99 @@ capture erase build/lcsdid.mlib
 capture erase pkg/lcsdid.mlib
 copy build/lcsdid_v2.mlib pkg/lcsdid_v2.mlib, replace
 foreach f in csdid.sthlp csdid_postestimation.sthlp csdid_estat.sthlp csdid_stats.sthlp csdid_plot.sthlp ///
-             csdid_legacy.sthlp {
+             csdid_legacy.sthlp csgvar.sthlp csdid_rif.sthlp csdid_table.sthlp dipt.sthlp tsvmat.sthlp {
     copy "build/`f'" "pkg/`f'", replace
 }
+
+* ---------------------------------------------------------------------------
+* The compiled accelerator.
+*
+* It is a binary, so this copies the built file rather than producing it;
+* tools/plugin/build-bootstrap-plugin.sh is what compiles it, from
+* src/plugin/csdid_bootstrap_plugin.c. Copying it HERE is what makes pkg/ the
+* output of this script and nothing else: while the plugin sat outside the
+* build, pkg/ kept a binary placed by hand, and it went nine days stale
+* against a C source that had gained an RNG guard -- macOS installs ran an
+* accelerator that accepted the one absorbing state of MT19937 and reported
+* success. A detector was added for that; this is the cause.
+* ---------------------------------------------------------------------------
+* The release payload ships ONE copy of the binary, in pkg/, and strips the
+* one in src/ado -- so in that tree there is no source copy to refresh from
+* and nothing to refresh. It is recognised by the absence of the script that
+* assembles it, which the payload also strips. In the development tree the
+* source copy is required, and a missing one stops the build naming the script
+* that compiles it rather than quietly shipping the previous binary.
+capture confirm file "tools/release/build-release-payload.sh"
+local plugin_from_source = (_rc == 0)
+foreach f in csdid_bootstrap_macosx.plugin {
+    if `plugin_from_source' {
+        capture confirm file "src/ado/`f'"
+        if _rc {
+            display as error "src/ado/`f' is missing -- build it with tools/plugin/build-bootstrap-plugin.sh, then rerun this script"
+            exit 601
+        }
+        copy "src/ado/`f'" "build/`f'", replace
+        copy "build/`f'" "pkg/`f'", replace
+        * Stata's `copy' does not carry file permissions, and this one is a
+        * compiled binary that the tree tracks executable. Restore the bit
+        * rather than let a rebuild rewrite the mode of a shipped file.
+        if "`c(os)'" != "Windows" {
+            capture shell chmod 755 "build/`f'" "pkg/`f'"
+        }
+    }
+}
+
+* ---------------------------------------------------------------------------
+* The manifest and the payload must name the same files, both ways.
+*
+* csdid.pkg and stata.toc are NOT written here: they carry the package
+* description, the author list and the distribution date, which are editorial
+* and belong to a human. What is mechanical is the agreement between the `f'
+* lines and what this script just produced, and that is checked -- in both
+* directions, because each has failed on its own. A manifest line with no file
+* behind it makes `net install' 404 for every user; a file in pkg/ that no
+* line names is built, committed, and never delivered.
+* ---------------------------------------------------------------------------
+tempname pkgfh
+local manifest ""
+file open `pkgfh' using "csdid.pkg", read text
+file read `pkgfh' pkgline
+while r(eof) == 0 {
+    local pkgkind : word 1 of `macval(pkgline)'
+    if "`pkgkind'" == "f" {
+        local pkgpath : word 2 of `macval(pkgline)'
+        local manifest "`manifest' `pkgpath'"
+    }
+    file read `pkgfh' pkgline
+}
+file close `pkgfh'
+local manifest = strtrim("`manifest'")
+if "`manifest'" == "" {
+    display as error "csdid.pkg declares no files -- this check would verify nothing"
+    exit 459
+}
+local pkgbad 0
+foreach p of local manifest {
+    capture confirm file "`p'"
+    if _rc {
+        display as error "csdid.pkg names `p', which this build did not produce"
+        local pkgbad = `pkgbad' + 1
+    }
+}
+local shipped : dir "pkg" files "*"
+foreach s of local shipped {
+    local sname `s'
+    if substr("`sname'", 1, 1) != "." {
+        local hit : list posof "pkg/`sname'" in manifest
+        if !`hit' {
+            display as error "pkg/`sname' is in the payload directory but no manifest line in csdid.pkg delivers it"
+            local pkgbad = `pkgbad' + 1
+        }
+    }
+}
+if `pkgbad' {
+    display as error "csdid.pkg and pkg/ disagree on `pkgbad' file(s); net install delivers the manifest, not the directory"
+    exit 459
+}
 display as text "packaged into pkg/ (commit this directory; net install reads it)"
+display as text "csdid.pkg and pkg/ agree: `: word count `manifest'' files, each named once and present"

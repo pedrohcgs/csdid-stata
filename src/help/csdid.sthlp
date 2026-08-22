@@ -244,6 +244,7 @@ are an error. {cmd:gvar()} must be constant
 within a unit. It encodes
 the staggered-adoption design: treatment is absorbing, so a unit with
 {cmd:gvar()} equal to {it:g} is treated in every period from {it:g} onward.
+{helpb csgvar} builds this variable from a binary treatment indicator.
 
 {phang}
 {opth ivar(varname)} specifies the numeric panel unit identifier. Supply it
@@ -1211,6 +1212,16 @@ accounting that goes with it. See
 {it:{help csdid##opt_panel:Panel structure}}.{p_end}
 
 {phang2}
+o {bf:Mata library search order.} The first {cmd:csdid} of a session moves
+{cmd:csdid}'s own compiled Mata library to the front of {cmd:c(matalibs)} and
+leaves it there. Mata resolves a function name by searching that list in
+order, and an installed package is indexed after everything already present,
+so without the move every first call in a session is answered from the end of
+the list. Nothing else is reordered, and no other library is displaced from
+its position relative to the rest. If you set {cmd:c(matalibs)} yourself and
+want your order back, {cmd:set matalibs} restores it at any point.{p_end}
+
+{phang2}
 o {bf:Multiplier distribution.} The bootstrap draws Rademacher multipliers.
 {cmd:wtype(mammen)}, {cmd:wtype(normal)}, and {cmd:wtype(gaussian)} exit with
 an error rather than being silently coerced to something else.{p_end}
@@ -1284,8 +1295,7 @@ One further change does not move any number, but can stop a do-file that
 previously ran:
 
 {phang2}
-o {bf:Group size is measured as observations divided by the number of
-periods}, rather than as distinct units. On unbalanced panels this is stricter,
+o {bf:Group size is measured as observations divided by the number of periods}, rather than as distinct units. On unbalanced panels this is stricter,
 so the never-treated-too-small refusal now fires in cases that Version 1.82
 estimated. Use {cmd:notyet}, which is the remedy the message
 recommends. See
@@ -1893,7 +1903,7 @@ notice and permission notice are retained. The full text is in the
 {psee}
 Online:  {helpb csdid_postestimation:csdid postestimation},
 {helpb csdid_stats}, {helpb csdid_estat}, {helpb csdid_plot},
-{helpb csdid_legacy:csdid legacy utilities}
+{helpb csgvar}, {helpb csdid_legacy:csdid legacy utilities}
 {p_end}
 
 {psee}

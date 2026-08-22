@@ -37,17 +37,17 @@ d
 d Requires: Stata version 14
 d
 d Author: Brantly Callaway, University of Georgia
-d Support: email brantly.callaway@@uga.edu
+d Support: email brantly.callaway@uga.edu
 d
 d Author: Fernando Rios-Avila, Levy Economics Institute of Bard College
-d Support: email f.rios.a@@gmail.com
+d Support: email f.rios.a@gmail.com
 d
 d Author: Pedro H. C. Sant'Anna, Emory University
-d Support: email pedro.santanna@@emory.edu
+d Support: email pedro.santanna@emory.edu
 d
 d Version: 2.0.0
 d
-d Distribution-Date: 20260730
+d Distribution-Date: 20260821
 d
 f pkg/csdid.ado
 f pkg/_csdid_post.ado
@@ -71,3 +71,8 @@ f pkg/csdid_estat.sthlp
 f pkg/csdid_stats.sthlp
 f pkg/csdid_plot.sthlp
 f pkg/csdid_legacy.sthlp
+f pkg/csgvar.sthlp
+f pkg/csdid_rif.sthlp
+f pkg/csdid_table.sthlp
+f pkg/dipt.sthlp
+f pkg/tsvmat.sthlp

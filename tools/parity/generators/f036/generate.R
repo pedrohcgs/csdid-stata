@@ -90,7 +90,7 @@ events <- data.frame(
     "estat_style_unsupported",
     "plot_style_unsupported"
   ),
-  return_code = c(198, 498, 198, 198, 198, 198),
+  return_code = c(198, 198, 198, 198, 198, 198),
   event_type = "error",
   offending_option = c(
     "dryrun",

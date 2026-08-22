@@ -44,6 +44,21 @@ R3  FACTUAL CLAIMS.  Free prose cannot be checked mechanically and this does
     What remains unguarded is stated in the gate's own output, so a green run
     does not read as more than it is.
 
+R4  SMCL BRACES.  A SMCL directive must open and close on the same physical
+    input line.  When it does not, SMCL does not warn: it prints the markup,
+    so the emphasised sentence is the one that renders as `{bf:...}'.  Two
+    shipped files did exactly that, in the 1.82 migration list and in the
+    deprecation notice.  The check is a per-line balance count, which is what
+    the manual's rule reduces to.
+
+R5  HELP REACHABLE BY NAME.  Every command the payload installs must have a
+    help file a user can reach by typing the command's name.  Five did not:
+    `csgvar', which is the documented way to build gvar(), and the four
+    deprecated commands, all of which answered "help not found" on an
+    installation that has the ado.  A one-line `.h' alias is the documented
+    remedy; this checks that one exists and that it forwards to a help file
+    the payload also ships.
+
 Exit 0 on success; print every violation with file and line, and exit 1
 otherwise.
 """
@@ -71,7 +86,20 @@ OPTION_OWNERS = {
     "csdid_plot.sthlp": ["csdid_plot.ado"],
     "csdid_postestimation.sthlp": [],
     "csdid_legacy.sthlp": [],
+    # `.h' aliases carry no option table of their own; the options they
+    # forward to are checked where they are documented.
+    "csgvar.sthlp": [],
+    "csdid_rif.sthlp": [],
+    "csdid_table.sthlp": [],
+    "dipt.sthlp": [],
+    "tsvmat.sthlp": [],
 }
+
+# Shipped ados that are never typed by a user, so no help is reachable by their
+# name and none is expected. `csdid_p' is the predict helper Stata's e-class
+# machinery calls; `_'-prefixed files are egen entry points and subroutines,
+# which [U] 18.11.6 addresses separately.
+NOT_TYPED_BY_USERS = {"csdid_p"}
 
 
 # ---------------------------------------------------------------------------
@@ -603,6 +631,76 @@ def check_matrix_columns(help_files, problems):
     return checked
 
 
+# ---------------------------------------------------------------------------
+# R4: SMCL braces close on the line they open on
+# ---------------------------------------------------------------------------
+def check_smcl_braces(help_files, problems):
+    """[P] smcl: "the braces must not only match but also match on the same
+    physical (input) line ... is an error. When SMCL encounters an error, it
+    simply displays the text in the output it does not understand." So the
+    failure is silent at build time and loud only in the Viewer, on the one
+    sentence the author chose to emphasise."""
+    checked = 0
+    for path in help_files:
+        base = os.path.basename(path)
+        for lineno, line in enumerate(read(path).splitlines(), 1):
+            checked += 1
+            depth = 0
+            closed_too_many = False
+            for ch in line:
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth < 0:
+                        closed_too_many = True
+                        depth = 0
+            if depth or closed_too_many:
+                problems.append(
+                    "%s:%d: a SMCL directive does not close on the line it "
+                    "opens on, so the markup renders as text: %s"
+                    % (base, lineno, line.strip()[:60]))
+    return checked
+
+
+# ---------------------------------------------------------------------------
+# R5: every installed command reaches help by its own name
+# ---------------------------------------------------------------------------
+ALIAS_TARGET = re.compile(r"^\.h\s+([A-Za-z_][A-Za-z0-9_]*)\s*$", re.M)
+
+
+def check_help_reachable(problems):
+    """Each shipped command name must resolve as `help <name>'."""
+    manifest = read(PKG)
+    ados = re.findall(r"^f pkg/([A-Za-z0-9_]+)\.ado\s*$", manifest, re.M)
+    helps = set(re.findall(r"^f pkg/([A-Za-z0-9_]+)\.sthlp\s*$", manifest, re.M))
+    if not ados:
+        problems.append("csdid.pkg ships no .ado files -- this check would "
+                        "verify nothing")
+        return 0
+    checked = 0
+    for cmd in sorted(set(ados)):
+        if cmd.startswith("_") or cmd in NOT_TYPED_BY_USERS:
+            continue
+        checked += 1
+        if cmd not in helps:
+            problems.append(
+                "csdid.pkg installs %s.ado but ships no %s.sthlp, so `help %s' "
+                "fails on every installation -- add a one-line `.h' alias "
+                "([U] 18.11.6) and its `f pkg/' line" % (cmd, cmd, cmd))
+            continue
+        src = os.path.join(HELPDIR, cmd + ".sthlp")
+        if not os.path.isfile(src):
+            continue
+        target = ALIAS_TARGET.search(read(src))
+        if target and target.group(1) not in helps:
+            problems.append(
+                "%s.sthlp forwards to %s, which csdid.pkg does not ship -- "
+                "`help %s' would land on nothing"
+                % (cmd, target.group(1), cmd))
+    return checked
+
+
 def main():
     problems = []
     help_files, listing_problems = shipped_help_files()
@@ -636,6 +734,8 @@ def main():
     n_results = check_stored_results(help_files, problems)
     n_codes = check_return_codes(help_files, problems)
     n_matrices = check_matrix_columns(help_files, problems)
+    n_lines = check_smcl_braces(help_files, problems)
+    n_commands = check_help_reachable(problems)
 
     if problems:
         print("public help surface: %d problem(s)" % len(problems),
@@ -660,6 +760,10 @@ def main():
           "their ado, %d e() references are posted, %d return codes are "
           "raised, %d documented matrix column lists match `matrix colnames'"
           % (n_options, n_results, n_codes, n_matrices))
+    print("   SMCL: every directive on each of %d input lines closes on the "
+          "line it opens on" % n_lines)
+    print("   reachability: each of %d installed command names resolves to a "
+          "help file the payload ships" % n_commands)
     print("   NOT checked: free prose. Whether a sentence describes what the "
           "code does -- what bal(full) drops and in which order, what e(N) "
           "counts, which estimator is the default, what a warning means -- is "

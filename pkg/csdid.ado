@@ -324,8 +324,13 @@ program define csdid, eclass sortpreserve
     local agg_type = lower(strtrim(`"`agg'"'))
     if "`agg'" != "" {
         if !inlist("`agg_type'", "event", "dynamic") {
+            * 198, the code every other option-value refusal in this command
+            * uses. 498 is reserved for a situation with no other code, and a
+            * value this option does not take is an ordinary syntax error --
+            * a script branching on _rc == 198 to catch a mistyped option
+            * missed this one alone.
             display as error "agg() immediate aggregation currently supports only event/dynamic; run csdid_stats for simple, group, or calendar aggregation"
-            exit 498
+            exit 198
         }
     }
     * dropmissing governs the agg() aggregation and nothing else, so with no
@@ -1649,26 +1654,44 @@ program define csdid, eclass sortpreserve
                 if _rc local plugin_rc = _rc
                 local plugin_if_vars "`plugin_if_vars' `plugin_if_var'"
             }
+            * Break is not a plugin failure. Every capture below funnels its
+            * rc into `plugin_rc', and rc 1 is the user pressing Break: left
+            * unexamined it is classified by the else-branch as
+            * `mata-plugin-failed', the RNG and ATT backups are restored and
+            * the whole bootstrap is recomputed on the slower Mata path --
+            * so the interrupt makes the run LONGER, the user has to press
+            * Break a second time, and a run that finishes reports a broken
+            * accelerator in e(bootstrap_accelerator_status) when nothing
+            * was broken. Same guard, same wording, as the four in
+            * csdid_stats.ado, which carries the aggregation-stage copy of
+            * this block. The user's data comes back either way: this branch
+            * runs under the preserve above, and Stata unwinds a preserve
+            * when a program exits, on rc 1 as on any other (measured).
             if !`plugin_rc' {
                 capture mata: csdid_boot_plugin_prepare("`attgt'", "`inffunc'", "`unit_group'", "`boot_time'", "`boot_cluster_arg'", "`plugin_if_vars'", "`plugin_n'", "`plugin_nc'", "`plugin_cluster'", "`plugin_started'")
                 local plugin_rc = _rc
+                if `plugin_rc' == 1 exit 1
             }
             if !`plugin_rc' {
                 capture matrix `plugin_draws' = J(`biters', rowsof(`attgt'), .)
                 local plugin_rc = _rc
+                if `plugin_rc' == 1 exit 1
             }
             if !`plugin_rc' {
                 local plugin_nc_value : display %21.0f scalar(`plugin_nc')
                 local plugin_nc_value = strtrim("`plugin_nc_value'")
                 capture plugin call `bootstrap_plugin_program' `plugin_if_vars' in 1/`plugin_nc_value', bootstrap_vars `biters' `plugin_nc_value' `plugin_draws' `boot_rng_state'
                 local plugin_rc = _rc
+                if `plugin_rc' == 1 exit 1
             }
             if !`plugin_rc' {
                 capture mata: csdid_boot_plugin_record("`plugin_started'", st_numscalar("`plugin_nc'"), `biters')
                 local plugin_rc = _rc
+                if `plugin_rc' == 1 exit 1
                 if !`plugin_rc' {
                     capture mata: csdid_boot_plugin_finish("`attgt'", "`plugin_draws'", st_numscalar("`plugin_n'"), st_numscalar("`plugin_nc'"), st_numscalar("`plugin_cluster'"), `biters', (100 - `level') / 100, `cband', "`boot_attgt'", "`boot_draws'", "`boot_crit'", "`boot_pointcrit'")
                     local plugin_rc = _rc
+                    if `plugin_rc' == 1 exit 1
                 }
             }
             if !`plugin_rc' {
@@ -2047,16 +2070,19 @@ program define csdid, eclass sortpreserve
     * vocabulary, that every cell failed, why that usually happens, and that no
     * coefficient vector was posted. Whether csdid should break R parity and
     * refuse outright is an owner decision, recorded as a follow-up.
+    * Both go through `display as error', the one channel a caller's `quietly'
+    * cannot suppress. What they announce is that the run has no e(b) -- the
+    * rule this command follows for anything that changes what was estimated.
     if `post_k' == 0 {
         local ds03_valid = 0
         forvalues i = 1/`=rowsof(`attgt')' {
             if !missing(`attgt'[`i', 4]) local ++ds03_valid
         }
         if `ds03_valid' == 0 {
-            display as text "warning: every ATT(g,t) cell failed to estimate - all `n_attgt' group-time cells are missing - so no coefficient vector was posted and postestimation commands (csdid_stats, estat, test, lincom, predict) have nothing to work with. Common causes are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim (pscoretrim()) that empties every comparison group, comparison groups with too few units, and an outcome with no variation. Check the covariate list and pscoretrim(), or rerun with method(reg). The ATT(g,t) table is still available in e(attgt)."
+            display as error "warning: every ATT(g,t) cell failed to estimate - all `n_attgt' group-time cells are missing - so no coefficient vector was posted and postestimation commands (csdid_stats, estat, test, lincom, predict) have nothing to work with. Common causes are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim (pscoretrim()) that empties every comparison group, comparison groups with too few units, and an outcome with no variation. Check the covariate list and pscoretrim(), or rerun with method(reg). The ATT(g,t) table is still available in e(attgt)."
         }
         else {
-            display as text "warning: no ATT(g,t) coefficient could be named - every estimable cell is a normalised base period - so no coefficient vector was posted. Check baseperiod() and anticipation(). The ATT(g,t) table is still available in e(attgt), where the base period of each cell is reported in the base_time column."
+            display as error "warning: no ATT(g,t) coefficient could be named - every estimable cell is a normalised base period - so no coefficient vector was posted. Check baseperiod() and anticipation(). The ATT(g,t) table is still available in e(attgt), where the base period of each cell is reported in the base_time column."
         }
     }
     if `post_renamed' > 0 {
@@ -2102,7 +2128,6 @@ program define csdid, eclass sortpreserve
         matrix colnames `cluster_vec' = cluster
         ereturn matrix cluster_vec = `cluster_vec'
     }
-    ereturn local cmd "csdid"
     ereturn local estat_cmd "csdid_estat"
     * e(b) holds ATT(g,t) effects, not coefficients on the regressors, so
     * margins has nothing meaningful to average. It already refused with a bare
@@ -2241,6 +2266,12 @@ program define csdid, eclass sortpreserve
         _csdid_save_rif using `"`saverif'"', `replace'
         ereturn local rif_file `"`saverif'"'
     }
+
+    * Last, as [P] ereturn recommends: e(cmd) is what the postestimation
+    * commands read to decide the results are theirs, so it is the one macro
+    * that must not be readable while the rest of e() is still being filled
+    * in. It stays ahead of the agg() call below, which runs csdid_stats.
+    ereturn local cmd "csdid"
 
     local display_noisy = c(noisily)
     if `display_noisy' Display, level(`level')

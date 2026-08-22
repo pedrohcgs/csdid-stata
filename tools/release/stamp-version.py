@@ -15,6 +15,9 @@ tests/meta/test-version-consistency.sh.
 
 Sites covered:
   src/ado/*.ado          `*! <name> <ver> ... <date>` header
+  src/mata/csdid.mata    the same header. It ships, and on Stata 14/15/16 it
+                         is the file that actually executes, so it is not a
+                         file that can be left without one.
   src/ado/csdid.ado      the `csdid version` display string and every
                          `ereturn local version`
   src/ado/csdid_stats.ado  `ereturn local version`
@@ -48,6 +51,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ADOS = sorted((ROOT / "src" / "ado").glob("*.ado"))
+MATAS = sorted((ROOT / "src" / "mata").glob("*.mata"))
 HELPS = sorted((ROOT / "src" / "help").glob("*.sthlp"))
 PKG = ROOT / "csdid.pkg"
 
@@ -82,7 +86,7 @@ def collect() -> dict[str, set[str]]:
     """version strings and date strings actually present, by kind."""
     vers: set[str] = set()
     dates: set[str] = set()
-    for p in ADOS:
+    for p in ADOS + MATAS:
         t = p.read_text()
         for m in ADO_HDR.finditer(t):
             vers.add(m.group(2)); dates.add(m.group(4))
@@ -135,7 +139,7 @@ def check() -> int:
 
 def stamp(version: str, date: str) -> None:
     iso = _dt.datetime.strptime(date, "%d%b%Y").strftime("%Y%m%d")
-    for p in ADOS:
+    for p in ADOS + MATAS:
         t = p.read_text()
         t = ADO_HDR.sub(lambda m: m.group(1) + version + m.group(3) + date, t)
         t = ERETURN_V.sub(lambda m: m.group(1) + version + m.group(3), t)

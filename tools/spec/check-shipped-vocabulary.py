@@ -34,6 +34,7 @@ gone and the paths it strips are gone with it.
 Run: python3 tools/spec/check-shipped-vocabulary.py
 Exit 0 on success; print every hit with file, line and rule, and exit 1.
 """
+import hashlib
 import os
 import re
 import subprocess
@@ -76,7 +77,27 @@ NOT_SHIPPED = (
 DEFINES_THE_VOCABULARY = (
     "tools/release/check-help-surface.py",
     "tools/spec/check-shipped-vocabulary.py",
+    "tools/release/lint-website.sh",
 )
+
+# The private development repository's name must not appear in any shipped
+# file -- and this gate ships, so the rule must ban the string without
+# containing it. It carries only a digest; candidate tokens are hashed for
+# comparison, so nothing greppable in this file discloses what it forbids.
+PRIVATE_NAME_DIGESTS = {
+    "d03b8f88525860159e653f9fbc8eb877ab6276b30d1dd1babc9ba41c176d8a80",
+}
+PRIVATE_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{5,63}")
+
+
+def private_name_hits(line):
+    out = []
+    for m in PRIVATE_TOKEN.finditer(line):
+        tok = m.group(0).lower()
+        if hashlib.sha256(tok.encode()).hexdigest() in PRIVATE_NAME_DIGESTS:
+            out.append(m.group(0))
+    return out
+
 
 RULES = (
     ("session-slug",
@@ -84,14 +105,11 @@ RULES = (
      "a session slug"),
     ("model-name",
      re.compile(r"(?i)\b(?:codex|copilot|chatgpt|claude|anthropic|gemini|"
-                r"gpt-?[0-9]\w*|llama-?[0-9]\w*)\b"),
+                r"openai|gpt-?[0-9]\w*|llama-?[0-9]\w*)\b"),
      "the name of a model or model vendor"),
     # A bare `#123' is not enough to go on: a hex colour in a plotting script
     # is written the same way. The reference has to name itself -- a cue word,
     # a `PR #' prefix, or a forge URL.
-    ("private-repo-name",
-     re.compile(r"csdid"),
-     "the name of the private development repository"),
     ("pull-request-reference",
      re.compile(r"(?i)\bpull request\b|\bmerge request\b|\bPR\s*#\s*\d+"
                 r"|\b(?:issue|issues|fixes|closes|resolves|reverts|see)"
@@ -177,6 +195,9 @@ def scan(rel, full):
             m = pattern.search(line)
             if m:
                 hits.append((rel, n, name, why, m.group(0)))
+        for tok in private_name_hits(line):
+            hits.append((rel, n, "private-repo-name",
+                         "the name of the private development repository", tok))
     return hits
 
 

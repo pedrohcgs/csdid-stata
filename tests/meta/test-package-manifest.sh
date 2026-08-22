@@ -46,6 +46,18 @@ for f in $paths; do
   fi
 done
 
+# And the reverse direction: a file built into pkg/ that no `f' line names is
+# committed, looks shipped, and is delivered to nobody. The plugin was outside
+# the build for exactly this reason and it took a stale binary in production to
+# notice, so the manifest and the directory are now compared both ways.
+for f in pkg/*; do
+  [[ -e "$f" ]] || continue
+  if ! grep -qxF "f $f" csdid.pkg; then
+    echo "pkg/ carries $f, which no 'f' line in csdid.pkg delivers -- add it, or stop building it" >&2
+    status=1
+  fi
+done
+
 # Metadata that Stata itself consumes. Distribution-Date is what `adoupdate`
 # compares to decide whether an installed copy is stale; without it a user who
 # installed an older build can never be told a bugfix exists.
@@ -56,7 +68,31 @@ for required in "Distribution-Date:" "Requires: Stata version"; do
   fi
 done
 
+# Existing is not enough: the date has to be at least as new as the payload it
+# describes. `adoupdate' compares this line and nothing else, so a date left
+# behind while pkg/ moves is not a cosmetic staleness -- it is every installed
+# copy being told it is current. It sat at 20260730 through twenty-five
+# further commits to pkg/, one of them a bootstrap crash fix, and every gate
+# was green.
+declared="$(sed -n 's/^d Distribution-Date: \([0-9]\{8\}\).*/\1/p' csdid.pkg | head -1)"
+if [[ -z "$declared" ]]; then
+  echo "csdid.pkg's Distribution-Date is not an 8-digit YYYYMMDD date" >&2
+  status=1
+else
+  payload_date="$(git log -1 --format=%ad --date=format:%Y%m%d -- pkg csdid.pkg 2>/dev/null || true)"
+  if [[ -z "$payload_date" ]]; then
+    echo "no commit history for pkg/ or csdid.pkg, so the Distribution-Date cannot be checked against the payload -- refusing to report this as a pass" >&2
+    status=1
+  elif [[ "$declared" -lt "$payload_date" ]]; then
+    echo "csdid.pkg says Distribution-Date: $declared, but the payload last moved on $payload_date" >&2
+    echo "  adoupdate reads this line alone, so every installed copy would be told it is current" >&2
+    echo "  fix: set it to the release date (tools/release/stamp-version.py --version rewrites it)" >&2
+    status=1
+  fi
+fi
+
 if [[ "$status" -eq 0 ]]; then
-  echo "package manifest ok: $(echo "$paths" | wc -w | tr -d ' ') files, all present and tracked"
+  echo "package manifest ok: $(echo "$paths" | wc -w | tr -d ' ') files, all present and tracked;"
+  echo "  pkg/ names nothing the manifest does not deliver; Distribution-Date $declared is not older than the payload ($payload_date)"
 fi
 exit "$status"

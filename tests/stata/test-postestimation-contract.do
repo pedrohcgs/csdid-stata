@@ -262,4 +262,67 @@ assert "`e(datasignaturevars)'" == "`rsig0'"
 assert "`e(datasignature)'" == "`rhash0'"
 assert "`rhash0'" != ""
 
+* cold-audit F3: an existing saving() target without replace refuses BEFORE
+* the aggregation computes or posts -- r(602) with the WHOLE incoming
+* estimation untouched. The same request with replace still writes the file.
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+tempname SB0 SV0 SB1 SV1
+matrix `SB0' = e(b)
+matrix `SV0' = e(V)
+local scmd0 "`e(cmd)'"
+local shash0 "`e(datasignature)'"
+tempfile occupied
+quietly save "`occupied'"
+capture estat event, post saving("`occupied'")
+assert _rc == 602
+matrix `SB1' = e(b)
+matrix `SV1' = e(V)
+assert mreldif(`SB0', `SB1') == 0
+assert mreldif(`SV0', `SV1') == 0
+assert "`e(cmd)'" == "`scmd0'"
+assert "`e(datasignature)'" == "`shash0'"
+capture estat event, post saving("`occupied'", replace)
+assert _rc == 0
+preserve
+use "`occupied'", clear
+confirm variable estimate
+restore
+
+* cold-audit F2: a matrix-less e-class result from ANOTHER command survives a
+* failed saved-RIF run exactly -- scalars, macros and matrices all restored.
+capture program drop _tpc_eonly
+program define _tpc_eonly, eclass
+    ereturn clear
+    ereturn scalar sentinel = 17.125
+    ereturn local cmd "_tpc_eonly"
+    tempname M
+    matrix `M' = (1,2\3,4)
+    matrix colnames `M' = a b
+    ereturn matrix mm = `M'
+end
+_tpc_eonly
+capture csdid_stats using "`root'/no_such_rif_file_anywhere.dta", type(dynamic)
+assert _rc != 0
+assert e(sentinel) == 17.125
+assert "`e(cmd)'" == "_tpc_eonly"
+tempname MM
+matrix `MM' = e(mm)
+assert `MM'[2, 1] == 3
+assert "`: colnames `MM''" == "a b"
+
+* and the b-less state a completed using-run leaves behind survives a REFUSED
+* second using-run with its aggregation table bit-identical.
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+tempfile tpcrif
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet saverif("`tpcrif'") replace
+quietly csdid_stats using "`tpcrif'", type(dynamic)
+tempname UA0 UA1
+matrix `UA0' = e(aggte)
+capture csdid_stats using "`tpcrif'", type(dynamic) window(99 999)
+assert _rc != 0
+matrix `UA1' = e(aggte)
+assert mreldif(`UA0', `UA1') == 0
+assert "`e(cmd)'" == "csdid"
+
 display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

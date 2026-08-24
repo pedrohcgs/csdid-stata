@@ -7,9 +7,7 @@ program define csdid_stats, eclass
     * returned r(198) having already erased the caller's estimation result
     * and certified the loaded state with e(cmd). The front below holds the
     * incoming e() across the whole route: any nonzero return restores it
-    * exactly (or leaves e() empty when there was nothing to restore, or
-    * when the incoming state was itself a b-less saved-RIF result that
-    * `_estimates hold' cannot carry -- see the hold below), and a
+    * exactly (or leaves e() empty when there was nothing to restore), and a
     * completed run keeps the new results. The cache route never touches e()
     * before its validations and dispatches straight through.
     local txn_zero `"`0'"'
@@ -32,25 +30,56 @@ program define csdid_stats, eclass
     * actually exists. This is [P] break's canonical critical-section shape.
     tempname txn_held
     local txn_had 0
+    local txn_snap 0
     nobreak {
         * `txn_had' records that the hold actually HAPPENED, not that e()
         * looked restorable. A completed `csdid_stats using' posts e(cmd)
         * with no e(b) (the artifact carries no coefficient vector), and
         * `_estimates hold' refuses a b-less state with r(301) -- measured:
         * the second of two back-to-back using-runs died here, in the front,
-        * before the worker ever ran. Such a state cannot be preserved
-        * across the transaction; on failure it is cleared, exactly as the
-        * route's own loader would have cleared it, and it remains one
-        * `csdid_stats using' of its own e(rif_file) away from recreation.
+        * before the worker ever ran. A b-less state still deserves the
+        * same guarantee, so when the hold is refused the front copies every
+        * e() member by name -- scalars into scalar tempnames, macros into
+        * locals, matrices (stripes ride along) into matrix tempnames -- and
+        * reposts them on any nonzero return. A b-less state cannot carry
+        * e(sample) (only `ereturn post' marks one), so the copy is complete.
         if `"`e(cmd)'"' != "" {
             capture _estimates hold `txn_held', restore
             if _rc == 0 local txn_had 1
+            else {
+                local txn_snap 1
+                local txn_sc : e(scalars)
+                local txn_mac : e(macros)
+                local txn_mat : e(matrices)
+                foreach x of local txn_sc {
+                    tempname txn_s_`x'
+                    scalar `txn_s_`x'' = e(`x')
+                }
+                foreach x of local txn_mac {
+                    local txn_m_`x' `"`e(`x')'"'
+                }
+                foreach x of local txn_mat {
+                    tempname txn_x_`x'
+                    matrix `txn_x_`x'' = e(`x')
+                }
+            }
         }
         capture noisily break _csdid_stats_main `0'
         local txn_rc = _rc
         if `txn_rc' {
             ereturn clear
             if `txn_had' _estimates unhold `txn_held'
+            else if `txn_snap' {
+                foreach x of local txn_mat {
+                    ereturn matrix `x' = `txn_x_`x''
+                }
+                foreach x of local txn_sc {
+                    ereturn scalar `x' = `txn_s_`x''
+                }
+                foreach x of local txn_mac {
+                    ereturn local `x' `"`txn_m_`x''"'
+                }
+            }
             exit `txn_rc'
         }
         if `txn_had' {
@@ -60,6 +89,20 @@ program define csdid_stats, eclass
             else {
                 ereturn clear
                 _estimates unhold `txn_held'
+            }
+        }
+        else if `txn_snap' & `"`e(cmd)'"' != "csdid" {
+            * completed without certifying a csdid result: the incoming
+            * b-less state stands, exactly as the held branch above rules.
+            ereturn clear
+            foreach x of local txn_mat {
+                ereturn matrix `x' = `txn_x_`x''
+            }
+            foreach x of local txn_sc {
+                ereturn scalar `x' = `txn_s_`x''
+            }
+            foreach x of local txn_mac {
+                ereturn local `x' `"`txn_m_`x''"'
             }
         }
     }

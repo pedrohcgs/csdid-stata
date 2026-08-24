@@ -169,6 +169,17 @@ program define csdid_estat, eclass
             display as error "estat attgt accepts only saving() and replace; not allowed:`attgt_bad'"
             exit 198
         }
+        * An existing saving() target without replace refuses HERE, before
+        * the table is rebuilt or written; the -save- inside the tidy helper
+        * raised the same r(602), but only after the redisplay had run.
+        * -save- writes .dta when the filename has no extension, so the
+        * existence probe matches that rule.
+        if `"`saving'"' != "" & "`replace'" == "" {
+            local _sv_probe `"`saving'"'
+            mata: st_local("_sv_noext", strofreal(pathsuffix(st_local("_sv_probe")) == ""))
+            if `_sv_noext' local _sv_probe `"`_sv_probe'.dta"'
+            confirm new file `"`_sv_probe'"'
+        }
         if `"`saving'"' != "" {
             _csdid_estat_tidy_attgt using `"`saving'"', `replace'
             exit
@@ -280,6 +291,19 @@ program define csdid_estat, eclass
         if "`replace'" != "" & `"`saving'"' == "" {
             display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
             exit 198
+        }
+        * An existing saving() target without replace refuses HERE, before
+        * anything computes or posts. The route's final -save- raised the
+        * same r(602), but with `post' it did so only after e(b)/e(V) had
+        * already been replaced by the aggregation -- the refusal then
+        * described a command that had silently changed the active
+        * estimation (cold-audit F3). -save- writes .dta when the filename
+        * has no extension, so the existence probe matches that rule.
+        if `"`saving'"' != "" & "`replace'" == "" {
+            local _sv_probe `"`saving'"'
+            mata: st_local("_sv_noext", strofreal(pathsuffix(st_local("_sv_probe")) == ""))
+            if `_sv_noext' local _sv_probe `"`_sv_probe'.dta"'
+            confirm new file `"`_sv_probe'"'
         }
         if "`agg_type'" == "calendar" & `"`window'"' != "" {
             display as text "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"

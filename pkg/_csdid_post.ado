@@ -453,6 +453,13 @@ program define _csdid_post_replace_bv, eclass
         quietly generate byte `esmp' = e(sample)
         local has_esample 1
     }
+    * From here to the end the OLD result is gone and the NEW one is not yet
+    * certified. Everything the repost needs already sits in locals and
+    * tempnames, so nothing below computes or waits -- and a Break landing
+    * inside this interval once left e() empty or partly rebuilt (cold-audit
+    * F4). The whole clear-to-certified-repost interval is therefore one
+    * uninterruptible group; it costs matrix copies, not computation.
+    nobreak {
     ereturn clear
     local esamp_opt ""
     if `has_esample' local esamp_opt "esample(`esmp')"
@@ -510,7 +517,9 @@ program define _csdid_post_replace_bv, eclass
     if `"`agg_boot_status'"' != "" ereturn local agg_boot_accel_status `"`agg_boot_status'"'
     ereturn local estat_cmd "csdid_estat"
     ereturn local properties "b V"
-    * Last, as [P] ereturn recommends: a Break or failure above leaves e()
-    * without its certificate instead of certifying a partial post.
+    * Last, as [P] ereturn recommends: nobreak rules an interrupt out, so
+    * this ordering now guards only a coding failure above -- which leaves
+    * e() without its certificate instead of certifying a partial post.
     ereturn local cmd "csdid"
+    }
 end

@@ -2252,15 +2252,6 @@ program define csdid, eclass sortpreserve
         tempvar esmp
         quietly generate byte `esmp' = `touse'
         ereturn post `post_b' `post_V', obs(`sample_N') esample(`esmp')
-        * estat summarize is the one postestimation route that reads the DATA
-        * in memory rather than stored results; the signature is what lets it
-        * refuse with r(459) when the data changed since estimation, instead
-        * of describing a sample the estimation never saw. The aggregation
-        * routes read the engine cache and stored results and are guarded by
-        * the cache token instead. Only permanent, user-named variables are
-        * signed -- the covariates as the user gave them, never the
-        * transformed temporaries, which do not outlive this program.
-        quietly signestimationsample `ivar' `time' `gvar' `yname' `xvars_expanded' `cluster'
     }
     ereturn matrix attgt = `attgt'
     if `store_large' ereturn matrix inffunc = `inffunc'
@@ -2320,6 +2311,29 @@ program define csdid, eclass sortpreserve
     * expression, including its leading `='.
     ereturn local wtype "`weight'"
     ereturn local wexp `"`exp'"'
+    * estat summarize is the one postestimation route that reads the DATA in
+    * memory rather than stored results; the signature is what lets it refuse
+    * with r(459) when the data changed since estimation, instead of
+    * describing a sample the estimation never saw. The aggregation routes
+    * read the engine cache and stored results and are guarded by the cache
+    * token instead. Three constraints decide what is signed and where:
+    * (1) only DURABLE user variables -- `fvrevar, list' returns the base
+    * variables behind factor terms, never the __-temporaries the fit built,
+    * which die with this program and made check-time fail r(111) on
+    * untouched data; (2) the rcs identifier is signed too (it marks the
+    * estimation sample even though it is not a panel id); (3) the call sits
+    * AFTER e(wexp) is posted, because sign- and check-time both fold the
+    * weight variable in from e(wexp) -- signing before it was posted hashed
+    * a different variable set than the check read, and every weighted run
+    * refused r(459) on untouched data.
+    if `post_k' > 0 {
+        local sign_covs ""
+        if `"`xvars'"' != "" {
+            capture fvrevar `xvars', list
+            if !_rc local sign_covs "`r(varlist)'"
+        }
+        quietly signestimationsample `ivar' `ivar_declared' `time' `gvar' `yname' `sign_covs' `cluster'
+    }
     ereturn local weightvar "`wvar'"
     ereturn local base_period "`base_period'"
     ereturn local fix_weights "`fix_weights'"

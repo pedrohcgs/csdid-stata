@@ -116,3 +116,150 @@ capture margins
 assert _rc == 322
 
 display as text "postestimation contract: e() plumbing, predict 198 and margins 322 hold before and after the re-post"
+
+* ---------------------------------------------------------------------------
+* The estimation-sample signature, adjudicated against the external referee
+* (2026-08-24). Three defects were CONFIRMED against the pre-fix tree and
+* each cell below reproduced them red before the fix:
+*   - factor-variable covariates signed fvrevar TEMPORARIES, so estat
+*     summarize failed r(111) on untouched data (measured: signature held
+*     __000004 __000005);
+*   - the sign call ran before e(wexp) was posted, so every weighted run
+*     refused r(459) on untouched data;
+*   - `estat ..., post' dropped e(datasignature)/e(datasignaturevars), so a
+*     later estat summarize on CHANGED data proceeded silently; and
+*     `estat event, post replace' posted b/V before refusing the syntax.
+* ---------------------------------------------------------------------------
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+generate byte region = 1 + mod(id, 3)
+generate double w = 1 + mod(id, 4)/10
+
+* factor-variable covariate: durable bases signed, untouched data passes twice
+quietly csdid y i.region, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+assert strpos(" `e(datasignaturevars)' ", " region ") > 0
+assert strpos("`e(datasignaturevars)'", "__") == 0
+quietly estat summarize
+capture estat summarize
+assert _rc == 0
+
+* weights: untouched passes, a changed weight refuses
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+generate double w = 1 + mod(id, 4)/10
+quietly csdid y x1 [iw=w], ivar(id) time(time) gvar(g) method(dr) analytical notyet
+capture estat summarize
+assert _rc == 0
+quietly replace w = 2*w
+capture estat summarize
+assert _rc == 459
+
+* a refused `post replace' leaves e(b) untouched
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+tempname PRE POST
+matrix `PRE' = e(b)
+capture estat event, post replace
+assert _rc == 198
+matrix `POST' = e(b)
+assert mreldif(`PRE', `POST') == 0
+
+* the signature survives a posted aggregation, and still refuses changed data
+quietly estat event, post
+assert "`e(datasignaturevars)'" != ""
+quietly replace y = y + 100 if id == 1
+capture estat summarize
+assert _rc == 459
+
+display as text "test-postestimation-contract: the signature signs durable variables, survives posting, and a refused post mutates nothing"
+
+* ---------------------------------------------------------------------------
+* Second confirmation round (2026-08-24): the saved-RIF route is
+* transactional, and the signature covers rcs, interactions and RIF loads.
+* Pre-fix reds, each measured: a bad window() on `csdid_stats using'
+* returned r(198) with the caller's e(b) ERASED and e(cmd) still "csdid";
+* the rcs identifier and interaction bases were unsigned.
+* ---------------------------------------------------------------------------
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+tempfile txnrif
+quietly csdid y x1, ivar(id) time(time) gvar(g) method(dr) analytical notyet saverif("`txnrif'")
+tempname TB0 TB1 TV0 TV1
+matrix `TB0' = e(b)
+matrix `TV0' = e(V)
+capture csdid_stats using "`txnrif'", window(bad 1)
+assert _rc == 198
+matrix `TB1' = e(b)
+matrix `TV1' = e(V)
+assert mreldif(`TB0', `TB1') == 0
+assert mreldif(`TV0', `TV1') == 0
+assert "`e(cmd)'" == "csdid"
+capture csdid_stats using "`txnrif'", type(banana)
+assert _rc == 198
+matrix `TB1' = e(b)
+assert mreldif(`TB0', `TB1') == 0
+* a completed run keeps the NEW results, and the loaded state has no
+* signature -- fabricating one for a reloaded artifact would be worse than
+* refusing, and estat summarize keeps its own refusal on that state
+quietly csdid_stats using "`txnrif'", type(dynamic)
+assert "`e(cmd)'" == "csdid"
+assert "`e(rif_file)'" != ""
+assert "`e(datasignaturevars)'" == ""
+quietly estat event, post
+assert "`e(datasignaturevars)'" == ""
+* a refused command in a FRESH session certifies nothing
+ereturn clear
+capture csdid_stats using "`txnrif'", window(bad 1)
+assert _rc == 198
+assert "`e(cmd)'" == ""
+
+* rcs: the identifier is signed and a changed identifier refuses
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1, ivar(id) time(time) gvar(g) rcs method(dr) analytical notyet
+assert strpos(" `e(datasignaturevars)' ", " id ") > 0
+quietly replace id = id + 100000
+capture estat summarize
+assert _rc == 459
+
+* interactions: both bases signed, no temporaries, either base change refuses
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+generate byte region = 1 + mod(id, 3)
+quietly csdid y i.region##c.x1, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+assert strpos(" `e(datasignaturevars)' ", " region ") > 0
+assert strpos(" `e(datasignaturevars)' ", " x1 ") > 0
+assert strpos("`e(datasignaturevars)'", "__") == 0
+quietly replace x1 = x1 + 1 if id == 1
+capture estat summarize
+assert _rc == 459
+
+* ... and the FACTOR base symmetrically: a regression that hashes only the
+* continuous base would pass the cell above and fail this one.
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+generate byte region = 1 + mod(id, 3)
+quietly csdid y i.region##c.x1, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+quietly replace region = cond(region == 1, 2, 1) if id == 1
+capture estat summarize
+assert _rc == 459
+
+* a refused post preserves the WHOLE certified state, not just e(b):
+* e(V), e(cmd), both signature macros, and the aggregation table.
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+quietly estat event
+tempname RB0 RV0 RA0 RB1 RV1 RA1
+matrix `RB0' = e(b)
+matrix `RV0' = e(V)
+matrix `RA0' = e(aggte)
+local rsig0 "`e(datasignaturevars)'"
+local rhash0 "`e(datasignature)'"
+capture estat event, post replace
+assert _rc == 198
+matrix `RB1' = e(b)
+matrix `RV1' = e(V)
+matrix `RA1' = e(aggte)
+assert mreldif(`RB0', `RB1') == 0
+assert mreldif(`RV0', `RV1') == 0
+assert mreldif(`RA0', `RA1') == 0
+assert "`e(cmd)'" == "csdid"
+assert "`e(datasignaturevars)'" == "`rsig0'"
+assert "`e(datasignature)'" == "`rhash0'"
+assert "`rhash0'" != ""
+
+display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

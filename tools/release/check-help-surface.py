@@ -438,15 +438,28 @@ def main_program(ado_path, ado_text):
     file would accept anything an internal helper parses -- `usecache()',
     `narm()', `bale()', `wbtype()' -- as though it were a user-facing option,
     which is exactly the kind of thing the help must not be allowed to promise.
+
+    One extension: a command may be a dispatch front whose whole job is to
+    route to a worker named `_<name>_main' (csdid_stats does this, so its
+    saved-RIF route can be transactional). The worker is the command's own
+    body under that shape, not an internal helper, so its `syntax' counts too.
     """
     want = os.path.basename(ado_path)[:-len(".ado")]
     starts = [(m.start(), m.group(1)) for m in PROGRAM.finditer(ado_text)]
-    for i, (pos, name) in enumerate(starts):
-        if name != want:
-            continue
-        end = starts[i + 1][0] if i + 1 < len(starts) else len(ado_text)
-        return ado_text[pos:end]
-    return None
+
+    def body_of(name):
+        for i, (pos, found) in enumerate(starts):
+            if found != name:
+                continue
+            end = starts[i + 1][0] if i + 1 < len(starts) else len(ado_text)
+            return ado_text[pos:end]
+        return None
+
+    body = body_of(want)
+    if body is None:
+        return None
+    worker = body_of("_%s_main" % want)
+    return body if worker is None else body + "\n" + worker
 
 
 def declared_options(program_text):

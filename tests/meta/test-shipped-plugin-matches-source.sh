@@ -117,9 +117,72 @@ for name in csdid_bootstrap_macosx.plugin csdid_bootstrap_unix.plugin csdid_boot
   fi
 done
 
-[ "$fail" -eq 0 ] || exit 1
-if [ "$macho_skipped" -eq 0 ]; then
-  echo "shipped plugin matches the source build, guard present, universal and loadable back to macOS $macho_min_ceiling"
+# ---------------------------------------------------------------------------
+# Provenance: the SHIPPED binary must be the build of THIS tree's C source.
+# Timestamps prove nothing here; on the pinned toolchain the build is
+# byte-reproducible (verified: an independent scratch-tree rebuild yields
+# the identical sha256), so the check rebuilds into a scratch directory and
+# compares hashes. On macOS -- the host that builds the release binary --
+# the toolchain and sha-pinned SDK headers are REQUIRED and their absence
+# FAILS the gate; only a non-mac host may skip, and then the final banner
+# states that the comparison did not run.
+# ---------------------------------------------------------------------------
+# On a macOS host the prerequisites are REQUIRED: this is the platform the
+# release binary is built on, so an unbuildable state is a failure, not a
+# skip. Only a non-mac host (the Linux CI sweep, which cannot produce a
+# Mach-O at all) may skip -- and then the success banner below must not
+# claim the comparison ran.
+provenance_ran=0
+if command -v clang >/dev/null 2>&1 && command -v lipo >/dev/null 2>&1 \
+   && [ -f tools/plugin/_deps/stplugin.h ] && [ -f tools/plugin/_deps/stplugin.c ]; then
+  scratch="$(mktemp -d)"
+  trap 'rm -rf "$scratch"' EXIT
+  if CSDID_PLUGIN_OUTDIR="$scratch" bash tools/plugin/build-bootstrap-plugin.sh macos >/dev/null 2>&1; then
+    fresh="$(shasum -a 256 "$scratch/csdid_bootstrap_macosx.plugin" | cut -d" " -f1)"
+    compared=0
+    for placed in pkg/csdid_bootstrap_macosx.plugin src/ado/csdid_bootstrap_macosx.plugin; do
+      if [ ! -f "$placed" ]; then
+        # In the full source tree BOTH copies must exist; the release payload
+        # strips src/ado, recognised by the absence of the C source itself.
+        if [ -f src/plugin/csdid_bootstrap_plugin.c ] || [ "$placed" = "pkg/csdid_bootstrap_macosx.plugin" ]; then
+          echo "$placed is missing, so its provenance cannot be compared" >&2
+          fail=1
+        fi
+        continue
+      fi
+      have="$(shasum -a 256 "$placed" | cut -d" " -f1)"
+      compared=$((compared + 1))
+      if [ "$fresh" != "$have" ]; then
+        echo "$placed (sha256 ${have:0:12}) is NOT the build of the current C source (fresh build ${fresh:0:12}); rebuild with tools/plugin/build-bootstrap-plugin.sh macos" >&2
+        fail=1
+      fi
+    done
+    if [ "$compared" -eq 0 ]; then
+      echo "the scratch rebuild succeeded but NO placed binary was compared; that is not a pass" >&2
+      fail=1
+    fi
+    if [ "$fail" -eq 0 ]; then
+      provenance_ran=1
+      echo "provenance: the shipped plugin is byte-identical to a fresh build of the current source"
+    fi
+  else
+    echo "provenance check FAILED: the scratch rebuild itself failed; run tools/plugin/build-bootstrap-plugin.sh macos to see why" >&2
+    fail=1
+  fi
 else
-  echo "shipped plugin matches the source build, guard present (Mach-O checks not run on this host)"
+  if [ "$(uname -s)" = "Darwin" ]; then
+    echo "provenance check FAILED: clang/lipo or the pinned SDK headers are absent on this macOS host, where the release binary is built" >&2
+    fail=1
+  else
+    echo "provenance check not runnable on this host (no Mach-O toolchain); the comparison DID NOT RUN"
+  fi
+fi
+
+[ "$fail" -eq 0 ] || exit 1
+suffix=""
+[ "$provenance_ran" -eq 1 ] || suffix=" (provenance comparison did not run on this host)"
+if [ "$macho_skipped" -eq 0 ]; then
+  echo "shipped plugin matches the source build, guard present, universal and loadable back to macOS $macho_min_ceiling$suffix"
+else
+  echo "shipped plugin matches the source build, guard present (Mach-O checks not run on this host)$suffix"
 fi

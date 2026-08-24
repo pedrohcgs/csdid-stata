@@ -271,6 +271,16 @@ program define csdid_estat, eclass
         * warn-and-return-unrestricted is the documented behaviour and is
         * pinned as an upstream contract, and csdid_estat's help promises
         * window() "behaves exactly as it does" in csdid_stats.
+        * replace is meaningless without saving(); refused BEFORE the
+        * aggregation runs -- a refusal that fired after the compute left a
+        * command that ends r(198) having already replaced e() results, so a
+        * capture'd caller continued on estimates Stata said failed. It also
+        * precedes the calendar warning: a refused command must not first
+        * announce that an aggregation is reported.
+        if "`replace'" != "" & `"`saving'"' == "" {
+            display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
+            exit 198
+        }
         if "`agg_type'" == "calendar" & `"`window'"' != "" {
             display as text "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"
         }
@@ -353,13 +363,7 @@ program define csdid_estat, eclass
         * `estat event, saving(f)' returned rc 0 and wrote no file. It now
         * writes the aggregation that was just computed -- the same file
         * `estat tidy, saving(f)' writes if run immediately afterwards.
-        *
-        * replace is meaningless without saving(), and was accepted and
-        * dropped; it is refused on this route too, as it is on attgt.
-        if "`replace'" != "" & `"`saving'"' == "" {
-            display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
-            exit 198
-        }
+        * (replace without saving() was refused before the aggregation ran.)
         if `"`saving'"' != "" {
             _csdid_estat_tidy_aggte using `"`saving'"', `replace'
         }

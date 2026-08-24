@@ -400,7 +400,11 @@ program define _csdid_post_replace_bv, eclass
     * the LAST e() assignment below, per [P] ereturn -- its presence is the
     * certificate that everything else was stored, so it must never arrive
     * mid-loop with twenty elements still to come.
-    local local_names cmdline version yname timevar gvar idvar clustervar ///
+    * datasignature/datasignaturevars are the stale-data check's memory;
+    * dropping them across a post silently disarmed checkestimationsample
+    * for the rest of the session.
+    local local_names datasignature datasignaturevars ///
+        cmdline version yname timevar gvar idvar clustervar ///
         panel_mode control_group method method_requested weightvar base_period ///
         wtype wexp ///
         fix_weights boot_dist boot_dist_requested boot_seed fast_mode compute_path rif_file ///

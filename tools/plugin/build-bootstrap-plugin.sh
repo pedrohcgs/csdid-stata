@@ -3,7 +3,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DEPS="$ROOT/tools/plugin/_deps"
-OUTDIR="$ROOT/build"
+# CSDID_PLUGIN_OUTDIR overrides the build directory and, when set, SKIPS the
+# in-tree placement below -- the provenance gate rebuilds into a scratch
+# directory and compares hashes without touching the tree.
+OUTDIR="${CSDID_PLUGIN_OUTDIR:-$ROOT/build}"
 SOURCE="$ROOT/src/plugin/csdid_bootstrap_plugin.c"
 STPLUGIN_H="$DEPS/stplugin.h"
 STPLUGIN_C="$DEPS/stplugin.c"
@@ -123,6 +126,10 @@ for placed in "$OUTDIR"/csdid_bootstrap_*.plugin; do
   [ "$base" = "csdid_bootstrap.plugin" ] && continue
   for dest in "$ROOT/src/ado" "$ROOT/pkg"; do
     [ -d "$dest" ] || continue
+    if [ -n "${CSDID_PLUGIN_OUTDIR:-}" ]; then
+      echo "scratch build: NOT placing $base (CSDID_PLUGIN_OUTDIR is set)"
+      continue
+    fi
     cp -p "$placed" "$dest/$base"
     chmod 755 "$dest/$base"
     echo "placed $base in ${dest#$ROOT/}"

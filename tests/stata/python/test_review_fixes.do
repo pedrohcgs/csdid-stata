@@ -261,7 +261,7 @@ restore
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/id-validation.csv", clear asdouble
 generate str12 sid = "unit_" + string(id, "%02.0f")
-py020_expect_failure, command("csdid y, ivar(sid) time(year) gvar(group) analytical") message("ivar() must be numeric")
+py020_expect_failure, command("csdid y, ivar(sid) time(year) gvar(group) analytical") message("ivar() must be a numeric variable")
 
 import delimited using "`root'/tests/fixtures/parity/py020/inputs/id-validation.csv", clear asdouble
 recast long id

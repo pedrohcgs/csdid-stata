@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 30jul2026}{...}
+{* *! version 2.0.0 24aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -131,8 +131,9 @@ specified.
 {pmore}
 Both spellings of {cmd:replace} work. {cmd:csdid_plot, saving(myplot) replace}
 is the documented form, and the more common Stata idiom
-{cmd:saving(myplot, replace)} is parsed as well, so a comma inside
-{cmd:saving()} can no longer end up as part of the filename.
+{cmd:saving(myplot, replace)} is parsed as well: the comma inside
+{cmd:saving()} separates the filename from its sub-option and never becomes
+part of the filename.
 {cmd:replace} is the only sub-option {cmd:saving()} accepts; anything else after
 the comma is refused by name with return code 198, as is a comma with no
 filename in front of it.

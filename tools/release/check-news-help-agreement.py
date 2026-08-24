@@ -17,7 +17,7 @@ stages, and two of those stages are mutually exclusive descriptions of the same
 moment. So the check is not "do these paragraphs say the same thing" -- it is
 "do these paragraphs name the same stages".
 
-Four rules:
+Five rules:
 
 R1  For every registered claim below, the set of SAMPLE STAGES named in NEWS
     must equal the set named in the help. An empty set on either side is also a
@@ -35,6 +35,15 @@ R3  src/help/csdid.sthlp and pkg/csdid.sthlp must be byte-identical. This gate
 
 R4  Every anchor must be found in both files. Anchor-based checks fail silently
     when a heading is reworded, so a missing anchor is a failure and not a skip.
+
+R5  THE BOOTSTRAP REPLICATION DEFAULT, in all three places that state it:
+    NEWS.md, the shipped help, and `src/ado/csdid.ado', which is the only one
+    of the three that decides anything. This is not a wording question. The
+    number is what a user has to type to reproduce someone else's standard
+    errors, and NEWS said 999 in its performance section while its own
+    compatibility table, the help and the ado all said 1,000. The ado is read
+    ONLY -- nothing here edits it -- and the rule is equality: one value, in
+    all three surfaces.
 
 What this does NOT do is judge whether the agreed answer is the right one. The
 source of truth is `src/ado/csdid.ado' -- the shape scan, the `mark' pass that
@@ -55,6 +64,27 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 NEWS = os.path.join(ROOT, "NEWS.md")
 SHIPPED_HELP = os.path.join(ROOT, "pkg", "csdid.sthlp")
 SOURCE_HELP = os.path.join(ROOT, "src", "help", "csdid.sthlp")
+CSDID_ADO = os.path.join(ROOT, "src", "ado", "csdid.ado")
+
+# R5. Each surface states the bootstrap replication default in its own idiom,
+# so each gets its own patterns; every number any of them matches is collected,
+# and the three sets must be the same single value.
+#
+# In the ado, `local biters 0' is the not-bootstrapping value, set before the
+# inference branch is entered and overwritten inside it -- it is a sentinel,
+# not a default anyone can type, so it is dropped and any OTHER literal is
+# kept. Two surviving values means the ado no longer has one default to
+# compare against, and that is a failure rather than a guess.
+BITERS_SENTINEL = "0"
+ADO_DEFAULT = re.compile(r"^\s*local\s+biters\s+(\d+)\s*$", re.M)
+HELP_DEFAULT = [
+    re.compile(r"default is\s*\{cmd:reps\((\d+)\)\}", re.S),
+]
+NEWS_DEFAULT = [
+    re.compile(r"([\d,]+)\s+is the default"),
+    re.compile(r"default is\s*`?reps\((\d+)\)`?"),
+    re.compile(r"default[^.]{0,120}?([\d,]+)\s+iterations"),
+]
 
 # The stages a refusal can be judged on, as the two surfaces spell them after
 # markup is stripped. The first two are the pair that came apart; keeping them
@@ -124,6 +154,59 @@ def stages_in(text):
     return {name for name, pattern in STAGES if pattern.search(text)}
 
 
+def numbers(text, patterns):
+    """Every replication count `patterns' finds, commas removed."""
+    found = set()
+    for pattern in patterns:
+        for hit in pattern.findall(text):
+            found.add(hit.replace(",", ""))
+    return found
+
+
+def check_bootstrap_default(problems):
+    """R5: NEWS, the shipped help and the ado must state one same default."""
+    with open(CSDID_ADO, encoding="utf-8") as fh:
+        ado_text = fh.read()
+    with open(SHIPPED_HELP, encoding="utf-8") as fh:
+        help_text = fh.read()
+    with open(NEWS, encoding="utf-8") as fh:
+        news_text = fh.read()
+
+    ado = {v for v in ADO_DEFAULT.findall(ado_text) if v != BITERS_SENTINEL}
+    helped = numbers(help_text, HELP_DEFAULT)
+    newsed = numbers(news_text, NEWS_DEFAULT)
+
+    for where, found, how in (("src/ado/csdid.ado", ado, "`local biters #'"),
+                              ("pkg/csdid.sthlp", helped, "`default is reps(#)'"),
+                              ("NEWS.md", newsed, "a stated default")):
+        if not found:
+            problems.append(
+                "bootstrap-default: %s states no bootstrap replication default "
+                "that this gate can read (%s); a surface that stopped saying it "
+                "cannot be cross-checked, and this rule would be passing on "
+                "silence" % (where, how))
+    if not (ado and helped and newsed):
+        return 0
+    if len(ado) > 1:
+        problems.append(
+            "bootstrap-default: src/ado/csdid.ado sets `local biters' to more "
+            "than one literal value (%s), so it no longer has a single default "
+            "to compare the surfaces against"
+            % ", ".join(sorted(ado)))
+        return 0
+    if len(helped) > 1 or len(newsed) > 1 or ado != helped or ado != newsed:
+        problems.append(
+            "bootstrap-default: the three surfaces do not agree on the number "
+            "of bootstrap replications csdid runs by default. "
+            "src/ado/csdid.ado: %s. pkg/csdid.sthlp: %s. NEWS.md: %s. The ado "
+            "decides; the other two describe it, and a reader who trusts the "
+            "wrong one cannot reproduce a standard error"
+            % (", ".join(sorted(ado)), ", ".join(sorted(helped)),
+               ", ".join(sorted(newsed))))
+        return 0
+    return 1
+
+
 def main():
     problems = []
 
@@ -184,6 +267,8 @@ def main():
                 % (claim["key"], claim["what"],
                    sorted(news_stages - help_stages) or "-",
                    sorted(help_stages - news_stages) or "-"))
+
+    checked += check_bootstrap_default(problems)
 
     if not checked:
         problems.append("no claim was cross-checked -- this gate is checking "

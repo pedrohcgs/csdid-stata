@@ -1,4 +1,4 @@
-*! _csdid_post 2.0.0 30jul2026
+*! _csdid_post 2.0.0 24aug2026
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")
@@ -389,14 +389,18 @@ program define _csdid_post_replace_bv, eclass
         if `has_scalar_`s'' local scalar_`s' = e(`s')
     }
 
-    * SP-03: marginsnotok was missing from this enumeration (same class as the
+    * marginsnotok was missing from this enumeration (same class as the
     * F-055 omissions above), so every estat posting path stripped csdid's
     * margins guard: after `estat simple, post' or even a plain non-post
     * `estat event', `predict' returned rc 0 and `margins, noesample' printed a
     * full "Predictive margins" table off e(b) - fabricated numbers from an
     * estimator that has no prediction. depvar/vce/vcetype/predict are carried
-    * for the same reason (HS-06/HS-03 post them at estimation time).
-    local local_names cmd cmdline version yname timevar gvar idvar clustervar ///
+    * for the same reason (the estimation stage posts them).
+    * cmd is deliberately NOT in this list: it is posted unconditionally as
+    * the LAST e() assignment below, per [P] ereturn -- its presence is the
+    * certificate that everything else was stored, so it must never arrive
+    * mid-loop with twenty elements still to come.
+    local local_names cmdline version yname timevar gvar idvar clustervar ///
         panel_mode control_group method method_requested weightvar base_period ///
         wtype wexp ///
         fix_weights boot_dist boot_dist_requested boot_seed fast_mode compute_path rif_file ///
@@ -405,7 +409,7 @@ program define _csdid_post_replace_bv, eclass
     foreach m of local local_names {
         local local_`m' `"`e(`m')'"'
     }
-    * SP-03: csdid.ado sets marginsnotok unconditionally, but the saved-RIF
+    * csdid.ado sets marginsnotok unconditionally, but the saved-RIF
     * entry path (csdid_stats using) never does. margins is never valid after
     * csdid on any path, so default it rather than leave the guard off.
     if `"`local_marginsnotok'"' == "" local local_marginsnotok "_ALL"
@@ -419,7 +423,7 @@ program define _csdid_post_replace_bv, eclass
     * any path, so default it here too.
     if `"`local_predict'"' == "" local local_predict "csdid_p"
 
-    * SP-03/DS-10: reps and rseed may be posted either as scalars or as macros
+    * reps and rseed may be posted either as scalars or as macros
     * depending on how the inference settings are stored; preserve whichever
     * form is actually present instead of silently converting one to the other.
     foreach x in reps rseed {
@@ -483,7 +487,7 @@ program define _csdid_post_replace_bv, eclass
             ereturn local `m' `"`local_`m''"'
         }
     }
-    * SP-03/DS-10: re-post reps/rseed in whichever form they were stored.
+    * re-post reps/rseed in whichever form they were stored.
     foreach x in reps rseed {
         if `isnum_`x'' {
             ereturn scalar `x' = `keep_`x''
@@ -500,7 +504,9 @@ program define _csdid_post_replace_bv, eclass
     if `"`boot_accel_file'"' != "" ereturn local bootstrap_accelerator_file `"`boot_accel_file'"'
     if `"`agg_boot_accel'"' != "" ereturn local agg_boot_accelerator `"`agg_boot_accel'"'
     if `"`agg_boot_status'"' != "" ereturn local agg_boot_accel_status `"`agg_boot_status'"'
-    ereturn local cmd "csdid"
     ereturn local estat_cmd "csdid_estat"
     ereturn local properties "b V"
+    * Last, as [P] ereturn recommends: a Break or failure above leaves e()
+    * without its certificate instead of certifying a partial post.
+    ereturn local cmd "csdid"
 end

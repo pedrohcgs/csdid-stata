@@ -1,7 +1,7 @@
-*! csdid_stats 2.0.0 30jul2026
+*! csdid_stats 2.0.0 24aug2026
 program define csdid_stats, eclass
     version 14
-    * EUX-004: parse `using' as a declared, optional part of the command
+    * parse `using' as a declared, optional part of the command
     * instead of running `syntax ... using/' under -capture- and falling back
     * to a second syntax call. The old fallback swallowed the real diagnosis:
     * any option error on the using path (level(150), a duplicate option, a
@@ -13,7 +13,7 @@ program define csdid_stats, eclass
     * from() is unsupported by design; see csdid.ado for the full rationale.
     * Legacy accepted it on the simple, group and calendar aggregations.
     if `"`from'"' != "" {
-        display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which R fixes at event time 0. Use window(# #) with type(dynamic) for event-time windows."
+        display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which is now fixed at event time 0 -- the legacy default from(0) already was. Use window(# #) with type(dynamic) for event-time windows."
         exit 198
     }
     if `"`using'"' != "" {
@@ -33,7 +33,7 @@ program define csdid_stats, eclass
     * level wins - the same rule R applies by construction, since aggte
     * has no level knob and always follows the estimation alp.
     *
-    * OPT-005: this block used to live ONLY in the non-`using' branch, so
+    * this block used to live ONLY in the non-`using' branch, so
     * the saved-RIF path banded at the session c(level) even though
     * _csdid_stats_load_rif posts e(level) from char _dta[csdid_level].
     * Measured: "csdid ..., level(90) saverif(r90)" then "csdid_stats using
@@ -81,7 +81,7 @@ program define csdid_stats, eclass
         local min_e_specified 1
         local max_e_specified 1
     }
-    * EUX-010/EUX-011: balance() used to be declared BALance(integer -1), so
+    * balance() used to be declared BALance(integer -1), so
     * -1 doubled as "unspecified" and every negative value was silently
     * discarded (measured: balance(-3) rc 0, full unwindowed table), while a
     * non-numeric value fell through the `*' catch-all and was reported as an
@@ -109,7 +109,7 @@ program define csdid_stats, eclass
     local agg_cluster_specified 0
     local agg_cluster_name ""
     local unsupported ""
-    * EUX-013/OPT-011: -syntax- hands the leftover options back as ONE string,
+    * -syntax- hands the leftover options back as ONE string,
     * and the plain `foreach opt of local options' this loop used to open with
     * split that string at every blank. So `min_e( -1 )' - spacing the DECLARED
     * options accept without complaint (measured: `window( -1 1 )' parses) -
@@ -139,7 +139,7 @@ program define csdid_stats, eclass
             local opt_close = length(`"`opt_c'"') - length(subinstr(`"`opt_c'"', ")", "", .))
         }
         local opt_l = lower(`"`opt_c'"')
-        * OPT-002/OPT-004/OPT-009: capture the WHOLE argument and validate it
+        * capture the WHOLE argument and validate it
         * with -confirm number- before it is interpolated into the Mata call.
         * The old character-class regex accepted "1e", "1.2.3", "-", "++" and
         * "." and handed them straight to Mata, which answered with r(3000)
@@ -239,13 +239,13 @@ program define csdid_stats, eclass
             local agg_cluster = regexs(2)
             * recover the user's capitalisation: the match ran on the
             * lower-cased token, but e(clustervar) stores the real name.
-            * EUX-013: read it off `opt_c' (blanks removed, case kept) so
+            * read it off `opt_c' (blanks removed, case kept) so
             * `cluster( State )' recovers "State", not " State ".
             if regexm(`"`opt_c'"', "\(([^)]+)\)$") local agg_cluster = regexs(1)
             local agg_cluster_specified 1
             local agg_cluster_name "`cl_name'"
         }
-        * OPT-004: a repeated DECLARED option is handed to the `*' catch-all
+        * a repeated DECLARED option is handed to the `*' catch-all
         * by -syntax-, so "window(0 2) window(1 3)" used to be reported as an
         * unsupported option. Name the real fault.
         *
@@ -277,7 +277,7 @@ program define csdid_stats, eclass
         display as error `"unsupported option(s):`unsupported'"'
         exit 198
     }
-    * EUX-012: refuse reversed bounds at parse time, naming the option the
+    * refuse reversed bounds at parse time, naming the option the
     * user typed. They used to reach the kernel and come back as "no event
     * times fall within the requested aggregation window" plus Mata frames.
     if `min_e_specified' & `max_e_specified' {
@@ -291,7 +291,7 @@ program define csdid_stats, eclass
             exit 198
         }
     }
-    * OPT-019: an extra positional token used to be folded into `subcmd' and
+    * an extra positional token used to be folded into `subcmd' and
     * blamed on type(), an option the user never typed.
     * D-1: strip any quotes the user typed (csdid_stats "foo bar") ONCE, here.
     * Leaving them in made the unquoted expansions below exit r(109)/r(111)
@@ -310,7 +310,7 @@ program define csdid_stats, eclass
         display as error `"csdid_stats accepts at most one subcommand; unexpected token(s):`extra_tokens'"'
         exit 198
     }
-    * OPT-008/SP-09: "csdid_stats simple, type(group)" used to run type(group)
+    * "csdid_stats simple, type(group)" used to run type(group)
     * and discard the subcommand without a word.
     if `"`subcmd'"' != "" & `"`type'"' != "" {
         local subcmd_norm = lower(strtrim(`"`subcmd'"'))
@@ -330,7 +330,7 @@ program define csdid_stats, eclass
     local type = lower(strtrim(`"`type'"'))
     if `"`type'"' == "event" local type "dynamic"
     if !inlist(`"`type'"', "simple", "group", "dynamic", "calendar") {
-        * OPT-019: name what the user actually typed. A bad POSITIONAL
+        * name what the user actually typed. A bad POSITIONAL
         * subcommand used to be reported as a bad type(), an option that was
         * never on the command line. The frozen F029 event contract pins the
         * type() wording for the option form, so only the positional form is
@@ -365,7 +365,7 @@ program define csdid_stats, eclass
             local use_cluster = 1
         }
         else {
-            * EUX-007: e(clustervar) is empty whenever the estimation was not
+            * e(clustervar) is empty whenever the estimation was not
             * clustered, and the single message then rendered as "... does not
             * match the estimation cluster ;" and told the user to rerun with
             * the cluster they had just asked for. Split the branch.
@@ -422,7 +422,7 @@ program define csdid_stats, eclass
         local cache_token = e(mata_cache_token)
         local cache_n_units = e(N_units)
         local cache_n_attgt = e(N_attgt)
-        * EUX-001: plain -capture-, not -capture noisily-. Measured in Stata
+        * plain -capture-, not -capture noisily-. Measured in Stata
         * 17: `capture noisily mata: f()' still prints the Mata traceback log
         * ("csdid_cache_validate(): 498 Stata returned error / <istmt>: -
         * function returned error") under the message; only a bare -capture-
@@ -434,7 +434,7 @@ program define csdid_stats, eclass
             exit `cache_rc'
         }
     }
-    * EUX-001: the aggregation kernel used to be called bare, so every kernel
+    * the aggregation kernel used to be called bare, so every kernel
     * refusal ("no event times fall within the requested aggregation window",
     * "missing values found in ATT(g,t) estimates", ...) arrived with two
     * lines of Mata frames stapled underneath it. Run it under -capture- and
@@ -559,17 +559,39 @@ program define csdid_stats, eclass
             if !_rc {
                 local agg_csdid_path "`r(fn)'"
                 local agg_plugin_file "`e(bootstrap_accelerator_file)'"
-                local agg_plugin_path "`agg_csdid_path'"
-                local agg_plugin_path : subinstr local agg_plugin_path ///
-                    "csdid.ado" "`agg_plugin_file'", all
+                * Sibling of the resolved csdid.ado by trailing substr, never
+                * substring replacement -- same rule and reasons as the
+                * estimation stage's binding block in csdid.ado, which also
+                * documents why a plugin handle's aliveness check is the
+                * recorded rc-0 bind (program list cannot see plugins) and
+                * why rc 110 is never accepted as a load.
+                local _ap_len = strlen("`agg_csdid_path'")
+                local agg_plugin_dir ""
+                if `_ap_len' > 9 & substr("`agg_csdid_path'", `_ap_len' - 8, .) == "csdid.ado" {
+                    local agg_plugin_dir = substr("`agg_csdid_path'", 1, `_ap_len' - 9)
+                }
+                local agg_plugin_path "`agg_plugin_dir'`agg_plugin_file'"
                 capture confirm file "`agg_plugin_path'"
-                if !_rc & ("$CSDID_AGG_BOOT_PLUGIN_PATH" == "" | ///
-                    "$CSDID_AGG_BOOT_PLUGIN_PATH" == "`agg_plugin_path'") {
-                    capture program __csdid_agg_boot_plugin, plugin using("`agg_plugin_path'")
-                    local agg_bind_rc = _rc
-                    if inlist(`agg_bind_rc', 0, 110) {
-                        global CSDID_AGG_BOOT_PLUGIN_PATH "`agg_plugin_path'"
+                if !_rc {
+                    if "$CSDID_AGG_BOOT_PLUGIN_PATH" == "`agg_plugin_path'" {
                         local agg_plugin_bound 1
+                    }
+                    if !`agg_plugin_bound' {
+                        capture program drop __csdid_agg_boot_plugin
+                        capture program __csdid_agg_boot_plugin, plugin using("`agg_plugin_path'")
+                        local agg_bind_rc = _rc
+                        if `agg_bind_rc' == 0 {
+                            global CSDID_AGG_BOOT_PLUGIN_PATH "`agg_plugin_path'"
+                            local agg_plugin_bound 1
+                        }
+                        else if `agg_bind_rc' == 110 & "$CSDID_AGG_BOOT_PLUGIN_PATH" != "" {
+                            local agg_boot_status "mata-stale-plugin-binding"
+                            local agg_boot_rc = 110
+                        }
+                        else {
+                            local agg_boot_status "mata-plugin-load-failed"
+                            local agg_boot_rc = `agg_bind_rc'
+                        }
                     }
                 }
             }
@@ -707,7 +729,7 @@ program define csdid_stats, eclass
                     matrix `boot_agg_cluster_raw' = e(cluster_vec)
                 }
                 else {
-                    * EUX-001: an empty Mata cluster cache would otherwise abort
+                    * an empty Mata cluster cache would otherwise abort
                     * with raw Mata frames instead of a named refusal. The return
                     * code is not enough to detect it: the reader answers an empty
                     * matrix when no csdid has run in this session, and st_matrix()
@@ -767,7 +789,7 @@ program define csdid_stats, eclass
                 }
                 local boot_agg_if "`boot_agg_if_ordered'"
             }
-            * EUX-001: capture + re-raise so a bootstrap-kernel refusal
+            * capture + re-raise so a bootstrap-kernel refusal
             * ("BMisc bootstrap RNG state is invalid", "stored aggregate
             * influence functions do not match aggregation results") cannot
             * drag Mata frames into the user's log.
@@ -801,7 +823,7 @@ program define csdid_stats, eclass
         ereturn scalar agg_boot_accel_rc = `agg_boot_rc'
     }
     matrix colnames `aggte' = egt att se overall_att overall_se
-    * DS-11 (aggregation side). When every standard error in the aggregation is
+    * When every standard error in the aggregation is
     * missing, the table below prints a column of dots and says nothing about
     * why: the user is left to guess between "the kernel refused", "the data
     * are degenerate" and "csdid_stats is broken". The aggregation itself is
@@ -855,7 +877,7 @@ program define csdid_stats, eclass
     if `display_noisy' Display, level(`level') cband(`cband')
 end
 
-* EUX-001 helper. Reproduces csdid_aggte()'s own refusal diagnosis on the ado
+* Kernel-refusal helper. Reproduces csdid_aggte()'s own refusal diagnosis on the ado
 * side so the kernel can be called under a plain -capture- (the only form that
 * suppresses the Mata traceback log; -capture noisily- does not, measured in
 * Stata 17). The probe reads only e(attgt), e(inffunc) and e(group_prob) -
@@ -992,7 +1014,8 @@ program define Display
     * A reader could not tell an analytical run from a bootstrap, could not
     * see the replication count, and -- the part that costs people time --
     * could not see that an UNSEEDED bootstrap had been run, whose numbers
-    * drift between two identical calls. That is the same gap DS-10 closed
+    * drift between two identical calls. That is the same gap the estimation
+    * display closed
     * on the estimation side; this is the aggregation side of it, built
     * from the same e() macros and printed in the same shape.
     *
@@ -1046,7 +1069,7 @@ program define _csdid_stats_load_rif, eclass
         display as error "saved file is not a csdid RIF artifact"
         exit 498
     }
-    * AGG-03: without this marker the file cannot say whether the estimation
+    * without this marker the file cannot say whether the estimation
     * clustered, and aggregating it would report i.i.d. standard errors for a
     * clustered run with nothing on screen to say so. Refuse by name instead.
     if "`: char _dta[csdid_cluster_recorded]'" != "1" {
@@ -1061,7 +1084,7 @@ program define _csdid_stats_load_rif, eclass
             exit 498
         }
     }
-    * SP-12: the artifact-contract checks either side of these two are specific
+    * the artifact-contract checks either side of these two are specific
     * and rc 498 ("saved file is not a csdid RIF artifact", "... does not
     * contain rif# columns", "... is missing ATT metadata for rif3"). These two
     * were bare `confirm variable's, so a RIF file whose id or group column had
@@ -1079,7 +1102,7 @@ program define _csdid_stats_load_rif, eclass
         display as error "saved RIF artifact is missing its group column; the file in using() was written by csdid but has been modified since, or is not the file that was saved"
         exit 498
     }
-    * SP-12: -unab- with no match aborts r(111) on its own, before the
+    * -unab- with no match aborts r(111) on its own, before the
     * nrif == 0 branch below could report anything, so the guard was
     * unreachable for exactly the artifact it was written for.
     capture unab allrif : rif*
@@ -1173,7 +1196,7 @@ program define _csdid_stats_load_rif, eclass
     * artifact also records what they were when the estimation ran, and
     * nothing read them -- so a RIF whose group or weight column had been
     * edited silently produced different aggregation weights instead of
-    * being refused. SP-12 already refuses a MISSING column; a changed one
+    * being refused. A MISSING column is already refused above; a changed one
     * went through.
     *
     * They are checked, not substituted. Substituting would silently change
@@ -1247,14 +1270,13 @@ program define _csdid_stats_load_rif, eclass
     ereturn matrix inffunc = `IF'
     ereturn matrix group_prob = `GP'
     ereturn matrix unit_group = `UG'
-    * AGG-03: the aggregation clusters off e(clustervar)/e(cluster_vec), so
+    * the aggregation clusters off e(clustervar)/e(cluster_vec), so
     * reposting both is what makes `csdid_stats using' reproduce the standard
     * errors of the estimation that wrote the file rather than its i.i.d. ones.
     if "`rif_clustervar'" != "" {
         ereturn matrix cluster_vec = `CL'
         ereturn local clustervar "`rif_clustervar'"
     }
-    ereturn local cmd "csdid"
     ereturn local estat_cmd "csdid_estat"
     * predict is never valid after csdid; csdid_p is the guard that says so
     * instead of letting `predict' fall through to matrix scoring and abort
@@ -1284,4 +1306,7 @@ program define _csdid_stats_load_rif, eclass
     if "`rif_clustervar'" != "" & "`N_clusters'" != "" {
         ereturn scalar N_clusters = real("`N_clusters'")
     }
+    * Last, as [P] ereturn recommends: e(cmd)'s presence is the certificate
+    * that everything else was stored, and postestimation gates on it.
+    ereturn local cmd "csdid"
 end

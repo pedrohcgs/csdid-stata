@@ -10,11 +10,22 @@ STPLUGIN_C="$DEPS/stplugin.c"
 
 mkdir -p "$DEPS" "$OUTDIR"
 
+require_tool() {
+  local tool="$1"
+  local remedy="$2"
+  command -v "$tool" >/dev/null 2>&1 && return 0
+  echo "$tool not found; $remedy" >&2
+  exit 1
+}
+
 fetch_dependency() {
   local url="$1"
   local destination="$2"
   local expected_sha="$3"
   if [[ ! -f "$destination" ]]; then
+    # Probed only on the download path: a tree that already carries the pinned
+    # headers builds offline, and demanding curl there would be a false stop.
+    require_tool curl "install curl, or place stplugin.h and stplugin.c from https://www.stata.com/plugins/ in $DEPS"
     curl -fsSL "$url" -o "$destination"
   fi
   local actual_sha
@@ -44,23 +55,48 @@ if [[ "$target" == "auto" ]]; then
   esac
 fi
 
+# -ffp-contract=off on every target, not as a style choice: the multiplier
+# accumulation `sums_a[a] += sign * row[a]' is contractible, so at -O3 with
+# clang's default the arm64 slice fuses it into fmadd (one rounding) while
+# baseline x86_64, which has no FMA, does not. One universal binary would then
+# answer the same seeded bootstrap two ways on the two Macs it ships to.
+#
+# -Werror because this binary ships: the warning channel has no other reader.
+CFLAGS_COMMON=(-std=c11 -O3 -ffp-contract=off -Wall -Wextra -Werror)
+
 case "$target" in
   macos)
     compiler="${CC:-clang}"
-    "$compiler" -std=c11 -O3 -fPIC -DSYSTEM=APPLEMAC -I"$DEPS" \
-      -arch arm64 -arch x86_64 \
-      -bundle "$SOURCE" "$STPLUGIN_C" -lm -o "$OUTDIR/csdid_bootstrap_macosx.plugin"
+    require_tool "$compiler" "install the Xcode command line tools with: xcode-select --install"
+    require_tool lipo "install the Xcode command line tools with: xcode-select --install"
+    # Two compiles, then lipo -- not one invocation with two -arch flags. A
+    # single invocation carries one deployment target for both slices, and
+    # with none given clang stamps the build host's OS into LC_BUILD_VERSION,
+    # which dyld then refuses on every older Mac.
+    "$compiler" "${CFLAGS_COMMON[@]}" -fPIC -DSYSTEM=APPLEMAC -I"$DEPS" \
+      -target x86_64-apple-macos10.12 \
+      -bundle "$SOURCE" "$STPLUGIN_C" -lm -o "$OUTDIR/csdid_bootstrap_macosx.x86_64"
+    "$compiler" "${CFLAGS_COMMON[@]}" -fPIC -DSYSTEM=APPLEMAC -I"$DEPS" \
+      -target arm64-apple-macos11 \
+      -bundle "$SOURCE" "$STPLUGIN_C" -lm -o "$OUTDIR/csdid_bootstrap_macosx.arm64"
+    lipo -create \
+      "$OUTDIR/csdid_bootstrap_macosx.x86_64" \
+      "$OUTDIR/csdid_bootstrap_macosx.arm64" \
+      -output "$OUTDIR/csdid_bootstrap_macosx.plugin"
+    rm -f "$OUTDIR/csdid_bootstrap_macosx.x86_64" "$OUTDIR/csdid_bootstrap_macosx.arm64"
     cp "$OUTDIR/csdid_bootstrap_macosx.plugin" "$OUTDIR/csdid_bootstrap.plugin"
     ;;
   linux)
     compiler="${CC:-gcc}"
-    "$compiler" -std=c11 -O3 -fPIC -DSYSTEM=OPUNIX -I"$DEPS" \
+    require_tool "$compiler" "install a C compiler (gcc or clang), or set CC to one"
+    "$compiler" "${CFLAGS_COMMON[@]}" -fPIC -DSYSTEM=OPUNIX -I"$DEPS" \
       -shared "$SOURCE" "$STPLUGIN_C" -ldl -lm -o "$OUTDIR/csdid_bootstrap_unix.plugin"
     cp "$OUTDIR/csdid_bootstrap_unix.plugin" "$OUTDIR/csdid_bootstrap.plugin"
     ;;
   windows)
     compiler="${CC:-x86_64-w64-mingw32-gcc}"
-    "$compiler" -std=c11 -O3 -DSYSTEM=STWIN32 -I"$DEPS" \
+    require_tool "$compiler" "install the mingw-w64 cross compiler, or set CC to one"
+    "$compiler" "${CFLAGS_COMMON[@]}" -DSYSTEM=STWIN32 -I"$DEPS" \
       -shared -static-libgcc "$SOURCE" "$STPLUGIN_C" \
       -o "$OUTDIR/csdid_bootstrap_windows.plugin"
     cp "$OUTDIR/csdid_bootstrap_windows.plugin" "$OUTDIR/csdid_bootstrap.plugin"

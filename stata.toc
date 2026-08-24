@@ -6,4 +6,4 @@ d following Callaway and Sant'Anna (2021), with doubly robust, regression and
 d IPW estimators, aggregation, multiplier bootstrap inference, and
 d postestimation export and plotting.
 d
-p csdid
+p csdid Callaway-Sant'Anna group-time average treatment effects

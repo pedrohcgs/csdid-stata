@@ -44,7 +44,7 @@ program define f037_run_scenario
     gen seq = _n
     rename (egt att se overall_att overall_se) ///
            (egt_stata att_stata se_stata overall_att_stata overall_se_stata)
-    keep scenario type seq egt att_stata se_stata overall_att_stata overall_se_stata
+    keep scenario type seq egt_stata att_stata se_stata overall_att_stata overall_se_stata
     if "`append'" == "" {
         save "`aggfile'", replace
     }

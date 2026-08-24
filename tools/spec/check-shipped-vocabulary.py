@@ -21,6 +21,17 @@ true they are, because they address a reader who is not there:
   * PULL-REQUEST AND ISSUE REFERENCES -- `PR #412', `the release pull
     request'. The number resolves in a repository the reader cannot see.
 
+One more kind is wrong in one specific place. A message PRINTED AT THE USER --
+the text inside a `display' -- must not name the R implementation. csdid is a
+Stata package; a Stata user is not required to have R, cannot check what R
+does, and cannot act on a refusal written in terms of it. The help files are
+already held to this by tools/release/check-help-surface.py, which allows
+exactly one R reference, in csdid.sthlp's Acknowledgments -- but that gate
+reads only .sthlp, so the message channel was unguarded. This one covers the
+display strings in src/ado/ and src/legacy/. Comments are NOT scanned: an
+engineering comment saying which behaviour a line matches is the reason the
+code is legible, and no user reads it in a Stata window.
+
 What this does NOT object to is the engineering rationale around them. A
 comment saying which failure a check catches, what was measured, or why a
 budget is the number it is, is the reason the check is legible at all. Only
@@ -118,6 +129,63 @@ RULES = (
      "a pull-request or issue reference"),
 )
 
+# ---------------------------------------------------------------------------
+# R naming in a user-visible message.
+#
+# Scanned only in the ado directories, and only inside the quoted text of a
+# `display' -- that is the text a user sees. `di' is included because it is the
+# same command.
+# ---------------------------------------------------------------------------
+ADO_MESSAGE_DIRS = ("src/ado/", "src/legacy/")
+DISPLAY_LINE = re.compile(r"(?:^|[;{(]|\bqui(?:etly)?\b\s*:?\s*)\s*"
+                          r"(?:di|dis|disp|display)\b")
+QUOTED = re.compile(r'"([^"]*)"')
+
+# The bare standalone `R' is the load-bearing pattern: the named phrases below
+# are the shapes these messages happened to use, and a message rewritten as
+# "which R fixes at event time 0" is the same defect in different words. Stata's
+# own Base Reference Manual token `[R] command' is removed before the scan
+# rather than matched around, as tools/release/check-help-surface.py does with
+# the same pattern.
+STATA_MANUAL_TOKEN = re.compile(r"\[R\]")
+R_NAMING = re.compile(r"(?<![A-Za-z0-9_.])R(?![A-Za-z0-9_])"
+                      r"|\bR did\b|\bR-compatible\b|\bR's\b|\bin R\b"
+                      r"|\bR package\b")
+
+# The one message allowed to survive, by its EXACT text and in one named file.
+#
+# The string is pinned verbatim inside a frozen parity fixture -- the expected
+# output of fixture F030, which the test suite compares byte for byte -- so
+# rewording it is a change to a frozen contract and not a change to a message.
+# It goes when the fixture is regenerated, and this entry goes with it. An
+# allowlist entry whose text is no longer in the file it names is reported
+# rather than carried.
+ALLOWED_R_MESSAGES = {
+    "src/ado/csdid.ado": [
+    ],
+}
+
+
+def r_naming_hits(rel, lines):
+    """R naming inside `display' strings, in the ado directories only."""
+    if not rel.startswith(ADO_MESSAGE_DIRS) or not rel.endswith(".ado"):
+        return []
+    allowed = ALLOWED_R_MESSAGES.get(rel, [])
+    hits = []
+    for n, line in enumerate(lines, 1):
+        if not DISPLAY_LINE.search(line):
+            continue
+        for text in QUOTED.findall(line):
+            if any(ok in text for ok in allowed):
+                continue
+            m = R_NAMING.search(STATA_MANUAL_TOKEN.sub("", text))
+            if m:
+                hits.append((rel, n, "r-naming-in-message",
+                             "a user-visible message naming the R "
+                             "implementation", m.group(0)))
+    return hits
+
+
 # Suffixes of files that carry no prose at all. Frozen numeric fixtures and
 # compiled artifacts are read by machines; scanning them buys nothing and a
 # false hit in one cannot be fixed by rewording.
@@ -198,6 +266,7 @@ def scan(rel, full):
         for tok in private_name_hits(line):
             hits.append((rel, n, "private-repo-name",
                          "the name of the private development repository", tok))
+    hits += r_naming_hits(rel, lines)
     return hits
 
 
@@ -253,6 +322,24 @@ def main():
             problems.append(
                 "%s is exempt from this gate but does not exist; drop the "
                 "exemption" % rel)
+
+    # An allowlisted message that is no longer in the file it names has stopped
+    # being an exemption for anything.
+    for rel, messages in ALLOWED_R_MESSAGES.items():
+        full = os.path.join(ROOT, rel)
+        if not os.path.isfile(full):
+            problems.append(
+                "%s carries an allowlisted message but does not exist; drop "
+                "the entry from ALLOWED_R_MESSAGES" % rel)
+            continue
+        with open(full, encoding="utf-8") as fh:
+            text = fh.read()
+        for message in messages:
+            if message not in text:
+                problems.append(
+                    "%s no longer contains the allowlisted message %r; drop "
+                    "the entry from ALLOWED_R_MESSAGES rather than carrying an "
+                    "exemption for text nobody kept" % (rel, message))
 
     scanned = 0
     for rel, full in shipped_files():

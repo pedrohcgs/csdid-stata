@@ -6,7 +6,7 @@ title: csdid
 # `csdid`
 
 <p class="tagline" markdown="span">**A Stata package for difference-in-differences with multiple periods.**</p>
-<!-- <p class="meta-line">version 2.0 </p> -->
+<p class="meta-line">version 2.0.0</p>
 
 </div>
 
@@ -18,15 +18,22 @@ The engine of `csdid` is [Callaway and Sant'Anna (2021)](https://doi.org/10.1016
 
 ## How to install
 
-To install the latest version of `csdid`
+Version 2.0.0 installs from GitHub. It replaces an earlier `csdid` under the
+same command name, so uninstall first and then install:
 
 <!-- norun -->
 
 ```stata
+cap ado uninstall csdid
 net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main") replace
 ```
 
-You can also install it using the ssc command (this version is not yet these)
+If your current copy came from SSC, `ssc uninstall csdid` is the first line
+instead. Uninstalling first is what keeps Stata tracking one `csdid` rather
+than two. Run `csdid version` afterwards to confirm what you are running.
+
+SSC currently distributes csdid **Version 1.82**, the previous generation of
+the package. If that is what you want, it is one line:
 
 <!-- norun -->
 
@@ -44,7 +51,7 @@ We caveat that one should be careful when comparing `csdid` estimates with DiD e
 
 ## Speed
 
-This version of `csdid` is substantially faster than versions 1.XX (including version 1.81 and the `csdid2` variant). It can sometimes be 300x faster than Version 1.82, for example. We have documented these speed gains [here](articles/speed-vs-182.html). Our understanding is that, so far, we are the fastest implementation of staggered DiD in Stata. That is, we have a strong package, with a lot of options and strong statistical guarantees, that is also fast!
+This version of `csdid` is substantially faster than versions 1.XX (including Version 1.82 and the `csdid2` variant). It can sometimes be 300x faster than Version 1.82, for example. We have documented these speed gains [here](articles/speed-vs-182.html). Our understanding is that, so far, we are the fastest implementation of staggered DiD in Stata. That is, we have a strong package, with a lot of options and strong statistical guarantees, that is also fast!
 
 ## Also in R and Python
 

@@ -22,7 +22,9 @@ Sites covered:
                          `ereturn local version`
   src/ado/csdid_stats.ado  `ereturn local version`
   src/help/*.sthlp       `{* *! version <ver> <date>}` header
-  csdid.pkg              `d Distribution-Date: YYYYMMDD`
+  csdid.pkg              `d Distribution-Date: YYYYMMDD` (value compared to
+                         the stamped date, not just present) and `d Version:`
+  src/legacy/*.ado       the same `*!` header as src/ado
   the compiled library's stamp, which is a version string in four files:
                          src/mata/csdid.mata      "<ver>|source"
                          src/ado/_csdid_engine_load.ado
@@ -50,7 +52,9 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-ADOS = sorted((ROOT / "src" / "ado").glob("*.ado"))
+ADOS = sorted((ROOT / "src" / "ado").glob("*.ado")) + sorted(
+    (ROOT / "src" / "legacy").glob("*.ado")
+)
 MATAS = sorted((ROOT / "src" / "mata").glob("*.mata"))
 HELPS = sorted((ROOT / "src" / "help").glob("*.sthlp"))
 PKG = ROOT / "csdid.pkg"
@@ -60,6 +64,7 @@ HELP_HDR = re.compile(r"^(\{\* \*! version )(\S+)( )(\d{2}\w{3}\d{4})(\})", re.M
 ERETURN_V = re.compile(r'(ereturn local version ")([^"]+)(")')
 DISPLAY_V = re.compile(r'(display as text "csdid version )([^"]+)(")')
 DIST_DATE = re.compile(r"^(d Distribution-Date: )(\d{8})", re.M)
+PKG_VERSION = re.compile(r"^(d Version: )(\S+)", re.M)
 
 # The compiled library's stamp. Every one of these is the package half of
 # `<version>|<who built it>`; each pattern captures (prefix, version, suffix).
@@ -128,9 +133,37 @@ def check() -> int:
     if len(found["dates"]) != 1:
         print(f"date stamps disagree: {sorted(found['dates'])}", file=sys.stderr)
         status = 1
-    if PKG.exists() and not DIST_DATE.search(PKG.read_text()):
-        print("csdid.pkg has no 'd Distribution-Date:' line", file=sys.stderr)
-        status = 1
+    if PKG.exists():
+        pkg_text = PKG.read_text()
+        dd = DIST_DATE.search(pkg_text)
+        pv = PKG_VERSION.search(pkg_text)
+        if not dd:
+            print("csdid.pkg has no 'd Distribution-Date:' line", file=sys.stderr)
+            status = 1
+        elif len(found["dates"]) == 1:
+            # The VALUE is compared, not just the line's existence: the two
+            # release-date authorities (the *! stamps and the .pkg) once
+            # disagreed for 22 days with this check green.
+            want = _dt.datetime.strptime(
+                next(iter(found["dates"])), "%d%b%Y"
+            ).strftime("%Y%m%d")
+            if dd.group(2) != want:
+                print(
+                    f"csdid.pkg Distribution-Date {dd.group(2)} disagrees with "
+                    f"the stamped date {next(iter(found['dates']))} (= {want})",
+                    file=sys.stderr,
+                )
+                status = 1
+        if not pv:
+            print("csdid.pkg has no 'd Version:' line", file=sys.stderr)
+            status = 1
+        elif len(found["versions"]) == 1 and pv.group(2) != next(iter(found["versions"])):
+            print(
+                f"csdid.pkg 'd Version: {pv.group(2)}' disagrees with the stamped "
+                f"version {next(iter(found['versions']))}",
+                file=sys.stderr,
+            )
+            status = 1
     if status == 0:
         v = next(iter(found["versions"])); d = next(iter(found["dates"]))
         print(f"version consistent: {v} ({d})")
@@ -151,7 +184,10 @@ def stamp(version: str, date: str) -> None:
         )
         p.write_text(t)
     if PKG.exists():
-        PKG.write_text(DIST_DATE.sub(lambda m: m.group(1) + iso, PKG.read_text()))
+        pkg_text = PKG.read_text()
+        pkg_text = DIST_DATE.sub(lambda m: m.group(1) + iso, pkg_text)
+        pkg_text = PKG_VERSION.sub(lambda m: m.group(1) + version, pkg_text)
+        PKG.write_text(pkg_text)
     for p in MLIB_FILES:
         t = p.read_text()
         for rx in MLIB_STAMP.values():

@@ -30,10 +30,48 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build universal macOS plugin
         run: bash tools/plugin/build-bootstrap-plugin.sh macos
-      - name: Verify architectures and checksum
+      - name: Verify architectures, linkage, deployment target and checksum
         run: |
-          lipo -archs build/csdid_bootstrap_macosx.plugin
-          shasum -a 256 build/csdid_bootstrap_macosx.plugin
+          set -euo pipefail
+          plugin=build/csdid_bootstrap_macosx.plugin
+          shasum -a 256 "$plugin"
+
+          archs="$(lipo -archs "$plugin" | tr ' ' '\n' | sort | tr '\n' ' ')"
+          archs="${archs% }"
+          echo "architectures: $archs"
+          if [ "$archs" != "arm64 x86_64" ]; then
+            echo "::error::expected a universal binary carrying arm64 and x86_64, got [$archs]"
+            exit 1
+          fi
+
+          # Anything outside /usr/lib and /System is a runner-toolchain library
+          # that will not exist on a user's Mac.
+          otool -L "$plugin"
+          if otool -L "$plugin" | awk '/^\t/ {print $1}' | grep -vE '^(/usr/lib|/System)/' ; then
+            echo "::error::the plugin links a library outside /usr/lib and /System"
+            exit 1
+          fi
+
+          # 11.0 is the arm64 slice's deployment target and the higher of the
+          # two; a bundle stamped above it loads on nothing older than the
+          # machine that built it.
+          key() { awk -F. '{printf "%d", $1 * 10000 + ($2 == "" ? 0 : $2) * 100}' <<<"$1"; }
+          for slice in $(lipo -archs "$plugin"); do
+            minos="$(otool -arch "$slice" -l "$plugin" | awk '$1 == "minos" {print $2; exit}')"
+            if [ -z "$minos" ]; then
+              minos="$(otool -arch "$slice" -l "$plugin" |
+                awk '/LC_VERSION_MIN_MACOSX/ {seen = 1} seen && $1 == "version" {print $2; exit}')"
+            fi
+            echo "slice $slice deployment target: ${minos:-none}"
+            if [ -z "$minos" ]; then
+              echo "::error::slice $slice records no deployment target"
+              exit 1
+            fi
+            if [ "$(key "$minos")" -gt "$(key 11.0)" ]; then
+              echo "::error::slice $slice requires macOS $minos, above the 11.0 ceiling"
+              exit 1
+            fi
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: csdid-bootstrap-macos-universal

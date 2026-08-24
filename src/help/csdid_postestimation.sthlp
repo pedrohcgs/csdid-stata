@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 30jul2026}{...}
+{* *! version 2.0.0 24aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -75,7 +75,9 @@ errors{p_end}
 {synopt :{helpb predictnl}}point estimates and standard errors of expressions in
 the posted effects{p_end}
 {synopt :{helpb estimates}}{cmd:store}, {cmd:restore}, {cmd:dir},
-{cmd:describe}, {cmd:table}, and {cmd:stats}{p_end}
+{cmd:describe}, {cmd:table}, {cmd:stats}, and {cmd:replay}{p_end}
+{synopt :{cmd:csdid}}typed on its own, redisplays the stored results without
+recomputing them; {cmd:level()} must be the level they were estimated at{p_end}
 {synopt :{helpb estat_vce:estat vce}}display {cmd:e(V)}, with the usual
 {cmd:estat vce} options{p_end}
 {synopt :{helpb estat_summarize:estat summarize}}summarize the estimation
@@ -108,9 +110,6 @@ a moment estimator and stores no {cmd:e(ll)}{p_end}
 {helpb bootstrap} prefix and leaves none of its results{p_end}
 {synopt :{helpb contrast}, {helpb pwcompare}}the coefficients are not
 factor-variable terms, so there is nothing to contrast{p_end}
-{synopt :{cmd:estimates replay}}{cmd:csdid} has no redisplay syntax, so
-{cmd:estimates replay} and a bare {cmd:estimates} both fail; use
-{cmd:estat attgt}, or {cmd:estat} {it:type} for an aggregation{p_end}
 {synoptline}
 {p2colreset}{...}
 
@@ -160,7 +159,8 @@ Remarks are presented under the following headings:
 {pstd}
 Estimate once, then summarize as often as you like:
 
-{phang2}{cmd:. use "http://fmwww.bc.edu/repec/bocode/m/mpdta.dta", clear}{p_end}
+{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 {phang2}{cmd:. estat attgt}{p_end}
 {phang2}{cmd:. estat event}{p_end}
@@ -286,12 +286,13 @@ coefficient is created for an event time that is absent from the data.
 {title:Examples}
 
 {pstd}
-The examples use the county-level teen-employment panel of Callaway and
-Sant'Anna (2021). Loading
-it requires an internet connection.
+The examples use {cmd:mpdta.dta}, the county-level teen-employment panel of
+Callaway and Sant'Anna (2021), which ships with the package as an ancillary
+file: {cmd:net get csdid} copies it into the current directory.
 
 {pstd}{bf:Setup}{p_end}
-{phang2}{cmd:. use "http://fmwww.bc.edu/repec/bocode/m/mpdta.dta", clear}{p_end}
+{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 
 {pstd}{bf:Look at the cells, then summarize them four ways}{p_end}

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 30jul2026}{...}
+{* *! version 2.0.0 24aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -437,12 +437,13 @@ back to the session default.
 {title:Examples}
 
 {pstd}
-The examples use the county-level teen-employment panel of Callaway and
-Sant'Anna (2021). Loading
-it requires an internet connection.
+The examples use {cmd:mpdta.dta}, the county-level teen-employment panel of
+Callaway and Sant'Anna (2021), which ships with the package as an ancillary
+file: {cmd:net get csdid} copies it into the current directory.
 
 {pstd}{bf:Setup}{p_end}
-{phang2}{cmd:. use "http://fmwww.bc.edu/repec/bocode/m/mpdta.dta", clear}{p_end}
+{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 
 {pstd}{bf:The four aggregations}{p_end}

@@ -76,6 +76,34 @@ csgvar gvar05 = treated05, tvar(year) ivar(countyreal)
 assert gvar05 == gvar_built
 drop gvar05
 
+* ---- an expression is an expression on both routes -------------------------
+* `syntax newvarname =/exp' declares a Stata expression, and every parenthesis
+* used to be stripped out of it before it was used as a VARIABLE NAME. The
+* bare-variable case survived only because the strip also removed the
+* parentheses csgvar's own forward adds; anything else came back as a garbled
+* fragment of the user's own input (`>= invalid name', `variable treated*1 not
+* found'). The expression is now evaluated once, so both routes accept one and
+* give the same answer the bare variable gives.
+csgvar gvar_expr = (firsttreat > 0 & year >= firsttreat), tvar(year) ivar(countyreal)
+assert "`: type gvar_expr'" == "double"
+assert gvar_expr == gvar_built
+egen gvar_expr_egen = csgvar((treated)*(1)), tvar(year) ivar(countyreal)
+assert gvar_expr_egen == gvar_built
+
+* the label and the refusals name the expression as the user typed it -- not
+* csgvar's own forwarding parentheses, and not a fragment
+assert "`: variable label gvar_built'" == "Group Variable based on treated"
+assert "`: variable label gvar_egen'" == "Group Variable based on treated"
+assert "`: variable label gvar_expr'" == "Group Variable based on (firsttreat > 0 & year >= firsttreat)"
+assert "`: variable label gvar_expr_egen'" == "Group Variable based on (treated)*(1)"
+drop gvar_expr gvar_expr_egen
+
+* the data-shape refusals still fire when the count comes from an expression
+capture csgvar bad_expr = (three_vals + 0), tvar(year) ivar(countyreal)
+assert _rc == 459
+capture egen bad_expr_egen = csgvar(three_vals * 1), tvar(year) ivar(countyreal)
+assert _rc == 459
+
 * ---- the requested storage type is the type you get ------------------------
 * `typlist' was parsed and thrown away: every route produced a float, whatever
 * was asked for. A cohort code is a value on the time axis, so on a %tc or
@@ -125,12 +153,53 @@ foreach c in csdid_rif csdid_table dipt tsvmat {
     assert _rc == 0
 }
 
-* csdid_table prints its deprecation notice
+* ---- csdid_table tabulates the run it is handed ---------------------------
+* It used to read its whole statistics block out of e(cband) -- a k x 5 matrix
+* in csdid 1.82, a scalar flag in csdid 2.0.0. Read as a matrix, the scalar
+* gave a 1x1 object, so every subscript past the first resolved to missing: an
+* entirely blank t column and two blank columns under a "[95% conf. interval]"
+* header, plus an r(table) -- the name esttab, coefplot and putexcel read --
+* whose se/t/ll/ul rows were missing throughout. All at rc 0.
 import delimited using "`root'/tests/fixtures/parity/py019/inputs/mpdta.csv", clear asdouble
 quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none)
+tempname CTB CTV CTT CTCRIT CTSE
+matrix `CTB' = e(b)
+matrix `CTV' = e(V)
+scalar `CTCRIT' = e(crit_val)
 capture noisily csdid_table
-* whatever it does with the table, it must not abort the session
-assert inlist(_rc, 0, 198, 111, 301)
+assert _rc == 0
+matrix `CTT' = r(table)
+local ct_k = colsof(`CTT')
+assert `ct_k' == colsof(`CTB')
+* the numbers are csdid's own: the coefficients, the square root of the e(V)
+* diagonal, and the band at the critical value csdid itself used
+forvalues j = 1/`ct_k' {
+    scalar `CTSE' = sqrt(`CTV'[`j',`j'])
+    assert !missing(`CTT'[1,`j'], `CTT'[2,`j'], `CTT'[3,`j'], `CTT'[5,`j'], `CTT'[6,`j'])
+    assert abs(`CTT'[1,`j'] - `CTB'[1,`j']) < 1e-12
+    assert abs(`CTT'[2,`j'] - `CTSE') < 1e-12
+    assert abs(`CTT'[3,`j'] - `CTB'[1,`j'] / `CTSE') < 1e-9
+    assert abs(`CTT'[5,`j'] - (`CTB'[1,`j'] - `CTCRIT' * `CTSE')) < 1e-12
+    assert abs(`CTT'[6,`j'] - (`CTB'[1,`j'] + `CTCRIT' * `CTSE')) < 1e-12
+}
+
+* the same holds after an aggregation post, where e(b) carries the event-study
+* coefficient names instead of the ATT(g,t) ones
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) analytical nevertreated base_period(varying) bal(none) agg(event)
+matrix `CTB' = e(b)
+quietly csdid_table
+matrix `CTT' = r(table)
+local ct_k = colsof(`CTT')
+assert `ct_k' == colsof(`CTB')
+forvalues j = 1/`ct_k' {
+    assert !missing(`CTT'[2,`j'], `CTT'[3,`j'], `CTT'[5,`j'], `CTT'[6,`j'])
+}
+
+* and with nothing to tabulate it refuses by name rather than printing blanks
+* under a filled-in header
+ereturn clear
+capture noisily csdid_table
+assert _rc == 459
 
 * ---- csdid_rif does not reach into the user's namespace -------------------
 * It used to hand its results out through the fixed global names bb_, VV_ and
@@ -161,15 +230,60 @@ tempname RIFB
 matrix `RIFB' = e(b)
 assert colsof(`RIFB') == 2
 
+* the estimates are posted with obs() and esample(). Without them e(N) does not
+* exist and e(sample) is all zeros, so `summarize if e(sample)', estat
+* summarize and the bootstrap prefix all have nothing to work with.
+quietly count if e(sample)
+assert r(N) == 2000
+assert e(N) == 2000
+* e(cmd) is the last thing stored, so it cannot certify a half-filled e()
+assert "`e(cmd)'" == "csdid_rif"
+
 quietly csdid_rif rif1 rif2, cluster(cl)
 assert e(N_clust) == 41
+quietly count if e(sample)
+assert r(N) == 2000
+assert e(N) == 2000
 
 quietly csdid_rif rif1 rif2, wboot reps(199) seed(20260806)
 assert "`e(vcetype)'" == "WBoot"
+
+* this is the route that posts a genuine k x 5 e(cband) MATRIX, and csdid_table
+* must still read it: the branch there keys on the type of e(cband), not on
+* which command ran, so repairing the csdid 2.0.0 caller cannot break this one.
+tempname RIFCB RIFT
+matrix `RIFCB' = e(cband)
+assert rowsof(`RIFCB') == 2 & colsof(`RIFCB') == 5
+quietly csdid_table
+matrix `RIFT' = r(table)
+forvalues j = 1/2 {
+    assert abs(`RIFT'[1, `j'] - `RIFCB'[`j', 1]) < 1e-12
+    assert abs(`RIFT'[2, `j'] - `RIFCB'[`j', 2]) < 1e-12
+    assert abs(`RIFT'[3, `j'] - `RIFCB'[`j', 3]) < 1e-12
+    assert abs(`RIFT'[5, `j'] - `RIFCB'[`j', 4]) < 1e-12
+    assert abs(`RIFT'[6, `j'] - `RIFCB'[`j', 5]) < 1e-12
+}
 
 * the user's own objects are exactly as they were left
 assert rowsof(bb_) == 2 & colsof(bb_) == 2 & bb_[1, 1] == 42
 assert rowsof(VV_) == 3 & colsof(VV_) == 3 & VV_[1, 1] == 7
 assert cln_ == 12345
 
-display "LEGACY OK: csgvar verified against csdid; four deprecated commands load; csdid_rif leaves bb_/VV_/cln_ alone"
+* ---- tsvmat carries the matrix values rather than a rounded copy -----------
+* The generate line interpolated a `type' macro the program never defines, so
+* it expanded to nothing on every run and the new variables took `set type' --
+* float. A Stata matrix holds doubles, so every value this command exists to
+* move into the data was truncated to a 24-bit mantissa.
+clear
+set obs 3
+tempname TSM
+matrix `TSM' = (1.123456789012345, 2 \ 3, 4 \ 5, 6)
+tsvmat `TSM', name(tsv1 tsv2)
+assert "`: type tsv1'" == "double"
+assert "`: type tsv2'" == "double"
+assert tsv1[1] == `TSM'[1, 1]
+assert tsv1[1] == 1.123456789012345
+assert tsv1[2] == 3 & tsv1[3] == 5
+assert tsv2[1] == 2 & tsv2[2] == 4 & tsv2[3] == 6
+
+display "LEGACY OK: csgvar verified against csdid on both routes, bare and expression; four deprecated commands load; csdid_rif posts e(N)/e(sample) and leaves bb_/VV_/cln_ alone; csdid_table fills its t and CI columns from either e(cband) shape; tsvmat stores double"

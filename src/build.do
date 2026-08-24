@@ -1,5 +1,23 @@
-version 15
+* Version number deliberately omitted, per the [M-3] lmbuild exemplar: this
+* script's whole purpose is to produce a modern library, so nothing here is
+* to be backdated -- the COMPILE-TIME version is pinned where it belongs, by
+* the `version 14' at the top of src/mata/csdid.mata.
 capture mkdir build
+
+* ---------------------------------------------------------------------------
+* The build host is pinned. A .mlib is object code readable only by the Stata
+* that compiled it and newer, so which Stata runs this script decides which
+* users get the precompiled engine: at 17, Stata 14-16 installations read the
+* shipped source instead (announced by the loader, identical numbers, one
+* compile per session). Moving this floor -- up on a Stata upgrade, down if a
+* Stata 14 build machine appears -- is a release decision, not an accident of
+* whichever machine ran the build; change the number here and the shipped-mlib
+* stamp gate together, deliberately.
+* ---------------------------------------------------------------------------
+if c(stata_version) != 17 {
+    display as error "the release library is built by Stata 17 (this is `c(stata_version)'); see the build-host note above before changing this"
+    exit 459
+}
 
 * ---------------------------------------------------------------------------
 * The library's stamp.
@@ -12,6 +30,11 @@ capture mkdir build
 * happens in a COPY, so the source file -- which ships as the fallback and is
 * compiled by whatever Stata loads it -- keeps the word it should.
 * ---------------------------------------------------------------------------
+* The previous library is erased FIRST: a build that aborts anywhere below --
+* the host pin, the compile, the note gate -- must leave no artifact for the
+* copy step (or a harness trusting batch Stata's exit-0) to pick up as fresh.
+capture erase build/lcsdid_v2.mlib
+capture erase pkg/lcsdid_v2.mlib
 tempfile stamped
 filefilter "src/mata/csdid.mata" "`stamped'", ///
     from("2.0.0|source") to("2.0.0|`c(stata_version)'") replace
@@ -25,14 +48,40 @@ mata: mata clear
 mata: mata set matastrict on
 mata: mata set matalnum off
 mata: mata set mataoptimize on
+* ---------------------------------------------------------------------------
+* The compiler's NOTES are read, not just its return code. A note is the
+* compiler flagging a conceptual error -- a variable set and never used is
+* how dead state and shadowed logic ship silently -- and rc alone cannot see
+* them. The compile is logged and any `note:' line stops the build.
+* ---------------------------------------------------------------------------
+tempfile compile_log
+quietly log using "`compile_log'", text name(csdid_compile)
+* Under an ENCLOSING quietly (a harness that runs `quietly do src/build.do')
+* no output reaches this log at all -- noisily does not override an
+* enclosing quietly ([P] quietly) -- so the two log-reading gates below skip
+* themselves explicitly on that path instead of misfiring on an empty file.
+* The canonical release build is the noisy batch run, where both gates bite.
 do "`stamped'"
+quietly log close csdid_compile
+* The scan runs in Mata: an echoed source line can hold any quote or macro
+* character, which no ado file-read loop can expand safely (measured: r(132)).
+* A compiler note starts its line, so the match is anchored at column 1.
+local compile_notes 0
+if c(noisily) {
+    mata: st_local("compile_notes", strofreal(rows(cat(st_local("compile_log"))) == 0 ? 0 : sum(strpos(cat(st_local("compile_log")), "note:") :== 1)))
+}
+if `compile_notes' > 0 {
+    copy "`compile_log'" build/mata-compile.log, replace
+    display as error "the Mata compile emitted `compile_notes' note(s); a note is a flagged conceptual error, not style -- fix the source (or deliberately pragma it) before building. The full compile log is build/mata-compile.log"
+    exit 459
+}
 mata: st_local("built_stamp", csdid_mlib_version())
 assert "`built_stamp'" == "2.0.0|`c(stata_version)'"
 
 * ---------------------------------------------------------------------------
 * Precompiled Mata library.
 *
-* Without it, csdid.ado falls back to `do csdid.mata', which COMPILES ~5000
+* Without it, csdid.ado falls back to `do csdid.mata', which COMPILES ~8,500
 * lines of Mata source on the first csdid call of every Stata session.
 * Measured on mpdta: first call 0.799s vs 0.024s for subsequent calls, i.e.
 * ~0.77s of pure compilation that every user pays once per session (on a
@@ -56,9 +105,41 @@ assert "`built_stamp'" == "2.0.0|`c(stata_version)'"
 * estimation, on whichever member did not travel. Trading that for a build
 * that stops here is not a close call.
 * ---------------------------------------------------------------------------
-mata: mata mlib create lcsdid_v2, dir("build") replace
-mata: mata mlib add lcsdid_v2 *(), dir("build") complete
+* size() is explicit (163 members today, headroom to 512, hard Mata cap 2048),
+* and the add is scoped to the package namespace rather than a bare *() --
+* the library's contents are an intended list, not whatever the session held.
+mata: mata mlib create lcsdid_v2, dir("build") replace size(512)
+mata: mata mlib add lcsdid_v2 csdid*(), dir("build") complete
 mata: mata mlib index
+* ---------------------------------------------------------------------------
+* The member count is asserted against the engine's own banner arithmetic
+* (132 free functions + 3 classes + 28 methods = 163; src/mata/csdid.mata,
+* "HOW MANY NAMES"). A count that moved means the source and this build
+* disagree about what the library holds -- drift this gate exists to stop.
+* ---------------------------------------------------------------------------
+* `mata describe using' resolves its library over the ado-path only (dir()
+* is not among its options -- measured), so build/ joins the path for the
+* one statement that reads the file just written, and leaves it after.
+adopath ++ "build"
+tempfile desc_log
+quietly log using "`desc_log'", text name(csdid_desc)
+mata: mata describe using lcsdid_v2
+quietly log close csdid_desc
+adopath - "build"
+local member_ok 0
+if c(noisily) {
+    mata: st_local("member_ok", strofreal(rows(cat(st_local("desc_log"))) == 0 ? 0 : sum(strpos(cat(st_local("desc_log")), "library contains 163 members") :> 0)))
+}
+else {
+    * the gate cannot read suppressed output; the noisy release build is
+    * where it runs.
+    local member_ok 1
+}
+if `member_ok' == 0 {
+    display as error "lcsdid_v2 does not hold the 163 members the source declares (mata describe using lcsdid_v2 disagrees)"
+    display as error "update the count here AND the csdid.mata banner together if the surface deliberately changed"
+    exit 459
+}
 copy src/ado/csdid.ado build/csdid.ado, replace
 copy src/ado/_csdid_post.ado build/_csdid_post.ado, replace
 copy src/ado/_csdid_engine_load.ado build/_csdid_engine_load.ado, replace
@@ -92,10 +173,11 @@ copy src/help/csdid_postestimation.sthlp build/csdid_postestimation.sthlp, repla
 copy src/help/csdid_estat.sthlp build/csdid_estat.sthlp, replace
 copy src/help/csdid_stats.sthlp build/csdid_stats.sthlp, replace
 copy src/help/csdid_plot.sthlp build/csdid_plot.sthlp, replace
-* One-line `.h' aliases, so that a user who types the command name reaches
-* help by that name. Without them `help csgvar' -- the documented way to build
-* gvar() -- answered "help for csgvar not found" on an installation that has
-* csgvar.ado, and the same for the four deprecated commands.
+copy src/help/csdid_whatsnew.sthlp build/csdid_whatsnew.sthlp, replace
+* csgvar has its own full help topic; the four deprecated commands keep
+* one-line `.h' aliases so that a user who types the command name reaches
+* help by that name (without them `help dipt' answered "help not found" on
+* an installation that has dipt.ado).
 foreach f in csgvar csdid_rif csdid_table dipt tsvmat {
     copy "src/help/`f'.sthlp" "build/`f'.sthlp", replace
 }
@@ -122,8 +204,13 @@ copy build/csdid.mata pkg/csdid.mata, replace
 capture erase build/lcsdid.mlib
 capture erase pkg/lcsdid.mlib
 copy build/lcsdid_v2.mlib pkg/lcsdid_v2.mlib, replace
+* The license travels with the installed files (MIT's notice condition), and
+* the example dataset ships as an ancillary a user retrieves with net get.
+copy LICENSE pkg/LICENSE, replace
+copy src/data/mpdta.dta pkg/mpdta.dta, replace
 foreach f in csdid.sthlp csdid_postestimation.sthlp csdid_estat.sthlp csdid_stats.sthlp csdid_plot.sthlp ///
-             csdid_legacy.sthlp csgvar.sthlp csdid_rif.sthlp csdid_table.sthlp dipt.sthlp tsvmat.sthlp {
+             csdid_legacy.sthlp csgvar.sthlp csdid_rif.sthlp csdid_table.sthlp dipt.sthlp tsvmat.sthlp ///
+             csdid_whatsnew.sthlp {
     copy "build/`f'" "pkg/`f'", replace
 }
 
@@ -182,9 +269,16 @@ file open `pkgfh' using "csdid.pkg", read text
 file read `pkgfh' pkgline
 while r(eof) == 0 {
     local pkgkind : word 1 of `macval(pkgline)'
-    if "`pkgkind'" == "f" {
+    if inlist("`pkgkind'", "f", "F") {
         local pkgpath : word 2 of `macval(pkgline)'
         local manifest "`manifest' `pkgpath'"
+    }
+    * g/G lines gate a file by platform; the FILE is word 3. The same path
+    * may appear once per platform, so it joins the manifest only once.
+    if inlist("`pkgkind'", "g", "G") {
+        local pkgpath : word 3 of `macval(pkgline)'
+        local hit : list posof "`pkgpath'" in manifest
+        if !`hit' local manifest "`manifest' `pkgpath'"
     }
     file read `pkgfh' pkgline
 }

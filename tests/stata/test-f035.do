@@ -157,7 +157,7 @@ foreach badtype in "wbtype(mammen)" "wbtype(gaussian)" "wtype(normal)" {
     local actual_rc = _rc
     log close f035event
     assert `actual_rc' == 498
-    f035_assert_log_contains using "`evlog'", message("wboot() currently supports only R-compatible rademacher multipliers")
+    f035_assert_log_contains using "`evlog'", message("wboot() currently supports only rademacher multipliers")
 }
 
 capture log close f035event
@@ -192,7 +192,7 @@ capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) 
 local actual_rc = _rc
 log close f035event
 assert `actual_rc' == 498
-f035_assert_log_contains using "`evlog'", message("wboot() currently supports only R-compatible rademacher multipliers")
+f035_assert_log_contains using "`evlog'", message("wboot() currently supports only rademacher multipliers")
 
 capture log close f035event
 log using "`evlog'", text replace name(f035event)

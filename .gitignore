@@ -1,6 +1,8 @@
 build/
 tools/plugin/_deps/
 *.log
+# /usr/bin/time writes this at the repository root; it was committed once
+err.txt
 .DS_Store
 # locally built release bundles
 dist/

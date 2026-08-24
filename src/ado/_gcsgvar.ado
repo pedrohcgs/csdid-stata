@@ -1,4 +1,4 @@
-*! _gcsgvar 2.0.0 30jul2026
+*! _gcsgvar 2.0.0 24aug2026
 * Cohort ("gvar") variable from a binary treatment indicator.
 *
 * This file holds the single implementation. `_g<name>' is Stata's egen entry
@@ -10,22 +10,58 @@
 program _gcsgvar, sortpreserve
 	version 14
 	syntax newvarname =/exp [if] [in], tvar(varname) ivar(varname)
-	local exp = subinstr("`exp'","(","",.)
-	local exp = subinstr("`exp'",")","",.)
+	* `csg_shown' is display text only and never reaches a computation.
+	* csgvar.ado forwards even a bare variable as `= (treated)', so one wrapping
+	* layer has to come back off before the messages and the variable label can
+	* read the way the user typed it. The layer is removed only when the outer
+	* parentheses really do enclose the whole expression -- in `(a)*(b)' the
+	* depth returns to 0 before the end, and stripping there would leave
+	* `a)*(b'.
+	local csg_shown = trim(`"`exp'"')
+	local csg_wrapped 0
+	if substr(`"`csg_shown'"', 1, 1) == "(" & substr(`"`csg_shown'"', -1, 1) == ")" ///
+	   & strpos(`"`csg_shown'"', char(34)) == 0 {
+		local csg_wrapped 1
+		local csg_depth 0
+		local csg_len = length(`"`csg_shown'"')
+		forvalues csg_c = 1/`csg_len' {
+			local csg_ch = substr(`"`csg_shown'"', `csg_c', 1)
+			if "`csg_ch'" == "(" local csg_depth = `csg_depth' + 1
+			if "`csg_ch'" == ")" local csg_depth = `csg_depth' - 1
+			if `csg_depth' == 0 & `csg_c' < `csg_len' local csg_wrapped 0
+		}
+	}
+	if `csg_wrapped' ///
+		local csg_shown = trim(substr(`"`csg_shown'"', 2, length(`"`csg_shown'"') - 2))
+	* `exp' is a Stata EXPRESSION, and it was being used below as a variable
+	* NAME. Every parenthesis used to be stripped out of it first, which is the
+	* only reason the bare-variable case survived -- csgvar.ado's forward wraps
+	* even a plain variable -- while a real expression was handed on as a
+	* garbled fragment of the user's own input (`>= invalid name', `variable
+	* a*1 not found'). Evaluating it once into a double tempvar keeps both
+	* routes working and changes nothing for a bare variable: every use below is
+	* a bysort key, a `== 0' test or a missing test, and on the selected sample
+	* the tempvar holds exactly the variable's values.
+	tempvar csg_expv
+	capture quietly generate double `csg_expv' = `exp' `if' `in'
+	if _rc {
+		display as error `"csgvar could not evaluate `csg_shown'. Give a treatment-indicator variable, or a numeric expression that -generate- accepts."'
+		exit 198
+	}
 	tempvar touse
 	qui:gen byte `touse'=0
 	qui:replace `touse'=1 `if' `in'
-	qui:replace `touse'=0 if `tvar'==. | `ivar'==. | `exp'==.
+	qui:replace `touse'=0 if `tvar'==. | `ivar'==. | `csg_expv'==.
 
 	tempvar vals
-	bys `touse' `exp' : gen byte `vals' = (_n == 1) * `touse'
+	bys `touse' `csg_expv' : gen byte `vals' = (_n == 1) * `touse'
 	su `vals' if `touse', meanonly
 	local csg_n = r(sum)
 	* r(sum) is MISSING when no observation is in the sample, and in Stata
 	* missing > 2 is true, so an empty or all-missing sample used to be
 	* reported as a value-count problem it does not have.
 	if mi(`csg_n') | `csg_n' == 0 {
-		display as error "no observations: `exp', `tvar' and `ivar' are jointly missing on every observation in the sample"
+		display as error `"no observations: `csg_shown', `tvar' and `ivar' are jointly missing on every observation in the sample"'
 		exit 2000
 	}
 	if `csg_n' > 2 {
@@ -35,10 +71,10 @@ program _gcsgvar, sortpreserve
 		* a code Stata has no message for. 459 is the code the rest of the
 		* package uses when the DATA violates a property the command
 		* requires, and it is documented in help csdid_legacy.
-		display as error "`exp' takes `csg_n' distinct values in the selected sample; csgvar needs a treatment indicator taking at most two, with 0 for the untreated state"
+		display as error `"`csg_shown' takes `csg_n' distinct values in the selected sample; csgvar needs a treatment indicator taking at most two, with 0 for the untreated state"'
 		exit 459
 	}
-	* The command's semantics live entirely in the `replace ... if `exp'==0'
+	* The command's semantics live entirely in the `replace ... == 0'
 	* below: that line, and only that line, is what makes a never-treated
 	* unit come out as cohort 0. A two-valued indicator coded {1,2}, {-1,1}
 	* or {1,2} from a recoded factor passed the count guard, never triggered
@@ -51,15 +87,13 @@ program _gcsgvar, sortpreserve
 	* today and legacy do-files may rely on it. What is required is that the
 	* untreated state be coded 0, so that is what is checked.
 	if `csg_n' == 2 {
-		tempvar csg_expv
-		qui generate double `csg_expv' = `exp' if `touse'
 		qui levelsof `csg_expv' if `touse', local(csg_vals)
 		local csg_haszero 0
 		foreach csg_v of local csg_vals {
 			if `csg_v' == 0 local csg_haszero 1
 		}
 		if !`csg_haszero' {
-			display as error "`exp' takes the two values `csg_vals' in the selected sample, neither of which is 0. csgvar reads 0 as the untreated state, so with this coding every unit would be given a positive cohort and the result would have no never-treated units. Recode the untreated state to 0 -- for example -generate byte treat01 = (`exp' == `: word 2 of `csg_vals'')- -- and rerun."
+			display as error `"`csg_shown' takes the two values `csg_vals' in the selected sample, neither of which is 0. csgvar reads 0 as the untreated state, so with this coding every unit would be given a positive cohort and the result would have no never-treated units. Recode the untreated state to 0 -- for example -generate byte treat01 = (`csg_shown' == `: word 2 of `csg_vals'')- -- and rerun."'
 			exit 459
 		}
 	}
@@ -74,10 +108,10 @@ program _gcsgvar, sortpreserve
 	* build in a tempvar, `generate `typlist'' into the caller's variable.
 	qui: {
 		tempvar aux csg_gvar
-		bysort `touse' `ivar' `exp': egen double `aux' = min(`tvar')
-		replace `aux' = 0 if `exp' == 0
+		bysort `touse' `ivar' `csg_expv': egen double `aux' = min(`tvar')
+		replace `aux' = 0 if `csg_expv' == 0
 		by     `touse' `ivar': egen double `csg_gvar' = max(`aux')
-		replace `csg_gvar' = . if `exp' == . | !`touse'
+		replace `csg_gvar' = . if `csg_expv' == . | !`touse'
 		generate `typlist' `varlist' = `csg_gvar'
 	}
 
@@ -99,5 +133,8 @@ program _gcsgvar, sortpreserve
 		exit 198
 	}
 
-	label var `varlist' "Group Variable based on `exp'"
+	* Stata caps a variable label at 80 characters, and an expression can be
+	* longer than the sentence that frames it.
+	local csg_lbl = substr(`"Group Variable based on `csg_shown'"', 1, 80)
+	label var `varlist' `"`csg_lbl'"'
 end

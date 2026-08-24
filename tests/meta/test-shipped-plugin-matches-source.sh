@@ -24,6 +24,66 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 fail=0
+macho_skipped=0
+
+# 11.0 is the arm64 slice's deployment target and the higher of the two, so it
+# is the ceiling the whole bundle must stay under. A bundle stamped with the
+# build host's OS instead loads on nothing older than that host.
+macho_min_ceiling="11.0"
+
+version_key() {
+  awk -F. '{printf "%d", $1 * 10000 + ($2 == "" ? 0 : $2) * 100 + ($3 == "" ? 0 : $3)}' <<<"$1"
+}
+
+# Architecture, linkage and deployment target of the universal bundle that
+# net install actually delivers. Checked here rather than trusted from the
+# build log, because the binary is committed and the log is not.
+check_macho() {
+  local f="$1"
+  local archs slice minos lib
+  local bad=0
+
+  archs="$(lipo -archs "$f" | tr ' ' '\n' | sort | tr '\n' ' ')"
+  archs="${archs% }"
+  if [ "$archs" != "arm64 x86_64" ]; then
+    echo "$f carries architectures [$archs], not [arm64 x86_64]" >&2
+    echo "  rebuild with tools/plugin/build-bootstrap-plugin.sh macos" >&2
+    bad=1
+  fi
+
+  while read -r lib; do
+    case "$lib" in
+      /usr/lib/*|/System/*) ;;
+      *)
+        echo "$f links $lib, which is outside /usr/lib and /System" >&2
+        echo "  rebuild on a machine without that library on the default search path" >&2
+        bad=1
+        ;;
+    esac
+  done < <(otool -L "$f" | awk '/^\t/ {print $1}' | sort -u)
+
+  for slice in $(lipo -archs "$f"); do
+    minos="$(otool -arch "$slice" -l "$f" | awk '$1 == "minos" {print $2; exit}')"
+    if [ -z "$minos" ]; then
+      # A 10.x target is recorded as LC_VERSION_MIN_MACOSX, not LC_BUILD_VERSION.
+      minos="$(otool -arch "$slice" -l "$f" |
+        awk '/LC_VERSION_MIN_MACOSX/ {seen = 1} seen && $1 == "version" {print $2; exit}')"
+    fi
+    if [ -z "$minos" ]; then
+      echo "$f slice $slice records no deployment target" >&2
+      echo "  rebuild with tools/plugin/build-bootstrap-plugin.sh macos" >&2
+      bad=1
+      continue
+    fi
+    if [ "$(version_key "$minos")" -gt "$(version_key "$macho_min_ceiling")" ]; then
+      echo "$f slice $slice requires macOS $minos, above the $macho_min_ceiling ceiling -- it will not load on older Macs" >&2
+      echo "  rebuild with tools/plugin/build-bootstrap-plugin.sh macos" >&2
+      bad=1
+    fi
+  done
+
+  return "$bad"
+}
 for name in csdid_bootstrap_macosx.plugin csdid_bootstrap_unix.plugin csdid_bootstrap_windows.plugin; do
   ship="pkg/$name"
   [ -f "$ship" ] || continue
@@ -45,7 +105,21 @@ for name in csdid_bootstrap_macosx.plugin csdid_bootstrap_unix.plugin csdid_boot
       fail=1
     fi
   fi
+  if [ "$name" = "csdid_bootstrap_macosx.plugin" ]; then
+    if command -v lipo >/dev/null 2>&1 && command -v otool >/dev/null 2>&1; then
+      check_macho "$ship" || fail=1
+    else
+      # Only a macOS host can read a Mach-O; the Linux release gates run this
+      # file too, and a hard failure there would say nothing about the binary.
+      echo "note: lipo and otool are unavailable, so the Mach-O checks on $ship did not run" >&2
+      macho_skipped=1
+    fi
+  fi
 done
 
 [ "$fail" -eq 0 ] || exit 1
-echo "shipped plugin matches the source build, guard present"
+if [ "$macho_skipped" -eq 0 ]; then
+  echo "shipped plugin matches the source build, guard present, universal and loadable back to macOS $macho_min_ceiling"
+else
+  echo "shipped plugin matches the source build, guard present (Mach-O checks not run on this host)"
+fi

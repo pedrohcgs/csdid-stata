@@ -1,9 +1,13 @@
 # csdid Examples
 
-These examples are small runnable workflows. They use synthetic data so
-they can run without external dependencies.
+These examples are small runnable workflows. Examples 01-05 build their own
+synthetic data, so they need nothing but Stata and csdid. Example 06 uses the
+mpdta extract shipped in `examples/data/mpdta.csv`. Nothing is downloaded.
 
-Run from a Stata session where csdid is installed:
+Run them from a Stata session where csdid is installed, with the repository
+root as the working directory — the `do` lines below are written relative to
+it, and `06_mpdta_workflow.do` resolves its data file relative to `c(pwd)`
+(the repository root, or `examples/` itself):
 
 ```stata
 do examples/01_balanced_panel.do

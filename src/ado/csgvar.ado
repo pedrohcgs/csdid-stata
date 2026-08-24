@@ -1,4 +1,4 @@
-*! csgvar 2.0.0 30jul2026
+*! csgvar 2.0.0 24aug2026
 * Cohort ("gvar") variable from a binary treatment indicator, command form.
 *
 * The implementation lives in _gcsgvar.ado, which is also Stata's egen entry
@@ -6,7 +6,10 @@
 * keeps the two routes identical: they were previously the same 29 lines
 * twice, so every guard and every message had to be fixed in both files or
 * they diverged.
-program csgvar, sortpreserve
+* No sortpreserve here: nothing in this program sorts. The sorting happens in
+* _gcsgvar, which declares sortpreserve itself; declaring it here as well only
+* adds and carries a _sortindex for a restore that has nothing to restore.
+program csgvar
 	version 14
 	* Whether the user asked for a storage type has to be read off the command
 	* line, the way egen reads it, and before `syntax' runs: `syntax

@@ -1,4 +1,4 @@
-*! csdid_rif 2.0.0 30jul2026
+*! csdid_rif 2.0.0 24aug2026
 * Corrects Aggregation when data is missing
 
 * v1 csdid_rif
@@ -251,6 +251,7 @@ void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
  } 
 end
   program define Display
+                version 14
                 syntax [, bmatrix(passthru) vmatrix(passthru) *]
  		 
         _get_diopts diopts rest, `options'
@@ -280,19 +281,25 @@ end
 //mata:make_tbl("rif*","agex","as",3,.95, 10000, 1)
 // RIF, Cluster, touse, where to save CBAND
  program csdid_rif, eclass
+	version 14
     * DEPRECATED in csdid 2.0.0. Shipped only so existing do-files keep
     * running; it is not covered by the parity suite and will be removed in
     * a future release. Replacement: estat tidy, saving() for a results
     * dataset, or csdid_stats using <file> for the saved-RIF path.
     display as text "note: csdid_rif is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
-	version 14
 	syntax varlist [if] [in], [  cluster(varname) level(real 95) reps(int 999) wboot seed(string) ]
 	tempvar touse
-	qui:gen byte `touse'=0
-	qui:replace `touse'=1 `if' `in'
+	* novarlist is deliberate. A missing entry in a RIF column means that
+	* ATT(g,t) cell failed for that unit, not that the unit is unusable: the
+	* Mata side (fix_rif) rescales the column and keeps every cell that did
+	* work, which is what this file exists to do. Marking out the varlist would
+	* delete the whole row instead and is a different estimator -- measured on
+	* a 2000-row RIF with two seeded missings, listwise deletion moves the
+	* first coefficient by 6.2e-05.
+	marksample touse, novarlist
 	markout `touse' `cluster'
-	
+
 	// cluster trams
 	if "`cluster'"!="" {
 		local ocluster `cluster'
@@ -315,8 +322,15 @@ end
 	matrix colname `bmat' = `varlist'
 	matrix colname `vmat' = `varlist'
 	matrix rowname `vmat' = `varlist'
-	ereturn post `bmat' `vmat'
-	ereturn local cmd csdid_rif
+	* Without obs() and esample() there is no e(N) and e(sample) is all zeros,
+	* so `summarize if e(sample)', estat summarize and the bootstrap prefix all
+	* have nothing to work with. esample() CONSUMES the variable it is handed,
+	* so it gets a copy: `touse' is still live for the Display call below.
+	quietly count if `touse'
+	local rif_N = r(N)
+	tempvar rif_esmp
+	quietly generate byte `rif_esmp' = `touse'
+	ereturn post `bmat' `vmat', obs(`rif_N') esample(`rif_esmp')
 	capture confirm matrix `cband'
 	if _rc==0 {
 		matrix colname `cband' = b se t ll uu
@@ -333,6 +347,9 @@ end
 		ereturn scalar N_clust = __csdid_rif_nclust
 		scalar drop __csdid_rif_nclust
 	}
+	* Last e() assignment: e(cmd) is what a postestimation command reads to
+	* decide the results are complete, so nothing may be posted after it.
+	ereturn local cmd csdid_rif
 	Display, level(`level')
 	
 end

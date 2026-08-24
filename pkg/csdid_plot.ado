@@ -1,4 +1,4 @@
-*! csdid_plot 2.0.0 30jul2026
+*! csdid_plot 2.0.0 24aug2026
 program define csdid_plot
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -16,7 +16,7 @@ program define csdid_plot
     }
     * Without saving(), draw. With saving(), export the plot dataset and draw
     * nothing -- scripted exports stay exactly as they were.
-    * SP-04 fix: saving() took its whole argument as a filename, so the
+    * saving() took its whole argument as a filename, so the
     * standard saving(filename, replace) idiom returned rc 0 after writing a
     * file literally called "filename, replace.dta" (csdid_plot.sthlp:114-116
     * anticipates the mistake; nothing guarded it). The comma form is now
@@ -83,7 +83,7 @@ program define _csdid_plot_attgt
 
     tempname A
     matrix `A' = e(attgt)
-    * EUX-003/SP-06 fix: this export block ran noisily, so a successful export
+    * this export block ran noisily, so a successful export
     * printed scratch-data chatter ("number of observations will be reset to
     * 12", "(1 real change made)", "(file ... not found)") and, worse, svmat's
     * observation-count notice raised a BLOCKING "Press any key to continue,
@@ -149,7 +149,7 @@ program define _csdid_plot_aggte
 
     tempname A
     matrix `A' = e(aggte)
-    * EUX-003/SP-06 fix: quiet export block - see _csdid_plot_attgt.
+    * quiet export block - see _csdid_plot_attgt.
     quietly {
     preserve
     clear

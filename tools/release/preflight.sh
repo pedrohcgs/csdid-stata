@@ -35,6 +35,7 @@ LIST=0
 RELEASE=0
 FORCE_AB=0
 AB_CERTIFIED=""
+AB_UNCHANGED=0
 for arg in "$@"; do
   case "$arg" in
     --fast) FAST=1 ;;
@@ -49,10 +50,22 @@ STATA="${STATA_CMD:-stata-mp}"
 LOGDIR="${PREFLIGHT_LOGDIR:-build/preflight}"
 mkdir -p "$LOGDIR"
 
-PASS=0; FAIL=0; BLOCKED=0
+PASS=0; FAIL=0; BLOCKED=0; SKIPPED=0
 declare -a RESULTS=()
 
 record() { RESULTS+=("$1|$2|$3"); }
+
+# The ONLY checks allowed to record a skip and still leave the run green. A
+# skip is otherwise indistinguishable from a pass in the counters, which is how
+# a check that inspected nothing used to reach the verdict line: the
+# contract-schema row recorded the literal string "SKIPPED(dev-only, not
+# shipped)", incremented none of PASS/FAIL/BLOCKED, and the run printed "all
+# preflight checks passed". Each entry here is a name that has been decided,
+# once, to be legitimately absent in some tree. Anything else that tries to
+# skip is BLOCKED.
+APPROVED_SKIPS=(
+  "contract schema (validate-contract)"
+)
 
 # run <tier> <name> <command...>
 run() {
@@ -68,6 +81,27 @@ run() {
   else
     FAIL=$((FAIL+1)); record "$tier" "$name" "FAIL -> $log"
   fi
+}
+
+# approved_skip <tier> <name> <why> -- this check is legitimately absent in
+# this tree, and that has been decided in advance by name. A name not on
+# APPROVED_SKIPS that tries to skip is BLOCKED instead, so a skip can never be
+# introduced by accident, and the verdict line names the skip rather than
+# claiming every check passed.
+approved_skip() {
+  local tier="$1" name="$2" why="$3"
+  if [ "$LIST" = "1" ]; then record "$tier" "$name" "LIST"; return; fi
+  local approved=0 s
+  for s in "${APPROVED_SKIPS[@]}"; do
+    if [ "$name" = "$s" ]; then approved=1; break; fi
+  done
+  if [ "$approved" != "1" ]; then
+    BLOCKED=$((BLOCKED+1))
+    record "$tier" "$name" "BLOCKED: skipped, but not an approved skip ($why)"
+    return
+  fi
+  SKIPPED=$((SKIPPED+1))
+  record "$tier" "$name" "SKIPPED(approved): $why"
 }
 
 # block <tier> <name> <why> -- a prerequisite is missing, so the check could not
@@ -101,6 +135,50 @@ stata_do() {
   ! grep -qE '^r\([0-9]+\);' "$LOGDIR/${base}.log"
 }
 
+# The same do-file, run in a session where variable abbreviation is OFF.
+#
+# Stata abbreviates variable names by default and a great many users turn that
+# off -- it is a standing recommendation in the widely-followed Stata coding
+# guides, and some research groups mandate it. A program that quietly relies on
+# abbreviation working (a `syntax` varlist that only resolves because Stata
+# completed a name, an `unab` whose result differs) breaks for exactly those
+# users and for nobody who wrote the tests. Until this tier existed the string
+# `varabbrev` did not occur anywhere in this repository, so the suite had never
+# once executed in that configuration.
+#
+# The test file is not edited: a generated wrapper sets the option and then
+# `do`es it, so the tier is derived from the unit list rather than maintained
+# beside it, and a test added tomorrow is covered the day it lands.
+stata_do_varabbrev_off() {
+  local dofile="$1"
+  local base; base="$(basename "$dofile" .do)"
+  local wrapper="$LOGDIR/varabbrev-off-${base}.do"
+  {
+    printf 'version 15\n'
+    printf 'set varabbrev off\n'
+    printf 'if "`c(varabbrev)'"'"'" != "off" {\n'
+    printf '    display as error "set varabbrev off did not take"\n'
+    printf '    exit 9\n'
+    printf '}\n'
+    printf 'do "%s"\n' "$dofile"
+    printf 'if "`c(varabbrev)'"'"'" != "off" {\n'
+    printf '    display as error "varabbrev was reset during the test; this tier certified nothing"\n'
+    printf '    exit 9\n'
+    printf '}\n'
+    printf 'display "VARABBREV-OFF-HELD"\n'
+  } > "$wrapper"
+  local wbase; wbase="$(basename "$wrapper" .do)"
+  "$STATA" -b do "$wrapper" >/dev/null 2>&1
+  [ -f "${wbase}.log" ] || return 1
+  mv -f "${wbase}.log" "$LOGDIR/${wbase}.log"
+  grep -qE '^r\([0-9]+\);' "$LOGDIR/${wbase}.log" && return 1
+  # The setting has to be in force at BOTH ends, not merely written into a
+  # wrapper: a `clear all` or a `version` statement that put it back would
+  # leave this tier certifying the default configuration under another name.
+  # No sentinel, no claim.
+  grep -q '^VARABBREV-OFF-HELD$' "$LOGDIR/${wbase}.log"
+}
+
 # ---------------------------------------------------------------- tier: spec
 # Cheap, no external tooling. These catch the class of defect where the project
 # misdescribes itself: a manifest naming untracked files, a ledger row claiming
@@ -108,7 +186,8 @@ stata_do() {
 if [ -f tools/validate-contract.py ]; then
   run spec "contract schema (validate-contract)" python3 tools/validate-contract.py
 else
-  record spec "contract schema (validate-contract)" "SKIPPED(dev-only, not shipped)"
+  approved_skip spec "contract schema (validate-contract)" \
+    "dev-only tool, stripped from the shipped payload by design"
 fi
 # Every upstream did test must be claimed by an inheritance map, and every map
 # must cite the pinned revision of the file it read. Without this a test added
@@ -145,20 +224,71 @@ fi
 # from the R and Python suites, which is where the parity claims live -- ran in
 # no runner at all and had to be invoked by hand. A green preflight therefore
 # said nothing about parity.
+#
+# install-isolated.do is named explicitly. It is the only test that `net
+# install`s the payload into a scratch PLUS and exercises what a user actually
+# receives -- including that the shipped plugin arrived beside csdid.ado and
+# was the binary that ran -- and it matches none of the globs below, so for as
+# long as this header claimed to run every .do under tests/stata, the one test
+# of the installed payload ran in no merge gate at all.
+#
+# The wall-clock tests are held back for the perf tier at the end of the run.
+PERF_TESTS=(
+  tests/stata/test-bootstrap-plugin.do
+  tests/stata/test-f049.do
+)
+for t in "${PERF_TESTS[@]}"; do
+  if [ ! -f "$t" ]; then
+    echo "preflight.sh names $t in PERF_TESTS, but that file does not exist;" >&2
+    echo "a stale name there silently changes which tier a test runs in." >&2
+    exit 2
+  fi
+done
+is_perf_test() {
+  local c
+  for c in "${PERF_TESTS[@]}"; do
+    if [ "$1" = "$c" ]; then return 0; fi
+  done
+  return 1
+}
+
+UNIT_TESTS=()
 if have "$STATA"; then
-  for t in tests/stata/test-*.do tests/stata/smoke-basic.do; do
+  for t in tests/stata/test-*.do tests/stata/smoke-basic.do tests/stata/install-isolated.do; do
+    [ -e "$t" ] || continue
+    if is_perf_test "$t"; then continue; fi
+    UNIT_TESTS+=("$t")
     run unit "$(basename "$t" .do)" stata_do "$t"
   done
   for t in tests/stata/r/*.do; do
     [ -e "$t" ] || continue
+    UNIT_TESTS+=("$t")
     run unit "inherited-r: $(basename "$t" .do)" stata_do "$t"
   done
   for t in tests/stata/python/*.do; do
     [ -e "$t" ] || continue
+    UNIT_TESTS+=("$t")
     run unit "inherited-py: $(basename "$t" .do)" stata_do "$t"
   done
 else
   block unit "full Stata suite ($(find tests/stata -name '*.do' | wc -l | tr -d ' ') tests)" "$STATA not on PATH (set STATA_CMD)"
+fi
+
+# ----------------------------------------------------------- tier: varabbrev
+# The same unit list, in a session where `set varabbrev off`. See
+# stata_do_varabbrev_off above for why this configuration has to be certified
+# rather than assumed. It re-runs the unit tier, so a full preflight pays for
+# the unit tier twice; that is the honest price of being able to say which of
+# the two configurations a green run certified, and it is charged against the
+# tier that is not the ninety-minute one.
+VARABBREV_RAN=0
+if have "$STATA" && [ "$FAST" != "1" ] && [ "${#UNIT_TESTS[@]}" -gt 0 ]; then
+  VARABBREV_RAN=1
+  for t in "${UNIT_TESTS[@]}"; do
+    run varabbrev "varabbrev-off-$(basename "$t" .do)" stata_do_varabbrev_off "$t"
+  done
+else
+  block varabbrev "unit suite under set varabbrev off" "$STATA not on PATH (set STATA_CMD)"
 fi
 
 # ---------------------------------------------------------------- tier: docs
@@ -307,9 +437,37 @@ elif [ "$FORCE_AB" != "1" ] && [ "$RELEASE" != "1" ] && [ -n "$AB_LAST" ] && [ "
   unchanged deep "legacy A/B certification" \
     "production code identical to the run that certified it (${PROD_DIGEST:0:12}); --ab forces it"
   AB_CERTIFIED="$AB_LAST"
+  AB_UNCHANGED=1
 else
+  # Which digest the A/B certified is read off the A/B's OWN row, not off the
+  # run-wide FAIL counter: that counter carries every earlier tier's failures
+  # too, so `[ "$FAIL" = "0" ]` said nothing about whether this check passed.
+  AB_ROW=${#RESULTS[@]}
   run deep "legacy A/B certification" bash tests/run-legacy-candidate-ab.sh
-  [ "$FAIL" = "0" ] && AB_CERTIFIED="$PROD_DIGEST"
+  case "${RESULTS[$AB_ROW]:-}" in
+    *"|PASS") AB_CERTIFIED="$PROD_DIGEST" ;;
+  esac
+fi
+
+# ---------------------------------------------------------------- tier: perf
+# Wall-clock assertions, held back to the end of the run.
+#
+# test-bootstrap-plugin.do asserts a plugin-versus-Mata ordering in elapsed
+# seconds and test-f049.do asserts absolute second budgets. Both used to run in
+# the middle of the unit tier, inside the same serial script as the adversarial
+# differential and the ninety-minute A/B -- so a busy machine could turn the
+# correctness suite red for a reason that has nothing to do with correctness,
+# and the lesson a reviewer learns from that is to re-run a red preflight.
+#
+# They still RUN and a red here still blocks the merge. What changes is that
+# every correctness tier has already reported by the time a stopwatch is read,
+# and the row says `perf` so a reviewer can see which kind of red it is.
+if have "$STATA"; then
+  for t in "${PERF_TESTS[@]}"; do
+    run perf "$(basename "$t" .do)" stata_do "$t"
+  done
+else
+  block perf "wall-clock tests (${#PERF_TESTS[@]})" "$STATA not on PATH (set STATA_CMD)"
 fi
 
 # ------------------------------------------------------------------- report
@@ -326,7 +484,7 @@ if [ "$LIST" = "1" ]; then
   exit 0
 fi
 
-echo "PASS=$PASS  FAIL=$FAIL  BLOCKED=$BLOCKED"
+echo "PASS=$PASS  FAIL=$FAIL  BLOCKED=$BLOCKED  SKIPPED(approved)=$SKIPPED"
 if [ "$FAST" = "1" ]; then
   echo ""
   echo "--fast ran the spec tier ONLY. This is a pre-commit convenience, never a"
@@ -344,20 +502,88 @@ fi
 MODE="full"
 [ "$RELEASE" = "1" ] && MODE="release"
 DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh")"
+
+# ------------------------------------------------------------ what it ran on
+# A green certificate that cannot name the machine it was green on is
+# unattributable evidence. This package's parity tolerances can move with the
+# platform's linear-algebra backend and its sort-tie order differs between
+# editions, so the receipt records the Stata that ran the suite, the edition,
+# the operating system and the machine type -- the same vocabulary
+# tools/release/write-platform-row.do already emits for the release rows,
+# which nothing joined to the merge receipt.
+STATA_VERSION="unknown"; STATA_EDITION="unknown"
+STATA_OS="unknown"; STATA_MACHINE="unknown"
+if have "$STATA"; then
+  PLATFORM_TXT="$LOGDIR/platform.txt"
+  rm -f "$PLATFORM_TXT"
+  cat > "$LOGDIR/_preflight-platform.do" <<'PLATEOF'
+version 15
+file open ph using "`1'", write replace text
+file write ph "stata_version=`c(stata_version)'" _n
+file write ph "edition=`c(edition_real)'" _n
+file write ph "os=`c(os)'" _n
+file write ph "machine_type=`c(machine_type)'" _n
+file close ph
+PLATEOF
+  "$STATA" -b do "$LOGDIR/_preflight-platform.do" "$PLATFORM_TXT" >/dev/null 2>&1
+  [ -f _preflight-platform.log ] && mv -f _preflight-platform.log "$LOGDIR/_preflight-platform.log"
+  if [ -f "$PLATFORM_TXT" ]; then
+    STATA_VERSION="$(sed -n 's/^stata_version=//p' "$PLATFORM_TXT" | head -1)"
+    STATA_EDITION="$(sed -n 's/^edition=//p' "$PLATFORM_TXT" | head -1)"
+    STATA_OS="$(sed -n 's/^os=//p' "$PLATFORM_TXT" | head -1)"
+    STATA_MACHINE="$(sed -n 's/^machine_type=//p' "$PLATFORM_TXT" | head -1)"
+  fi
+fi
+
+# Which compiled library the suite ran against. src/build.do stamps the built
+# copy with the Stata that built it (`2.0.0|<version>`); the source fallback
+# keeps `2.0.0|source`. Reading the stamp out of the shipped file is the only
+# way the receipt can say the two agree.
+MLIB_STAMP="absent"
+if [ -f pkg/lcsdid_v2.mlib ]; then
+  MLIB_STAMP="$(strings pkg/lcsdid_v2.mlib | grep -o '2\.0\.0|[0-9.]*' | head -1)"
+  [ -n "$MLIB_STAMP" ] || MLIB_STAMP="unstamped"
+fi
+
+VARABBREV_FIELD="not-run"
+[ "$VARABBREV_RAN" = "1" ] && VARABBREV_FIELD="off-covered"
+
 python3 - "$LOGDIR/receipt.json" "$MODE" "$PASS" "$FAIL" "$BLOCKED" "$DIGEST" \
-  "$(git rev-parse HEAD 2>/dev/null || echo unknown)" <<'PYEOF'
+  "$(git rev-parse HEAD 2>/dev/null || echo unknown)" \
+  "$SKIPPED" "$UNCHANGED" "$AB_CERTIFIED" "$AB_UNCHANGED" \
+  "$STATA_VERSION" "$STATA_EDITION" "$STATA_OS" "$STATA_MACHINE" \
+  "$MLIB_STAMP" "$VARABBREV_FIELD" <<'PYEOF'
 import json, sys, datetime
-path, mode, npass, nfail, nblocked, digest, commit = sys.argv[1:8]
+(path, mode, npass, nfail, nblocked, digest, commit,
+ nskipped, nunchanged, ab_digest, ab_unchanged,
+ stata_version, edition, os_, machine_type, mlib_stamp, varabbrev) = sys.argv[1:18]
 json.dump({
     "mode": mode, "pass": int(npass), "fail": int(nfail), "blocked": int(nblocked),
+    "skipped_approved": int(nskipped), "unchanged": int(nunchanged),
+    # The digest the legacy A/B actually certified. This was READ by the
+    # skip-if-unchanged branch above and written by nothing, so the branch was
+    # unreachable and the promise that the skip "can be audited rather than
+    # believed" pointed at a field that did not exist.
+    "ab_production_digest": ab_digest,
+    "ab_unchanged": int(ab_unchanged),
     "digest": digest, "commit": commit,
+    "stata_version": stata_version, "edition": edition,
+    "os": os_, "machine_type": machine_type,
+    "mlib_stamp": mlib_stamp,
+    "varabbrev": varabbrev,
     "utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
 }, open(path, "w"), indent=2, sort_keys=True)
 open(path, "a").write("\n")
 PYEOF
-if [ "$UNCHANGED" -gt 0 ]; then
-  echo "all preflight checks passed ($UNCHANGED not re-run: subject unchanged, see UNCHANGED rows above)"
-else
-  echo "all preflight checks passed"
+VERDICT="all preflight checks passed"
+if [ "$SKIPPED" -gt 0 ]; then
+  VERDICT="passed ($SKIPPED approved skip"
+  [ "$SKIPPED" -gt 1 ] && VERDICT="$VERDICT""s"
+  VERDICT="$VERDICT, see SKIPPED(approved) rows above)"
 fi
+if [ "$UNCHANGED" -gt 0 ]; then
+  VERDICT="$VERDICT ($UNCHANGED not re-run: subject unchanged, see UNCHANGED rows above)"
+fi
+echo "$VERDICT"
 echo "receipt written: $LOGDIR/receipt.json (mode=$MODE, digest=${DIGEST:0:12})"
+echo "  stata $STATA_VERSION $STATA_EDITION on $STATA_OS/$STATA_MACHINE; mlib $MLIB_STAMP; varabbrev $VARABBREV_FIELD"

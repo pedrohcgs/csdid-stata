@@ -1,9 +1,11 @@
 {smcl}
-{* *! version 2.0.0 30jul2026}{...}
+{* *! version 2.0.0 24aug2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_plot" "help csdid_plot"}{...}
+{vieweralsosee "csgvar" "help csgvar"}{...}
+{vieweralsosee "csdid whatsnew" "help csdid_whatsnew"}{...}
 {vieweralsosee "" "--"}{...}
 {vieweralsosee "[CAUSAL] didregress" "help didregress"}{...}
 {vieweralsosee "[CAUSAL] xtdidregress" "help xtdidregress"}{...}
@@ -20,7 +22,7 @@
 {viewerjumpto "Acknowledgments" "csdid##acknowledgments"}{...}
 {viewerjumpto "References" "csdid##references"}{...}
 {viewerjumpto "Authors" "csdid##authors"}{...}
-{viewerjumpto "Support and updates" "csdid##support"}{...}
+{viewerjumpto "Installation, upgrading and diagnostics" "csdid##support"}{...}
 {title:Title}
 
 {p2colset 5 15 17 2}{...}
@@ -52,10 +54,19 @@ periods and staggered treatment adoption (Callaway and Sant'Anna 2021){p_end}
 [{it:{help csdid##options_table:options}}]
 
 {pstd}
-{bf:Version query}
+{bf:Redisplay}
+
+{p 8 16 2}
+{cmd:csdid}
+
+{pstd}
+{bf:Diagnostics}
 
 {p 8 16 2}
 {cmd:csdid} {cmd:version}
+
+{p 8 16 2}
+{cmd:csdid} {cmd:reset}
 
 
 {marker options_table}{...}
@@ -75,7 +86,10 @@ sections{p_end}
 {cmd:ivar()} is supplied{p_end}
 {synopt:{opt bal(mode)}}panel balancing: {cmd:full}, {cmd:pair}, or
 {cmd:none}; default is {cmd:bal(full)}{p_end}
+{synopt:{opt balance(mode)}}synonym for {cmd:bal()}{p_end}
 {synopt:{opt unbalanced}}synonym for {cmd:bal(none)}{p_end}
+{synopt:{opt allowunbalanced}}synonym for {cmd:bal(none)}{p_end}
+{synopt:{opt allow_unbalanced}}synonym for {cmd:bal(none)}{p_end}
 
 {syntab:Model {help csdid##opt_model:[+]}}
 {synopt:{opt method(string)}}2x2 estimator: {cmd:dr}, {cmd:reg}, or
@@ -84,6 +98,7 @@ sections{p_end}
 {cmd:pscoretrim(.995)}{p_end}
 {synopt:{opt fix_w:eights(rule)}}weight rule when {cmd:iweight}s are used:
 {cmd:varying}, {cmd:base}, or {cmd:first}; by default the option is not set{p_end}
+{synopt:{opt fixweights(rule)}}synonym for {cmd:fix_weights()}{p_end}
 
 {syntab:Comparison group {help csdid##opt_control:[+]}}
 {synopt:{opt notyet}}state the default not-yet-treated comparison group
@@ -197,7 +212,40 @@ run after {cmd:csdid}.
 it refuses rather than guessing.
 
 {pstd}
-{cmd:csdid version} displays the package version.
+Typed on its own after an estimation, {cmd:csdid} redisplays the results
+already in {cmd:e()} without recomputing anything, as every official
+estimation command does; {helpb estimates:estimates replay} arrives at the same
+display. {cmd:level()} is the one thing a redisplay cannot change: the
+confidence bands stored in {cmd:e(attgt)} were computed at the estimation's
+level, so {cmd:csdid, level(#)} with a level other than {cmd:e(level)} refuses
+with return code 198 and names the run that would compute them at the level
+you asked for. When what is in {cmd:e()} carries no ATT(g,t) table or no
+confidence level, there is nothing to redisplay, and {cmd:csdid} says so with
+return code 498 rather than printing a partial table; {helpb csdid_stats} and
+{helpb csdid_estat} read such results.
+
+{pstd}
+{cmd:csdid version} displays the package version, the copy of
+{cmd:csdid.ado} that answered, which engine the session is using -- the
+precompiled library, naming the Stata that built it, or the source compiled by
+this session -- and the bootstrap accelerator's binding when one is in place.
+It is a diagnostic and only a diagnostic: it loads no engine, touches no data,
+and leaves {cmd:e()} exactly as it found it, so it is safe between an
+estimation and its postestimation commands. It also names
+{cmd:which csdid, all}, which is what shows a second copy of {cmd:csdid}
+earlier on the adopath. See
+{help csdid##support:Installation, upgrading and diagnostics}.
+
+{pstd}
+{cmd:csdid reset} clears what the session decided rather than what it
+estimated: the engine choice, the plugin bindings, and the estimation cache.
+The next {cmd:csdid} decides again from the current adopath, which is what
+makes a {cmd:csdid} installed or replaced in the middle of a session the one
+that runs. It is the way out of a stale decision short of
+{cmd:macro drop _all}, which would take your own globals with it. One caveat
+the command states itself: a plugin binary replaced at the {it:same} path may
+still be served from memory by the operating system, so restart Stata to be
+certain that a re-installed accelerator is the one running.
 
 {pstd}
 Source, issue tracker, and release notes are at
@@ -394,9 +442,10 @@ The suboptions are parsed strictly: each must be spelled in full and in lower
 case, and each may appear at most once. {cmd:wboot(rep(7))},
 {cmd:wboot(REPS(7))}, {cmd:wboot(frobnicate(9))} and
 {cmd:wboot(reps(7) reps(9))} all exit with return code 198 and a message
-listing the accepted suboptions. Earlier builds matched the contents of
-{cmd:wboot()} with a pattern that silently ignored anything it did not
-recognize, so a typo left inference running at the defaults without saying so.
+listing the accepted suboptions. Nothing inside {cmd:wboot()} is skipped over:
+a suboption {cmd:csdid} does not recognize stops the command rather than
+leaving inference to run at the defaults, so a typo cannot cost you a
+replication count or a seed without saying so.
 Abbreviation is not offered because {cmd:reps()} and {cmd:rseed()} share a
 prefix.
 
@@ -504,8 +553,8 @@ The destination is checked {it:before} estimation starts, as
 {helpb bootstrap}'s {cmd:saving()} is: naming a file that already exists
 without {cmd:replace}, or a path that cannot be written, refuses immediately
 with return code 602 and leaves {cmd:e()} cleared: nothing is estimated and no
-partial results are posted. Earlier builds ran the whole estimation, printed
-it, and only then failed to write the file. An aggregation run later from the
+partial results are posted, so an unwritable destination costs you the refusal
+and not the run. An aggregation run later from the
 saved file bands at the confidence level of the estimation that wrote it, not
 the session default, unless {helpb csdid_stats}'s own {cmd:level()} is given.
 
@@ -1127,11 +1176,16 @@ platform-specific binary; it holds exactly the code in {cmd:csdid.mata} and
 only removes the cost of compiling that source on the first call of each
 session. A library built by a newer Stata than the one running cannot be read
 by it; csdid says so once and uses {cmd:csdid.mata} instead, which gives the
-same results and costs only the compile it was there to remove. On macOS the package also installs a compiled bootstrap accelerator,
+same results and costs only the compile it was there to remove. The library
+shipped with release 2.0.0 was compiled by Stata 17; on Stata 14, 15, and 16
+csdid says so once per session and compiles {cmd:csdid.mata} instead -- same
+numbers, one compile per session. On macOS the package also installs a compiled bootstrap accelerator,
 which is used only for explicitly seeded Rademacher draws; its results are
 identical to the Mata path, including the full random-number state. Every
 other case -- every other platform, every unseeded or non-Rademacher draw, and
-any run where the accelerator cannot load -- uses Mata.
+any run where the accelerator cannot load -- uses Mata. The accelerator also
+has a floor of its own: it uses plugin interface 3.0, which requires Stata
+14.1 or newer, so on Stata 14.0 the Mata path runs.
 {cmd:e(bootstrap_accelerator)} and {cmd:e(bootstrap_accelerator_status)}
 report which path ran. These are diagnostics; they never change results.
 
@@ -1186,9 +1240,12 @@ with {cmd:r(322)} at every stage of a session rather than producing a table of
 fabricated numbers after an aggregation.
 
 {pstd}
-{cmd:csdid version} may be run at any time: it prints the version and leaves
-{cmd:e()} untouched, so estimation results and every postestimation command
-survive it.
+{cmd:csdid version} may be run at any time: it reports the version and the
+engine, and leaves {cmd:e()} untouched, so estimation results and every
+postestimation command survive it. A bare {cmd:csdid} redisplays the stored
+results and leaves them equally untouched. {cmd:csdid reset} clears the
+session's engine decision and estimation cache, not {cmd:e()}: the results
+stay, and the next estimation decides its engine afresh.
 
 {pstd}
 See {helpb csdid_postestimation:csdid postestimation} for the full list of
@@ -1316,14 +1373,22 @@ option-by-option migration guide is online at
 {title:Examples}
 
 {pstd}
-The examples use the county teen-employment panel of Callaway and Sant'Anna
-(2021). Loading it requires an internet connection.
+The examples use {cmd:mpdta.dta}, the county teen-employment panel of Callaway
+and Sant'Anna (2021), which ships with the package as an ancillary file.
+{cmd:net get csdid} copies it into the current directory; do that once, and
+every example below runs offline.
 {cmd:lemp} is log county-level teen employment, {cmd:lpop} is log county
 population, {cmd:countyreal} is the county identifier, {cmd:year} is the
 period, and {cmd:first_treat} is the year the county's state raised its
 minimum wage, or {cmd:0} for never-treated counties.
 
 {pstd}Setup{p_end}
+{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. use mpdta, clear}{p_end}
+
+{pstd}
+On an installation where the ancillary files were not retrieved, the same
+dataset can be loaded over the network instead:{p_end}
 {phang2}{cmd:. use "http://fmwww.bc.edu/repec/bocode/m/mpdta.dta", clear}{p_end}
 
 {hline}
@@ -1541,6 +1606,13 @@ empty if unweighted. It is a tempvar and does not survive the command; use
 {it:(diagnostic)}{p_end}
 {synopt:{cmd:e(bootstrap_accelerator_file)}}compiled kernel loaded, if any
 {it:(diagnostic)}{p_end}
+{synopt:{cmd:e(datasignaturevars)}}the permanent variables the estimation
+sample was signed on: {cmd:ivar()}, {cmd:time()}, {cmd:gvar()}, the outcome,
+the covariates as you named them, and {cmd:cluster()}{p_end}
+{synopt:{cmd:e(datasignature)}}the signature itself, which is what lets
+{cmd:estat summarize} refuse with return code 459 when the data in memory have
+changed since the estimation instead of describing a sample the estimation
+never saw{p_end}
 
 {p2col 5 32 35 2: Matrices}{p_end}
 {synopt:{cmd:e(b)}}posted ATT(g,t) coefficient vector, excluding the
@@ -1593,6 +1665,13 @@ After {cmd:csdid, agg(event)}, and after {helpb csdid_stats} or
 {cmd:e(agg_inffunc)} under {cmd:storeall}.
 Those are documented in {helpb csdid_stats} and
 {helpb csdid_postestimation:csdid postestimation}.
+
+{pstd}
+{cmd:csdid} itself stores nothing in {cmd:r()}: the {cmd:r(table)} that
+scripts read after an estimation command is produced here by the aggregation
+routes, {helpb csdid_estat} and {helpb csdid_stats}, and is documented at
+{help csdid_estat##results:help csdid_estat}. A {cmd:r(table)} reference
+straight after a bare {cmd:csdid} finds no such matrix.
 
 {pstd}
 Stability policy: every result above that is not marked {it:(diagnostic)} is
@@ -1803,6 +1882,14 @@ Sant'Anna. 2026. Difference-in-differences designs: A practitioner's guide.
 {browse "https://doi.org/10.1257/jel.20251650"}.
 {p_end}
 
+{marker csdidstata2026}{...}
+{phang}
+Callaway, B., F. Rios-Avila, and P. H. C. Sant'Anna. 2026. csdid:
+Difference-in-Differences with Multiple Time Periods in Stata. Stata module,
+version 2.0.0.
+{browse "https://github.com/pedrohcgs/csdid-stata"}.
+{p_end}
+
 {marker callaway2021}{...}
 {phang}
 Callaway, B., and P. H. C. Sant'Anna. 2021. Difference-in-differences with
@@ -1829,7 +1916,10 @@ difference-in-differences estimators. {it:Journal of Econometrics} 219(1):
 {pstd}
 If you use {cmd:csdid} in your research, please cite Callaway and Sant'Anna
 (2021) for the estimator, Sant'Anna and Zhao (2020) for the doubly robust
-two-period estimators, and this package for the implementation.
+two-period estimators, and
+{help csdid##csdidstata2026:Callaway, Rios-Avila and Sant'Anna (2026)} for the
+implementation, giving the version you actually ran -- {cmd:csdid version}
+reports it.
 {p_end}
 
 
@@ -1861,11 +1951,65 @@ code.
 {p_end}
 
 {marker support}{...}
-{title:Support and updates}
+{title:Installation, upgrading and diagnostics}
 
 {pstd}
 Source, issue tracker, and release notes:
 {browse "https://github.com/pedrohcgs/csdid-stata":github.com/pedrohcgs/csdid-stata}.
+{helpb csdid_whatsnew:help csdid_whatsnew} lists what changed in this release,
+and travels with the package, so it is there on a machine with no network.
+
+{pstd}
+{bf:Upgrading from the SSC {cmd:csdid}.} SSC distributes csdid Version 1.82,
+which installs the same command names and the same filenames as this release.
+Remove it first, so that Stata's package tracking records one csdid and not
+two:
+
+{phang2}{cmd:. ssc uninstall csdid}{p_end}
+{phang2}{cmd:. net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main") replace}{p_end}
+
+{pmore}
+{cmd:ado uninstall csdid} does the same job and is what to use if the earlier
+copy did not come from SSC. Either way the uninstall comes {it:first}:
+{cmd:net install ... replace} does overwrite the files, but it leaves a second
+package entry behind, and a later {cmd:ado uninstall csdid} then refuses --
+the name matches two entries -- or removes the wrong one.
+
+{pstd}
+{bf:If two entries already exist.} List what is installed and remove the
+stale entry by number:
+
+{phang2}{cmd:. ado dir}{p_end}
+{phang2}{cmd:. ado uninstall [1]}{p_end}
+
+{pmore}
+{cmd:ado dir} prints one numbered stanza per installed package with its
+distribution date; the number in square brackets is what {cmd:ado uninstall}
+takes. Remove the older csdid stanza, then reinstall as above.
+
+{pstd}
+{bf:Pinning a version in a replication package.} Install from the release tag
+rather than from {cmd:main}, so that the code is the same on the day the
+referee runs it:
+
+{phang2}{cmd:. net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/2.0.0") replace}{p_end}
+
+{pmore}
+The tag takes the place of {cmd:main} in the address; everything else is the
+same. Record the version you ran, which {cmd:csdid version} reports.
+
+{pstd}
+{bf:When something looks wrong, start here.} {cmd:csdid version} is the first
+diagnostic: it names the copy of {cmd:csdid.ado} that answered and the engine
+the session is using, and it changes nothing. If the path it reports is not
+the copy you meant to run, {cmd:which csdid, all} lists every copy on the
+adopath in the order Stata searches them -- the current directory and
+PERSONAL come before PLUS, so a leftover {cmd:csdid.ado} in either shadows the
+installed one until it is removed. After installing or replacing csdid in a
+session that has already estimated something, {cmd:csdid reset} clears the
+session's engine decision so the next command decides again from the current
+adopath; a plugin binary replaced at the same path may need Stata restarted,
+and {cmd:csdid reset} says so.
 
 {pstd}
 {cmd:csdid} requires Stata 14 or newer, the same floor as the SSC {cmd:csdid}
@@ -1903,10 +2047,13 @@ notice and permission notice are retained. The full text is in the
 {psee}
 Online:  {helpb csdid_postestimation:csdid postestimation},
 {helpb csdid_stats}, {helpb csdid_estat}, {helpb csdid_plot},
-{helpb csgvar}, {helpb csdid_legacy:csdid legacy utilities}
+{helpb csgvar}, {helpb csdid_legacy:csdid legacy utilities},
+{helpb csdid_whatsnew}
 {p_end}
 
 {psee}
-Online:  {helpb didregress}, {helpb xtdidregress}, {helpb hdidregress},
+Online:  {helpb didregress} (Stata 17 and later),
+{helpb xtdidregress} (Stata 17 and later),
+{helpb hdidregress} (Stata 18 and later),
 {helpb xtreg}
 {p_end}

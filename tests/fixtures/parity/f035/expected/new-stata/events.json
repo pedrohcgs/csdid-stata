@@ -32,7 +32,7 @@
     "return_code": 498,
     "event_type": "error",
     "offending_option": "wboot(wtype(foo))",
-    "message_normalized": "wboot() currently supports only R-compatible rademacher multipliers"
+    "message_normalized": "wboot() currently supports only rademacher multipliers"
   },
   {
     "event_key": "wboot_cluster_mismatch",

@@ -18,7 +18,7 @@
     "return_code": 198,
     "event_type": "error",
     "offending_option": "ivar(sid)",
-    "message_normalized": "ivar() must be numeric; R did requires numeric id variables"
+    "message_normalized": "ivar() must be a numeric variable; encode or destring a string identifier first"
   },
   {
     "event_key": "string_time",

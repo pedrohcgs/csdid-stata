@@ -24,14 +24,9 @@ done
 
 bash tools/plugin/build-bootstrap-plugin.sh auto
 run_stata_do src/build.do
-run_stata_do tests/stata/test-bootstrap-plugin.do
-run_stata_do tests/stata/test-bootstrap-plugin-integration.do
-run_stata_do tests/stata/test-f049.do
-run_stata_do tests/stata/test-f050.do
-run_stata_do tests/stata/test-f051.do
-run_stata_do tests/stata/test-agg-bootstrap-paths.do
-run_stata_do tests/stata/test-release-hardening.do
-run_stata_do tests/stata/test-release-failure-modes.do
+# The release-critical do-files are no longer listed here one by one:
+# run-smoke.sh derives its list from the tree and covers every one of them,
+# so a second explicit pass ran each twice on the release path for nothing.
 python3 tools/release/run-adversarial-differential.py
 
 bash tests/run-smoke.sh

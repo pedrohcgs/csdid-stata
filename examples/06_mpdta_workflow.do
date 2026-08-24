@@ -1,4 +1,4 @@
-version 15
+version 14
 clear all
 set more off
 

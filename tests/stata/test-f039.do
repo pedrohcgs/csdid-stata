@@ -67,7 +67,7 @@ program define f039_run_scenario
     gen str8 method_stata = "`method'"
     gen str24 panel_mode_stata = "`panelmode'"
     rename (event_time att se) (event_time_stata att_stata se_stata)
-    keep scenario method_stata panel_mode_stata group time event_time att_stata se_stata
+    keep scenario method_stata panel_mode_stata group time event_time_stata att_stata se_stata
     if "`append'" == "" {
         save "`attfile'", replace
     }

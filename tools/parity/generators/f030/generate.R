@@ -173,7 +173,7 @@ events <- data.frame(
   message_normalized = c(
     "outcome variable must be numeric",
     "covariates must be numeric Stata variables; encode string covariates before using factor-variable notation",
-    "ivar() must be numeric; R did requires numeric id variables",
+    "ivar() must be a numeric variable; encode or destring a string identifier first",
     "time() must be numeric",
     "gvar() must be numeric",
     "cluster() must be numeric"

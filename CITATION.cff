@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the article in preferred-citation."
+title: "csdid: Difference-in-Differences with Multiple Time Periods in Stata"
+abstract: >-
+  Stata package for group-time average treatment effects in
+  difference-in-differences designs with staggered treatment timing, with
+  doubly robust, outcome-regression and inverse-probability-weighted
+  estimators, analytical and multiplier-bootstrap inference, aggregation and
+  plotting.
+type: software
+version: 2.0.0
+# tools/release/stamp-version.py moves this to the actual release date.
+date-released: "2026-08-23"
+license: MIT
+repository-code: "https://github.com/pedrohcgs/csdid-stata"
+authors:
+  - family-names: "Callaway"
+    given-names: "Brantly"
+    affiliation: "University of Georgia"
+  - family-names: "Rios-Avila"
+    given-names: "Fernando"
+    affiliation: "Levy Economics Institute of Bard College"
+  - family-names: "Sant'Anna"
+    given-names: "Pedro H. C."
+    affiliation: "Emory University"
+keywords:
+  - difference-in-differences
+  - event study
+  - staggered treatment adoption
+  - treatment effects
+  - causal inference
+  - Stata
+preferred-citation:
+  type: article
+  title: "Difference-in-Differences with multiple time periods"
+  authors:
+    - family-names: "Callaway"
+      given-names: "Brantly"
+    - family-names: "Sant'Anna"
+      given-names: "Pedro H. C."
+  journal: "Journal of Econometrics"
+  year: 2021
+  volume: 225
+  issue: 2
+  start: 200
+  end: 230
+  doi: "10.1016/j.jeconom.2020.12.001"

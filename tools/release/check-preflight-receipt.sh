@@ -10,7 +10,14 @@
 # A receipt is rejected when:
 #   - it does not exist            (preflight never completed)
 #   - it records any FAIL/BLOCKED  (a BLOCKED tier is not a passing tier)
-#   - it came from --fast          (spec tier only is not a merge verdict)
+#   - it is from neither a full nor a release run (spec tier only is not a
+#     merge verdict). `release` used to be rejected too, so the receipt from
+#     the MOST complete run this repository can produce was the one receipt
+#     this gate refused.
+#   - it is a release receipt whose legacy A/B was recorded UNCHANGED rather
+#     than run. A release claims the performance numbers, so it measures them;
+#     inheriting them from an earlier run on identical production code is a
+#     merge-time economy, never a release-time one.
 #   - its digest differs from now  (the code changed after it was produced)
 set -uo pipefail
 
@@ -29,20 +36,33 @@ fail() {
 
 [ -f "$RECEIPT" ] || fail "no receipt at $RECEIPT; a full preflight has never completed here"
 
-read -r R_MODE R_FAIL R_BLOCKED R_DIGEST R_COMMIT <<<"$(python3 - "$RECEIPT" <<'PY'
+read -r R_MODE R_FAIL R_BLOCKED R_DIGEST R_COMMIT R_AB_UNCHANGED R_AB_DIGEST <<<"$(python3 - "$RECEIPT" <<'PY'
 import json, sys
 try:
     d = json.load(open(sys.argv[1]))
 except Exception:
-    print("unreadable 1 1 - -"); raise SystemExit(0)
+    print("unreadable 1 1 - - 1 -"); raise SystemExit(0)
+# ab_unchanged defaults to 1 -- "we do not know whether the A/B ran" is read as
+# "it did not". A receipt written before this field existed cannot clear a
+# release.
 print(d.get("mode", "?"), d.get("fail", 1), d.get("blocked", 1),
-      d.get("digest", "-"), d.get("commit", "-"))
+      d.get("digest", "-"), d.get("commit", "-"),
+      d.get("ab_unchanged", 1), d.get("ab_production_digest", "-") or "-")
 PY
 )"
 
-[ "$R_MODE" = "full" ]   || fail "receipt is from mode '$R_MODE'; only a full run counts"
+case "$R_MODE" in
+  full|release) ;;
+  *) fail "receipt is from mode '$R_MODE'; only a full or a release run counts" ;;
+esac
 [ "$R_FAIL" = "0" ]      || fail "receipt records $R_FAIL failing check(s)"
 [ "$R_BLOCKED" = "0" ]   || fail "receipt records $R_BLOCKED BLOCKED tier(s); a blocked tier is not a passing tier"
+
+if [ "$R_MODE" = "release" ] && [ "$R_AB_UNCHANGED" != "0" ]; then
+  fail "release receipt records the legacy A/B as UNCHANGED (ab_production_digest=$R_AB_DIGEST)
+    rather than run. A release measures the performance numbers it claims.
+    Re-run:  bash tools/release/preflight.sh --release"
+fi
 
 NOW="$(bash tools/release/preflight-digest.sh)"
 if [ "$NOW" != "$R_DIGEST" ]; then
@@ -53,4 +73,4 @@ if [ "$NOW" != "$R_DIGEST" ]; then
     current HEAD   : $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 fi
 
-echo "preflight receipt OK (full run, 0 failures, 0 blocked, digest matches working tree)"
+echo "preflight receipt OK ($R_MODE run, 0 failures, 0 blocked, digest matches working tree)"

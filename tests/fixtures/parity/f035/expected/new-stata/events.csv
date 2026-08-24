@@ -3,6 +3,6 @@
 "invalid_reps_negative",198,"error","wboot(reps(-2))","wboot() reps() must be a positive integer"
 "invalid_reps_fractional",198,"error","wboot(reps(1.5))","wboot() reps() must be a positive integer"
 "invalid_seed_zero",198,"error","wboot(rseed(0))","wboot() rseed() must be a positive integer"
-"invalid_wtype",498,"error","wboot(wtype(foo))","wboot() currently supports only R-compatible rademacher multipliers"
+"invalid_wtype",498,"error","wboot(wtype(foo))","wboot() currently supports only rademacher multipliers"
 "wboot_cluster_mismatch",198,"error","cluster(cl)+wboot(cluster(cl2))","wboot(cluster()) must match cluster() when both are supplied"
 "wboot_cluster_multiple",198,"error","wboot(cluster(cl cl2))","wboot(cluster()) accepts one numeric cluster variable"

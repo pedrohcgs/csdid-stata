@@ -61,15 +61,58 @@ From inside Stata:
 
 <!-- norun -->
 ```stata
+cap ado uninstall csdid
 net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main") replace
 ```
 
-`replace` also upgrades an existing installation. Confirm what you are running
-with:
+SSC distributes csdid Version 1.82 under the same command name and the same
+filenames, so remove any existing copy first — `cap ado uninstall csdid`, or
+`ssc uninstall csdid` if it came from SSC. `replace` does overwrite the files,
+but installing over a package Stata still tracks leaves two csdid entries
+behind, and a later `ado uninstall csdid` then refuses (the name matches two
+entries) or removes the wrong one.
+
+Confirm what you are running with:
 
 ```stata
 csdid version
 ```
+
+### Pinning a version for a replication package
+
+Install from the release tag rather than from `main`, so the code is the same
+on the day someone re-runs your do-files:
+
+<!-- norun -->
+```stata
+cap ado uninstall csdid
+net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/2.0.0") replace
+```
+
+The tag takes the place of `main` in the address; everything else is the same.
+
+### Troubleshooting
+
+<!-- norun -->
+```stata
+csdid version        // version, the csdid.ado that answered, and the engine in use
+which csdid, all     // every copy of csdid on the adopath, in search order
+csdid reset          // clear the session's engine decision and estimation cache
+```
+
+- **A csdid you did not expect is answering.** `csdid version` reports the path
+  it resolved to. Stata searches the current directory and PERSONAL before
+  PLUS, so a leftover `csdid.ado` in either shadows the installed one;
+  `which csdid, all` lists every copy, and removing the stale one fixes it.
+- **You installed or replaced csdid in a session that had already run it.**
+  `csdid reset` clears the session's engine decision, plugin bindings and
+  estimation cache, so the next command decides again from the current adopath.
+  A plugin binary replaced at the *same* path may still be served from memory
+  by the operating system; restart Stata to be certain.
+- **Two csdid entries in the package list.** `ado dir` prints one numbered
+  stanza per installed package; remove the older csdid stanza with
+  `ado uninstall [#]`, using the number in square brackets, then reinstall as
+  above.
 
 Requires Stata 14 or newer. There are no external dependencies: the
 estimation engine is Mata and ships precompiled, so the same install works
@@ -184,7 +227,10 @@ discarded, on StataNow/MP 19.5.
 | Event study, clustered + bands | 3.68s | 0.15s | **24x** |
 | Large panel, weighted DR | 11.54s | 0.47s | **24x** |
 
-Between **10x and 35x**, and never slower. Peak memory is
+Between **10x and 35x** across these fifteen fixed-size workloads, each run
+with the same options on both versions, and never slower. That is a different
+measurement from the range in the release notes, which varies the size of the
+design on purpose; see *up to 334x* below. Peak memory is
 within 8% of Version 1.82 on every workload and much lower where it matters
 most: on the large panel above, 164MB against 241MB. It is not lower
 everywhere &mdash; 8 of these 15 workloads use slightly more, because at
@@ -356,11 +402,12 @@ The examples above use the replication data from that article.
 
 Open an issue at
 [github.com/pedrohcgs/csdid-stata/issues](https://github.com/pedrohcgs/csdid-stata/issues).
-Please include the output of `csdid version`, the exact command line, and
-`e(cmdline)`, `e(method)`, `e(control_group)`, `e(base_period)` and
+Please include the full output of `csdid version` — it names the copy of
+`csdid.ado` that answered and the engine the session used — the exact command
+line, and `e(cmdline)`, `e(method)`, `e(control_group)`, `e(base_period)` and
 `e(panel_mode)`. If the report concerns inference, add `e(bstrap)`,
-`e(biters)` and `e(boot_seed)`. A small dataset that reproduces the problem is
-worth more than any description of it.
+`e(biters)`, `e(boot_seed)` and `e(bootstrap_accelerator_status)`. A small
+dataset that reproduces the problem is worth more than any description of it.
 
 ## Authors
 

@@ -69,6 +69,46 @@ assert rowsof(A) == 1
 assert abs(A[1,4] - 2) < 1e-12
 
 * ---------------------------------------------------------------------------
+* WHICH ENGINE SERVED THE RUN.
+*
+* This install ships a compiled library built by this Stata, so the library
+* must be what answered. The alternative -- csdid quietly compiling its source
+* copy instead, every session, forever -- produces identical numbers and is
+* therefore invisible to every other assertion in this file: it is a permanent
+* silent fall-through that no figure can see. A user would meet it only as the
+* first csdid of every session taking noticeably longer.
+*
+* The loader records what it resolved in $CSDID_ENGINE_RESOLVED, whose first
+* semicolon-delimited field is the engine's own stamp. The compiled library
+* carries `2.0.0|<the Stata that built it>'; the source copy ships reading
+* `2.0.0|source' and says so. So the assertion is on the half after the bar:
+* a number means the library answered, the word `source' means it did not.
+* ---------------------------------------------------------------------------
+local resolved `"$CSDID_ENGINE_RESOLVED"'
+if `"`resolved'"' == "" {
+    display as error "the installed copy recorded no engine resolution at all"
+    exit 9
+}
+local semi = strpos(`"`resolved'"', ";")
+assert `semi' > 1
+local stamp = substr(`"`resolved'"', 1, `semi' - 1)
+local bar = strpos("`stamp'", "|")
+assert `bar' > 1
+local pkg_half = substr("`stamp'", 1, `bar' - 1)
+local route    = substr("`stamp'", `bar' + 1, .)
+display as text "installed-package engine stamp: `stamp'"
+assert "`pkg_half'" == "2.0.0"
+if "`route'" == "source" {
+    display as error "the installed copy fell back to compiling csdid.mata: the shipped library did not answer"
+    display as error "engine stamp was `stamp'; a library-served run stamps 2.0.0|<stata version>"
+    exit 9
+}
+if missing(real("`route'")) {
+    display as error "the installed copy's engine stamp names no Stata version: `stamp'"
+    exit 9
+}
+
+* ---------------------------------------------------------------------------
 * The compiled accelerator, run FROM THE INSTALLED PACKAGE.
 *
 * Every other plugin test runs against src/ through adopath, and a net-install

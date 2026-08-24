@@ -49,6 +49,7 @@ declare -a RESCUED=(
 # its value after a post is correct by construction rather than preserved.
 declare -a REESTABLISHED=(
   estat_cmd
+  cmd
 )
 
 for name in "${RESCUED[@]}"; do

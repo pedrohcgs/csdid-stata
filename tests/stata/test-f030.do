@@ -180,7 +180,7 @@ capture noisily csdid outcome_y control_alpha control_beta, ivar(sid) time(perio
 local actual_rc = _rc
 log close f030event
 assert `actual_rc' == 198
-f030_assert_log_contains using "`evlog'", message("ivar() must be numeric; R did requires numeric id variables")
+f030_assert_log_contains using "`evlog'", message("ivar() must be a numeric variable; encode or destring a string identifier first")
 
 import delimited using "`root'/tests/fixtures/parity/f030/inputs/input.csv", clear asdouble
 generate str8 tstr = string(period_time)

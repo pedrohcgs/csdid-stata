@@ -23,7 +23,7 @@ if [[ ! -f csdid.pkg ]]; then
   exit 1
 fi
 
-paths="$(awk '$1 == "f" { print $2 }' csdid.pkg)"
+paths="$(awk '$1 == "f" || $1 == "F" { print $2 } $1 == "g" || $1 == "G" { print $3 }' csdid.pkg | sort -u)"
 if [[ -z "$paths" ]]; then
   echo "csdid.pkg declares no files" >&2
   exit 1
@@ -52,8 +52,8 @@ done
 # notice, so the manifest and the directory are now compared both ways.
 for f in pkg/*; do
   [[ -e "$f" ]] || continue
-  if ! grep -qxF "f $f" csdid.pkg; then
-    echo "pkg/ carries $f, which no 'f' line in csdid.pkg delivers -- add it, or stop building it" >&2
+  if ! printf '%s\n' "$paths" | grep -qxF "$f"; then
+    echo "pkg/ carries $f, which no f/F/g/G line in csdid.pkg delivers -- add it, or stop building it" >&2
     status=1
   fi
 done

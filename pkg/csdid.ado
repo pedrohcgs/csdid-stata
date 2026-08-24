@@ -1,6 +1,6 @@
-*! csdid 2.0.0 30jul2026
+*! csdid 2.0.0 24aug2026
 program define csdid, eclass sortpreserve
-    * EUX-016 (repaired): this guard used to sit BELOW `version 14', where it
+    * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
     * first with Stata's own generic message. Hoisting it above `version 14'
     * makes it reachable; the guard itself uses only c() and `display', both of
@@ -13,25 +13,86 @@ program define csdid, eclass sortpreserve
 
     if `"`0'"' == "version" {
         display as text "csdid version 2.0.0"
-        * (No r(version): `return' is not permitted in an eclass program - it
-        * exits 151 - so the version is reported via the display above and via
-        * the e(version) contract below.)
-        * Historically this unconditionally did `ereturn clear' and posted a
-        * two-macro stub, which silently DESTROYED whatever estimation results
-        * the user had in e() - including a csdid run they were in the middle of
-        * interpreting. Post the stub only when there is nothing to destroy;
-        * after a csdid run e(version) is already correct, so the documented
-        * e(version) contract still holds in both cases.
-        if `"`e(cmd)'"' == "" {
-            ereturn clear
-            ereturn local cmd "csdid"
-            ereturn local version "2.0.0"
+        * A diagnostic, and ONLY a diagnostic: no e() (the help guarantees
+        * it, and an e(cmd) stub posted here once let csdid_estat print a
+        * fabricated table in a session that had estimated nothing), and no
+        * engine load (the loader has session side effects a version query
+        * must not trigger). It reports what the session already knows: the
+        * copy of csdid that answers, the engine the session decided on, and
+        * the accelerator binding -- the three facts that decide which code
+        * produced a number, and the three that adopath shadowing changes.
+        capture quietly findfile csdid.ado
+        if !_rc display as text `"  csdid.ado resolved to: `r(fn)'"'
+        local vmarker `"$CSDID_ENGINE_RESOLVED"'
+        if `"`vmarker'"' != "" {
+            local vsemi = strpos(`"`vmarker'"', ";")
+            if `vsemi' > 1 {
+                local vstamp = substr(`"`vmarker'"', 1, `vsemi' - 1)
+                local vbar = strpos("`vstamp'", "|")
+                local vwho = substr("`vstamp'", `vbar' + 1, .)
+                if "`vwho'" == "source" {
+                    display as text "  engine: compiled from csdid.mata by this session"
+                }
+                else {
+                    display as text "  engine: precompiled library, built by Stata `vwho'"
+                }
+            }
         }
+        else {
+            display as text "  engine: not loaded yet (loads on the first estimation of a session)"
+        }
+        if `"$CSDID_BOOT_PLUGIN_PATH"' != "" {
+            display as text `"  bootstrap accelerator: bound to $CSDID_BOOT_PLUGIN_PATH"'
+        }
+        display as text `"  (a stray older csdid can shadow this one: {stata which csdid, all} lists every copy on the adopath)"'
+        exit
+    }
+    if `"`0'"' == "reset" {
+        * Forget every session-level csdid decision: the engine choice, the
+        * plugin bindings, and the estimation cache. The next csdid command
+        * re-decides from the current adopath. This is the way out of a stale
+        * engine decision short of `macro drop _all', which also destroys the
+        * user's own globals -- and it is what makes a re-installed csdid
+        * usable in a live session.
+        capture program drop __csdid_bootstrap_plugin
+        capture program drop __csdid_agg_boot_plugin
+        capture macro drop CSDID_*
+        capture mata: mata drop CSDID_*
+        display as text "csdid reset: the engine decision, plugin bindings and estimation cache are cleared; the next csdid command re-decides from the current adopath."
+        display as text "(a plugin binary replaced at the SAME path may still be served from memory by the operating system; restart Stata to be certain a re-installed accelerator is the one that runs)"
+        exit
+    }
+    * Replay: a bare `csdid' (or `csdid, level()') after estimation redisplays
+    * the results, as every official estimation command does, and `estimates
+    * replay' lands here too. level() cannot CHANGE on replay: the CI columns
+    * in e(attgt) and the bootstrap band critical values were computed at the
+    * estimation's level, and a redisplay that relabelled them would print a
+    * band it does not hold -- so a different level() names the re-run that
+    * computes it instead.
+    if replay() {
+        if `"`e(cmd)'"' != "csdid" error 301
+        capture confirm matrix e(attgt)
+        if _rc | e(level) >= . {
+            display as error "the stored csdid results cannot be redisplayed here (no ATT(g,t) table or confidence level is stored); use csdid_stats or csdid_estat on them instead"
+            exit 498
+        }
+        syntax [, Level(passthru)]
+        local replay_level = e(level)
+        if `"`level'"' != "" {
+            local 0 `", `level'"'
+            syntax [, Level(cilevel)]
+            if `level' != e(level) {
+                display as error "level() cannot be changed when replaying csdid results: the confidence bands in the stored results were computed at the `=e(level)'% level at estimation time. Re-run csdid with level(`level') to compute them at that level."
+                exit 198
+            }
+            local replay_level `level'
+        }
+        Display, level(`replay_level')
         exit
     }
     local cmdline `"csdid `0'"'
     local raw_call `"`0'"'
-    * OPT-012 (repaired): `nofast' cannot be recovered from `syntax' - declaring
+    * `nofast' cannot be recovered from `syntax' - declaring
     * FAST and NOFAST together makes Stata treat a typed `nofast' as the
     * negation of FAST, so BOTH locals come back empty - hence this raw-string
     * scan. The old scan searched the whole text after the first comma, so it
@@ -76,7 +137,7 @@ program define csdid, eclass sortpreserve
     local fix_weights_alias_n 0
     local wboot_flag 0
     local nevertreated_alias 0
-    * OPT-003 (repaired): reps()/biters()/seed()/rseed() used to be declared
+    * reps()/biters()/seed()/rseed() used to be declared
     * `integer -1', so -1 was indistinguishable from "not specified" and
     * `reps(-1)' / `rseed(-1)' silently ran at the defaults (1000 reps,
     * unseeded) while `reps(-5)' errored. They are string options now: empty
@@ -141,7 +202,7 @@ program define csdid, eclass sortpreserve
                 local base_period_alias `"`base_period_value'"'
             }
             else if regexm(`"`opt_l'"', "^fixweights\((.*)\)$") {
-                * OPT-004 (repaired): fixweights() reaches us through the `*'
+                * fixweights() reaches us through the `*'
                 * catch-all, where a repeated option is NOT caught by `syntax',
                 * so `fixweights(base) fixweights(first)' used to let the last
                 * one win silently. Refuse it the way `syntax' refuses a
@@ -203,7 +264,7 @@ program define csdid, eclass sortpreserve
     * syntax rather than left to the catch-all so a migrating user gets this
     * explanation instead of a bare "unsupported option(s)".
     if `"`from'"' != "" {
-        display as error "from() is no longer supported. It set a lower event-time bound on the simple, group and calendar aggregations; R fixes that bound at event time 0 for those aggregations, so there is no equivalent. from(0) was the legacy default and is what csdid already does. For event-time windows use csdid_stats, type(dynamic) window(# #) or estat event, window(# #)."
+        display as error "from() is no longer supported. It set a lower event-time bound on the simple, group and calendar aggregations; those aggregations now fix that bound at event time 0, which is what from(0) -- the legacy default -- already did, so there is no equivalent. For event-time windows use csdid_stats, type(dynamic) window(# #) or estat event, window(# #)."
         exit 198
     }
     if `nofast_raw' local nofast "nofast"
@@ -353,7 +414,7 @@ program define csdid, eclass sortpreserve
     if "`ivar'" != "" {
         capture confirm numeric variable `ivar'
         if _rc {
-            display as error "ivar() must be numeric; R did requires numeric id variables"
+            display as error "ivar() must be a numeric variable; encode or destring a string identifier first"
             exit 198
         }
     }
@@ -397,13 +458,65 @@ program define csdid, eclass sortpreserve
     * The old refusal of lean + saverif() is gone: the RIF exporter reads the
     * Mata cache directly, so the artifact no longer needs the influence
     * functions materialized in e().
-    * EUX-002 (repaired): saverif() used to be checked only by the `save' inside
+    * saverif() used to be checked only by the `save' inside
     * _csdid_save_rif, i.e. AFTER the whole estimation had run and printed its
     * table - the run then died r(602) with e(cmd)/e(N) left posted from a
     * command that had just failed. `bootstrap, saving()' refuses before the
     * first replication; do the same here, in the option block, and clear e()
     * so a failed csdid never leaves estimation results behind.
     if `"`saverif'"' != "" {
+        * The standard saving idiom -- saverif(filename, replace) -- is parsed
+        * rather than swallowed: before this block, the whole parenthesised
+        * text was the filename, so the comma form returned rc 0 after writing
+        * a file literally named "filename, replace.dta". csdid_plot's
+        * saving() had the identical defect and this is its parser: replace is
+        * the only sub-option, anything else refuses by name.
+        mata: st_local("_sr_comma", strofreal(strpos(st_local("saverif"), ",")))
+        if `_sr_comma' {
+            local _sr_outer_replace `"`replace'"'
+            local _sr_rest ""
+            gettoken _sr_file _sr_rest : saverif, parse(",")
+            if `"`_sr_file'"' == "," {
+                local _sr_file ""
+            }
+            else {
+                gettoken _sr_c _sr_rest : _sr_rest, parse(",")
+                mata: st_local("_sr_file", strtrim(st_local("_sr_file")))
+            }
+            * `syntax' resets the STANDARD locals (varlist, if, in, weight,
+            * exp, options and 0) whether or not they are declared, and the
+            * estimation still needs every one of them -- so they are saved
+            * around the sub-option parse and put back. csdid_plot's copy of
+            * this parser did not need the guard only because nothing there
+            * reads them afterwards.
+            local _sr_varlist `"`varlist'"'
+            local _sr_if `"`if'"'
+            local _sr_in `"`in'"'
+            local _sr_weight `"`weight'"'
+            local _sr_exp `"`exp'"'
+            local _sr_options `"`options'"'
+            local _sr_zero `"`0'"'
+            local 0 `", `_sr_rest'"'
+            capture syntax [, REPLACE]
+            local _sr_parse_rc = _rc
+            local varlist `"`_sr_varlist'"'
+            local if `"`_sr_if'"'
+            local in `"`_sr_in'"'
+            local weight `"`_sr_weight'"'
+            local exp `"`_sr_exp'"'
+            local options `"`_sr_options'"'
+            local 0 `"`_sr_zero'"'
+            if `_sr_parse_rc' {
+                display as error `"saverif() accepts only the replace sub-option; cannot parse: `_sr_rest'"'
+                exit 198
+            }
+            if "`replace'" == "" local replace `"`_sr_outer_replace'"'
+            if `"`_sr_file'"' == "" {
+                display as error "saverif() requires a filename before the comma, as in saverif(myfile, replace)"
+                exit 198
+            }
+            local saverif `"`_sr_file'"'
+        }
         local saverif_path `"`saverif'"'
         * Match -save-'s own extension rule: .dta is appended only when the
         * FILENAME has no extension at all. The old check appended .dta
@@ -412,7 +525,7 @@ program define csdid, eclass sortpreserve
         * confirmed a file -save- would never write: the replace-guard could
         * refuse on a phantom, or wave the run through and die r(602) inside
         * the writer after the whole estimation had already run and posted,
-        * which is exactly what EUX-002 moved this check up here to prevent.
+        * which is exactly what moving this check up here prevents.
         mata: st_local("saverif_base", pathbasename(st_local("saverif_path")))
         if strpos(`"`saverif_base'"', ".") == 0 {
             local saverif_path `"`saverif_path'.dta"'
@@ -440,7 +553,7 @@ program define csdid, eclass sortpreserve
         display as error "reps(), biters(), seed(), and rseed() require bootstrap inference; omit vce(analytical)"
         exit 198
     }
-    * OPT-003 (repaired): with the -1 sentinels gone, every supplied
+    * with the -1 sentinels gone, every supplied
     * reps()/biters()/seed()/rseed() value is checked here, so a negative or
     * fractional or non-numeric value errors instead of silently reverting to
     * the default. The message names the option the user actually typed.
@@ -467,7 +580,7 @@ program define csdid, eclass sortpreserve
         local wb_wtype ""
         local wb_wbtype ""
         if `"`wboot'"' != "" {
-            * OPT-001 (repaired): the sub-options used to be pulled out of the
+            * the sub-options used to be pulled out of the
             * raw string with independent regexes, so anything the regexes did
             * not happen to match was discarded without a word - typos
             * (`rep(7)'), junk (`totalnonsense'), missing parentheses
@@ -565,11 +678,11 @@ program define csdid, eclass sortpreserve
             local boot_dist "rademacher"
         }
         else if inlist("`boot_dist_requested'", "normal", "gaussian", "mammen") {
-            display as error "wboot() currently supports only R-compatible rademacher multipliers; wtype()/wbtype(`boot_dist_requested') is unsupported"
+            display as error "wboot() currently supports only rademacher multipliers; wtype()/wbtype(`boot_dist_requested') is unsupported"
             exit 498
         }
         else {
-            display as error "wboot() currently supports only R-compatible rademacher multipliers"
+            display as error "wboot() currently supports only rademacher multipliers"
             exit 498
         }
         if missing(`biters') | `biters' < 1 | `biters' != floor(`biters') {
@@ -803,7 +916,7 @@ program define csdid, eclass sortpreserve
                 }
                 quietly bysort `ivar': egen byte `xmiss_unit' = max(`xmiss') if `touse'
                 quietly replace `touse' = 0 if `xmiss_unit' == 1
-                * DS-07 (repaired): on the panel path a unit is dropped whole
+                * on the panel path a unit is dropped whole
                 * when ANY of its covariate cells is missing, so a covariate
                 * that is missing for one entire period annihilates every unit
                 * and the run died with a bare r(2000) "no observations" on a
@@ -836,7 +949,7 @@ program define csdid, eclass sortpreserve
                         if substr("`ds07_x'", 1, 2) == "__" {
                             local ds07_label "a covariate built from `xvars'"
                         }
-                        display as error "covariate `ds07_label' is missing for every observation in period `ds07_t' of time(`time'); with ivar(`ivar') that drops every unit and leaves no estimation sample. R's did drops the offending period and estimates on the rest; csdid does not. Exclude that period (for example with if `time' != `ds07_t'), supply the covariate for it, or drop the covariate."
+                        display as error "covariate `ds07_label' is missing for every observation in period `ds07_t' of time(`time'); with ivar(`ivar') that drops every unit and leaves no estimation sample. Exclude that period (for example with if `time' != `ds07_t'), supply the covariate for it, or drop the covariate."
                         ereturn clear
                         exit 459
                     }
@@ -866,7 +979,7 @@ program define csdid, eclass sortpreserve
         * itself stays the frozen substring four tests grep for.
         display as error "warning: dropped observations with missing or non-finite data (`miss_dropped' observation(s))"
     }
-    * DS-08. csdid indexes cohorts and periods on a positive calendar-time axis:
+    * csdid indexes cohorts and periods on a positive calendar-time axis:
     * time() runs from 1 upward, gvar() is the period in which a unit is first
     * treated and so is also 1 or more, and gvar() == 0 is RESERVED to mean
     * never treated. A negative or zero cohort code therefore has no consistent
@@ -1035,7 +1148,7 @@ program define csdid, eclass sortpreserve
         if __csdid_sh_dup == 1 local raw_shape_dup = 1
         capture scalar drop __csdid_sh_gvary __csdid_sh_cvary __csdid_sh_dup
     }
-    * Wording and rc are the estimation kernel's own; see the EUX-001 note
+    * Wording and rc are the estimation kernel's own; see the kernel-refusal note
     * below for why the kernel's copies are hoisted in front of it rather than
     * left to fire from inside a Mata frame.
     *
@@ -1204,7 +1317,7 @@ program define csdid, eclass sortpreserve
     }
 
     * -----------------------------------------------------------------------
-    * EUX-001 (repaired): csdid_basic_attgt() was the one kernel in this file
+    * csdid_basic_attgt() was the one kernel in this file
     * still reached with nothing between it and the user, so its data-shape
     * refusals arrived with two lines of Mata frames stapled underneath:
     *     csdid_basic_attgt():  459  Stata returned error
@@ -1268,7 +1381,7 @@ program define csdid, eclass sortpreserve
     * tempvar and r(): no sort, no observation changes. The noisy-only
     * diagnostics below reuse them, so noisy runs do no duplicated work.
     local min_time = __csdid_ps_tmin
-    * DS-02 (repaired): the ATT(g,t) coefficient names are built literally from
+    * the ATT(g,t) coefficient names are built literally from
     * the g, t and base-period VALUES (g2004___2005_2003), so a time axis in
     * epoch seconds or %tc milliseconds produced a 35-character name and the run
     * died deep in `matrix colnames' with Stata's bare
@@ -1564,40 +1677,61 @@ program define csdid, eclass sortpreserve
                 else if "`bootstrap_os'" == "windows" {
                     local bootstrap_plugin_file "csdid_bootstrap_windows.plugin"
                 }
-                local bootstrap_plugin_path "`csdid_ado_path'"
-                local bootstrap_plugin_path : subinstr local bootstrap_plugin_path "csdid.ado" "`bootstrap_plugin_file'", all
+                * The plugin sits beside the resolved csdid.ado. The resolved
+                * path always ends with the nine bytes `csdid.ado', so the
+                * sibling is a substr, never a substring REPLACEMENT: a
+                * directory component that happens to contain the text
+                * `csdid.ado' must not be rewritten into a path that does not
+                * exist (which would park the accelerator as unavailable with
+                * nothing said).
+                local _bp_len = strlen("`csdid_ado_path'")
+                local bootstrap_plugin_dir ""
+                if `_bp_len' > 9 & substr("`csdid_ado_path'", `_bp_len' - 8, .) == "csdid.ado" {
+                    local bootstrap_plugin_dir = substr("`csdid_ado_path'", 1, `_bp_len' - 9)
+                }
+                local bootstrap_plugin_path "`bootstrap_plugin_dir'`bootstrap_plugin_file'"
                 capture confirm file "`bootstrap_plugin_path'"
                 if _rc {
                     local bootstrap_plugin_file "csdid_bootstrap.plugin"
-                    local bootstrap_plugin_path "`csdid_ado_path'"
-                    local bootstrap_plugin_path : subinstr local bootstrap_plugin_path "csdid.ado" "`bootstrap_plugin_file'", all
+                    local bootstrap_plugin_path "`bootstrap_plugin_dir'`bootstrap_plugin_file'"
                     capture confirm file "`bootstrap_plugin_path'"
                 }
                 if !_rc {
-                    if "$CSDID_BOOT_PLUGIN_PATH" != "" & "$CSDID_BOOT_PLUGIN_PATH" != "`bootstrap_plugin_path'" {
-                        local bootstrap_accelerator_status "mata-stale-plugin-binding"
+                    * A plugin handle is not observable: `program list' on a
+                    * bound plugin reports not-found (measured, r(111) always),
+                    * so the record of the last successful bind -- the path
+                    * global, set only on a bind that returned 0 -- IS the
+                    * aliveness check, and `csdid reset' is what clears it. A
+                    * bind against a handle that already exists returns rc 110
+                    * WITHOUT re-reading the file, so 110 is never accepted as
+                    * a load: on a fresh bind it is a failure to report, and
+                    * on a moved installation it means the session holds an
+                    * image it cannot release, which is said in e() rather
+                    * than guessed around -- results still arrive, from Mata.
+                    * A binary REPLACED at the same path in a live session is
+                    * not detectable here at all; `csdid reset' names the
+                    * restart that makes it certain.
+                    local bootstrap_plugin_program "__csdid_bootstrap_plugin"
+                    if "$CSDID_BOOT_PLUGIN_PATH" == "`bootstrap_plugin_path'" {
+                        local plugin_loaded 1
+                        local bootstrap_accelerator_file "`bootstrap_plugin_file'"
                     }
-                    else {
-                        local bootstrap_plugin_program "__csdid_bootstrap_plugin"
-                        if "$CSDID_BOOT_PLUGIN_PATH" == "`bootstrap_plugin_path'" {
-                            capture quietly program list `bootstrap_plugin_program'
-                            if !_rc {
-                                local plugin_loaded 1
-                                local bootstrap_accelerator_file "`bootstrap_plugin_file'"
-                            }
+                    if !`plugin_loaded' {
+                        capture program drop `bootstrap_plugin_program'
+                        capture program `bootstrap_plugin_program', plugin using("`bootstrap_plugin_path'")
+                        local plugin_bind_rc = _rc
+                        if `plugin_bind_rc' == 0 {
+                            global CSDID_BOOT_PLUGIN_PATH "`bootstrap_plugin_path'"
+                            local plugin_loaded 1
+                            local bootstrap_accelerator_file "`bootstrap_plugin_file'"
                         }
-                        if !`plugin_loaded' {
-                            capture program `bootstrap_plugin_program', plugin using("`bootstrap_plugin_path'")
-                            local plugin_bind_rc = _rc
-                            if inlist(`plugin_bind_rc', 0, 110) {
-                                global CSDID_BOOT_PLUGIN_PATH "`bootstrap_plugin_path'"
-                                local plugin_loaded 1
-                                local bootstrap_accelerator_file "`bootstrap_plugin_file'"
-                            }
-                            else {
-                                local bootstrap_accelerator_status "mata-plugin-load-failed"
-                                local bootstrap_accelerator_rc = `plugin_bind_rc'
-                            }
+                        else if `plugin_bind_rc' == 110 & "$CSDID_BOOT_PLUGIN_PATH" != "" {
+                            local bootstrap_accelerator_status "mata-stale-plugin-binding"
+                            local bootstrap_accelerator_rc = 110
+                        }
+                        else {
+                            local bootstrap_accelerator_status "mata-plugin-load-failed"
+                            local bootstrap_accelerator_rc = `plugin_bind_rc'
                         }
                     }
                 }
@@ -2048,7 +2182,7 @@ program define csdid, eclass sortpreserve
     * A placeholder is still needed for the tempname to exist when
     * csdid_post_attgt_v is handed its name.
     if `post_k' > 0 matrix `post_V' = J(`post_k', `post_k', 0)
-    * DS-03 (PARTIAL - see the note below): when every 2x2 cell fails, the loop
+    * PARTIAL (see the note below): when every 2x2 cell fails, the loop
     * above names nothing, and csdid returned rc 0 with e(cmd)=="csdid" and
     * e(N) posted but NO e(b)/e(V) at all, and with no message saying so - an
     * estimation command reporting success while every postestimation path
@@ -2118,6 +2252,15 @@ program define csdid, eclass sortpreserve
         tempvar esmp
         quietly generate byte `esmp' = `touse'
         ereturn post `post_b' `post_V', obs(`sample_N') esample(`esmp')
+        * estat summarize is the one postestimation route that reads the DATA
+        * in memory rather than stored results; the signature is what lets it
+        * refuse with r(459) when the data changed since estimation, instead
+        * of describing a sample the estimation never saw. The aggregation
+        * routes read the engine cache and stored results and are guarded by
+        * the cache token instead. Only permanent, user-named variables are
+        * signed -- the covariates as the user gave them, never the
+        * transformed temporaries, which do not outlive this program.
+        quietly signestimationsample `ivar' `time' `gvar' `yname' `xvars_expanded' `cluster'
     }
     ereturn matrix attgt = `attgt'
     if `store_large' ereturn matrix inffunc = `inffunc'
@@ -2136,7 +2279,7 @@ program define csdid, eclass sortpreserve
     ereturn local marginsnotok "_ALL"
     ereturn local cmdline `"`cmdline'"'
     ereturn local version "2.0.0"
-    * HS-06 (repaired): the conventional Stata estimation macros were all empty,
+    * the conventional Stata estimation macros were all empty,
     * which is what estout/etable/esttab read to label a column and its standard
     * errors. didregress sets e(depvar), e(vce), e(vcetype) and e(predict); set
     * the same four here, IN ADDITION to (not instead of) csdid's own e(yname),
@@ -2155,7 +2298,7 @@ program define csdid, eclass sortpreserve
         ereturn local vce "analytical"
         ereturn local vcetype "Analytical"
     }
-    * HS-03/EUX-005: predict is not meaningful after csdid (e(b) holds ATT(g,t)
+    * predict is not meaningful after csdid (e(b) holds ATT(g,t)
     * effects, not coefficients on regressors). Naming the refusal program here
     * is what makes `predict' produce csdid's own message instead of a bare
     * r(111) about an internal coefficient name. csdid_p.ado ships with the
@@ -2215,7 +2358,7 @@ program define csdid, eclass sortpreserve
     ereturn scalar pscoretrim = `pscoretrim'
     ereturn scalar bstrap = `bstrap'
     ereturn scalar biters = `biters'
-    * DS-10 (repaired): the inference settings that actually determined the
+    * the inference settings that actually determined the
     * standard errors were unrecoverable from e() - e(reps) and e(rseed) were
     * both empty, so a saved estimate could not be reproduced or even audited,
     * and an unseeded bootstrap left no trace of being unseeded. e(reps) mirrors
@@ -2296,7 +2439,7 @@ end
 
 program define _csdid_parse_wboot, rclass
     version 14
-    * OPT-001: the nested `syntax' that replaces csdid's old wboot() regexes.
+    * the nested `syntax' that replaces csdid's old wboot() regexes.
     * Declaring every sub-option in full capitals means the full name must be
     * typed, so `rep(7)' is rejected as an unknown option rather than silently
     * abbreviating to reps(); `syntax' supplies the "specified more than once",
@@ -2323,7 +2466,7 @@ program define Display
     if colsof(`out') > 9 matrix `out' = `out'[1..., 1..9]
     display as text _newline "Group-time average treatment effects"
     * -------------------------------------------------------------------
-    * DS-10 (repaired): nothing in the printed output said how the standard
+    * nothing in the printed output said how the standard
     * errors were produced. A reader could not tell an analytical run from a
     * 1000-replication multiplier bootstrap, could not see the replication
     * count, and - the part that actually costs people time - could not see
@@ -2386,7 +2529,7 @@ program define _csdid_save_rif
     local nrif = rowsof(`ATT')
 
     * -----------------------------------------------------------------------
-    * EUX-003 (repaired): the export below builds the artifact in a scratch
+    * the export below builds the artifact in a scratch
     * copy of the data, and every step of that announced itself on the happy
     * path - "number of observations will be reset to N", the variable-count
     * chatter, and, worst, Stata's own
@@ -2443,7 +2586,7 @@ program define _csdid_save_rif
     char _dta[csdid_N_time] "`=e(N_time)'"
     char _dta[csdid_anticipation] "`=e(anticipation)'"
     char _dta[csdid_level] "`=e(level)'"
-    * AGG-03: clustering has to travel with the artifact, or aggregating the
+    * clustering has to travel with the artifact, or aggregating the
     * reloaded file reports unclustered standard errors for a clustered
     * estimation. csdid_cluster_recorded is written unconditionally and is
     * what tells the reader an EMPTY csdid_clustervar means "this run was not

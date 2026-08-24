@@ -1,13 +1,15 @@
-*! tsvmat 2.0.0 30jul2026
+*! tsvmat 2.0.0 24aug2026
 
 *capture program drop tsvmat
 program define tsvmat, return
+        * 14 is the package floor; nothing else in csdid runs under an older
+        * interpreter, so nothing here may promise one.
+        version 14
     * DEPRECATED in csdid 2.0.0. Shipped only so existing do-files keep
     * running; it is not covered by the parity suite and will be removed in
     * a future release. Replacement: no replacement; it was never part of the documented surface.
     display as text "note: tsvmat is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
-        version 7
         syntax anything, name(string)
 		 
         local nx = rowsof(matrix(`anything'))
@@ -15,13 +17,18 @@ program define tsvmat, return
         ***************************************
         // here is where the safegards will be done.
         if _N<`nx' {
-            display as result "Expanding observations to `nx'"
+            display as text "Expanding observations to `nx'"
                 set obs `nx'
         }
         // here we create all variables
+        * double, not `set type': a Stata matrix holds doubles, so anything
+        * narrower silently truncates the values this command exists to carry
+        * into the data. (The type used to be read from an undeclared `type'
+        * macro, which expanded to nothing, so every run produced floats.)
+        local j 0
         foreach i in `name' {
 			local j = `j'+1
-			qui:gen `type' `i'=matrix(`anything'[_n,`j'])			
+			qui:gen double `i'=matrix(`anything'[_n,`j'])
         }
         // here is where they are renamed.
 

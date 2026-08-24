@@ -130,7 +130,7 @@ title_grob <- cowplot::ggdraw() +
 foot_grob <- cowplot::ggdraw() +
   cowplot::draw_label(
     paste0("Numbers from the Speed section tables. csdid timed at bal(none), the common-sample choice, with analytical inference;\n",
-           "its default (999 bootstrap draws plus uniform bands) adds about a third of a second at one million rows."),
+           "999 bootstrap draws plus uniform bands (the shipped default is 1,000) add about a third of a second at one million rows."),
     x = 0.012, y = 0.5, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
     lineheight = 1.2)
 

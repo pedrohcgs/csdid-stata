@@ -1,4 +1,4 @@
-*! csdid 2.0.0 30jul2026
+*! csdid 2.0.0 24aug2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -57,8 +57,28 @@ mata:
 // are pinned the same way, so grep tests/ and tools/ before renaming anything
 // in this file.
 //
+// PRECISION POLICY (declared 2026-08-23). Accumulations that feed variances
+// and influence functions use the quad-precision family (quadcross,
+// quadsum, quadcolsum) throughout; R's did accumulates in double. That is a
+// deliberate, standing excess-accuracy stance, not 52 separate choices: the
+// differences it can produce sit below every parity tolerance the fixture
+// suite enforces, and the fixtures are the gate that would catch a case
+// where they did not. The ONE deliberate double-precision site is the rcond
+// crossprod (`crossprod in double precision ... to match R', section 4),
+// which feeds a threshold comparison R makes on the double-precision
+// object itself. Do not "optimize" quad to plain on a hot path without
+// taking the change through the perf-differential harness AND the parity
+// suite; do not upgrade the rcond site without owner sign-off.
+//
+// EVOLVING THE PUBLIC SURFACE. The 26 ado-called entry points (and the
+// test-pinned names above) are frozen at 2.0.0. A future release that must
+// change one of their signatures does it the sanctioned way -- a
+// callersversion() split with the old body kept in its own version block
+// ([M-3] lmbuild, "Version control") -- never a hard edit; see
+// docs/stored-results-api.md for the policy.
+//
 // HOW MANY NAMES, and why the count is worth keeping. 132 free functions and
-// three classes: `mata mlib add *()' writes one library member per free
+// three classes: `mata mlib add csdid*()' writes one library member per free
 // function and ONE per class, so the compiled library holds 135 top-level
 // names and the 28 class methods travel inside the three classdef entries
 // rather than beside them (163 members in all: 21 methods on csdid__Agg,
@@ -5106,7 +5126,7 @@ real matrix csdid__boot_table(
         if (att[j, 5] <= se_floor) att[j, 5] = .
     }
 
-    pointcrit = invnormal(1 - alp / 2)
+    pointcrit = invnormal(1 - alp / 2)  // transcribes R's qnorm(1 - alp/2); parity keeps the complement form
     crit = pointcrit
     if (cband) {
         active = csdid__selidx(bsigma :< .)
@@ -5535,8 +5555,13 @@ void csdid_boot_plugin_prepare(
     boot.preamble(attname, ifname, unitname, timename, clustervecname)
     // The prepare step needs only att's row count, already delivered as k; the
     // finish step re-reads the table from Stata. The check keeps the
-    // preamble's contract visible.
-    if (rows(boot.att) != boot.k) _error(3200)
+    // preamble's contract visible -- and if it ever fires, that is a csdid
+    // bug, so the message says what to send rather than leaving a bare
+    // conformability traceback naming an internal function.
+    if (rows(boot.att) != boot.k) {
+        errprintf("csdid internal error: the bootstrap preamble and the ATT(g,t) table disagree on the number of cells; please report this, with the output of csdid version, at the address in help csdid\n")
+        _error(498)
+    }
 
     // The C plugin reads the stored variables as plain doubles, so a dead
     // column (a failed cell: all-missing cluster sums) must be stored as
@@ -5707,7 +5732,7 @@ void csdid_agg_boot_plugin_finish(
         if (bsigma[j] < .) seboot[j] = bsigma[j] * scale
     }
 
-    pointcrit = invnormal(1 - alp / 2)
+    pointcrit = invnormal(1 - alp / 2)  // transcribes R's qnorm(1 - alp/2); parity keeps the complement form
     crit = pointcrit
     if (cband) {
         bsigma_cband = J(k_effects, 1, .)
@@ -6064,10 +6089,12 @@ void csdid__bmisc_rng_twist(real rowvector state)
 void csdid__bmisc_rng_twist_fast(real rowvector state)
 {
     real rowvector s0, s1, y, half, mag, odd
-    real scalar upper_mask, lower_mask, matrix_a
+    real scalar upper_mask, matrix_a
 
+    // The scalar reference twist masks with a lower_mask constant; the
+    // vectorised arithmetic below does that masking with the subtraction
+    // itself, so no lower mask exists here.
     upper_mask = 2147483648
-    lower_mask = 2147483647
     matrix_a = 2567483615
 
     s0 = state[2..228]
@@ -7812,7 +7839,7 @@ void csdid__Agg::core()
     iqr_norm = invnormal(.75) - invnormal(.25)
     bsigma = J(k, 1, .)
     seboot = J(k, 1, .)
-    pointcrit = invnormal(1 - alp / 2)
+    pointcrit = invnormal(1 - alp / 2)  // transcribes R's qnorm(1 - alp/2); parity keeps the complement form
     crit = pointcrit
     csdid__agg_boot_profile_add(1, phase_t0, n * k)
 
@@ -7929,7 +7956,7 @@ void csdid__Agg::cluster_core()
     iqr_norm = invnormal(.75) - invnormal(.25)
     bsigma = J(k, 1, .)
     seboot = J(k, 1, .)
-    pointcrit = invnormal(1 - alp / 2)
+    pointcrit = invnormal(1 - alp / 2)  // transcribes R's qnorm(1 - alp/2); parity keeps the complement form
     crit = pointcrit
     csdid__agg_boot_profile_add(1, phase_t0, nc * k)
 

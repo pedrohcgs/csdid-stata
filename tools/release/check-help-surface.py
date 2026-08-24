@@ -51,6 +51,13 @@ R4  SMCL BRACES.  A SMCL directive must open and close on the same physical
     deprecation notice.  The check is a per-line balance count, which is what
     the manual's rule reduces to.
 
+R6  ANCHOR INTEGRITY.  Every `<file>##<anchor>' target -- in a
+    `{viewerjumpto}' line, in a `{help ...}' or `{helpb ...}' link, anywhere --
+    must name a help file the payload ships and an anchor that file actually
+    declares with `{marker <anchor>}'.  A dead anchor renders silently: the
+    Viewer prints the link and lands the reader at the top of the file, and no
+    build step and no rendering test says a word.
+
 R5  HELP REACHABLE BY NAME.  Every command the payload installs must have a
     help file a user can reach by typing the command's name.  Five did not:
     `csgvar', which is the documented way to build gvar(), and the four
@@ -86,9 +93,15 @@ OPTION_OWNERS = {
     "csdid_plot.sthlp": ["csdid_plot.ado"],
     "csdid_postestimation.sthlp": [],
     "csdid_legacy.sthlp": [],
+    # csgvar is a supported command with a topic and an option table of its
+    # own. Its implementation lives in _gcsgvar.ado, which is also the egen
+    # entry point; csgvar.ado forwards to it, and both declare the same two
+    # options, so reading the command form is enough.
+    "csgvar.sthlp": ["csgvar.ado"],
+    # A release-notes topic documents no options of its own.
+    "csdid_whatsnew.sthlp": [],
     # `.h' aliases carry no option table of their own; the options they
     # forward to are checked where they are documented.
-    "csgvar.sthlp": [],
     "csdid_rif.sthlp": [],
     "csdid_table.sthlp": [],
     "dipt.sthlp": [],
@@ -191,6 +204,29 @@ JOURNAL_TITLES = [
     "Review of Economic Studies",
 ]
 
+# The retrospective rule below bans the vocabulary a sentence about a build
+# nobody outside this repository ever had is written in. The SAME vocabulary is
+# how a help file states a legitimate difference from csdid Version 1.82, the
+# version SSC distributes and the one a reader is upgrading from -- and that
+# difference is exactly what the help must be free to say.
+#
+# The two are separated by exact phrase, not by pattern. Each entry below is a
+# phrase that has been read in place and judged to be about Version 1.82, and
+# it is removed from the line before the retrospective rule scans it, the way a
+# journal title is. A pattern broad enough to permit these ("allow `used to'
+# when the paragraph is about the legacy option") would permit the next
+# development-history sentence written in the same words, which is the whole
+# thing the rule is for. Each entry must still appear somewhere in the shipped
+# help: a whitelisted phrase nobody kept has stopped being an exemption, and
+# the gate says so rather than carrying it.
+LEGACY_COMPARISON_PHRASES = [
+    # csdid.sthlp, Legacy compatibility: what `asinr' did in Version 1.82.
+    "it used to switch on an",
+    # csdid.sthlp, Migrating from Stata csdid Version 1.82: a do-file written
+    # against 1.82.
+    "previously ran",
+]
+
 HISTORY_RULES = [
     ("session-slug",
      r"\bsession-\d",
@@ -222,6 +258,19 @@ HISTORY_RULES = [
     ("work-marker",
      r"\bTODO\b|\bFIXME\b|\bXXX\b|\bWIP\b",
      "a work-in-progress marker"),
+    # A shipped help file describes what the command does now, and -- for a
+    # reader upgrading -- how that differs from csdid Version 1.82. A build of
+    # 2.0.0 that was never released is neither: no reader has it, nobody can
+    # act on the sentence, and it advertises that the behaviour it describes
+    # was once wrong. `used to' is scoped to the retrospective sense (`it used
+    # to', `csdid used to') so the instrumental one -- `must not be used to
+    # select an estimator' -- is not swept in. Legitimate 1.82 comparisons are
+    # exempted by exact phrase in LEGACY_COMPARISON_PHRASES above.
+    ("retrospective-narration",
+     r"(?i)\bearlier builds?\b|\bprevious builds?\b|\bearlier release[sd]?\b"
+     r"|\bpre-release\b|\bpreviously\b|\bno longer\b"
+     r"|\b(?:it|they|this|that|these|those|csdid\w*|the\s+\w+)\s+used to\b",
+     "narration of behaviour some earlier build had"),
 ]
 
 
@@ -235,6 +284,16 @@ HISTORY_RULES = [
 
 # Posted by `ereturn post b V, esample()' rather than by name.
 EPOST_RESULTS = ["b", "V", "sample"]
+
+# Posted by a Stata command rather than by an `ereturn' statement of ours, and
+# therefore invisible to the scan below. `signestimationsample' is what stores
+# both, and it is what `checkestimationsample' reads to refuse `estat
+# summarize' on data that have changed since the estimation -- so the
+# exemption is grounded on the call being there: the checker requires some ado
+# to make it, and the day nothing does, these two stop being posted and the
+# gate says so.
+SIGNED_BY = "signestimationsample"
+SIGNED_RESULTS = ["datasignature", "datasignaturevars"]
 
 # Named in the help precisely to say the package does NOT store them. The
 # checker asserts that no ado posts them; the day one does, this entry is wrong
@@ -334,6 +393,8 @@ def approved_credit_lines(path, text):
 def strip_journal_titles(line):
     for title in JOURNAL_TITLES:
         line = line.replace(title, "")
+    for phrase in LEGACY_COMPARISON_PHRASES:
+        line = line.replace(phrase, "")
     return line
 
 
@@ -524,7 +585,14 @@ def check_stored_results(help_files, problems):
                 "e(%s) is listed as absent by design, but an ado now posts it "
                 "-- the help says the package stores no e(%s); fix one of them "
                 "and drop the entry from ABSENT_BY_DESIGN" % (name, name))
-    allowed = posted | set(EPOST_RESULTS) | set(ABSENT_BY_DESIGN)
+    if SIGNED_BY not in joined:
+        problems.append(
+            "no ado calls `%s', so e(%s) are not posted the way "
+            "SIGNED_RESULTS says they are -- the help documents them and this "
+            "gate would be exempting names nothing stores"
+            % (SIGNED_BY, ") and e(".join(SIGNED_RESULTS)))
+    allowed = (posted | set(EPOST_RESULTS) | set(ABSENT_BY_DESIGN)
+               | set(SIGNED_RESULTS))
     checked = 0
     for path in help_files:
         base = os.path.basename(path)
@@ -664,6 +732,45 @@ def check_smcl_braces(help_files, problems):
 
 
 # ---------------------------------------------------------------------------
+# R6: every ##anchor resolves to a {marker} in a help file the payload ships
+#
+# SMCL writes an in-file jump as `file##anchor'. The Viewer does not report a
+# target it cannot find: it renders the link, and clicking it opens the file at
+# the top, so a reworded section heading turns its whole table of contents into
+# links that look right and go nowhere. Nothing else in the build reads these.
+# ---------------------------------------------------------------------------
+MARKER = re.compile(r"\{marker\s+([A-Za-z0-9_]+)\}")
+ANCHOR_LINK = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)##([A-Za-z0-9_]+)")
+
+
+def check_anchors(help_files, problems):
+    markers = {}
+    for path in help_files:
+        base = os.path.basename(path)[:-len(".sthlp")]
+        markers[base] = set(MARKER.findall(read(path)))
+    checked = 0
+    for path in help_files:
+        base = os.path.basename(path)
+        for lineno, line in enumerate(read(path).split("\n"), 1):
+            for target, anchor in ANCHOR_LINK.findall(line):
+                checked += 1
+                if target not in markers:
+                    problems.append(
+                        "%s:%d: links to %s##%s, but the payload ships no "
+                        "%s.sthlp" % (base, lineno, target, anchor, target))
+                elif anchor not in markers[target]:
+                    problems.append(
+                        "%s:%d: links to %s##%s, and %s.sthlp declares no "
+                        "{marker %s} -- the link renders and lands the reader "
+                        "at the top of the file"
+                        % (base, lineno, target, anchor, target, anchor))
+    if not checked:
+        problems.append("found no `file##anchor' links in the shipped help -- "
+                        "this check is checking nothing")
+    return checked
+
+
+# ---------------------------------------------------------------------------
 # R5: every installed command reaches help by its own name
 # ---------------------------------------------------------------------------
 ALIAS_TARGET = re.compile(r"^\.h\s+([A-Za-z_][A-Za-z0-9_]*)\s*$", re.M)
@@ -727,6 +834,13 @@ def main():
                 "%r is exempted from the process-vocabulary rule as a journal "
                 "title, but no help file cites it -- drop it from "
                 "JOURNAL_TITLES" % title)
+    for phrase in LEGACY_COMPARISON_PHRASES:
+        if phrase not in corpus:
+            problems.append(
+                "%r is whitelisted as a Version 1.82 comparison, but no help "
+                "file contains it -- drop it from LEGACY_COMPARISON_PHRASES "
+                "rather than carrying an exemption for text nobody kept"
+                % phrase)
 
     n_options = 0
     for path in help_files:
@@ -735,6 +849,7 @@ def main():
     n_codes = check_return_codes(help_files, problems)
     n_matrices = check_matrix_columns(help_files, problems)
     n_lines = check_smcl_braces(help_files, problems)
+    n_anchors = check_anchors(help_files, problems)
     n_commands = check_help_reachable(problems)
 
     if problems:
@@ -762,6 +877,8 @@ def main():
           % (n_options, n_results, n_codes, n_matrices))
     print("   SMCL: every directive on each of %d input lines closes on the "
           "line it opens on" % n_lines)
+    print("   navigation: each of %d `file##anchor' links resolves to a "
+          "{marker} in a help file the payload ships" % n_anchors)
     print("   reachability: each of %d installed command names resolves to a "
           "help file the payload ships" % n_commands)
     print("   NOT checked: free prose. Whether a sentence describes what the "

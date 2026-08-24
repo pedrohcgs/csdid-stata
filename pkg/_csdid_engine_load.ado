@@ -1,4 +1,4 @@
-*! _csdid_engine_load 2.0.0 30jul2026
+*! _csdid_engine_load 2.0.0 24aug2026
 * ---------------------------------------------------------------------------
 * Bringing the Mata engine into the session.
 *
@@ -169,6 +169,13 @@ program define _csdid_engine_load
     * tell them apart -- that is the stamp's job, below. `mata mlib index' is
     * retried once because a package installed during this session is not in
     * the index Stata built when it started.
+    *
+    * When the probe still fails WITH a library on the adopath, the library is
+    * one this Stata could not read -- object code compiled by a newer Stata
+    * is ignored with an r(3499), which the captures above absorb -- and that
+    * is the one field condition of a shipped package on an older Stata. The
+    * note below is the only place it can be announced: the stamp block cannot
+    * say it, because a library that did not load has no stamp to read.
     * -----------------------------------------------------------------------
     local engine_from_source = 0
     capture mata: csdid__mean(J(1, 1, 0))
@@ -177,13 +184,11 @@ program define _csdid_engine_load
         capture mata: csdid__mean(J(1, 1, 0))
     }
     if _rc {
-        capture quietly findfile csdid.mata
-        if _rc {
-            display as error "csdid Mata source not found on adopath"
-            exit 499
-        }
-        quietly do "`r(fn)'"
+        _csdid_engine_source
         local engine_from_source = 1
+        if `mlib_found' {
+            display as text "note: a compiled csdid library was found at `mlib_file' but this Stata could not read it -- most often the library was built by a newer Stata than this one -- so csdid compiled its source copy instead. The results are the same; only the first csdid of a session takes a moment longer. Nothing needs to be done."
+        }
     }
 
     * -----------------------------------------------------------------------
@@ -236,20 +241,14 @@ program define _csdid_engine_load
             local mlib_stale = (real("`mlib_stata'") >= . | `mlib_newer')
         }
         if `mlib_stale' {
-            capture quietly findfile csdid.mata
-            if _rc {
-                display as error "csdid's compiled library cannot be used in this Stata and the source copy it falls back on is not on the adopath; re-install csdid"
-                exit 499
-            }
+            mata: mata clear
+            _csdid_engine_source
             if `mlib_newer' {
                 display as text "note: csdid's compiled library was built by Stata `mlib_stata' and this is Stata `c(stata_version)', so csdid is reading its source copy instead. The results are the same; only the first csdid of a session takes a moment longer. Nothing needs to be done."
             }
             else {
                 display as text "note: the compiled csdid library on the adopath belongs to a different installation of csdid and is being ignored; re-install csdid to replace it"
             }
-            local mata_source "`r(fn)'"
-            mata: mata clear
-            quietly do "`mata_source'"
         }
         else if "`mlib_stata'" != "source" {
             * -------------------------------------------------------------
@@ -323,4 +322,79 @@ program define _csdid_engine_load
     capture mata: st_local("live_stamp", csdid_mlib_version())
     global CSDID_ENGINE_RESOLVED `"`live_stamp';`c(adopath)';`c(matalibs)';`c(sysdir_base)';`c(sysdir_site)';`c(sysdir_personal)';`c(sysdir_plus)';`c(sysdir_oldplace)';`c(pwd)'"'
     global CSDID_ENGINE_LIBRARY `"`mlib_file'"'
+end
+
+* ---------------------------------------------------------------------------
+* The source fallback: resolve csdid.mata, compile it, and prove that what
+* was compiled is THIS csdid's engine.
+*
+* `findfile csdid.mata' alone is not a name for this package's file. The
+* ado-path searches `.' and PERSONAL before PLUS, and at least one other
+* package -- csdid2, whose README tells its users to copy its files into
+* PERSONAL -- distributes a DIFFERENT file named csdid.mata. Compiling
+* whichever copy answers first, unverified, ran that package's classes and
+* died mid-estimation with `csdid__globals_init() not found', which names
+* nothing the user can act on. So the source is taken from beside the
+* csdid.ado that is actually running -- the two ship side by side -- and the
+* adopath-wide search remains only as a fallback for layouts that keep them
+* apart (this repository's own src/ado and src/mata are one). Either way the
+* compile is verified afterwards: csdid_mlib_version() must answer with this
+* package's version, or the file that answered is refused BY NAME.
+*
+* The compile itself is pinned the way src/build.do pins it, minus
+* strictness. matalnum defeats the optimizer (a build host that had it on
+* produced a library 16% larger with no error) and mataoptimize off makes the
+* engine slower in ways no numeric gate can see; a user's settings must not
+* decide what the engine compiles into, so both are set for the compile and
+* restored afterwards. matastrict is deliberately NOT touched: the runtime
+* path must not leak strictness into the user's session (see the note at the
+* top of csdid.mata), and the shipped source compiles cleanly either way.
+* ---------------------------------------------------------------------------
+program define _csdid_engine_source
+    version 14
+    local mata_source ""
+    capture quietly findfile csdid.ado
+    if !_rc {
+        local ado_file `"`r(fn)'"'
+        * The answer always ends with the nine bytes `csdid.ado', so the
+        * sibling is a substr, never a substring REPLACEMENT -- a directory
+        * component that happens to contain the text `csdid.ado' must not be
+        * rewritten.
+        local plen = strlen(`"`ado_file'"')
+        if `plen' > 9 & substr(`"`ado_file'"', `plen' - 8, .) == "csdid.ado" {
+            local mata_source = substr(`"`ado_file'"', 1, `plen' - 9)
+            local mata_source `"`mata_source'csdid.mata"'
+            capture confirm file `"`mata_source'"'
+            if _rc local mata_source ""
+        }
+    }
+    if `"`mata_source'"' == "" {
+        capture quietly findfile csdid.mata
+        if _rc {
+            display as error "csdid Mata source not found on adopath"
+            exit 499
+        }
+        local mata_source `"`r(fn)'"'
+    }
+    local user_matalnum "`c(matalnum)'"
+    local user_mataopt "`c(mataoptimize)'"
+    quietly mata: mata set matalnum off
+    quietly mata: mata set mataoptimize on
+    capture quietly do `"`mata_source'"'
+    local do_rc = _rc
+    quietly mata: mata set matalnum `user_matalnum'
+    quietly mata: mata set mataoptimize `user_mataopt'
+    if `do_rc' {
+        display as error `"csdid's Mata source at `mata_source' failed to compile; type -do "`mata_source'"- to see the compiler's message, or re-install csdid"'
+        exit `do_rc'
+    }
+    local mlib_stamp ""
+    capture mata: st_local("mlib_stamp", csdid_mlib_version())
+    local src_rc = _rc
+    local mlib_bar = strpos("`mlib_stamp'", "|")
+    local mlib_pkg = substr("`mlib_stamp'", 1, `mlib_bar' - 1)
+    if `src_rc' | `mlib_bar' == 0 | "`mlib_pkg'" != "2.0.0" {
+        display as error `"the file `mata_source' is not this csdid's engine source: a file with the same name, from another package or an older installation, is shadowing it on the adopath. Remove or rename that file, or move its directory off the adopath, and run csdid again."'
+        exit 499
+    }
 end

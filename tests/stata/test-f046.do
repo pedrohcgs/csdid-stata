@@ -105,7 +105,6 @@ matrix Asinr = e(attgt)
 assert mreldif(Asinr, Default) < 1e-14
 f046_assert_log_contains using "`evlog'", message("`asinr_msg'")
 
-local rademacher_msg "csdid legacy compatibility: wboot(rademacher) uses R-compatible rademacher multipliers in this port"
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)
@@ -118,7 +117,7 @@ assert e(biters) == 31
 assert "`e(boot_dist)'" == "rademacher"
 assert "`e(boot_dist_requested)'" == "rademacher"
 
-local mammen_msg "wboot() currently supports only R-compatible rademacher multipliers"
+local mammen_msg "wboot() currently supports only rademacher multipliers"
 import delimited using "`root'/tests/fixtures/parity/f046/inputs/input.csv", clear asdouble
 capture log close f046event
 log using "`evlog'", text replace name(f046event)

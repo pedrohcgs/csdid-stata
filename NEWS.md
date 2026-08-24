@@ -176,7 +176,10 @@ alongside numerical parity with the reference implementation.
 
 **Against Version 1.82, on identical data with 2.0.0 pinned to that
 version's own defaults so both versions compute the same numbers: 17x to 334x**, depending
-on the design. The gain grows with the number of periods and the number of
+on the design — this range comes from designs whose size is varied on purpose
+(periods, cohorts, rows), which is a different measurement from the
+fixed-size workload table in the README. The gain grows with the number of
+periods and the number of
 cohorts, because those are what drive the number of ATT(g,t) cells: 25x at
 five periods and 334x at forty, 114x at three cohorts and 118x at six. It is
 smallest on repeated cross sections, which was Version 1.82's fastest path,
@@ -188,8 +191,9 @@ Absolute numbers from one machine (StataNow/MP 19.5, Apple Silicon), so you
 can calibrate:
 
 - A one-million-row panel estimates all ATT(g,t) in 1.31 seconds with
-  analytical standard errors, and in 1.50 seconds at the shipped default of
-  999 bootstrap replications with uniform confidence bands.
+  analytical standard errors, and in 1.50 seconds at 999 bootstrap
+  replications with uniform confidence bands. (The shipped default is
+  `reps(1000)`; 999 is what these runs were timed at.)
 - A 350,000-row panel takes between 0.39 and 0.74 seconds for every method
   (`dr`, `reg`, `ipw`), with or without covariates. A 400,000-observation
   repeated cross section with 20 periods and 12 cohorts takes about three

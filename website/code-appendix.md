@@ -5835,7 +5835,7 @@ title_grob &lt;- cowplot::ggdraw() +
 foot_grob &lt;- cowplot::ggdraw() +
   cowplot::draw_label(
     paste0("Numbers from the Speed section tables. csdid timed at bal(none), the common-sample choice, with analytical inference;\n",
-           "its default (999 bootstrap draws plus uniform bands) adds about a third of a second at one million rows."),
+           "999 bootstrap draws plus uniform bands (the shipped default is 1,000) add about a third of a second at one million rows."),
     x = 0.012, y = 0.5, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
     lineheight = 1.2)
 
@@ -5843,5 +5843,6 @@ combo &lt;- cowplot::plot_grid(title_grob, panels, foot_grob, ncol = 1,
                             rel_heights = c(0.16, 1, 0.11))
 
 ggsave(file.path(outdir, "field-speed.png"), combo,
-       width = 13, height = 5.6, dpi = 200, bg = "white")</code></pre>
+       width = 13, height = 5.6, dpi = 200, bg = "white")
+</code></pre>
 </details>

@@ -1,9 +1,10 @@
 {smcl}
-{* *! version 2.0.0 30jul2026}{...}
+{* *! version 2.0.0 24aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
+{vieweralsosee "csgvar" "help csgvar"}{...}
 {viewerjumpto "Supported" "csdid_legacy##supported"}{...}
 {viewerjumpto "Deprecated" "csdid_legacy##deprecated"}{...}
 {viewerjumpto "Replacements" "csdid_legacy##replacements"}{...}
@@ -22,50 +23,8 @@ from csdid Version 1.82{p_end}
 
 {pstd}
 {bf:csgvar} builds the cohort variable that {cmd:gvar()} expects, from a binary
-treatment indicator. It is fully supported.
-{p_end}
-
-{phang2}{cmd:. csgvar} {it:newvar} {cmd:=} {it:treatment} [{it:if}] [{it:in}]{cmd:,}
-{cmd:tvar(}{it:timevar}{cmd:)} {cmd:ivar(}{it:panelvar}{cmd:)}{p_end}
-
-{pstd}
-The result is 0 for units never treated within the sample and the first treated
-period otherwise, which is exactly the coding {cmd:csdid} requires. The
-treatment indicator must take at most two values, and the untreated state must
-be coded 0 -- that is what makes a never-treated unit come out as cohort 0.
-An indicator coded {cmd:1}/{cmd:2}, or {cmd:-1}/{cmd:1}, would otherwise give
-every unit a positive cohort and leave the data with no never-treated units at
-all, so {cmd:csgvar} refuses it with return code {cmd:r(459)}, naming the two
-values it found. More than two values is the same refusal. The treated value
-itself is free: {cmd:0}/{cmd:5} works as well as {cmd:0}/{cmd:1}.
-{p_end}
-
-{phang2}{cmd:. csgvar gvar = treated, tvar(year) ivar(county)}{p_end}
-{phang2}{cmd:. csdid y, ivar(county) time(year) gvar(gvar)}{p_end}
-
-{pstd}
-The same cohort variable is available as an {helpb egen} function, which is
-what {cmd:_gcsgvar.ado} provides:
-{p_end}
-
-{phang2}{cmd:. egen gvar = csgvar(treated), tvar(year) ivar(county)}{p_end}
-
-{pstd}
-The two forms are the same computation -- {cmd:csgvar} forwards to
-{cmd:_gcsgvar} -- so they accept the same options and raise the same refusals.
-{p_end}
-
-{pstd}
-{bf:Storage type.} A cohort code is a value on your time axis, so
-{cmd:csgvar} computes it in {cmd:double} and stores it in the type you ask
-for. With no type asked for, {cmd:csgvar} gives you a {cmd:double}; the
-{helpb egen} form takes {cmd:egen}'s own default, which is whatever
-{cmd:set type} is, so write {cmd:egen double} when your time variable needs
-it. A type too narrow to hold the cohort code exactly is
-refused with return code {cmd:r(198)} rather than rounding it: a rounded
-cohort is a different treatment group, and {cmd:csdid} would estimate it
-without complaint. This matters on a {cmd:%tc} or epoch-second axis, where the
-values run past {cmd:float}'s exact range.
+treatment indicator. It is fully supported and has a help topic of its own:
+see {helpb csgvar}.
 {p_end}
 
 
@@ -159,5 +118,6 @@ report a problem, and how to cite the package are in
 
 {psee}
 Online:  {helpb csdid}, {helpb csdid_postestimation:csdid postestimation},
-{helpb csdid_estat}, {helpb csdid_stats}, {helpb csdid_plot}
+{helpb csdid_estat}, {helpb csdid_stats}, {helpb csdid_plot},
+{helpb csgvar}
 {p_end}

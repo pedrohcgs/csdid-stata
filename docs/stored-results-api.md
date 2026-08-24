@@ -124,3 +124,15 @@ This policy is part of the public API because one uniform rule means a workflow
 that works on a test extract behaves the same way on the full dataset, and
 because it protects users from accidental memory blowups while preserving an
 explicit compatibility path.
+
+## Evolving the Mata surface
+
+The engine's externally reached Mata names -- the 26 ado-called entry points
+and the handful of test- and tool-pinned internals listed in the source's
+naming banner -- are frozen at 2.0.0 alongside the `e()` surface above. A
+future release that must change one of those signatures does it the way
+[M-3] lmbuild sanctions: a `callersversion()` split, with the old body kept
+compiling in its own `version` block of the same source file, so existing
+callers keep the behaviour they were written against. A hard edit to a frozen
+signature is not an option; if a split is genuinely impossible, the change is
+a new name plus a deprecation of the old one.

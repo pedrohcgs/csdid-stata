@@ -1,11 +1,11 @@
-*! csdid_estat 2.0.0 30jul2026
+*! csdid_estat 2.0.0 24aug2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {
         display as error "csdid_estat requires prior csdid results"
         exit 301
     }
-    * HS-04 fix: fall through to Stata's estat_default for the STANDARD estat
+    * fall through to Stata's estat_default for the STANDARD estat
     * subcommands csdid does not implement itself (vce, summarize, ic,
     * bootstrap). Before this, `estat vce' after csdid printed csdid's own
     * subcommand menu and returned 498, even though e(V) is posted and the
@@ -24,11 +24,22 @@ program define csdid_estat, eclass
         if "`csdid_peek'" == "ic" | "`csdid_peek'" == "vce" | ///
            "`csdid_peek'" == substr("summarize", 1, max(2, `csdid_peek_n')) | ///
            "`csdid_peek'" == substr("bootstrap", 1, max(4, `csdid_peek_n')) {
+            * estat summarize is the one forwarded subcommand that reads the
+            * DATA in memory rather than stored results: without this check
+            * it would describe whatever is in memory now and label it the
+            * estimation sample. csdid signs its sample at estimation time;
+            * results loaded from a saved RIF carry no signature and no
+            * e(sample), and estat summarize already refuses those on its
+            * own, so the check is applied only where a signature exists.
+            if "`csdid_peek'" == substr("summarize", 1, max(2, `csdid_peek_n')) ///
+                & `"`e(datasignaturevars)'"' != "" {
+                checkestimationsample
+            }
             estat_default `0'
             exit
         }
     }
-    * OPT-007 fix: dropmissing is DECLARED and forwarded to csdid_stats on
+    * dropmissing is DECLARED and forwarded to csdid_stats on
     * every aggregation route. It used to be absent here, so the documented
     * guarantee (csdid_stats.sthlp: aggregation refuses on missing ATT(g,t)
     * cells unless dropmissing is given) had no route through estat at all -
@@ -43,11 +54,52 @@ program define csdid_estat, eclass
     * the option is unsupported either way - and so _csdid_estat_optdup, which
     * must mirror only the SUPPORTED declarations, needs no change.
     if `"`from'"' != "" {
-        display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which R fixes at event time 0. Use window(# #) on estat event for event-time windows."
+        display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which is now fixed at event time 0 -- the legacy default from(0) already was. Use window(# #) on estat event for event-time windows."
         exit 198
     }
+    * The standard saving idiom -- saving(filename, replace) -- is parsed here
+    * once for every route, rather than letting the comma travel into the
+    * filename (csdid_plot's saving() had the identical defect and was fixed
+    * first; csdid's saverif() carries the same
+    * parser). `syntax' resets the STANDARD locals whether or not declared,
+    * so the ones still needed downstream are saved around the sub-option
+    * parse and put back.
+    if `"`saving'"' != "" {
+        mata: st_local("_sv_comma", strofreal(strpos(st_local("saving"), ",")))
+        if `_sv_comma' {
+            local _sv_outer_replace `"`replace'"'
+            local _sv_rest ""
+            gettoken _sv_file _sv_rest : saving, parse(",")
+            if `"`_sv_file'"' == "," {
+                local _sv_file ""
+            }
+            else {
+                gettoken _sv_c _sv_rest : _sv_rest, parse(",")
+                mata: st_local("_sv_file", strtrim(st_local("_sv_file")))
+            }
+            local _sv_options `"`options'"'
+            local _sv_zero `"`0'"'
+            local _sv_anything `"`anything'"'
+            local 0 `", `_sv_rest'"'
+            capture syntax [, REPLACE]
+            local _sv_parse_rc = _rc
+            local options `"`_sv_options'"'
+            local 0 `"`_sv_zero'"'
+            local anything `"`_sv_anything'"'
+            if `_sv_parse_rc' {
+                display as error `"saving() accepts only the replace sub-option; cannot parse: `_sv_rest'"'
+                exit 198
+            }
+            if "`replace'" == "" local replace `"`_sv_outer_replace'"'
+            if `"`_sv_file'"' == "" {
+                display as error "saving() requires a filename before the comma, as in saving(myfile, replace)"
+                exit 198
+            }
+            local saving `"`_sv_file'"'
+        }
+    }
     if `"`options'"' != "" {
-        * EUX-010/EUX-013/EUX-014: -syntax- hands a REPEATED declared option to
+        * -syntax- hands a REPEATED declared option to
         * the `*' catch-all (measured: `window(-1 1) window(0 1)' leaves
         * "window(0 1)" in `options'), so `estat event, window(-1 1) window(0 1)'
         * used to be refused as an "unsupported option" even though window() is
@@ -76,7 +128,7 @@ program define csdid_estat, eclass
         display as error `"unsupported option(s): `options'"'
         exit 198
     }
-    * EUX-015 fix: a bare `csdid_estat' used to fall out of `syntax' with
+    * a bare `csdid_estat' used to fall out of `syntax' with
     * Stata's stock r(100) "argument required" and no hint about what to type,
     * while the informative subcommand list sat one branch away at the bottom
     * of this program. Name the subcommands instead.
@@ -85,7 +137,7 @@ program define csdid_estat, eclass
         exit 198
     }
     if `"`subcmd'"' == `"attgt"' {
-        * SP-07: attgt builds no r(table), and csdid_estat is eclass, so
+        * attgt builds no r(table), and csdid_estat is eclass, so
         * nothing here touches r(). matlist actively restores the caller's
         * r() around its own body, and estat.ado's `return add' copies the
         * stale r() back out through the wrapper -- so `estat event' followed
@@ -144,14 +196,14 @@ program define csdid_estat, eclass
         *     table above the asked result, F-047 defect 4).
         * F-044: level() is forwarded too, so the aggregation bands at the
         * requested level instead of the session default.
-        * SP-01/SP-02/OPT-006/OPT-016 fix (P0). The aggregation is now ALWAYS
+        * The aggregation is now ALWAYS
         * recomputed, exactly as the dynamic/simple/group/calendar routes below
         * already did. The old guard
         *     need_recompute = (no e(aggte)) | (agg_type != dynamic) | (window given)
         * reused whatever dynamic aggregation happened to be lying in e(),
         * which had three separately measured consequences, all silent and all
         * rc 0:
-        *   - SP-01: `estat event, level(90)' followed by `estat event,
+        *   - `estat event, level(90)' followed by `estat event,
         *     level(99)' returned the 90% bootstrap band (crit 2.2777391) for
         *     the 99% request; a fresh estimation at level(99) gives 2.8658043.
         *     The help's rationale for this - "a bootstrap band cannot be
@@ -159,11 +211,11 @@ program define csdid_estat, eclass
         *     the SAME stored multiplier state e(boot_rng_state), which is why
         *     `csdid_stats, type(dynamic) level(99)' already returned
         *     2.8658043 from the identical session.
-        *   - SP-02/OPT-016: e(agg_level) kept the STALE aggregation's level
+        *   - e(agg_level) kept the STALE aggregation's level
         *     while r(table) carried the requested one, so r(table), `estat
         *     tidy' (which reads e(agg_level)) and csdid_plot reported three
         *     different intervals for one displayed result.
-        *   - OPT-006: after `csdid_stats, window(0 0)', `estat event' replayed
+        *   - after `csdid_stats, window(0 0)', `estat event' replayed
         *     the windowed aggregation (N_aggte=1) while `estat dynamic'
         *     recomputed the full one (N_aggte=7). csdid_stats does not store
         *     the window it used, so a stale window is not detectable from e();
@@ -176,7 +228,7 @@ program define csdid_estat, eclass
         * same estimation are bit-identical (measured). The cost is one extra
         * aggregation, the same cost the other four routes already pay.
         *
-        * SP-07 fix. The dynamic/simple/group/calendar routes used to share
+        * The dynamic/simple/group/calendar routes used to share
         * everything with `event' EXCEPT the posting step: without `post' they
         * ran the aggregation and went straight to `matlist e(aggte)', so
         * _csdid_post never ran and r(table) was never built. Measured
@@ -199,7 +251,7 @@ program define csdid_estat, eclass
         *   F-045: post forwarded (was parsed and dropped - e(b) silently kept
         *   the ATT(g,t) vector, so a following test/lincom tested the wrong
         *   quantity at rc=0);
-        *   OPT-007: dropmissing forwarded, so the documented missing-cell
+        *   dropmissing forwarded, so the documented missing-cell
         *   guarantee has the same meaning on every estat route.
         local agg_type "`subcmd'"
         if "`agg_type'" == "event" local agg_type "dynamic"
@@ -224,7 +276,7 @@ program define csdid_estat, eclass
         }
         _csdid_estat_rclear
         quietly csdid_stats, `stat_opts'
-        * DS-11, restated on this route: csdid_stats' own note is inside the
+        * Restated on this route: csdid_stats' own note is inside the
         * `quietly'. Re-derive it from the aggregation it just produced.
         capture confirm matrix e(aggte)
         if !_rc {
@@ -243,7 +295,7 @@ program define csdid_estat, eclass
         }
         tempname show_b
         * No-transit (supersedes the snapshot/restore machinery, including the
-        * SP-08 generic e() snapshot): without `post', _csdid_post no longer
+        * generic e() snapshot): without `post', _csdid_post no longer
         * touches e(b)/e(V) at all - it builds r(table) directly from the
         * aggregation's B/V - so there is nothing to snapshot and nothing to
         * restore. The old post-then-restore cycle rebuilt e() wholesale twice
@@ -251,12 +303,12 @@ program define csdid_estat, eclass
         * that includes the one-row-per-unit influence functions, and Stata's
         * classic-matrix layer is quadratic in the longest dimension, so a
         * plain `estat event' after a 20,000-unit estimation spent ~19s
-        * copying matrices it did not change. SP-08's failure mode (a
+        * copying matrices it did not change. The snapshot's failure mode (a
         * transient posting left behind on the saved-RIF path) cannot occur
         * when no transient posting exists.
         * F-047: windowing happened upstream in csdid_stats, so the poster no
         * longer receives (or fabricates) window bounds.
-        * F-045/SP-07: `event' keeps the historical Tm#/Tp#/Post_avg names
+        * F-045/`event' keeps the historical Tm#/Tp#/Post_avg names
         * through the eventnames branch of _csdid_post_aggte; the other four
         * types get the naming their own aggregation implies (G#, T#, ATT,
         * Overall). Both entry points build r(table).
@@ -267,7 +319,7 @@ program define csdid_estat, eclass
             _csdid_post aggte, level(`level') `post'
         }
         if "`post'" == "" {
-            * SP-07: only `event' displays the coefficient vector; the
+            * only `event' displays the coefficient vector; the
             * aggregation routes display e(aggte). Without `post' nothing was
             * posted, so the display vector comes from r(table) row 1 - the
             * same values, with the same column names, the posting path would
@@ -314,7 +366,7 @@ program define csdid_estat, eclass
         exit
     }
     if inlist(`"`subcmd'"', "tidy", "glance") & "`dropmissing'" != "" {
-        * OPT-007: tidy/glance export whatever aggregation already exists and
+        * tidy/glance export whatever aggregation already exists and
         * never call csdid_stats, so dropmissing has nothing to act on here.
         * Refusing beats accepting-then-ignoring the option this release just
         * added.
@@ -322,7 +374,7 @@ program define csdid_estat, eclass
         exit 198
     }
     if `"`subcmd'"' == `"tidy"' {
-        * SP-07: see the attgt branch. tidy exports and returns nothing, so
+        * see the attgt branch. tidy exports and returns nothing, so
         * without this the previous aggregation's r(table) survives the
         * command and reads as its result.
         _csdid_estat_rclear
@@ -340,7 +392,7 @@ program define csdid_estat, eclass
         exit
     }
     if `"`subcmd'"' == `"glance"' {
-        * SP-07: see the attgt branch.
+        * see the attgt branch.
         _csdid_estat_rclear
         if `"`saving'"' == "" {
             display as error "glance requires saving(filename)"
@@ -355,15 +407,15 @@ program define csdid_estat, eclass
         }
         exit
     }
-    * EUX-006 note: Stata's own class for this is r(321) ("estat zzz not valid"
+    * Stata's own class for this is r(321) ("estat zzz not valid"
     * after regress, measured), but rc 498 here is pinned by the frozen
     * test-f051 contract; changing the class would fail that test. Flagged to
-    * the owner rather than changed - see the EUX-006 entry in the handover.
+    * the owner rather than changed.
     display as error `"csdid_estat subcommand `subcmd' is not supported; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, and glance"'
     exit 498
 end
 
-* EUX-010/EUX-013 helper. Declares exactly the options csdid_estat declares,
+* Duplicate-option helper. Declares exactly the options csdid_estat declares,
 * minus the `*' catch-all, so a -capture- call over the LEFTOVER options tells
 * the caller whether every leftover is one of csdid_estat's own (i.e. it was
 * typed twice) or whether at least one is genuinely unknown. Keeping the two
@@ -414,7 +466,7 @@ program define _csdid_estat_inf_header
     }
 end
 
-* SP-07 helper. An rclass program replaces r() wholesale on exit, so calling
+* r()-hygiene helper. An rclass program replaces r() wholesale on exit, so calling
 * this one with nothing to return is the supported way to drop a previous
 * aggregation's r(table) before a new aggregation runs (measured: r(table) is
 * gone afterwards, rc 111). Without it a failed or empty aggregation would
@@ -428,7 +480,7 @@ program define _csdid_estat_tidy_attgt
     version 14
     syntax using/ [, REPLACE]
 
-    * EUX-003/SP-06 fix: the whole scratch-data block runs -quietly-. On the
+    * the whole scratch-data block runs -quietly-. On the
     * happy path of every export it used to print "number of observations will
     * be reset to ...", "(file ... not found)", the eleven "(1 real change
     * made)" notes, and - whenever the user has `set more on' - the blocking
@@ -523,6 +575,10 @@ program define _csdid_estat_tidy_attgt
         save `"`using'"', `replace'
         restore
     }
+    * The dispatcher that chose this route probed e(aggte) with -capture-,
+    * and that probe's return code is what a caller's `if _rc' would read
+    * after a successful export; the export's last act clears it.
+    capture local _estat_rc_clear 1
 end
 
 program define _csdid_estat_glance
@@ -537,7 +593,7 @@ program define _csdid_estat_glance
     * always led with type - see the glance_aggte_* column lists in the f027
     * export schema.
     *
-    * EUX-003/SP-06 fix: see _csdid_estat_tidy_attgt - the export block runs
+    * see _csdid_estat_tidy_attgt - the export block runs
     * -quietly- so the scratch-data chatter and the "Press any key" prompt do
     * not fire on the happy path. `display as error' still reaches the user.
     quietly {
@@ -557,13 +613,17 @@ program define _csdid_estat_glance
         save `"`using'"', `replace'
         restore
     }
+    * The dispatcher that chose this route probed e(aggte) with -capture-,
+    * and that probe's return code is what a caller's `if _rc' would read
+    * after a successful export; the export's last act clears it.
+    capture local _estat_rc_clear 1
 end
 
 program define _csdid_estat_tidy_aggte
     version 14
     syntax using/ [, REPLACE]
 
-    * EUX-003/SP-06 fix: see _csdid_estat_tidy_attgt - the export block runs
+    * see _csdid_estat_tidy_attgt - the export block runs
     * -quietly- so the scratch-data chatter and the "Press any key" prompt do
     * not fire on the happy path. `display as error' still reaches the user.
     quietly {
@@ -667,4 +727,8 @@ program define _csdid_estat_tidy_aggte
         save `"`using'"', `replace'
         restore
     }
+    * The dispatcher that chose this route probed e(aggte) with -capture-,
+    * and that probe's return code is what a caller's `if _rc' would read
+    * after a successful export; the export's last act clears it.
+    capture local _estat_rc_clear 1
 end

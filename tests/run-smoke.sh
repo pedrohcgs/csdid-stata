@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# `stata-mp -b do` exits 0 even when the do-file aborts, so scanning the log for
+# Which Stata runs the suite. Hard-coding `stata-mp` meant a machine with only
+# Stata/SE installed could not run this path at all, while tools/release/
+# preflight.sh already took STATA_CMD; the two runners now agree.
+STATA_CMD="${STATA_CMD:-stata-mp}"
+
+# `$STATA_CMD -b do` exits 0 even when the do-file aborts, so scanning the log for
 # r(<rc>); is the ONLY thing standing between a broken build and a green gate.
 # It previously used ripgrep inside `if rg ...; then`: when rg was absent the
 # command exited 127, which `if` reads as "no error found", and the gate passed
 # while tests were failing. Detection now uses grep (POSIX, always present) and
 # distinguishes grep's three outcomes explicitly - 0 found, 1 clean, >=2 grep
 # itself failed - so no exit status can be mistaken for success.
+LOGDIR="build/logs"
+mkdir -p "$LOGDIR"
+
 run_stata() {
     local dofile="$1"
     local logfile
     logfile="$(basename "${dofile%.do}").log"
     rm -f "$logfile"
-    if ! stata-mp -b do "$dofile"; then
+    if ! "$STATA_CMD" -b do "$dofile"; then
         echo "Stata command failed: $dofile" >&2
         test -f "$logfile" && tail -80 "$logfile" >&2
         exit 1
@@ -33,6 +41,9 @@ run_stata() {
         echo "Could not scan $logfile for Stata errors (grep exit $grep_status); refusing to report success" >&2
         exit 1
     fi
+    # Only after every inspection above: batch Stata drops its log in the
+    # working directory, and the root stays clean.
+    mv -f "$logfile" "$LOGDIR/$logfile"
 }
 
 python3 tools/validate-contract.py
@@ -136,153 +147,78 @@ python3 tools/parity/generators/py022/generate.py
 python3 tools/parity/generators/py023/generate.py
 python3 tools/parity/generators/py024/generate.py
 Rscript tools/parity/generators/f050/generate.R
-run_stata tests/stata/smoke-basic.do
-run_stata tests/stata/install-isolated.do
-run_stata tests/stata/test-f001.do
-run_stata tests/stata/test-f002.do
-run_stata tests/stata/test-f003.do
-run_stata tests/stata/test-f004.do
-run_stata tests/stata/test-f005.do
-run_stata tests/stata/test-f006.do
-run_stata tests/stata/test-f007.do
-run_stata tests/stata/test-f008.do
-run_stata tests/stata/test-f009.do
-run_stata tests/stata/test-f010.do
-run_stata tests/stata/test-f011.do
-run_stata tests/stata/test-f012.do
-run_stata tests/stata/test-f013.do
-run_stata tests/stata/test-f014.do
-run_stata tests/stata/test-f015.do
-run_stata tests/stata/r/test-always-treated-invariance.do
-run_stata tests/stata/r/test-cluster-analytic.do
-run_stata tests/stata/r/test-compute-inffunc.do
-run_stata tests/stata/r/test-conditional-did-pretest.do
-run_stata tests/stata/r/test-edge-cases.do
-run_stata tests/stata/r/test-audit-fixes.do
-run_stata tests/stata/r/test-mboot-cluster.do
-run_stata tests/stata/r/test-mboot-postprocess.do
-run_stata tests/stata/r/test-missing-cell-se.do
-run_stata tests/stata/r/test-shape-checks-pre-screen.do
-run_stata tests/stata/test-boot-degenerate-screen.do
-run_stata tests/stata/test-agg-cband-parity.do
-run_stata tests/stata/r/test-modelmatrix-hoist.do
-run_stata tests/stata/test-f016.do
-run_stata tests/stata/r/test-mutation-safety.do
-run_stata tests/stata/r/test-output-methods-coverage.do
-run_stata tests/stata/r/test-overlap-guard-cache.do
-run_stata tests/stata/r/test-pretest-vectorization.do
-run_stata tests/stata/r/test-robustness-guards.do
-run_stata tests/stata/r/test-slowpath-precompute.do
-run_stata tests/stata/r/test-unbalanced-faster-cluster-se.do
-run_stata tests/stata/r/test-user_bug_fixes.do
-run_stata tests/stata/test-f017.do
-run_stata tests/stata/test-f018.do
-run_stata tests/stata/test-f019.do
-run_stata tests/stata/test-f020.do
-run_stata tests/stata/test-f021.do
-run_stata tests/stata/test-f022.do
-run_stata tests/stata/test-f023.do
-run_stata tests/stata/test-f024.do
-run_stata tests/stata/test-f025.do
-run_stata tests/stata/test-f026.do
-run_stata tests/stata/test-f027.do
-run_stata tests/stata/r/test-aggte-clustervars-override.do
-run_stata tests/stata/r/test-aggte-comprehensive.do
-run_stata tests/stata/r/test-aggte-edge-coverage.do
-run_stata tests/stata/r/test-att_gt.do
-run_stata tests/stata/r/test-error-handling.do
-run_stata tests/stata/r/test-faster-mode-consistency.do
-run_stata tests/stata/r/test-ggdid.do
-run_stata tests/stata/r/test-glance.do
-run_stata tests/stata/r/test-inference.do
-run_stata tests/stata/r/att_gt_point_estimate_tests.do
-run_stata tests/stata/r/att_gt_point_estimate_tests_rmd.do
-run_stata tests/stata/test-f028.do
-run_stata tests/stata/test-f029.do
-run_stata tests/stata/test-f030.do
-run_stata tests/stata/test-f031.do
-run_stata tests/stata/test-f032.do
-run_stata tests/stata/test-f032-fast-auto-surface.do
-run_stata tests/stata/test-f033.do
-run_stata tests/stata/test-f034.do
-run_stata tests/stata/test-f035.do
-run_stata tests/stata/test-f036.do
-run_stata tests/stata/test-f037.do
-run_stata tests/stata/test-f038.do
-run_stata tests/stata/test-f039.do
-run_stata tests/stata/test-f040.do
-run_stata tests/stata/test-f041.do
-run_stata tests/stata/jel/test-artifact-contract.do
-run_stata tests/stata/test-f045.do
-run_stata tests/stata/test-f046.do
-run_stata tests/stata/test-f047.do
-run_stata tests/stata/test-f048.do
+# The Stata list is DERIVED, not enumerated.
+#
+# It used to be a hand-written `run_stata` line per test. Seventeen do-files in
+# the tree were absent from that list -- the whole plugin-equivalence family
+# among them -- while this script was described elsewhere as the full suite. A
+# list written down by hand goes stale in silence, and the only thing that
+# reports the staleness is the tree itself. The list is now every .do under
+# tests/stata minus a NAMED exclusion list, sorted so two runs execute the same
+# tests in the same order.
+#
+# Session children: launched BY a parent test through `shell ... -b do` with
+# arguments the parent supplies. Running one standalone aborts on its missing
+# arguments; each is exercised by the parent that launches it.
+SESSION_CHILDREN=(
+    tests/stata/cache-token-session-child.do
+    tests/stata/mlib-session-fresh.do
+)
+
+# Wall-clock tier. These two assert on elapsed seconds -- a plugin-versus-Mata
+# ordering and absolute budgets -- so they are the tests a busy machine can turn
+# red without anything being wrong with the package. They still RUN, and a red
+# here still fails the suite; they run LAST so that every correctness gate has
+# already reported by the time a timing number is taken, and so a timing flake
+# cannot be what stops the run before the correctness gates.
+PERF_LAST=(
+    tests/stata/test-bootstrap-plugin.do
+    tests/stata/test-f049.do
+)
+
+# An exclusion naming a file that no longer exists is an exclusion that has
+# stopped excluding anything -- and would silently re-admit or silently drop a
+# test after a rename. Fail closed on it.
+for f in "${SESSION_CHILDREN[@]}" "${PERF_LAST[@]}"; do
+    if [[ ! -f "$f" ]]; then
+        echo "run-smoke.sh names $f in its exclusion/perf list, but that file does not exist" >&2
+        echo "  update the list in this script: a stale name silently changes what the suite runs" >&2
+        exit 1
+    fi
+done
+
+STATA_TESTS=()
+while IFS= read -r t; do
+    skip=0
+    for x in "${SESSION_CHILDREN[@]}" "${PERF_LAST[@]}"; do
+        if [[ "$t" == "$x" ]]; then skip=1; break; fi
+    done
+    if [[ "$skip" -eq 0 ]]; then STATA_TESTS+=("$t"); fi
+done < <(find tests/stata -name '*.do' | LC_ALL=C sort)
+
+# A `find` that returned nothing (wrong directory, broken checkout) must not
+# read as "every test passed".
+if [[ "${#STATA_TESTS[@]}" -lt 100 ]]; then
+    echo "run-smoke.sh derived only ${#STATA_TESTS[@]} Stata tests from tests/stata; refusing to report success" >&2
+    exit 1
+fi
+echo "run-smoke.sh: ${#STATA_TESTS[@]} correctness do-files, ${#PERF_LAST[@]} wall-clock do-files last"
+
+for t in "${STATA_TESTS[@]}"; do
+    run_stata "$t"
+done
+
+# ---------------------------------------------------------------- wall clock
+# Everything above is a correctness gate. Everything below takes a timing.
+for t in "${PERF_LAST[@]}"; do
+    run_stata "$t"
+done
+
+# The R-relative ratio gate. It rebuilds the plugin and the library and runs
+# test-f049.do itself, so it belongs beside the other wall-clock work rather
+# than in the middle of the correctness list, where it used to sit.
 python3 tools/bench/run-f049-ratio.py
-run_stata tests/stata/r/test-jel_replication.do
-run_stata tests/stata/python/test_aggte_comprehensive.do
-run_stata tests/stata/python/test_analytical_cluster_se.do
-run_stata tests/stata/python/test_att_gt.do
-run_stata tests/stata/python/test_cluster_analytic.do
-run_stata tests/stata/python/test_clustered.do
-run_stata tests/stata/python/test_compute_inffunc.do
-run_stata tests/stata/python/test_edge_cases.do
-run_stata tests/stata/python/test_error_handling.do
-run_stata tests/stata/python/test_faster_mode_consistency.do
-run_stata tests/stata/python/test_ggdid.do
-run_stata tests/stata/python/test_glance.do
-run_stata tests/stata/python/test_inference.do
-run_stata tests/stata/python/test_integration.do
-run_stata tests/stata/python/test_jel_replication.do
-run_stata tests/stata/python/test_mboot_cluster.do
-run_stata tests/stata/python/test_notyettreated.do
-run_stata tests/stata/python/test_parametric_combinations.do
-run_stata tests/stata/python/test_r_parity.do
-run_stata tests/stata/python/test_percell_failure.do
-run_stata tests/stata/python/test_review_fixes.do
-run_stata tests/stata/python/test_sim_parity.do
-run_stata tests/stata/python/test_tidy.do
-run_stata tests/stata/python/test_user_bug_fixes.do
-run_stata tests/stata/python/test_validation.do
-run_stata tests/stata/test-f050.do
-run_stata tests/stata/test-f051.do
-run_stata tests/stata/test-f055.do
-run_stata tests/stata/test-f056.do
-run_stata tests/stata/test-f057.do
-run_stata tests/stata/test-f058.do
-run_stata tests/stata/test-f059.do
-run_stata tests/stata/test-f060.do
-run_stata tests/stata/test-f061.do
-run_stata tests/stata/test-f062.do
-run_stata tests/stata/test-f063.do
-run_stata tests/stata/test-f064.do
-run_stata tests/stata/test-f065.do
-run_stata tests/stata/test-f066.do
-run_stata tests/stata/test-f067.do
-run_stata tests/stata/test-f068.do
-run_stata tests/stata/test-f069.do
-run_stata tests/stata/test-f070.do
-run_stata tests/stata/test-f071.do
-run_stata tests/stata/test-f072.do
-run_stata tests/stata/test-f073.do
-run_stata tests/stata/test-f074.do
-run_stata tests/stata/test-pair-cell-and-balance-order.do
-run_stata tests/stata/test-rc-bucket-order.do
-run_stata tests/stata/test-agg-boot-named-route.do
-run_stata tests/stata/test-pscoretrim-binding.do
-run_stata tests/stata/test-ipw-trim-diagnostic.do
-run_stata tests/stata/test-release-hardening.do
-run_stata tests/stata/test-release-failure-modes.do
-# The lean cache belongs to ONE estimation, and every gate above runs inside a
-# single session, where a stale cache and a fresh one are told apart by a
-# counter. Two sessions are not: this one saves an estimation in one Stata
-# process, restores it in another, and requires the aggregation to refuse the
-# cache standing in the second rather than report its standard errors under the
-# first one's point estimates.
-run_stata tests/stata/test-cache-token-session.do
-# Everything above loads the engine from src/mata/csdid.mata. This one builds
-# the compiled library and runs a separate Stata process against it, which is
-# the configuration the installed package actually has.
-run_stata tests/stata/test-mlib-session.do
+
 
 # What a session pays ONCE. Every other timing gate here either estimates once
 # per fresh process or estimates repeatedly in one warmed session, so none of

@@ -4,7 +4,7 @@
 * what it is -- and then the modern line that replaces it. Run the file and
 * read the messages: the legacy lines are the ones that print something.
 
-version 15
+version 14
 clear
 set more off
 set seed 50505

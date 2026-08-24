@@ -15,14 +15,15 @@ d multiplier-bootstrap inference with simultaneous confidence bands, and
 d postestimation export and plotting are provided by csdid_stats, csdid_estat
 d and csdid_plot.
 d
-d Unlike the SSC csdid, this implementation does not require drdid: the
-d doubly robust, outcome-regression and IPW estimators are implemented
-d internally, so the package has no dependencies.
+d Version 2.0.0 no longer requires drdid: the doubly robust,
+d outcome-regression and IPW estimators are implemented internally, so the
+d package has no dependencies.
 d
-d On macOS the multiplier bootstrap uses a compiled accelerator plugin
-d (universal binary, Intel and Apple silicon). On other platforms, or if
-d the plugin cannot load, csdid falls back to the Mata implementation
-d automatically; results are identical either way.
+d On macOS, explicitly seeded rademacher multiplier bootstraps use a
+d compiled accelerator plugin (universal binary, Intel and Apple silicon).
+d On other platforms, for unseeded draws, or if the plugin cannot load,
+d csdid falls back to the Mata implementation automatically; results are
+d identical either way.
 d
 d KW: difference in differences
 d KW: DID
@@ -47,7 +48,7 @@ d Support: email pedro.santanna@emory.edu
 d
 d Version: 2.0.0
 d
-d Distribution-Date: 20260821
+d Distribution-Date: 20260824
 d
 f pkg/csdid.ado
 f pkg/_csdid_post.ado
@@ -62,9 +63,12 @@ f pkg/csdid_rif.ado
 f pkg/csdid_table.ado
 f pkg/dipt.ado
 f pkg/tsvmat.ado
-f pkg/csdid.mata
-f pkg/csdid_bootstrap_macosx.plugin
-f pkg/lcsdid_v2.mlib
+F pkg/csdid.mata
+G MACARM64 pkg/csdid_bootstrap_macosx.plugin
+G MACINTEL64 pkg/csdid_bootstrap_macosx.plugin
+G OSX.ARM64 pkg/csdid_bootstrap_macosx.plugin
+G OSX.X8664 pkg/csdid_bootstrap_macosx.plugin
+F pkg/lcsdid_v2.mlib
 f pkg/csdid.sthlp
 f pkg/csdid_postestimation.sthlp
 f pkg/csdid_estat.sthlp
@@ -76,3 +80,6 @@ f pkg/csdid_rif.sthlp
 f pkg/csdid_table.sthlp
 f pkg/dipt.sthlp
 f pkg/tsvmat.sthlp
+f pkg/csdid_whatsnew.sthlp
+F pkg/LICENSE
+f pkg/mpdta.dta

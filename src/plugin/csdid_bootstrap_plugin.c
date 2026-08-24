@@ -316,6 +316,30 @@ static int csdid_read_and_screen(
     return 0;
 }
 
+/* The influence functions are read by position across the whole declared
+   range, and the width test in each variables task pins that range to the
+   declared row count -- so an `if' qualifier cannot be honoured without
+   contradicting it. csdid always calls `in 1/<rows>' with no `if', but the
+   handle is a live program in the session once bound, so a hand-typed call
+   carrying `if' is refused here rather than silently bootstrapping rows the
+   qualifier excluded. */
+static int csdid_refuse_if_qualifier(const char *task)
+{
+    ST_int obs, last = SF_in2();
+    char msg[256];
+
+    for (obs = SF_in1(); obs <= last; ++obs) {
+        if (!SF_ifobs(obs)) {
+            snprintf(msg, sizeof msg,
+                     "csdid bootstrap plugin: %sthe if qualifier is not supported; restrict the sample before the call and pass in 1/<rows> alone\n",
+                     task);
+            SF_error(msg);
+            return 499;
+        }
+    }
+    return 0;
+}
+
 static int csdid_run_bootstrap_core(
     int repetitions,
     int observations,
@@ -333,7 +357,6 @@ static int csdid_run_bootstrap_core(
     unsigned char *active = NULL;
     int b, bit, j, a, obs, rc;
     int effects, integers_per_draw, n_active;
-    size_t influence_count;
     uint32_t current;
     double value, sign, scale;
     /* SF_in1() is a function call and cannot change during the read; it was
@@ -341,6 +364,7 @@ static int csdid_run_bootstrap_core(
     ST_int first_obs = 0;
 
     if (use_variables) {
+        if ((rc = csdid_refuse_if_qualifier("")) != 0) return rc;
         effects = SF_nvars();
         first_obs = SF_in1();
         /* `!=', not `<'. The old test accepted any range at least
@@ -419,10 +443,18 @@ static int csdid_run_bootstrap_core(
         for (int integer_index = 0; integer_index < integers_per_draw; ++integer_index) {
             current = csdid_bmisc_integer(rng);
             for (bit = 30; bit >= 0 && obs < observations; --bit, ++obs) {
-                const double *row = inf_a + (size_t)obs * (size_t)n_active;
-                sign = ((current >> bit) & UINT32_C(1)) ? 1.0 : -1.0;
-                for (a = 0; a < n_active; ++a) {
-                    sums_a[a] += sign * row[a];
+                /* Guarded, not hoisted out of the draw: the multiplier stream
+                   must advance identically whether or not any column survived,
+                   so only the accumulation is skipped. With n_active == 0 the
+                   compaction above never allocated, and `inf_a + 0' on a null
+                   pointer is undefined in C11; every column is written as
+                   exactly 0 below either way. */
+                if (n_active > 0) {
+                    const double *row = inf_a + (size_t)obs * (size_t)n_active;
+                    sign = ((current >> bit) & UINT32_C(1)) ? 1.0 : -1.0;
+                    for (a = 0; a < n_active; ++a) {
+                        sums_a[a] += sign * row[a];
+                    }
                 }
             }
         }
@@ -499,7 +531,6 @@ static int csdid_run_bootstrap_agg_vars(int argc, char *argv[])
     /* SF_in1() is a function call, and it was re-evaluated once per element
        of the read loop. It cannot change during the read. */
     ST_int first_obs;
-    size_t influence_count;
     uint32_t current;
     double value, sign, scale;
 
@@ -513,6 +544,7 @@ static int csdid_run_bootstrap_agg_vars(int argc, char *argv[])
         SF_error("csdid bootstrap plugin: bootstrap_agg_vars expects exactly six arguments -- repetitions, observations, cband, independent matrix, common matrix, and state matrix -- with the influence functions passed as variables\n");
         return 198;
     }
+    if ((rc = csdid_refuse_if_qualifier("aggregate ")) != 0) return rc;
     if ((rc = csdid_parse_positive_int(argv[0], "repetitions", &repetitions)) != 0) return rc;
     if ((rc = csdid_parse_positive_int(argv[1], "observations", &observations)) != 0) return rc;
     if ((rc = csdid_parse_binary(argv[2], "cband", &cband)) != 0) return rc;
@@ -621,10 +653,15 @@ static int csdid_run_bootstrap_agg_vars(int argc, char *argv[])
             for (integer_index = 0; integer_index < integers_per_draw; ++integer_index) {
                 current = csdid_bmisc_integer(&rng);
                 for (bit = 30; bit >= 0 && obs < observations; --bit, ++obs) {
-                    const double *row = inf_a + (size_t)obs * (size_t)n_active;
-                    sign = ((current >> bit) & UINT32_C(1)) ? 1.0 : -1.0;
-                    for (a = 0; a < n_active; ++a) {
-                        sums_a[a] += sign * row[a];
+                    /* Same null-pointer guard as the estimation core, and
+                       inside the draw for the same reason: the common stream
+                       must advance whether or not any event column survived. */
+                    if (n_active > 0) {
+                        const double *row = inf_a + (size_t)obs * (size_t)n_active;
+                        sign = ((current >> bit) & UINT32_C(1)) ? 1.0 : -1.0;
+                        for (a = 0; a < n_active; ++a) {
+                            sums_a[a] += sign * row[a];
+                        }
                     }
                 }
             }

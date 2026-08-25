@@ -57,7 +57,7 @@ real matrix mboot_any(real matrix rif, real scalar reps, bwtype) {
 }
  // Same but with Cluster
  // we can do it a bit faster. but needs extra to control for Max iterations.
-real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv) {
+real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv, string scalar nclname) {
 	mean_rif=mean(rif)
 	rr=rif:-mean_rif
 	bsmean=J(reps,cols(rif),0)
@@ -70,7 +70,7 @@ real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv) {
 	real matrix sclv, wmult
 	sclv=uniqrows(clv)
 	nn=rows(sclv)
-	st_numscalar("__csdid_rif_nclust", nn)		
+	st_numscalar(nclname, nn)		
 
 	mdsize = min((reps, max( (1,floor(1e7/nrows)) )))
 
@@ -108,7 +108,7 @@ real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv) {
 
 
 void mboot(real matrix rif, vv, cband, string scalar clv,
-			real scalar ci, reps, wbtype) {
+			real scalar ci, reps, wbtype, string scalar nclname) {
     //, real scalar reps, bwtype, ci 
     real matrix fr, tt
 	real matrix ifse , ccb, mean_rif
@@ -129,7 +129,7 @@ void mboot(real matrix rif, vv, cband, string scalar clv,
 	else {
 		clvar=st_data(.,clv)
 		
-		fr=mboot_anyc(rif,reps, wbtype, clvar)
+		fr=mboot_anyc(rif,reps, wbtype, clvar, nclname)
 		ifse = iqrse(fr)
 		// this gets Tvalue
 		tt = qtp(abs(fr :/ ifse),ci)  
@@ -213,7 +213,7 @@ void fix_rif(real matrix rif){
 // cband_ already did; the cluster count keeps a global because it is also set
 // deeper in mboot_anyc(), but it is namespaced so it cannot collide.
 void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
-			  real scalar setype, ci, reps, wbtype){
+			  real scalar setype, ci, reps, wbtype, string scalar nclname){
 	real matrix nobs, clvar
 	real scalar cln
 	rif=st_data(.,rifv,touse)
@@ -236,12 +236,15 @@ void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 		clusterse((rif:-bb),clvar,VV,cln)
 		// was: a bare `cln' statement, which PRINTS the cluster count
 		// into the middle of the user's output on every clustered call.
-		st_numscalar("__csdid_rif_nclust", cln)
+		// The count travels through the tempname scalar the caller hands
+		// in, never a fixed global name a user's own scalar could collide
+		// with (cold-audit LEG-5).
+		st_numscalar(nclname, cln)
 	}
 	real matrix cband
 	// wboot w / wo cluster
 	if ( setype ==3 ) {
-		mboot(rif,  VV, cband, clv, ci, reps, wbtype)
+		mboot(rif,  VV, cband, clv, ci, reps, wbtype, nclname)
 		st_matrix(cband_,cband)
 		
 	}
@@ -252,7 +255,7 @@ void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 end
   program define Display
                 version 14
-                syntax [, bmatrix(passthru) vmatrix(passthru) *]
+                syntax [, bmatrix(passthru) vmatrix(passthru) Level(cilevel) *]
  		 
         _get_diopts diopts rest, `options'
         local myopts `bmatrix' `vmatrix'        
@@ -261,6 +264,12 @@ end
                                 exit 198
                 }
  				if ("`e(vcetype)'"=="WBoot") {
+                    * csdid_table refuses a level() differing from c(level)
+                    * when a direct user asks (it cannot recompute matrix
+                    * bounds); the level is therefore consumed by the syntax
+                    * line above and never forwarded -- the table labels the
+                    * bounds from the e(level) csdid_rif just posted
+                    * (cold-audit LEG-1).
                     csdid_table, `diopts'
 					display "{p}Note: RIF Std. err. "
 					* csdid 2.0.0 stores this as e(clustervar); legacy csdid used e(clustvar).
@@ -271,7 +280,7 @@ end
 					
                  }
                 else {
-                    _coef_table,  `diopts' `myopts' 
+                    _coef_table,  level(`level') `diopts' `myopts' 
                 }
                 
  
@@ -289,6 +298,13 @@ end
     display as text "note: csdid_rif is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
 	syntax varlist [if] [in], [  cluster(varname) level(real 95) reps(int 999) wboot seed(string) ]
+	* An impossible confidence level refuses before any computation, any
+	* RNG state change, or any e() posting (cold-audit LEG-1): the level
+	* drives the wild-bootstrap band quantile below, so it must be a level.
+	if `level' < 10 | `level' > 99.99 {
+		display as error "level(`level') is not a confidence level; specify a value between 10 and 99.99"
+		exit 198
+	}
 	tempvar touse
 	* novarlist is deliberate. A missing entry in a RIF column means that
 	* ATT(g,t) cell failed for that unit, not that the unit is unusable: the
@@ -313,11 +329,17 @@ end
 	if "`cluster'" != "" local rtype 2 
 	if "`wboot'"   != "" {
 		local rtype 3
+		* refused BEFORE `set seed': an invalid replication count must not
+		* first reseed the session's RNG stream (cold-audit LEG-4).
+		if `reps' < 1 {
+			display as error "reps(`reps') is not a positive replication count"
+			exit 198
+		}
 		if "`seed'"!="" set seed `seed'
 	}
-	tempname cband bmat vmat
+	tempname cband bmat vmat nclust
 	local tlevel = `level'/100
-	 mata:make_tbl("`varlist'"," `cluster'","`touse'","`cband'","`bmat'","`vmat'",`rtype',`tlevel', `reps', 1)	
+	 mata:make_tbl("`varlist'"," `cluster'","`touse'","`cband'","`bmat'","`vmat'",`rtype',`tlevel', `reps', 1, "`nclust'")	
 	// rename 
 	matrix colname `bmat' = `varlist'
 	matrix colname `vmat' = `varlist'
@@ -342,11 +364,14 @@ end
 	if `rtype'==2 ereturn local vcetype Robust
 	if `rtype'==3 ereturn local vcetype WBoot
 	ereturn local clustvar `ocluster'
-	capture  confirm scalar __csdid_rif_nclust
+	capture  confirm scalar `nclust'
 	if _rc==0 {
-		ereturn scalar N_clust = __csdid_rif_nclust
-		scalar drop __csdid_rif_nclust
+		ereturn scalar N_clust = `nclust'
 	}
+	* The level the bands were computed at travels with the result, so a
+	* replay (csdid_table) labels the bounds with their own provenance
+	* rather than whatever c(level) happens to be later (cold-audit LEG-2).
+	ereturn scalar level = `level'
 	* Last e() assignment: e(cmd) is what a postestimation command reads to
 	* decide the results are complete, so nothing may be posted after it.
 	ereturn local cmd csdid_rif

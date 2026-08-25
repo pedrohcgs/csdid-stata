@@ -16,6 +16,20 @@ program define tsvmat, return
         local nc = colsof(matrix(`anything'))
         ***************************************
         // here is where the safegards will be done.
+        * EVERY refusal fires before the dataset changes (cold-audit LEG-3):
+        * the legacy code appended observations and generated the early
+        * columns before a bad or colliding name stopped it, leaving the
+        * data partly rewritten under a nonzero return. Asking for more
+        * names than the matrix has columns is refused for the same reason;
+        * fewer names than columns keeps the legacy meaning (the extra
+        * columns are simply not materialized).
+        if `: word count `name'' > `nc' {
+            display as error "name() lists `: word count `name'' names but the matrix has only `nc' columns"
+            exit 198
+        }
+        foreach i in `name' {
+            confirm new variable `i'
+        }
         if _N<`nx' {
             display as text "Expanding observations to `nx'"
                 set obs `nx'

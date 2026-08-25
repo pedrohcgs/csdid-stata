@@ -41,26 +41,39 @@ program define csdid_stats, eclass
         * same guarantee, so when the hold is refused the front copies every
         * e() member by name -- scalars into scalar tempnames, macros into
         * locals, matrices (stripes ride along) into matrix tempnames -- and
-        * reposts them on any nonzero return. A b-less state cannot carry
-        * e(sample) (only `ereturn post' marks one), so the copy is complete.
-        if `"`e(cmd)'"' != "" {
+        * reposts them on any nonzero return. Two rules from the cold audit:
+        * whether anything needs protecting is decided by the member lists
+        * themselves, never by e(cmd) (an e-class program may post members
+        * without that certification macro), and the copies are stored under
+        * INDEXED transaction names, never names derived from the members'
+        * own (a legal 32-character result name would overflow a derived
+        * local name). A b-less state cannot carry e(sample) (only `ereturn
+        * post' marks one, and posting requires e(b)), so the copy is
+        * complete for every state the hold refuses.
+        local txn_sc : e(scalars)
+        local txn_mac : e(macros)
+        local txn_mat : e(matrices)
+        if `"`txn_sc'`txn_mac'`txn_mat'"' != "" {
             capture _estimates hold `txn_held', restore
             if _rc == 0 local txn_had 1
             else {
                 local txn_snap 1
-                local txn_sc : e(scalars)
-                local txn_mac : e(macros)
-                local txn_mat : e(matrices)
+                local txn_i 0
                 foreach x of local txn_sc {
-                    tempname txn_s_`x'
-                    scalar `txn_s_`x'' = e(`x')
+                    local ++txn_i
+                    tempname txn_s_`txn_i'
+                    scalar `txn_s_`txn_i'' = e(`x')
                 }
+                local txn_i 0
                 foreach x of local txn_mac {
-                    local txn_m_`x' `"`e(`x')'"'
+                    local ++txn_i
+                    local txn_m_`txn_i' `"`e(`x')'"'
                 }
+                local txn_i 0
                 foreach x of local txn_mat {
-                    tempname txn_x_`x'
-                    matrix `txn_x_`x'' = e(`x')
+                    local ++txn_i
+                    tempname txn_x_`txn_i'
+                    matrix `txn_x_`txn_i'' = e(`x')
                 }
             }
         }
@@ -70,14 +83,20 @@ program define csdid_stats, eclass
             ereturn clear
             if `txn_had' _estimates unhold `txn_held'
             else if `txn_snap' {
+                local txn_i 0
                 foreach x of local txn_mat {
-                    ereturn matrix `x' = `txn_x_`x''
+                    local ++txn_i
+                    ereturn matrix `x' = `txn_x_`txn_i''
                 }
+                local txn_i 0
                 foreach x of local txn_sc {
-                    ereturn scalar `x' = `txn_s_`x''
+                    local ++txn_i
+                    ereturn scalar `x' = `txn_s_`txn_i''
                 }
+                local txn_i 0
                 foreach x of local txn_mac {
-                    ereturn local `x' `"`txn_m_`x''"'
+                    local ++txn_i
+                    ereturn local `x' `"`txn_m_`txn_i''"'
                 }
             }
             exit `txn_rc'
@@ -95,14 +114,20 @@ program define csdid_stats, eclass
             * completed without certifying a csdid result: the incoming
             * b-less state stands, exactly as the held branch above rules.
             ereturn clear
+            local txn_i 0
             foreach x of local txn_mat {
-                ereturn matrix `x' = `txn_x_`x''
+                local ++txn_i
+                ereturn matrix `x' = `txn_x_`txn_i''
             }
+            local txn_i 0
             foreach x of local txn_sc {
-                ereturn scalar `x' = `txn_s_`x''
+                local ++txn_i
+                ereturn scalar `x' = `txn_s_`txn_i''
             }
+            local txn_i 0
             foreach x of local txn_mac {
-                ereturn local `x' `"`txn_m_`x''"'
+                local ++txn_i
+                ereturn local `x' `"`txn_m_`txn_i''"'
             }
         }
     }

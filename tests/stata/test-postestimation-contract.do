@@ -325,4 +325,65 @@ matrix `UA1' = e(aggte)
 assert mreldif(`UA0', `UA1') == 0
 assert "`e(cmd)'" == "csdid"
 
+* cold-audit F2-A: the transaction is gated on the member lists, not on
+* e(cmd) -- a state with members and no certification macro survives.
+capture program drop _tpc_nocmd
+program define _tpc_nocmd, eclass
+    ereturn clear
+    ereturn scalar sentinel = 17.25
+end
+_tpc_nocmd
+capture csdid_stats using "`root'/no_such_rif_file_anywhere.dta", type(dynamic)
+assert _rc != 0
+assert e(sentinel) == 17.25
+
+* cold-audit F2-B: members whose names use all 32 legal characters travel
+* through the snapshot's indexed storage untouched.
+capture program drop _tpc_long
+program define _tpc_long, eclass
+    ereturn clear
+    ereturn scalar abcdefghijklmnopqrstuvwxyz123456 = 2.5
+    ereturn local zyxwvutsrqponmlkjihgfedcba654321 "long-macro"
+    tempname M
+    matrix `M' = (7)
+    ereturn matrix qwertyuiopasdfghjklzxcvbnm123456 = `M'
+    ereturn local cmd "_tpc_long"
+end
+_tpc_long
+capture csdid_stats using "`root'/no_such_rif_file_anywhere.dta", type(dynamic)
+assert _rc != 0
+assert e(abcdefghijklmnopqrstuvwxyz123456) == 2.5
+assert "`e(zyxwvutsrqponmlkjihgfedcba654321)'" == "long-macro"
+tempname TLM
+matrix `TLM' = e(qwertyuiopasdfghjklzxcvbnm123456)
+assert `TLM'[1, 1] == 7
+assert "`e(cmd)'" == "_tpc_long"
+
+* cold-audit F3-A: a save that fails for a reason no entry probe can see
+* (an unwritable directory stands in for a race, a vanished volume, an
+* ACL) still leaves the incoming estimation posted, because the export
+* runs before the posting step.
+if "`c(os)'" != "Windows" {
+    import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+    tempname FB0 FV0 FB1 FV1
+    matrix `FB0' = e(b)
+    matrix `FV0' = e(V)
+    local fcmd0 "`e(cmd)'"
+    local fhash0 "`e(datasignature)'"
+    local rodir "`c(tmpdir)'/csdid_ro_dir_f3a"
+    capture mkdir "`rodir'"
+    shell chmod a-w "`rodir'"
+    capture estat event, post saving("`rodir'/out.dta")
+    local rof3 = _rc
+    shell chmod u+w "`rodir'"
+    assert `rof3' != 0
+    matrix `FB1' = e(b)
+    matrix `FV1' = e(V)
+    assert mreldif(`FB0', `FB1') == 0
+    assert mreldif(`FV0', `FV1') == 0
+    assert "`e(cmd)'" == "`fcmd0'"
+    assert "`e(datasignature)'" == "`fhash0'"
+}
+
 display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

@@ -33,6 +33,15 @@ program csdid_table, rclass
 		display as error "csdid_table found no coefficients to tabulate: e(b) does not exist. Run csdid or csdid_rif first, then csdid_table."
 		exit 459
 	}
+	* The refusal above already tells the user this table belongs to csdid
+	* or csdid_rif; the code now enforces what the message promises
+	* (cold-audit LEG-6). Without this, any e-class result carrying an e(b)
+	* was reformatted as a csdid table -- plausible numbers under the wrong
+	* headline.
+	if !inlist("`e(cmd)'", "csdid", "csdid_rif") {
+		display as error "csdid_table displays csdid or csdid_rif results; the estimates in memory are from `e(cmd)'. Run csdid or csdid_rif first, then csdid_table."
+		exit 459
+	}
 *set trace on
 	_get_diopts diopts rest, `options'
 
@@ -88,6 +97,10 @@ program csdid_table, rclass
 		capture confirm matrix e(cband)
 		if _rc == 0 {
 			matrix `cimat' = e(cband)
+			* The stored bounds were computed at e(level); the header must
+			* say so even when c(level) has changed since (cold-audit
+			* LEG-2). csdid_rif posts e(level) for exactly this read.
+			if !missing(e(level)) local level = e(level)
 		}
 		else {
 			* Rebuilt from the same quantities csdid itself printed: e(b), the

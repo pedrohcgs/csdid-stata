@@ -286,4 +286,96 @@ assert tsv1[1] == 1.123456789012345
 assert tsv1[2] == 3 & tsv1[3] == 5
 assert tsv2[1] == 2 & tsv2[2] == 4 & tsv2[3] == 6
 
-display "LEGACY OK: csgvar verified against csdid on both routes, bare and expression; four deprecated commands load; csdid_rif posts e(N)/e(sample) and leaves bb_/VV_/cln_ alone; csdid_table fills its t and CI columns from either e(cband) shape; tsvmat stores double"
+* --- cold-audit LEG cells (2026-08-24): each was red by direct probe on the
+* pre-fix tree before the repair below it was believed. ---
+
+* LEG-1/LEG-2: a nondefault wboot level() completes, posts its provenance,
+* and a replay under a different c(level) still labels the stored level.
+clear
+set obs 8
+generate double lrif = _n
+set level 95
+csdid_rif lrif, wboot reps(99) seed(123) level(90)
+assert _rc == 0
+assert e(level) == 90
+assert "`e(cmd)'" == "csdid_rif"
+set level 95
+tempfile leg2log
+tempname LEG2R
+log using "`leg2log'", text name(leg2)
+csdid_table
+* copied before `log close': log is rclass, so closing it replaces r()
+matrix `LEG2R' = r(table)
+log close leg2
+* the header names the stored 90% level, not the session's 95, and the
+* bounds are the stored e(cband) bounds untouched
+mata: st_local("leg2_says90", strofreal(sum(strpos(cat(st_local("leg2log")), "90%")) > 0))
+mata: st_local("leg2_says95", strofreal(sum(strpos(cat(st_local("leg2log")), "95%")) > 0))
+assert `leg2_says90' == 1
+assert `leg2_says95' == 0
+tempname LEG2C
+matrix `LEG2C' = e(cband)
+assert reldif(`LEG2R'[5, 1], `LEG2C'[1, 4]) < 1e-12
+assert reldif(`LEG2R'[6, 1], `LEG2C'[1, 5]) < 1e-12
+* an impossible level refuses before anything runs
+capture csdid_rif lrif, level(200)
+assert _rc == 198
+
+* LEG-4: an invalid replication count refuses BEFORE the RNG stream changes.
+set seed 2026
+scalar leg4_expected = runiform()
+set seed 2026
+capture csdid_rif lrif, wboot reps(0) seed(999)
+assert _rc == 198
+scalar leg4_observed = runiform()
+assert leg4_observed == leg4_expected
+scalar drop leg4_expected leg4_observed
+
+* LEG-5: a user's own scalar under the old bridge name is neither read as a
+* cluster count nor destroyed.
+scalar __csdid_rif_nclust = 77
+csdid_rif lrif
+assert missing(e(N_clust))
+confirm scalar __csdid_rif_nclust
+assert __csdid_rif_nclust == 77
+scalar drop __csdid_rif_nclust
+
+* LEG-6: csdid_table refuses an unrelated estimator's results by name.
+capture program drop _leg6_fake
+program define _leg6_fake, eclass
+    tempname b V
+    matrix `b' = (10)
+    matrix colnames `b' = x
+    matrix `V' = (4)
+    matrix rownames `V' = x
+    matrix colnames `V' = x
+    ereturn post `b' `V'
+    ereturn scalar crit_val = 1.96
+    ereturn scalar level = 95
+    ereturn local cmd "_leg6_fake"
+end
+_leg6_fake
+capture csdid_table
+assert _rc == 459
+
+* LEG-3: every tsvmat refusal fires before the dataset changes.
+clear
+set obs 1
+generate double b = 99
+tempname LGM
+matrix `LGM' = (1,2 \ 3,4 \ 5,6)
+capture tsvmat `LGM', name(a b)
+assert _rc == 110
+assert _N == 1
+capture confirm variable a
+assert _rc != 0
+assert b[1] == 99
+capture tsvmat `LGM', name(a b c)
+assert _rc == 198
+assert _N == 1
+* fewer names than columns keeps its legacy meaning
+tsvmat `LGM', name(only1)
+assert _N == 3
+assert only1[3] == 5
+
+display "LEGACY OK: csgvar verified against csdid on both routes, bare and expression; four deprecated commands load; csdid_rif posts e(N)/e(sample) and leaves bb_/VV_/cln_ alone; csdid_table fills its t and CI columns from either e(cband) shape; tsvmat stores double and refuses before mutating; level provenance survives replay; the RNG stream survives a refused wboot"

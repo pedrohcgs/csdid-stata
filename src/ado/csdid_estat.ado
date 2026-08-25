@@ -145,8 +145,9 @@ program define csdid_estat, eclass
         * read as the result of the attgt command. csdid_estat's help
         * promises r(table) "is never left holding an earlier aggregation's
         * numbers", and _csdid_estat_rclear exists for exactly this; it was
-        * called on one route out of eight.
-        _csdid_estat_rclear
+        * called on one route out of eight. It runs AFTER the refusals below
+        * (cold-audit F3-B): a refused attgt must not first destroy the
+        * previous aggregation's r(table).
         * attgt redisplays the stored ATT(g,t) table, and with saving() writes
         * that same table out as a dataset. saving() is how Stata spells "put
         * this in a file" -- margins, simulate and graph all take it -- so it is
@@ -180,6 +181,7 @@ program define csdid_estat, eclass
             if `_sv_noext' local _sv_probe `"`_sv_probe'.dta"'
             confirm new file `"`_sv_probe'"'
         }
+        _csdid_estat_rclear
         if `"`saving'"' != "" {
             _csdid_estat_tidy_attgt using `"`saving'"', `replace'
             exit
@@ -292,19 +294,6 @@ program define csdid_estat, eclass
             display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
             exit 198
         }
-        * An existing saving() target without replace refuses HERE, before
-        * anything computes or posts. The route's final -save- raised the
-        * same r(602), but with `post' it did so only after e(b)/e(V) had
-        * already been replaced by the aggregation -- the refusal then
-        * described a command that had silently changed the active
-        * estimation (cold-audit F3). -save- writes .dta when the filename
-        * has no extension, so the existence probe matches that rule.
-        if `"`saving'"' != "" & "`replace'" == "" {
-            local _sv_probe `"`saving'"'
-            mata: st_local("_sv_noext", strofreal(pathsuffix(st_local("_sv_probe")) == ""))
-            if `_sv_noext' local _sv_probe `"`_sv_probe'.dta"'
-            confirm new file `"`_sv_probe'"'
-        }
         if "`agg_type'" == "calendar" & `"`window'"' != "" {
             display as text "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"
         }
@@ -342,6 +331,21 @@ program define csdid_estat, eclass
         * when no transient posting exists.
         * F-047: windowing happened upstream in csdid_stats, so the poster no
         * longer receives (or fabricates) window bounds.
+        * The export runs BEFORE the posting step, and that ordering is the
+        * whole refusal contract for saving() on this route (cold-audit
+        * F3-A): the file is built from the e(aggte) family the compute just
+        * wrote, which the posting step preserves unchanged, so the file's
+        * content is identical on either side of the post -- but a failed
+        * -save- (target exists without replace, permissions, a full or
+        * vanished volume, a race on the name) now exits with the save's own
+        * return code while e(b), e(V), e(cmd) and both signature macros
+        * still describe the incoming estimation. No preflight probe of the
+        * target can deliver that (it can only narrow the window), and a
+        * probe placed before the compute also answered an invalid window()
+        * with r(602) about an unrelated file. Sequencing is the atomicity.
+        if `"`saving'"' != "" {
+            _csdid_estat_tidy_aggte using `"`saving'"', `replace'
+        }
         * F-045/`event' keeps the historical Tm#/Tp#/Post_avg names
         * through the eventnames branch of _csdid_post_aggte; the other four
         * types get the naming their own aggregation implies (G#, T#, ATT,
@@ -383,14 +387,7 @@ program define csdid_estat, eclass
                 matlist e(aggte), names(columns) format(%10.6g)
             }
         }
-        * saving() was parsed at the syntax line and then ignored here, so
-        * `estat event, saving(f)' returned rc 0 and wrote no file. It now
-        * writes the aggregation that was just computed -- the same file
-        * `estat tidy, saving(f)' writes if run immediately afterwards.
-        * (replace without saving() was refused before the aggregation ran.)
-        if `"`saving'"' != "" {
-            _csdid_estat_tidy_aggte using `"`saving'"', `replace'
-        }
+        * (the export ran above, before the posting step; see the F3-A note)
         exit
     }
     if inlist(`"`subcmd'"', "tidy", "glance") & "`dropmissing'" != "" {

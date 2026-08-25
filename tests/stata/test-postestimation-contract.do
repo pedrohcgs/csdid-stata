@@ -413,4 +413,27 @@ assert "`e(cmd)'" == "csdid"
 matrix `EB2' = e(b)
 assert mreldif(`EB0', `EB2') == 0
 
+* cold-audit E3: a saverif() destination that cannot be written -- a
+* read-only directory stands in for quota, ACL, and vanished-volume
+* failures -- refuses at entry with the previous estimation preserved and
+* no partial file left behind.
+if "`c(os)'" != "Windows" {
+    import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+    quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+    tempname RW0 RW1
+    matrix `RW0' = e(b)
+    local rodir2 "`c(tmpdir)'/csdid_ro_dir_e3"
+    capture mkdir "`rodir2'"
+    shell chmod a-w "`rodir2'"
+    capture csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet saverif("`rodir2'/rif_out.dta")
+    local roe3 = _rc
+    shell chmod u+w "`rodir2'"
+    assert `roe3' != 0
+    assert "`e(cmd)'" == "csdid"
+    matrix `RW1' = e(b)
+    assert mreldif(`RW0', `RW1') == 0
+    capture confirm file "`rodir2'/rif_out.dta"
+    assert _rc != 0
+}
+
 display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

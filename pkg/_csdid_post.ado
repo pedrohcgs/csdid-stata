@@ -1,4 +1,4 @@
-*! _csdid_post 2.0.0 24aug2026
+*! _csdid_post 2.0.0 25aug2026
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")

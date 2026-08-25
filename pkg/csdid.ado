@@ -1,4 +1,4 @@
-*! csdid 2.0.0 24aug2026
+*! csdid 2.0.0 25aug2026
 program define csdid, eclass sortpreserve
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
@@ -1329,28 +1329,38 @@ program define csdid, eclass sortpreserve
     * user-supplied variable that happens to be all zero is the user's to
     * keep.
     *
-    * RESIDUAL, deliberately not closed: fvrevar also chose the BASE level
-    * against the pre-drop sample. If the drops empty the base level instead
-    * of a non-base one, the surviving dummies partition the final sample and
-    * are collinear with the intercept the kernel prepends -- which this
-    * screen cannot see, because no single column is all zero. Rebuilding the
-    * factor expansion on the final sample is the fix for that case and is a
-    * larger change; it is recorded rather than attempted here.
+    * fvrevar also chose the BASE level against the pre-drop sample. If the
+    * drops empty the base level instead of a non-base one, the surviving
+    * dummies partition the final sample and are exactly collinear with the
+    * intercept the kernel prepends -- which no all-zero screen can see,
+    * because no single column is all zero. Measured (cold-audit F1,
+    * differential 2026-08-25): R estimated every cell of such a design with
+    * real numbers while csdid returned rc 0 with every substantive ATT(g,t)
+    * silently missing. So the WHOLE expansion is rebuilt here, against the
+    * final sample -- exactly what R does by building its model matrix on
+    * the already-reduced data: fvrevar picks the base from the levels that
+    * actually remain, empty levels never become columns, and on a sample
+    * the drops did not change it returns the same columns and base as
+    * before, so nothing moves anywhere else. The all-zero screen then runs
+    * on the fresh columns, unchanged: only fvrevar's own `__' dummies are
+    * screened; a user-supplied all-zero variable is the user's to keep.
     * ---------------------------------------------------------------------
-    if `"`xvars_expanded'"' != "" {
+    if `"`xvars'"' != "" & `"`xvars_expanded'"' != "" {
+        capture quietly fvrevar `xvars' if `touse'
+        if _rc == 0 {
+            local xvars_expanded "`r(varlist)'"
+        }
         local xvars_rescreened ""
-        local xvars_dropped_late 0
         foreach xv of local xvars_expanded {
             if substr("`xv'", 1, 2) == "__" {
                 quietly summarize `xv' if `touse', meanonly
                 if r(N) > 0 & r(min) == 0 & r(max) == 0 {
-                    local ++xvars_dropped_late
                     continue
                 }
             }
             local xvars_rescreened "`xvars_rescreened' `xv'"
         }
-        if `xvars_dropped_late' > 0 local xvars_expanded "`xvars_rescreened'"
+        local xvars_expanded "`xvars_rescreened'"
     }
 
     * -----------------------------------------------------------------------

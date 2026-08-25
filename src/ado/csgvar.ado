@@ -1,4 +1,4 @@
-*! csgvar 2.0.0 24aug2026
+*! csgvar 2.0.0 25aug2026
 * Cohort ("gvar") variable from a binary treatment indicator, command form.
 *
 * The implementation lives in _gcsgvar.ado, which is also Stata's egen entry

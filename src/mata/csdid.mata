@@ -1,4 +1,4 @@
-*! csdid 2.0.0 24aug2026
+*! csdid 2.0.0 25aug2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on

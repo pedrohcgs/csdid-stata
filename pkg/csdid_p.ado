@@ -1,4 +1,4 @@
-*! csdid_p 2.0.0 24aug2026
+*! csdid_p 2.0.0 25aug2026
 *
 * predict has no meaning after csdid: e(b) holds ATT(g,t)
 * treatment effects, not coefficients on regressors, so there is no linear

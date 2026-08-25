@@ -1,4 +1,4 @@
-*! _gcsgvar 2.0.0 24aug2026
+*! _gcsgvar 2.0.0 25aug2026
 * Cohort ("gvar") variable from a binary treatment indicator.
 *
 * This file holds the single implementation. `_g<name>' is Stata's egen entry

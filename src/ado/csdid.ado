@@ -951,8 +951,25 @@ program define csdid, eclass sortpreserve
                 foreach xv of local xvars_expanded {
                     quietly replace `xmiss' = 1 if `touse' & missing(`xv')
                 }
-                quietly bysort `ivar': egen byte `xmiss_unit' = max(`xmiss') if `touse'
-                quietly replace `touse' = 0 if `xmiss_unit' == 1
+                if inlist("`balance_mode'", "pair", "none") {
+                    * Under bal(pair) and bal(none) a row with a missing
+                    * covariate is treated as an UNOBSERVED row: only that
+                    * row leaves the sample, and the per-pair presence
+                    * machinery these modes already run does the rest --
+                    * exactly R's allowed-unbalanced route (complete-case
+                    * rows, then per-2x2 availability). Propagating the miss
+                    * to the whole unit here silently shrank those samples:
+                    * measured (cold-audit round 6, F1), a covariate missing
+                    * only at t=3 changed ATT(2,2) from R's 1.1667 to 1.0
+                    * by deleting the unit's clean t=1,2 rows. The whole-unit
+                    * drop below remains the bal(full) rule, where R's own
+                    * balancing removes the now-incomplete unit identically.
+                    quietly replace `touse' = 0 if `xmiss' == 1
+                }
+                else {
+                    quietly bysort `ivar': egen byte `xmiss_unit' = max(`xmiss') if `touse'
+                    quietly replace `touse' = 0 if `xmiss_unit' == 1
+                }
                 * on the panel path a unit is dropped whole
                 * when ANY of its covariate cells is missing, so a covariate
                 * that is missing for one entire period annihilates every unit
@@ -963,6 +980,10 @@ program define csdid, eclass sortpreserve
                 * numeric-behaviour change and is recorded as a follow-up owner
                 * decision, not implemented here.)
                 quietly count if `touse'
+                if r(N) == 0 & inlist("`balance_mode'", "pair", "none") {
+                    display as error "every observation is missing a value of the covariates (`xvars'), so no estimation sample remains. Supply the missing covariate values, drop the covariate, or restrict the sample."
+                    exit 459
+                }
                 if r(N) == 0 {
                     local ds07_x ""
                     local ds07_t ""

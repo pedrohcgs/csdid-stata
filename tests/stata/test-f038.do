@@ -104,9 +104,15 @@ local first_att 0
 
 import delimited using "`root'/tests/fixtures/parity/f038/inputs/missing-cov.csv", clear asdouble
 quietly csdid y x, ivar(id) time(period) gvar(g) method(reg) notyet analytical base_period(varying) bal(none)
-assert "`e(panel_mode)'" == "panel"
-assert e(N) == 236
-assert e(N_units) == 59
+* Under bal(none) the missing covariate cell costs its ROW, not the unit
+* (the f072 correspondence: bal(none) is R's allowed-unbalanced route), so
+* the unit stays, the panel is handled as allow_unbalanced, and the counts
+* keep the 239 usable rows. The oracle for this scenario is generated with
+* allow_unbalanced_panel = TRUE for the same reason. The old pins (panel /
+* 236 / 59) froze the whole-unit over-drop this cell now exists to forbid.
+assert "`e(panel_mode)'" == "allow_unbalanced"
+assert e(N) == 239
+assert e(N_units) == 60
 f038_save_att, scenario("missing_covariate") saving("`actual_att'") append
 
 foreach method in dr reg ipw {

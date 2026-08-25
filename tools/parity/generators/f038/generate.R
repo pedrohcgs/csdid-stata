@@ -99,9 +99,14 @@ out_t1 <- suppressWarnings(att_gt(
 ))
 att_rows[["t1"]] <- att_to_df("t1_column", out_t1)
 
+# allow_unbalanced_panel = TRUE is the R route bal(none) maps to (the f072
+# differential pinned the correspondence cell for cell): a covariate missing
+# in one row costs that row, not the unit. The old oracle used the balanced
+# default and agreed with csdid only while csdid over-dropped the unit.
 out_missing <- suppressWarnings(att_gt(
   yname = "y", tname = "period", idname = "id", gname = "g", data = missing_cov,
   xformla = ~ x, control_group = "notyettreated", est_method = "reg",
+  allow_unbalanced_panel = TRUE,
   bstrap = FALSE, cband = FALSE
 ))
 att_rows[["missing"]] <- att_to_df("missing_covariate", out_missing)

@@ -987,11 +987,9 @@ program define csdid, eclass sortpreserve
                             local ds07_label "a covariate built from `xvars'"
                         }
                         display as error "covariate `ds07_label' is missing for every observation in period `ds07_t' of time(`time'); with ivar(`ivar') that drops every unit and leaves no estimation sample. Exclude that period (for example with if `time' != `ds07_t'), supply the covariate for it, or drop the covariate."
-                        ereturn clear
                         exit 459
                     }
                     display as error "every unit has at least one missing value of the covariates (`xvars'); with ivar(`ivar') each such unit is dropped whole, so no estimation sample remains. Supply the missing covariate values, drop the covariate, or restrict the sample."
-                    ereturn clear
                     exit 459
                 }
             }
@@ -1104,11 +1102,14 @@ program define csdid, eclass sortpreserve
     local want_bal = ("`ivar'" != "" & "`balance_mode'" == "full")
     capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'")
     if _rc {
-        * a scan failure must refuse cleanly, never leave a previous
-        * estimation posted (the same anti-leak contract as every guard)
+        * a scan failure refuses cleanly. Like every entry refusal it
+        * PRESERVES whatever estimation results were already in memory --
+        * they belong to a previous, complete command, and erasing them
+        * over a refused csdid destroyed work (cold-audit F3; the doctrine
+        * csdid.sthlp states). Only a failure after the engine has begun
+        * clears e().
         local prescan_rc = _rc
         display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
-        ereturn clear
         exit `prescan_rc'
     }
     * The three data-shape violations R refuses -- an irreversible-treatment
@@ -1177,7 +1178,6 @@ program define csdid, eclass sortpreserve
         if _rc {
             local shapescan_rc = _rc
             display as error "csdid could not scan the estimation sample (Mata rc `shapescan_rc'); the data may be degenerate"
-            ereturn clear
             exit `shapescan_rc'
         }
         if __csdid_sh_gvary == 1 local raw_shape_gvary = 1
@@ -1204,17 +1204,14 @@ program define csdid, eclass sortpreserve
     if "`ivar'" != "" {
         if `raw_shape_gvary' == 1 {
             display as error "gvar() must be time-invariant within ivar(); treatment timing must be irreversible"
-            ereturn clear
             exit 459
         }
         if `raw_shape_dup' == 1 {
             display as error "The value of ivar() must be unique within time(). Some units are observed more than once in a period."
-            ereturn clear
             exit 459
         }
         if `raw_shape_cvary' == 1 {
             display as error "cluster() must be time-invariant within ivar()"
-            ereturn clear
             exit 459
         }
     }
@@ -1308,7 +1305,6 @@ program define csdid, eclass sortpreserve
             if _rc {
                 local prescan_rc = _rc
                 display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
-                ereturn clear
                 exit `prescan_rc'
             }
         }
@@ -1416,7 +1412,6 @@ program define csdid, eclass sortpreserve
         capture scalar `eux_nunit' = __csdid_ps_shape_nunit
         if scalar(`eux_nunit') == 1 {
             display as error "ivar() identifies only one unit in the estimation sample; csdid needs at least two units (a treated unit and a comparison unit) to form a 2x2 comparison. Check that ivar() names the panel identifier and is not constant."
-            ereturn clear
             exit 459
         }
     }
@@ -1459,7 +1454,6 @@ program define csdid, eclass sortpreserve
     if `name_maxlen' > 32 {
         display as error "time()/gvar() values are too large: csdid names each ATT(g,t) coefficient g<g>___<t>_<base>, which for this data would need `name_maxlen' characters and Stata's limit is 32."
         display as error "Rescale the axis and rerun - for example use years rather than epoch seconds or %tc values, or build a compact index with -egen t2 = group(`time')- (and the matching gvar()). The estimates are unchanged by a monotone relabelling of the periods."
-        ereturn clear
         exit 198
     }
     local never_count = __csdid_ps_never
@@ -1493,7 +1487,6 @@ program define csdid, eclass sortpreserve
         display as error "No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings."
         * F-010 (repaired): a refusal must not leave a previous estimation's
         * e() posted (test-release-failure-modes asserts e(cmd) == "" here).
-        ereturn clear
         exit 459
     }
     * F-014 R parity: group size is ROWS / n_periods (R's average units per
@@ -1545,7 +1538,6 @@ program define csdid, eclass sortpreserve
     if "`small_groups'" != "" & `never_small' & "`notyet'" == "" {
         display as error "The never-treated group is too small to serve as a reliable comparison group. Try specifying notyet to include not-yet-treated units in the comparison group."
         * As with the F-010 refusal, do not leave a previous estimation posted.
-        ereturn clear
         exit 459
     }
     * Both of these announce a change to the SAMPLE or the ESTIMAND, so they

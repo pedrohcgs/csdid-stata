@@ -82,6 +82,15 @@ for id in $gen_ids; do
     fail=1
     continue
   fi
+  # A zero exit is not production (cold-audit F6): a generator that writes
+  # nothing under expected/ must fail, or an inventoried generator with no
+  # oracle at all would count as certified.
+  produced=$(find "$scratch/tests/fixtures/parity/$id/expected" -type f 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$produced" -eq 0 ]; then
+    echo "generator $id exited 0 but produced NO file under expected/; that is not a certification" >&2
+    fail=1
+    continue
+  fi
   n_ok=$((n_ok + 1))
 done
 

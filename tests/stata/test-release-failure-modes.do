@@ -77,7 +77,9 @@ preserve
     capture noisily csdid y x1, id(id) time(year) gvar(first_treat) nevertreated base_period(varying) bal(none)
     assert _rc != 0
 restore
-assert "`e(cmd)'" == ""
+* an entry refusal preserves the previous estimation, like the cells above
+* (the shape checks refuse before the engine runs; cold-audit doctrine)
+assert "`e(cmd)'" == "csdid"
 
 quietly csdid y x1 x2, id(id) time(year) gvar(first_treat) method(dr) nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(simple) na_rm

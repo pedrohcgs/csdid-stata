@@ -7522,8 +7522,27 @@ void csdid__Agg::store()
 void csdid__Agg::agg_simple()
 {
     real rowvector keep
+    real colvector agg_tgrid, agg_tr, agg_gr
+    real scalar agg_i
 
-    keep = which((group :<= tt) :& (tt :<= group :+ max_e))
+    // R rank-recodes periods and cohorts (orig2t) BEFORE applying max_e to
+    // the simple and group keepers (compute.aggte.R:279, :335), so on a
+    // gapped calendar max_e counts OBSERVED PERIODS, not calendar units --
+    // measured: on periods {1,3,5} with g=3 and max_e=1, R keeps both post
+    // cells and csdid's raw-calendar comparison kept one. The dynamic path
+    // is different by R's own construction (eseq = originalt -
+    // originalgroup, raw) and stays raw here too. The rank of a value is
+    // its count of grid points at or below it, exact for every on-grid
+    // value; missing max_e still means unbounded, since a comparison
+    // against missing is true for the same reason it was on the raw scale.
+    agg_tgrid = uniqrows(tt)
+    agg_tr = J(rows(tt), 1, 0)
+    agg_gr = J(rows(group), 1, 0)
+    for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
+        agg_tr = agg_tr + (tt :>= agg_tgrid[agg_i])
+        agg_gr = agg_gr + (group :>= agg_tgrid[agg_i])
+    }
+    keep = which((group :<= tt) :& (agg_tr :<= agg_gr :+ max_e))
     if (cols(keep) == 0) {
         errprintf("no valid ATT(g,t) estimates found for simple aggregation\n")
         _error(498)
@@ -7543,8 +7562,9 @@ void csdid__Agg::agg_group()
 {
     real rowvector keep
     real colvector weights, effect_if, overall_weights
+    real colvector agg_tgrid, agg_tr, agg_gr
     real matrix wif
-    real scalar i, g, n_effects, n_max
+    real scalar i, g, n_effects, n_max, agg_i
 
     // One cohort at most per iteration, so the tables are opened at that size
     // and trimmed once if dropmissing left a cohort out. Appending a column to
@@ -7561,9 +7581,18 @@ void csdid__Agg::agg_group()
     pgg = J(n_max, 1, .)
     effect_if_mat = J(rows(inffunc), n_max, .)
     n_effects = 0
+    // same rank recode as agg_simple (R compute.aggte.R:335): max_e counts
+    // observed periods on the group keepers too.
+    agg_tgrid = uniqrows(tt)
+    agg_tr = J(rows(tt), 1, 0)
+    agg_gr = J(rows(group), 1, 0)
+    for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
+        agg_tr = agg_tr + (tt :>= agg_tgrid[agg_i])
+        agg_gr = agg_gr + (group :>= agg_tgrid[agg_i])
+    }
     for (i = 1; i <= n_max; i++) {
         g = glist[i]
-        keep = which((group :== g) :& (group :<= tt) :& (tt :<= group :+ max_e))
+        keep = which((group :== g) :& (group :<= tt) :& (agg_tr :<= agg_gr :+ max_e))
         if (cols(keep) == 0) {
             if (na_rm) continue
             errprintf("no valid ATT(g,t) estimates found for group aggregation\n")

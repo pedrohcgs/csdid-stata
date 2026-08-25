@@ -212,7 +212,7 @@ the cohorts already treated{p_end}
 {pstd}
 Two cautions carry over from Callaway and Sant'Anna (2021). Effects at event
 times e < 0 are placebo estimates of a maintained assumption, not treatment
-effects, and the coefficient at e = -1 is reported like the others rather than
+effects, and the reference-cell coefficient (e = -1 on a gapless calendar; on a gapped one, the true calendar difference to the previous observed period) is reported like the others rather than
 being pinned at zero. And a dynamic profile computed on the full sample changes
 composition along the x-axis, since only early-treated cohorts reach long event
 times; {helpb csdid_stats##balance:csdid_stats, balance()} holds the
@@ -278,7 +278,7 @@ reflected in the file. {cmd:estat attgt} accepts only {cmd:saving()} and
 window, re-level or aggregate.
 
 {pstd}
-The event-time coefficient vector includes the e = -1 reference period, and no
+The event-time coefficient vector includes the reference period (e = -1 when the calendar has no gaps), and no
 coefficient is created for an event time that is absent from the data.
 
 

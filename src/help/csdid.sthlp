@@ -391,11 +391,13 @@ resolved choice is recorded in
 
 {p2colset 12 26 28 2}{...}
 {p2col:{cmd:varying}}for post-treatment periods, {it:t >= g}, the base period
-is {it:g - 1 - anticipation}; for pre-treatment periods the base period is the
-period immediately before {it:t}. Pre-treatment estimates are then
-short-differences and are the natural placebo checks.{p_end}
+is the last observed period before {it:g - anticipation}; for pre-treatment
+periods the base period is the observed period immediately before {it:t}.
+Pre-treatment estimates are then short-differences and are the natural placebo
+checks.{p_end}
 {p2col:{cmd:universal}}(the default) every ATT(g,t), pre and post, differences
-against the single base period {it:g - 1 - anticipation}. Pre-treatment
+against a single base period, the last observed period before
+{it:g - anticipation}. Pre-treatment
 estimates are then long-differences relative to a common reference period, and
 the reference period itself appears in {cmd:e(attgt)} with an estimate of
 exactly zero and a missing standard error.{p_end}
@@ -1011,25 +1013,30 @@ are now refused; see
 
 {pstd}
 Every ATT(g,t) is a difference in differences between period {it:t} and a base
-period. The default, {cmd:base_period(universal)}, uses the fixed period
-{it:g - 1} as the base for every cell, pre and post, and reports the
-{it:g - 1} normalisation row itself; every pre-treatment estimate is then a
+period. The default, {cmd:base_period(universal)}, uses one fixed base for
+every cell, pre and post -- the last observed period before {it:g} -- and
+reports that normalisation row itself; every pre-treatment estimate is then a
 long difference from the same reference period. Universal base periods make an
 event-study plot read like a conventional one, with a normalized reference
 period, but the pre-treatment coefficients are then serially dependent by
 construction and their magnitudes grow mechanically with distance from the
 reference period.
-{cmd:base_period(varying)} instead uses the period immediately before each
-comparison: {it:g - 1} for post-treatment cells and {it:t - 1} for
-pre-treatment cells. Each pre-treatment estimate is then a one-period placebo
+{cmd:base_period(varying)} instead uses the observed period immediately before
+each comparison: the one before {it:g} for post-treatment cells and the one
+before {it:t} for pre-treatment cells. Each pre-treatment estimate is then a
+one-observed-period placebo
 and the estimates are comparable in variance across event times, which makes
 {cmd:varying} the better choice when the pre-treatment cells are being used to
 pre-test.
 
 {pstd}
 Either way, the post-treatment ATT(g,t) estimates are the same. With
-{cmd:anticipation(#)} the base period moves from {it:g - 1} to
-{it:g - 1 - #}.
+{cmd:anticipation(#)} the base period moves back {it:#} additional observed
+periods. On a calendar recorded without gaps the base period is exactly
+{it:g - 1 - anticipation}; on a gapped calendar -- biennial data, a skipped
+survey wave -- it is the previous period the data actually contain, and the
+reference cell's event time is then the true calendar difference (for example
+{it:-2} when periods step by two).
 
 {pstd}
 Cells whose event time is {it:-1} are the reference cells. They are reported

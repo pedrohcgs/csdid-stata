@@ -378,4 +378,44 @@ tsvmat `LGM', name(only1)
 assert _N == 3
 assert only1[3] == 5
 
+* cold-audit M5: the shim's Mata helpers are namespaced, so a user's own
+* function under one of the old generic names neither blocks the shim nor
+* is destroyed by it.
+capture mata: mata drop iqrse()
+mata:
+real matrix iqrse(real matrix y) return(y :+ 1)
+end
+clear
+set obs 8
+generate double m5rif = _n
+csdid_rif m5rif
+assert _rc == 0
+mata: st_local("m5_mine", strofreal(iqrse((1,2))[1,1] == 2))
+assert `m5_mine' == 1
+capture mata: mata drop iqrse()
+
+* cold-audit M3 residue: a duplicated name() is refused before the dataset
+* changes.
+clear
+set obs 1
+generate double keepvar = 5
+tempname DUPM
+matrix `DUPM' = (1,2 \ 3,4)
+capture tsvmat `DUPM', name(x x)
+assert _rc == 198
+assert _N == 1
+capture confirm variable x
+assert _rc != 0
+
+* cold-audit N1: an EXPLICIT level(), even one equal to the session default,
+* is refused as the help promises.
+clear
+set obs 8
+generate double n1rif = _n
+csdid_rif n1rif
+capture csdid_table, level(`c(level)')
+assert _rc == 198
+* a bare call still displays: it aborts the do-file here if it cannot
+csdid_table
+
 display "LEGACY OK: csgvar verified against csdid on both routes, bare and expression; four deprecated commands load; csdid_rif posts e(N)/e(sample) and leaves bb_/VV_/cln_ alone; csdid_table fills its t and CI columns from either e(cband) shape; tsvmat stores double and refuses before mutating; level provenance survives replay; the RNG stream survives a refused wboot"

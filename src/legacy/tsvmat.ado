@@ -27,8 +27,14 @@ program define tsvmat, return
             display as error "name() lists `: word count `name'' names but the matrix has only `nc' columns"
             exit 198
         }
+        local _tsv_seen ""
         foreach i in `name' {
             confirm new variable `i'
+            if `: list i in _tsv_seen' {
+                display as error "name() lists `i' more than once"
+                exit 198
+            }
+            local _tsv_seen "`_tsv_seen' `i'"
         }
         if _N<`nx' {
             display as text "Expanding observations to `nx'"

@@ -532,14 +532,18 @@ program define csdid, eclass sortpreserve
         }
         capture confirm new file `"`saverif_path'"'
         local saverif_rc = _rc
+        * These are ENTRY refusals: nothing has been estimated, so whatever
+        * results were in memory belong to a previous, complete command and
+        * stay exactly as they were -- clearing them here once destroyed a
+        * user's prior estimation over a typo'd filename. The clear this
+        * block used to carry belonged to the days the destination check ran
+        * mid-estimation, where a partial posting was the thing to prevent.
         if `saverif_rc' == 602 & `"`replace'"' == "" {
             display as error `"saverif() destination `saverif_path' already exists; specify replace to overwrite it"'
-            ereturn clear
             exit 602
         }
         if `saverif_rc' != 0 & `saverif_rc' != 602 {
             display as error `"saverif() destination `saverif_path' cannot be written"'
-            ereturn clear
             exit `saverif_rc'
         }
     }
@@ -729,6 +733,39 @@ program define csdid, eclass sortpreserve
         }
     }
 
+    * -------------------------------------------------------------------
+    * Stata 14 and 15 cap classic-matrix dimensions with `set matsize',
+    * whose default is 400; Stata 16 removed the cap and ignores the
+    * setting. Every bootstrap path writes at least one biters-row Stata
+    * matrix, and a seeded run builds a 1 x 625 RNG-state matrix, so on a
+    * stock Stata 14/15 the default run -- reps(1000), bootstrap on unless
+    * analytical -- has no working path. The check needs nothing but the
+    * options just resolved, so it runs HERE, before the data are touched
+    * or anything is estimated -- the help's "checks before estimating"
+    * promise is a placement promise, and the cold audit measured the old
+    * placement breaking it: the refusal fired only after the whole ATT
+    * kernel had run. As an entry refusal it leaves whatever estimation
+    * results were in memory exactly as they were, like every other entry
+    * refusal in this command.
+    *
+    * Gated on the version, or it would refuse the entire modern user
+    * base, where c(matsize) still reports 400 and nothing is wrong.
+    *
+    * This REFUSES rather than raising matsize itself. Raising it is not
+    * universally possible -- Stata/IC 14/15 caps matsize at 800, below
+    * the default reps(1000) -- and an estimation command has no business
+    * silently changing a global setting the user did not ask about. The
+    * message names the exact command to type and the alternative.
+    * -------------------------------------------------------------------
+    if `bstrap' & c(stata_version) < 16 {
+        local matsize_need = `biters'
+        if "`boot_seed'" != "" & 625 > `matsize_need' local matsize_need = 625
+        if `matsize_need' > c(matsize) {
+            display as error "this Stata version limits matrix dimensions with -set matsize- (currently `=c(matsize)'), and this bootstrap needs at least `matsize_need'`=cond("`boot_seed'" != "" & `biters' < 625, " for the seeded random-number state", "")'."
+            display as error "Type -set matsize `matsize_need'- and rerun, or lower reps(), or specify analytical for analytical standard errors. Stata/IC caps matsize at 800, so on that flavour reps() must be 800 or fewer."
+            exit 908
+        }
+    }
     gettoken yname xvars : varlist
     capture confirm numeric variable `yname'
     if _rc {
@@ -1616,35 +1653,8 @@ program define csdid, eclass sortpreserve
     local bootstrap_accelerator_file ""
     local bootstrap_accelerator_rc 0
     if `bstrap' {
-        * -------------------------------------------------------------------
-        * Stata 14 and 15 cap classic-matrix dimensions with `set matsize',
-        * whose default is 400; Stata 16 removed the cap and ignores the
-        * setting. Every bootstrap path writes at least one biters-row Stata
-        * matrix, and a seeded run builds a 1 x 625 RNG-state matrix BEFORE
-        * the kernel runs, so on a stock Stata 14/15 the default run --
-        * reps(1000), bootstrap on unless analytical -- had no working path
-        * at all: it died with a bare r(908) after the whole estimation had
-        * been computed, naming nothing.
-        *
-        * Gated on the version, or it would refuse the entire modern user
-        * base, where c(matsize) still reports 400 and nothing is wrong.
-        *
-        * This REFUSES rather than raising matsize itself. Raising it is not
-        * universally possible -- Stata/IC 14/15 caps matsize at 800, below
-        * the default reps(1000) -- and an estimation command has no business
-        * silently changing a global setting the user did not ask about. The
-        * message names the exact command to type and the alternative.
-        * -------------------------------------------------------------------
-        if c(stata_version) < 16 {
-            local matsize_need = `biters'
-            if "`boot_seed'" != "" & 625 > `matsize_need' local matsize_need = 625
-            if `matsize_need' > c(matsize) {
-                display as error "this Stata version limits matrix dimensions with -set matsize- (currently `=c(matsize)'), and this bootstrap needs at least `matsize_need'`=cond("`boot_seed'" != "" & `biters' < 625, " for the seeded random-number state", "")'."
-                display as error "Type -set matsize `matsize_need'- and rerun, or lower reps(), or specify analytical for analytical standard errors. Stata/IC caps matsize at 800, so on that flavour reps() must be 800 or fewer."
-                ereturn clear
-                exit 908
-            }
-        }
+        * (the Stata 14/15 matsize refusal runs at option-resolution time,
+        * near the top of this program, before anything is estimated)
         tempname boot_attgt boot_draws boot_crit boot_pointcrit boot_rng_state
         local boot_rng_arg ""
         if "`boot_seed'" != "" {
@@ -2628,5 +2638,13 @@ program define _csdid_save_rif
     }
     save `"`using'"', `replace'
     restore
+    * The reader (csdid_stats using) must materialize an N_units-row classic
+    * matrix, which this flavour caps at c(max_matdim); the writer has no
+    * such cap, so an artifact can be written here that THIS Stata cannot
+    * reload (cold-audit M2). Say so at write time, when the user can still
+    * plan, instead of at reload time, when the estimation is long gone.
+    if e(N_units) > c(max_matdim) {
+        display as text "note: this artifact holds `=e(N_units)' unit rows, more than this Stata flavour's matrix limit (c(max_matdim) = `=c(max_matdim)'), so csdid_stats using cannot reload it HERE. A flavour whose limit covers it (e.g. Stata/MP) can."
+    }
     }
 end

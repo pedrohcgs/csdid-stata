@@ -386,4 +386,31 @@ if "`c(os)'" != "Windows" {
     assert "`e(datasignature)'" == "`fhash0'"
 }
 
+* cold-audit R1 (adjudicated): an ENTRY refusal -- a typo'd option, an
+* occupied saverif() destination -- preserves the previous estimation
+* exactly, as every Stata estimation command does, and a later aggregation
+* still works off that estimation's own cache. (Once the engine runs, a
+* failure clears e(); the cache token keeps the two regimes apart.)
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+tempname EB0 EA0 EB1 EA1 EB2
+matrix `EB0' = e(b)
+quietly csdid_stats, type(dynamic)
+matrix `EA0' = e(aggte)
+capture csdid y x1 x2, ivar(id) time(time) gvar(g) methd(dr) analytical notyet
+assert _rc == 198
+assert "`e(cmd)'" == "csdid"
+matrix `EB1' = e(b)
+assert mreldif(`EB0', `EB1') == 0
+quietly csdid_stats, type(dynamic)
+matrix `EA1' = e(aggte)
+assert mreldif(`EA0', `EA1') == 0
+tempfile srocc
+quietly save "`srocc'"
+capture csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet saverif("`srocc'")
+assert _rc == 602
+assert "`e(cmd)'" == "csdid"
+matrix `EB2' = e(b)
+assert mreldif(`EB0', `EB2') == 0
+
 display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

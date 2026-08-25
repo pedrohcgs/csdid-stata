@@ -334,7 +334,13 @@ fi
 # Regenerating the R oracles proves the committed expectations still match what
 # R produces today, rather than a fixture frozen against a since-changed R.
 if have Rscript; then
-  run parity "R oracle regeneration + diff" bash tools/release/check-r-oracles.sh
+  run parity "R oracle environment (pinned did/DRDID)" bash tools/release/check-r-oracles.sh
+  # The row above proves the pinned R packages are installed; the row below
+  # is the regeneration the tier's name promises: every generator reruns
+  # into a scratch tree and every produced file must be byte-identical to
+  # the committed fixture. (Cold-audit R2: the tier used to run only the
+  # environment gate under the regeneration's name; a forged oracle passed.)
+  run parity "R oracle regeneration + diff" bash tools/release/regenerate-r-oracles.sh
 else
   block parity "R oracle regeneration" "Rscript not on PATH"
 fi

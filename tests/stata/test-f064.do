@@ -87,11 +87,22 @@ capture program drop csdid
 capture program drop csdid_stats
 
 f064_make_panel
-* reps(1000) over a matsize of 400: refused, by name, before the kernel runs.
+* Establish a prior estimation, so the refusal below can prove it is an ENTRY
+* refusal: it fires at option-resolution time, before the data are touched,
+* and the previous results survive it exactly -- the old placement ran the
+* whole ATT kernel first and then cleared e() on its way out.
+capture quietly csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///
+    analytical
+assert _rc == 0
+tempname MS0 MS1
+matrix `MS0' = e(b)
+* reps(1000) over a matsize of 400: refused, by name, before anything runs.
 capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///
     wboot(reps(1000))
 assert _rc == 908
-assert "`e(cmd)'" == ""
+assert "`e(cmd)'" == "csdid"
+matrix `MS1' = e(b)
+assert mreldif(`MS0', `MS1') == 0
 
 * A seeded run needs 625 for the RNG state even at a small reps().
 capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///

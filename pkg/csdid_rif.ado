@@ -6,10 +6,23 @@
 * Could be use for post aggregation
 * could be a bit faster... but is faster than csdid_stats right now
 
+* The shim's Mata helpers are namespaced csdidrif_* so they cannot
+* collide with a user's or another package's functions (cold-audit M5:
+* the old generic names -- iqrse(), mboot(), qtp() -- failed with r(3000)
+* in either loading order). The drops make reloading the ado safe: Mata
+* refuses to redefine an existing function, so a stale copy must go first.
+capture mata: mata drop csdidrif_mboot_anyc()
+capture mata: mata drop csdidrif_mboot_any()
+capture mata: mata drop csdidrif_mboot()
+capture mata: mata drop csdidrif_iqrse()
+capture mata: mata drop csdidrif_qtp()
+capture mata: mata drop csdidrif_clusterse()
+capture mata: mata drop csdidrif_fix_rif()
+capture mata: mata drop csdidrif_make_tbl()
 mata: 
 
 // This creates a vector to obtain the WBefects in bsmean
-real matrix mboot_any(real matrix rif, real scalar reps, bwtype) {
+real matrix csdidrif_mboot_any(real matrix rif, real scalar reps, bwtype) {
 	 
 	mean_rif=mean(rif)
 	rr=rif:-mean_rif
@@ -57,7 +70,7 @@ real matrix mboot_any(real matrix rif, real scalar reps, bwtype) {
 }
  // Same but with Cluster
  // we can do it a bit faster. but needs extra to control for Max iterations.
-real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv, string scalar nclname) {
+real matrix csdidrif_mboot_anyc(real matrix rif, real scalar reps, bwtype, clv, string scalar nclname) {
 	mean_rif=mean(rif)
 	rr=rif:-mean_rif
 	bsmean=J(reps,cols(rif),0)
@@ -107,7 +120,7 @@ real matrix mboot_anyc(real matrix rif, real scalar reps, bwtype, clv, string sc
 }
 
 
-void mboot(real matrix rif, vv, cband, string scalar clv,
+void csdidrif_mboot(real matrix rif, vv, cband, string scalar clv,
 			real scalar ci, reps, wbtype, string scalar nclname) {
     //, real scalar reps, bwtype, ci 
     real matrix fr, tt
@@ -116,9 +129,9 @@ void mboot(real matrix rif, vv, cband, string scalar clv,
 	
 	// this gets the Bootstraped values
 	if (clv ==" ") {
-		fr=mboot_any(rif, reps, wbtype)
-		ifse = iqrse(fr)
-		tt = qtp(abs(fr :/ ifse),ci) 
+		fr=csdidrif_mboot_any(rif, reps, wbtype)
+		ifse = csdidrif_iqrse(fr)
+		tt = csdidrif_qtp(abs(fr :/ ifse),ci) 
 		
 		cband=( mean_rif',
 				ifse',
@@ -129,10 +142,10 @@ void mboot(real matrix rif, vv, cband, string scalar clv,
 	else {
 		clvar=st_data(.,clv)
 		
-		fr=mboot_anyc(rif,reps, wbtype, clvar, nclname)
-		ifse = iqrse(fr)
+		fr=csdidrif_mboot_anyc(rif,reps, wbtype, clvar, nclname)
+		ifse = csdidrif_iqrse(fr)
 		// this gets Tvalue
-		tt = qtp(abs(fr :/ ifse),ci)  
+		tt = csdidrif_qtp(abs(fr :/ ifse),ci)  
 		// Just matrix with all info 		
 		cband=( mean_rif',
 				ifse',
@@ -143,11 +156,11 @@ void mboot(real matrix rif, vv, cband, string scalar clv,
 	//bb=mean_rif This Squares the variance
 	vv=quadcross(ifse,ifse):*I(rows(ifse))
 	//sqrt(variance(fr))
-	//st_matrix(vv,iqrse(fr)^2)
+	//st_matrix(vv,csdidrif_iqrse(fr)^2)
 	//st_matrix(cband,ccb)
 }
 
-real matrix iqrse(real matrix y) {
+real matrix csdidrif_iqrse(real matrix y) {
     real scalar q25,q75
 	q25=floor(rows(y)*.25)+1
 	q75=floor(rows(y)*.75)+1
@@ -161,7 +174,7 @@ real matrix iqrse(real matrix y) {
 	return(iqrs)
 }
 
-real vector qtp(real matrix y, real scalar p) {
+real vector csdidrif_qtp(real matrix y, real scalar p) {
     real scalar k, i, q
 	real matrix yy, qq
 	qq=J(1,0,.)
@@ -175,7 +188,7 @@ real vector qtp(real matrix y, real scalar p) {
 	return(qq)
 }
 // SE if nothing
-void clusterse(real matrix iiff, cl, V, real scalar cln){
+void csdidrif_clusterse(real matrix iiff, cl, V, real scalar cln){
     real matrix ord, xcros, ifp, info, vv 
 	ord  = order(cl,1)
 	iiff = iiff[ord,]
@@ -190,7 +203,7 @@ void clusterse(real matrix iiff, cl, V, real scalar cln){
 	cln=nc
 }
 
-void fix_rif(real matrix rif){
+void csdidrif_fix_rif(real matrix rif){
 	real matrix mn_rif, rif2
 	
 	//mn_rif= colsum(rif)
@@ -211,17 +224,17 @@ void fix_rif(real matrix rif){
 // names bb_, VV_ and cln_, so a user with a matrix of either name lost it
 // silently. The coefficient and variance matrices now arrive by name, the way
 // cband_ already did; the cluster count keeps a global because it is also set
-// deeper in mboot_anyc(), but it is namespaced so it cannot collide.
-void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
+// deeper in csdidrif_mboot_anyc(), but it is namespaced so it cannot collide.
+void csdidrif_make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 			  real scalar setype, ci, reps, wbtype, string scalar nclname){
 	real matrix nobs, clvar
 	real scalar cln
 	rif=st_data(.,rifv,touse)
-	// `>= 0' is a tautology -- a sum of a 0/1 matrix always is -- so fix_rif
+	// `>= 0' is a tautology -- a sum of a 0/1 matrix always is -- so csdidrif_fix_rif
 	// ran on every call, rescaling and re-centring the whole RIF matrix even
 	// when nothing was missing. With no missings the rescale factor is
 	// exactly 1, so the result was mathematically rif but not bitwise rif.
-	if (sum(rif:==.)>0) fix_rif(rif)
+	if (sum(rif:==.)>0) csdidrif_fix_rif(rif)
 	 
 	bb=mean(rif)
 	nobs=rows(rif)
@@ -233,7 +246,7 @@ void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 	// cluster std
 	if ( setype ==2 ) {
 		clvar = st_data(.,clv,touse)
-		clusterse((rif:-bb),clvar,VV,cln)
+		csdidrif_clusterse((rif:-bb),clvar,VV,cln)
 		// was: a bare `cln' statement, which PRINTS the cluster count
 		// into the middle of the user's output on every clustered call.
 		// The count travels through the tempname scalar the caller hands
@@ -244,7 +257,7 @@ void make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 	real matrix cband
 	// wboot w / wo cluster
 	if ( setype ==3 ) {
-		mboot(rif,  VV, cband, clv, ci, reps, wbtype, nclname)
+		csdidrif_mboot(rif,  VV, cband, clv, ci, reps, wbtype, nclname)
 		st_matrix(cband_,cband)
 		
 	}
@@ -287,7 +300,7 @@ end
 end
 
 
-//mata:make_tbl("rif*","agex","as",3,.95, 10000, 1)
+//mata:csdidrif_make_tbl("rif*","agex","as",3,.95, 10000, 1)
 // RIF, Cluster, touse, where to save CBAND
  program csdid_rif, eclass
 	version 14
@@ -308,7 +321,7 @@ end
 	tempvar touse
 	* novarlist is deliberate. A missing entry in a RIF column means that
 	* ATT(g,t) cell failed for that unit, not that the unit is unusable: the
-	* Mata side (fix_rif) rescales the column and keeps every cell that did
+	* Mata side (csdidrif_fix_rif) rescales the column and keeps every cell that did
 	* work, which is what this file exists to do. Marking out the varlist would
 	* delete the whole row instead and is a different estimator -- measured on
 	* a 2000-row RIF with two seeded missings, listwise deletion moves the
@@ -339,7 +352,7 @@ end
 	}
 	tempname cband bmat vmat nclust
 	local tlevel = `level'/100
-	 mata:make_tbl("`varlist'"," `cluster'","`touse'","`cband'","`bmat'","`vmat'",`rtype',`tlevel', `reps', 1, "`nclust'")	
+	 mata:csdidrif_make_tbl("`varlist'"," `cluster'","`touse'","`cband'","`bmat'","`vmat'",`rtype',`tlevel', `reps', 1, "`nclust'")	
 	// rename 
 	matrix colname `bmat' = `varlist'
 	matrix colname `vmat' = `varlist'

@@ -155,7 +155,18 @@ program define _csdid_engine_load
     }
     if `"$CSDID_ENGINE_LIBRARY"' != "" {
         if `"$CSDID_ENGINE_LIBRARY"' != `"`mlib_file'"' {
-            mata: mata clear
+            * the engine namespace is csdid_* (functions, classes) and
+            * CSDID_* (the cache instance and its globals), so the teardown
+            * is targeted: variables first -- Mata refuses to drop a
+            * classdef while an instance like CSDID_ENGINE holds it, r(310),
+            * and the refusal is atomic -- then functions and classes, then
+            * reindex. The caller's Mata state -- their variables, their
+            * functions, other packages' loaded code -- survives. (`mata
+            * clear' here once destroyed all of it; the cold audit measured
+            * a user sentinel vanishing.)
+            capture mata: mata drop CSDID_*
+            capture mata: mata drop csdid_*
+            capture mata: mata drop csdid_*()
             capture quietly mata: mata mlib index
         }
         else if `mlib_found' & strpos(";`c(matalibs)';", ";lcsdid_v2;") == 0 {
@@ -241,7 +252,9 @@ program define _csdid_engine_load
             local mlib_stale = (real("`mlib_stata'") >= . | `mlib_newer')
         }
         if `mlib_stale' {
-            mata: mata clear
+            capture mata: mata drop CSDID_*
+            capture mata: mata drop csdid_*
+            capture mata: mata drop csdid_*()
             _csdid_engine_source
             if `mlib_newer' {
                 display as text "note: csdid's compiled library was built by Stata `mlib_stata' and this is Stata `c(stata_version)', so csdid is reading its source copy instead. The results are the same; only the first csdid of a session takes a moment longer. Nothing needs to be done."

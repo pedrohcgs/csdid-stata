@@ -14,9 +14,15 @@ program csdid_table, rclass
 	* other level -- silently mislabelled numbers, which is worse than a
 	* refused option. This command is frozen, so the honest form is to refuse
 	* what it cannot honour rather than accept and drop it.
-	syntax [, level(int `c(level)') noci cformat(string) sformat(string) *]
+	* level() is parsed as a string so that an EXPLICIT level() -- even one
+	* equal to the session default, which an int-with-default parse cannot
+	* distinguish from omission -- is refused as the help promises
+	* (cold-audit N1). The numeric value used below stays c(level), and the
+	* cband branches overwrite it with e(level) provenance where stored.
+	syntax [, Level(string) noci cformat(string) sformat(string) *]
 	local ct_bad ""
-	if `level' != `c(level)' local ct_bad "`ct_bad' level()"
+	if `"`level'"' != "" local ct_bad "`ct_bad' level()"
+	local level = c(level)
 	if "`ci'" != "" local ct_bad "`ct_bad' noci"
 	if `"`cformat'"' != "" local ct_bad "`ct_bad' cformat()"
 	if `"`sformat'"' != "" local ct_bad "`ct_bad' sformat()"

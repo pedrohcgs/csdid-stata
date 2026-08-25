@@ -552,9 +552,12 @@ way the estimation did.
 The destination is checked {it:before} estimation starts, as
 {helpb bootstrap}'s {cmd:saving()} is: naming a file that already exists
 without {cmd:replace}, or a path that cannot be written, refuses immediately
-with return code 602 and leaves {cmd:e()} cleared: nothing is estimated and no
-partial results are posted, so an unwritable destination costs you the refusal
-and not the run. An aggregation run later from the
+with return code 602. Nothing is estimated, no partial results are posted, and
+whatever estimation results were already in memory remain exactly as they
+were, so an unwritable destination costs you the refusal and not the run. An
+artifact holding more unit rows than this Stata flavour's matrix limit
+({cmd:c(max_matdim)}) is announced at write time: {cmd:csdid_stats using}
+needs a flavour whose limit covers it to reload the file. An aggregation run later from the
 saved file bands at the confidence level of the estimation that wrote it, not
 the session default, unless {helpb csdid_stats}'s own {cmd:level()} is given.
 
@@ -843,8 +846,14 @@ over time or repeated cross sections drawn from the same population.
 anything, and refuses with a message that names the variable and the value at
 fault rather than failing later inside a matrix operation. Every check below is
 run whether or not output is suppressed, so {cmd:quietly csdid ...} stops in
-exactly the same cases, and a refusal leaves {cmd:e()} cleared rather than
-posting a half-finished estimation.
+exactly the same cases. A refusal posts nothing: whatever estimation results
+were in memory before the command remain exactly as they were, as with every
+Stata estimation command, so a do-file that {cmd:capture}s a refused
+{cmd:csdid} continues with its previous results rather than a half-finished
+estimation. Once the estimation itself begins, a failure clears {cmd:e()}
+instead of posting a partial result, and the aggregation cache carries a
+run-specific token that {cmd:csdid_stats} verifies, so the results of one run
+can never be aggregated with the cached influence functions of another.
 
 {pstd}
 {bf:Panel structure.} With {cmd:ivar()} supplied -- and without {cmd:rcs},

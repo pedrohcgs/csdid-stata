@@ -1342,6 +1342,29 @@ program define csdid, eclass sortpreserve
     * screened; a user-supplied all-zero variable is the user's to keep.
     * ---------------------------------------------------------------------
     if `"`xvars'"' != "" & `"`xvars_expanded'"' != "" {
+        * An EXPLICITLY pinned base (ib#.) whose level has no observations
+        * left in the final sample cannot be rebuilt around: the user chose
+        * that reference, and estimating against a different one behind
+        * their back is a different regression. The reference implementation
+        * errors on an absent reference level; csdid refuses by name
+        * (cold-audit round 5, F3 -- measured: the swallowed rebuild left
+        * the stale partition and six of eight cells silently missing).
+        capture quietly fvexpand `xvars' if `touse'
+        if _rc == 0 {
+            foreach fvterm in `r(varlist)' {
+                foreach fvpart in `: subinstr local fvterm "#" " ", all' {
+                    if regexm("`fvpart'", "^([0-9]+)b\.(.+)$") {
+                        local fvlev = regexs(1)
+                        local fvvar = regexs(2)
+                        quietly count if `touse' & `fvvar' == `fvlev'
+                        if r(N) == 0 {
+                            display as error "the base category `fvlev' of factor covariate `fvvar' has no observations left in the final estimation sample (the covariate screening or the panel-balance requirement removed all of them). Choose a base that survives with ib#.`fvvar', or let Stata pick one with i.`fvvar'."
+                            exit 459
+                        }
+                    }
+                }
+            }
+        }
         capture quietly fvrevar `xvars' if `touse'
         if _rc == 0 {
             local xvars_expanded "`r(varlist)'"

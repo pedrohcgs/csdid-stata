@@ -415,6 +415,10 @@ generate double n1rif = _n
 csdid_rif n1rif
 capture csdid_table, level(`c(level)')
 assert _rc == 198
+* noci refuses 198, as two referee rounds claimed it did not (both refuted
+* by this measurement)
+capture csdid_table, noci
+assert _rc == 198
 * a bare call still displays: it aborts the do-file here if it cannot
 csdid_table
 

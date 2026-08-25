@@ -155,9 +155,11 @@ program define _csdid_post_aggte, eclass
                 matrix `MAP' = `MAP', (`i')
             }
             * Residue the format cannot cover: a name past Stata's
-            * 32-character limit, and two axis values whose "_" substitution
-            * reassembles the same string.
-            if strlen("`cname'") > 32 | strpos(" `names' ", " `cname' ") {
+            * 32-character limit, two axis values whose "_" substitution
+            * reassembles the same string, and any character %21.0g can emit
+            * that a coefficient name cannot carry (an exponent's sign, say).
+            capture confirm name `cname'
+            if _rc | strlen("`cname'") > 32 | strpos(" `names' ", " `cname' ") {
                 local cname "eff_`k'"
                 local ++renamed
             }

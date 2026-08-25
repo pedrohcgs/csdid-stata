@@ -53,4 +53,16 @@ foreach scen in missbase balempty {
     display as text "f070 `scen': `matched' cells match R"
 }
 
+* An EXPLICITLY pinned base (ib#.) whose level empties is a different case:
+* the user chose the reference, estimating against another one behind their
+* back would be a different regression, and the reference implementation
+* errors on an absent reference level. csdid refuses by name (round-5 F3 --
+* measured pre-fix: rc 0 with six of eight cells silently missing).
+import delimited using "`root'/tests/fixtures/parity/f070/inputs/input-missbase.csv", clear asdouble varnames(1)
+capture csdid y x1 ib1.region, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+assert _rc == 459
+* and a surviving explicit base still estimates
+capture csdid y x1 ib2.region, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+assert _rc == 0
+
 display as text "test-f070: an emptied factor base is rebuilt on the final sample, and every cell matches R"

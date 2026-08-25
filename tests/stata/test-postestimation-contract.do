@@ -436,4 +436,27 @@ if "`c(os)'" != "Windows" {
     assert _rc != 0
 }
 
+* Twice-refuted referee claims, pinned so they stay refuted: a missing-valued
+* aggregation bound refuses 198 on both routes, and a legal axis whose event
+* times format into exponent notation still posts (the name guard falls back
+* before an invalid name reaches ereturn).
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+capture csdid_stats, type(dynamic) max_e(.)
+assert _rc == 198
+capture csdid_stats, type(dynamic) window(-1 .)
+assert _rc == 198
+capture estat event, window(. 1)
+assert _rc == 198
+clear
+set obs 120
+generate long id = ceil(_n/4)
+bysort id: generate double time = cond(_n==1, 1, cond(_n==2, 2, cond(_n==3, 2 + 1e-13, 3)))
+generate double g = cond(mod(id,3)==0, 0, 2)
+generate double y = 1 + 0.1*time + cond(g>0 & time>=g, 1, 0) + 0.03*mod(id,7)
+quietly csdid y, ivar(id) time(time) gvar(g) analytical
+capture estat event, post
+assert _rc == 0
+assert "`e(cmd)'" == "csdid"
+
 display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

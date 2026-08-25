@@ -533,11 +533,25 @@ file close ph
 PLATEOF
   "$STATA" -b do "$LOGDIR/_preflight-platform.do" "$PLATFORM_TXT" >/dev/null 2>&1
   [ -f _preflight-platform.log ] && mv -f _preflight-platform.log "$LOGDIR/_preflight-platform.log"
-  if [ -f "$PLATFORM_TXT" ]; then
-    STATA_VERSION="$(sed -n 's/^stata_version=//p' "$PLATFORM_TXT" | head -1)"
-    STATA_EDITION="$(sed -n 's/^edition=//p' "$PLATFORM_TXT" | head -1)"
-    STATA_OS="$(sed -n 's/^os=//p' "$PLATFORM_TXT" | head -1)"
-    STATA_MACHINE="$(sed -n 's/^machine_type=//p' "$PLATFORM_TXT" | head -1)"
+  # The receipt's identity fields FAIL CLOSED (cold-audit round 5, F2): a
+  # probe that could not run -- or ran and wrote nothing -- must sink the
+  # verdict, not sail through as "unknown" on a green certificate. The
+  # probe's `version 15' matches the suite floor, a standing owner ruling
+  # (the PACKAGE floor of 14 is certified on real hardware, separately).
+  # The check tiers already exited nonzero above on any FAIL/BLOCKED, so
+  # this probe cannot ride the counters -- it refuses directly, and no
+  # receipt is written at all.
+  if [ ! -f "$PLATFORM_TXT" ]; then
+    echo "platform identity probe FAILED (see $LOGDIR/_preflight-platform.log): a green receipt that cannot name the Stata it ran on is unattributable evidence, so none is written" >&2
+    exit 1
+  fi
+  STATA_VERSION="$(sed -n 's/^stata_version=//p' "$PLATFORM_TXT" | head -1)"
+  STATA_EDITION="$(sed -n 's/^edition=//p' "$PLATFORM_TXT" | head -1)"
+  STATA_OS="$(sed -n 's/^os=//p' "$PLATFORM_TXT" | head -1)"
+  STATA_MACHINE="$(sed -n 's/^machine_type=//p' "$PLATFORM_TXT" | head -1)"
+  if [ -z "$STATA_VERSION" ] || [ -z "$STATA_EDITION" ] || [ -z "$STATA_OS" ] || [ -z "$STATA_MACHINE" ]; then
+    echo "platform identity probe wrote an incomplete identity ($PLATFORM_TXT); no receipt is written" >&2
+    exit 1
   fi
 fi
 

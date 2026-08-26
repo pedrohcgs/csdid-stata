@@ -103,8 +103,8 @@ sections{p_end}
 {syntab:Comparison group {help csdid##opt_control:[+]}}
 {synopt:{opt notyet}}state the default not-yet-treated comparison group
 explicitly{p_end}
-{synopt:{opt notyettreated}}synonym for {cmd:notyet}{p_end}
-{synopt:{opt nevertreated}}use only never-treated units as the comparison
+{synopt:{opt notyet:treated}}synonym for {cmd:notyet}{p_end}
+{synopt:{opt never:treated}}use only never-treated units as the comparison
 group{p_end}
 
 {syntab:Base period and anticipation {help csdid##opt_base:[+]}}

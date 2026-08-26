@@ -542,8 +542,12 @@ the RIF file: {cmd:e(attgt)}, {cmd:e(inffunc)}, {cmd:e(group_prob)},
 {cmd:e(unit_group)}, {cmd:e(cmd)}, {cmd:e(cmdline)}, {cmd:e(method)},
 {cmd:e(control_group)}, {cmd:e(base_period)}, {cmd:e(panel_mode)},
 {cmd:e(rif_file)}, {cmd:e(N)}, {cmd:e(N_units)}, {cmd:e(N_attgt)},
-{cmd:e(N_groups)}, {cmd:e(N_time)}, {cmd:e(anticipation)}, {cmd:e(level)}, and
-{cmd:e(time_first)} when the file carries it.
+{cmd:e(N_groups)}, {cmd:e(N_time)}, {cmd:e(anticipation)}, {cmd:e(level)},
+{cmd:e(version)}, the postestimation plumbing macros {cmd:e(estat_cmd)},
+{cmd:e(predict)}, and {cmd:e(marginsnotok)}, {cmd:e(time_first)} when the
+file carries it, and -- when the estimation that wrote the file was
+clustered -- {cmd:e(clustervar)}, {cmd:e(cluster_vec)}, and
+{cmd:e(N_clusters)}.
 
 {pstd}
 Results marked diagnostic exist for support and performance work. They are not
@@ -583,7 +587,10 @@ sqrt(sum_c (sum_{i in c} psi(i))^2)/n.
 Under the default multiplier bootstrap, each iteration reweights the same
 influence functions by Rademacher multipliers. The bootstrap standard error is
 the interquartile range of the draws divided by the normal interquartile range
-and by sqrt(n), which is robust to the occasional extreme draw. With
+and by sqrt(n), which is robust to the occasional extreme draw. Under
+{cmd:cluster()} the draws are cluster-level, so the same scaled interquartile
+range is multiplied by sqrt(C)/n -- C the number of clusters -- to express the
+cluster-level dispersion on the unit scale. With
 simultaneous bands, the critical value is the 1 - alpha quantile of the maximum
 over reported effects of the absolute studentized draw, floored at the
 pointwise normal quantile, so the band covers the whole profile with the stated

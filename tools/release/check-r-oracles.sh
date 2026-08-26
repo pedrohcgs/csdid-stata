@@ -48,6 +48,11 @@ fi
 # was against 2.5.0 behaviour wearing a 2.5.1 label, and it produced a
 # convincing but entirely spurious 2x divergence. So assert a CONTENT
 # fingerprint of the loaded code, not just its declared version.
+# One sentinel literal cannot see a drift elsewhere in the package
+# (cold-audit round 7, F3), so the fingerprint now digests the deparsed
+# bodies of the five load-bearing functions end to end; the sentinel
+# literal keeps its own named diagnosis because its failure has a known
+# story and a known fix.
 FINGERPRINT=$(Rscript -e '
   src <- deparse(did:::compute.att_gt)
   cat(as.integer(any(grepl("0.5 * (n/n1)", src, fixed = TRUE))))
@@ -58,6 +63,25 @@ if [ "$FINGERPRINT" != "1" ]; then
   echo "This is a STALE BUILD wearing a current version label. Reinstall:" >&2
   echo "    remotes::install_github(\"bcallaway11/did\", force = TRUE)" >&2
   status=1
+fi
+CODE_DIGEST=$(Rscript -e '
+  fns <- list(did:::compute.att_gt, did:::compute.aggte, did:::mboot,
+              did:::pre_process_did, DRDID::drdid_panel)
+  txt <- paste(unlist(lapply(fns, deparse)), collapse = "\n")
+  cat(substr(digest::digest(txt, algo = "sha256"), 1, 16))
+' 2>/dev/null)
+EXPECTED_CODE_DIGEST_FILE="inst/spec/r-oracle-code-digest.txt"
+if [ -n "$CODE_DIGEST" ] && [ -f "$EXPECTED_CODE_DIGEST_FILE" ]; then
+  EXPECTED_CODE_DIGEST=$(tr -d ' \n' < "$EXPECTED_CODE_DIGEST_FILE")
+  if [ "$CODE_DIGEST" != "$EXPECTED_CODE_DIGEST" ]; then
+    echo "installed did/DRDID code digest $CODE_DIGEST differs from the frozen" >&2
+    echo "$EXPECTED_CODE_DIGEST in $EXPECTED_CODE_DIGEST_FILE: the loaded code is not the" >&2
+    echo "code the oracles were frozen against. Reinstall the pinned packages, or -- if" >&2
+    echo "the pin itself moved deliberately -- refreeze the digest and regenerate." >&2
+    status=1
+  fi
+elif [ -z "$CODE_DIGEST" ]; then
+  echo "could not compute the R code digest (digest package missing?); the content check is the sentinel literal alone" >&2
 fi
 
 if [ "$status" -ne 0 ]; then

@@ -15,10 +15,16 @@ derives, and the same methods are available in Python through
 omitted-option defaults differ deliberately — this package defaults to
 the not-yet-treated comparison group and a universal base period, where `did`
 defaults to never-treated and varying — and both are documented in `NEWS.md`. State those
-two options and the three implementations agree to machine precision.
+two options and the implementations agree to machine precision on every
+supported design; the handful of deliberate behavioral divergences that
+remain (edge-case refusals and tie-breaking at an exact propensity-score
+trim boundary, where the reference implementation's own answer is
+floating-point-indeterminate) are documented, each with its rationale.
 
 It runs in Stata 14 or newer. The estimation engine is written in Mata and
-ships precompiled, so there is nothing else to install:
+ships precompiled for Stata 17 and later; earlier Statas read the bundled
+source instead, which only makes the first `csdid` of a session take a
+moment longer. Nothing else needs to be installed:
 
 <!-- norun -->
 ```stata
@@ -246,8 +252,10 @@ for that comparison, and
 for timings against the other Stata DiD commands, including Stata's own
 `xthdidregress` and `hdidregress`.
 
-The engine is Mata throughout and ships precompiled, so there is no
-per-session compilation cost either.
+The engine is Mata throughout and ships precompiled for Stata 17 and
+later, so there is no per-session compilation cost there; on Stata 14-16
+the bundled source loads once per session, a one-off moment on the first
+call.
 
 ## Unbalanced panels
 

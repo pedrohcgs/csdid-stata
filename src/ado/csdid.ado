@@ -1,4 +1,4 @@
-*! csdid 2.0.0 25aug2026
+*! csdid 2.0.0 26aug2026
 program define csdid, eclass sortpreserve
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
@@ -856,8 +856,13 @@ program define csdid, eclass sortpreserve
     }
 
     marksample touse, novarlist zeroweight
+    * The dropped-data warning's baseline is the if/in sample BEFORE any
+    * screening at all. marksample itself already removes rows with missing
+    * WEIGHTS (even under zeroweight), so a baseline copied from touse hid
+    * exactly those rows from the warning -- a missing iweight vanished with
+    * no announcement (cold-audit round 8, F5).
     tempvar touse_initial
-    quietly generate byte `touse_initial' = `touse'
+    quietly mark `touse_initial' `if' `in'
     quietly markout `touse' `yname'
     if "`wvar'" != "" {
         quietly markout `touse' `wvar'
@@ -1022,7 +1027,21 @@ program define csdid, eclass sortpreserve
     quietly count if `touse_initial' & !`touse'
     local n_screened = r(N)
     if r(N) > 0 {
+        * Split the count: rows dropped for their OWN missing or non-finite
+        * data, and rows that only left because their unit was removed whole
+        * (the bal(full) covariate propagation). Counting companions as
+        * missing-data rows overstated the data problem (cold-audit round 8,
+        * F6: one missing cell in a two-period unit announced as two).
+        tempvar own_ok
+        quietly mark `own_ok' `if' `in'
+        quietly markout `own_ok' `yname' `time' `gvar'
+        if "`wvar'" != "" quietly markout `own_ok' `wvar'
+        if "`ivar'" != "" quietly markout `own_ok' `ivar'
+        if "`cluster'" != "" quietly markout `own_ok' `cluster'
+        if `"`xvars_expanded'"' != "" quietly markout `own_ok' `xvars_expanded'
+        quietly count if `touse_initial' & !`touse' & !`own_ok'
         local miss_dropped = r(N)
+        local unit_dropped = `n_screened' - `miss_dropped'
         * `as error' is a DISPLAY STYLE here, not an error. It is the only
         * channel Stata does not suppress under `quietly csdid ...', and the
         * rule this file states at the bal() drop below -- a warning that
@@ -1033,7 +1052,12 @@ program define csdid, eclass sortpreserve
         *
         * The count is APPENDED rather than interpolated so the sentence
         * itself stays the frozen substring four tests grep for.
-        display as error "warning: dropped observations with missing or non-finite data (`miss_dropped' observation(s))"
+        if `miss_dropped' > 0 {
+            display as error "warning: dropped observations with missing or non-finite data (`miss_dropped' observation(s))"
+        }
+        if `unit_dropped' > 0 {
+            display as error "warning: dropped `unit_dropped' further observation(s) whose units left the sample whole (a unit with any missing covariate cell is dropped entirely on this route)"
+        }
     }
     * csdid indexes cohorts and periods on a positive calendar-time axis:
     * time() runs from 1 upward, gvar() is the period in which a unit is first
@@ -1467,39 +1491,17 @@ program define csdid, eclass sortpreserve
     * tempvar and r(): no sort, no observation changes. The noisy-only
     * diagnostics below reuse them, so noisy runs do no duplicated work.
     local min_time = __csdid_ps_tmin
-    * the ATT(g,t) coefficient names are built literally from
-    * the g, t and base-period VALUES (g2004___2005_2003), so a time axis in
-    * epoch seconds or %tc milliseconds produced a 35-character name and the run
-    * died deep in `matrix colnames' with Stata's bare
-    * "g1700259200___1700172800_1700259199 invalid name" r(198). R's did
-    * estimates those datasets. Detect the overflow from the g/t ranges BEFORE
-    * doing any work and refuse with a message that names time()/gvar() and
-    * says how to rescale. (Renaming the coefficients is a documented public
-    * contract and is the owner's call, not this fix's.)
-    local name_tw = 0
-    foreach nmval in `=__csdid_ps_tmin' `=__csdid_ps_tmax' {
-        local nmtxt : display %21.0f `nmval'
-        local nmlen = strlen(strtrim("`nmtxt'"))
-        if `nmlen' > `name_tw' local name_tw = `nmlen'
-    }
-    local name_gw = 0
-    foreach nmval in `=__csdid_ps_gmin' `=__csdid_ps_gmax' {
-        local nmtxt : display %21.0f `nmval'
-        local nmlen = strlen(strtrim("`nmtxt'"))
-        if `nmlen' > `name_gw' local name_gw = `nmlen'
-    }
-    * The base period pasted into the name is the reference period the cell
-    * used, which is always an OBSERVED period (previous_time returns a member
-    * of the time grid), so the time range bounds its width. Sizing it from
-    * g - 1 described a value that is not necessarily a period at all.
-    local name_bw = `name_tw'
-    * "g" + g + "___" + t + "_" + base
-    local name_maxlen = 1 + `name_gw' + 3 + `name_tw' + 1 + `name_bw'
-    if `name_maxlen' > 32 {
-        display as error "time()/gvar() values are too large: csdid names each ATT(g,t) coefficient g<g>___<t>_<base>, which for this data would need `name_maxlen' characters and Stata's limit is 32."
-        display as error "Rescale the axis and rerun - for example use years rather than epoch seconds or %tc values, or build a compact index with -egen t2 = group(`time')- (and the matching gvar()). The estimates are unchanged by a monotone relabelling of the periods."
-        exit 198
-    }
+    * the ATT(g,t) coefficient names are built literally from the g, t and
+    * base-period VALUES (g2004___2005_2003). A time axis in epoch seconds
+    * once produced a 35-character name and died deep in `matrix colnames'
+    * with a bare "invalid name" r(198), and an entry refusal stood here
+    * telling the user to rescale -- while R's did estimates those datasets
+    * and the help documents the att_# posting fallback as public contract.
+    * The refusal is GONE (cold-audit round 8a, F1): the posting site names
+    * any cell whose literal name would be overlong, duplicated, or invalid
+    * as att_#, keeps the true (g, t, base) values in e(attgt), and announces
+    * how many cells were renamed. Estimation, aggregation, and inference
+    * never depended on the labels.
     local never_count = __csdid_ps_never
     * F-010 fix (DEC-021): when NO cohort can be estimated the run previously
     * fell through to the estimation kernel, which died with a silent rc=111

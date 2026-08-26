@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 25aug2026}{...}
+{* *! version 2.0.0 26aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -66,6 +66,44 @@ call a syntax error, is fixed.
 {p_end}
 
 {marker replacements}{...}
+{marker syntax}{...}
+{title:Syntax and stored results of the deprecated commands}
+
+{pstd}
+Each command keeps its Version 1.82 grammar, stated here so an old do-file
+can be read without the old manual.
+
+{pstd}
+{cmd:csdid_rif} {it:rifvarlist} {ifin} [{cmd:,} {opt cluster(varname)}
+{opt level(#)} {opt reps(#)} {opt wboot} {opt seed(#)}]{break}
+averages the saved RIF columns into coefficients. It is eclass: it posts
+{cmd:e(b)}, {cmd:e(V)}, {cmd:e(N)}, {cmd:e(sample)}, {cmd:e(cmd)}
+({cmd:csdid_rif}), {cmd:e(vcetype)} ({cmd:Robust} or {cmd:WBoot}),
+{cmd:e(level)}, {cmd:e(clustvar)} and {cmd:e(N_clust)} when clustered, and
+{cmd:e(cband)} (the wild-bootstrap band matrix) under {cmd:wboot}.
+{opt level()} must be a confidence level and {opt reps()} a positive count;
+both are validated before anything is computed or the RNG state moves.
+
+{pstd}
+{cmd:csdid_table} [{cmd:,} {it:frozen options}]{break}
+redisplays the active {cmd:csdid} or {cmd:csdid_rif} result as the Version
+1.82 table and leaves {cmd:r(table)} behind. It is rclass; it posts
+nothing to {cmd:e()}. The four frozen formatting options ({cmd:level()},
+{cmd:noci}, {cmd:cformat()}, {cmd:sformat()}) are refused with return code
+198; any other estimator's results are refused with return code 459.
+
+{pstd}
+{cmd:dipt} {it:depvar} [{it:indepvars}] {ifin} {it:weight} [{cmd:,}
+{opt cluster(varname)} {opt from(matname)}]{break}
+is a thin shim over {helpb mlexp}; everything it posts is {cmd:mlexp}'s own.
+
+{pstd}
+{cmd:tsvmat} {it:matname}{cmd:,} {opt name(newvarlist)}{break}
+writes matrix columns into new double variables, expanding the data to the
+matrix's row count when needed. Every refusal -- an existing or invalid
+name, a duplicated name, more names than columns -- fires before the
+dataset changes. It returns nothing.
+
 {title:What to use instead}
 
 {pstd}

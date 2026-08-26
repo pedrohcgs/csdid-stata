@@ -1,4 +1,4 @@
-*! csdid 2.0.0 25aug2026
+*! csdid 2.0.0 26aug2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -1148,6 +1148,13 @@ real colvector csdid__reg_panel_fit(
     w_cont = w :* d
     mw_treat = mean(w_treat)
     mw_cont = mean(w_cont)
+    // The eighth fit site gains the guard the other seven carry (the
+    // register's rule; cold-audit round 8, F2): a treated or control arm
+    // with no effective mass -- a zero-weight cohort, say -- is an
+    // ANNOUNCED blank (fit_status 3), never a silent division by zero.
+    // min() ignores missing, so each mean is also tested against missing.
+    if (min((mw_treat, mw_cont)) <= 0 |
+        mw_treat >= . | mw_cont >= .) return(. \ J(n, 1, .) \ 3)
     reg_att_treat = w_treat :* dy
     reg_att_cont = w_cont :* out_delta
     eta_treat = mean(reg_att_treat) / mw_treat

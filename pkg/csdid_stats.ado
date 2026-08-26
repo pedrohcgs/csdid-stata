@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 25aug2026
+*! csdid_stats 2.0.0 26aug2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale

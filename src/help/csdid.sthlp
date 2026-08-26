@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 25aug2026}{...}
+{* *! version 2.0.0 26aug2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -274,15 +274,15 @@ unchanged.
 {pmore}
 The period and cohort {it:values} are pasted into the ATT(g,t) coefficient
 names (see {help csdid##remarks_post:Postestimation}), and Stata names are
-limited to 32 characters. {cmd:csdid} measures the width the names would need
-from the ranges of {cmd:time()} and {cmd:gvar()} {it:before} estimating and, if
-32 characters would not be enough, refuses with return code 198 rather than
-failing later inside {cmd:matrix colnames}. That happens with axes such as
-epoch seconds or {cmd:%tc} milliseconds. The remedy the message names is to
-relabel the axis - use years rather than epoch seconds, or build a compact
-index with {cmd:egen} {it:t2}{cmd: = group(}{it:timevar}{cmd:)} and the
-matching {cmd:gvar()}. A monotone relabelling of the periods leaves every
-estimate unchanged.
+limited to 32 characters. An axis whose values are too wide for that -- epoch
+seconds, {cmd:%tc} milliseconds -- estimates exactly as any other: each cell
+whose literal name would not fit is posted under the fallback name
+{cmd:att_}{it:#} instead, a note reports how many cells were renamed, and the
+true cohort, period, and base-period values remain in {cmd:e(attgt)}, which
+is what the aggregation and plotting machinery read. For legible coefficient
+names, a compact relabelling -- years rather than epoch seconds, or
+{cmd:egen} {it:t2}{cmd: = group(}{it:timevar}{cmd:)} with the matching
+{cmd:gvar()} -- leaves every estimate unchanged.
 
 {phang}
 {opth gvar(varname)} specifies the numeric variable holding the first period
@@ -918,9 +918,10 @@ or to drop the covariate.
 
 {pstd}
 {bf:Period and cohort codes.} Values so large that the ATT(g,t) coefficient
-names would exceed Stata's 32-character limit are refused with {cmd:r(198)}
-before any estimation; see {cmd:time()} under
-{help csdid##opt_main:Options} for the check and the remedy.
+names would exceed Stata's 32-character limit estimate normally; the affected
+cells are posted under {cmd:att_}{it:#} fallback names with the true values
+kept in {cmd:e(attgt)}; see {cmd:time()} under
+{help csdid##opt_main:Options}.
 
 {pstd}
 {bf:Estimable cohorts.} If no treated cohort has both a usable base period and

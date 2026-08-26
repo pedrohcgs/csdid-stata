@@ -70,18 +70,31 @@ CODE_DIGEST=$(Rscript -e '
   txt <- paste(unlist(lapply(fns, deparse)), collapse = "\n")
   cat(substr(digest::digest(txt, algo = "sha256"), 1, 16))
 ' 2>/dev/null)
+# The digest is MANDATORY and fails closed (cold-audit round 8, F1: with
+# the digest unavailable and a wrong generator, a wrong committed oracle
+# passed both parity gates). A machine that cannot compute it, an absent
+# or empty baseline, and a mismatch are all refusals -- never warnings.
 EXPECTED_CODE_DIGEST_FILE="inst/spec/r-oracle-code-digest.txt"
-if [ -n "$CODE_DIGEST" ] && [ -f "$EXPECTED_CODE_DIGEST_FILE" ]; then
+if [ -z "$CODE_DIGEST" ]; then
+  echo "could not compute the R code digest (is the R 'digest' package installed?)." >&2
+  echo "Oracle-source authentication is mandatory: install it and rerun." >&2
+  status=1
+elif [ ! -f "$EXPECTED_CODE_DIGEST_FILE" ]; then
+  echo "no frozen code digest at $EXPECTED_CODE_DIGEST_FILE; the loaded R code cannot be" >&2
+  echo "authenticated against the code the oracles were frozen with." >&2
+  status=1
+else
   EXPECTED_CODE_DIGEST=$(tr -d ' \n' < "$EXPECTED_CODE_DIGEST_FILE")
-  if [ "$CODE_DIGEST" != "$EXPECTED_CODE_DIGEST" ]; then
+  if [ -z "$EXPECTED_CODE_DIGEST" ]; then
+    echo "$EXPECTED_CODE_DIGEST_FILE is EMPTY; an empty baseline authenticates nothing." >&2
+    status=1
+  elif [ "$CODE_DIGEST" != "$EXPECTED_CODE_DIGEST" ]; then
     echo "installed did/DRDID code digest $CODE_DIGEST differs from the frozen" >&2
     echo "$EXPECTED_CODE_DIGEST in $EXPECTED_CODE_DIGEST_FILE: the loaded code is not the" >&2
     echo "code the oracles were frozen against. Reinstall the pinned packages, or -- if" >&2
     echo "the pin itself moved deliberately -- refreeze the digest and regenerate." >&2
     status=1
   fi
-elif [ -z "$CODE_DIGEST" ]; then
-  echo "could not compute the R code digest (digest package missing?); the content check is the sentinel literal alone" >&2
 fi
 
 if [ "$status" -ne 0 ]; then

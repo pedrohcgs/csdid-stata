@@ -1,5 +1,0 @@
-"panel_mode","covariate_spec","event_key","expected_count","message_normalized"
-"panel","factor","singular_control_matrix",2,"singular or numerically ill-conditioned"
-"panel","dummy","singular_control_matrix",2,"singular or numerically ill-conditioned"
-"repeated-cross-section","factor","singular_control_matrix",2,"singular or numerically ill-conditioned"
-"repeated-cross-section","dummy","singular_control_matrix",2,"singular or numerically ill-conditioned"

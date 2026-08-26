@@ -37,11 +37,11 @@ program define f029_assert_failure
     f029_assert_log_contains using `"`using'"', message(`"`message'"')
 end
 
-confirm file "`root'/tests/fixtures/parity/f029/expected/r/events.csv"
-confirm file "`root'/tests/fixtures/parity/f029/expected/r/events.json"
+confirm file "`root'/tests/fixtures/parity/f029/expected/contract/events.csv"
+confirm file "`root'/tests/fixtures/parity/f029/expected/contract/events.json"
 confirm file "`root'/tests/fixtures/parity/f029/metadata/manifest.json"
 
-import delimited using "`root'/tests/fixtures/parity/f029/expected/r/events.csv", clear varnames(1)
+import delimited using "`root'/tests/fixtures/parity/f029/expected/contract/events.csv", clear varnames(1)
 assert _N == 14
 foreach key in invalid_method invalid_base_period invalid_fix_weights ///
     fix_weights_requires_panel negative_anticipation negative_iweight ///

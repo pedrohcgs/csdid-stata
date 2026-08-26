@@ -46,7 +46,7 @@ program define csdid_estat, eclass
     * `estat dynamic, dropmissing' died with "unsupported option(s)" while
     * `estat event' silently hardcoded the opposite.
     syntax [anything(name=subcmd)] [, SAVing(string) REPLACE WINDOW(string) ///
-        POST Level(cilevel) DROPMissing FROM(string) *]
+        POST Level(string) DROPMissing FROM(string) *]
     local subcmd = lower(strtrim(`"`subcmd'"'))
     * from() is unsupported by design; legacy accepted it on estat simple, group
     * and calendar. Refused BEFORE the leftover-options block so that a repeated
@@ -160,7 +160,7 @@ program define csdid_estat, eclass
         local attgt_bad ""
         if "`post'" != "" local attgt_bad "`attgt_bad' post"
         if `"`window'"' != "" local attgt_bad "`attgt_bad' window()"
-        if `level' != c(level) local attgt_bad "`attgt_bad' level()"
+        if `"`level'"' != "" local attgt_bad "`attgt_bad' level()"
         if "`dropmissing'" != "" local attgt_bad "`attgt_bad' dropmissing"
         * replace only means something to saving(); on its own it was parsed
         * and silently dropped, like the four above it before they were
@@ -268,7 +268,12 @@ program define csdid_estat, eclass
         *   guarantee has the same meaning on every estat route.
         local agg_type "`subcmd'"
         if "`agg_type'" == "event" local agg_type "dynamic"
-        local stat_opts "type(`agg_type') level(`level')"
+        * level() is forwarded only when the user actually typed one, so an
+        * omitted level inherits the ESTIMATION's level inside csdid_stats
+        * (F-034) instead of freezing the session default here; the display
+        * and posting below read the level the aggregation actually used.
+        local stat_opts "type(`agg_type')"
+        if `"`level'"' != "" local stat_opts "`stat_opts' level(`level')"
         if "`dropmissing'" != "" local stat_opts "`stat_opts' dropmissing"
         if "`window'" != "" local stat_opts `"`stat_opts' window(`window')"'
         * csdid_stats reports two things on the TEXT channel that the
@@ -350,11 +355,13 @@ program define csdid_estat, eclass
         * through the eventnames branch of _csdid_post_aggte; the other four
         * types get the naming their own aggregation implies (G#, T#, ATT,
         * Overall). Both entry points build r(table).
+        local post_level = e(agg_level)
+        if missing(`post_level') local post_level = c(level)
         if `"`subcmd'"' == `"event"' {
-            _csdid_post event, level(`level') `post'
+            _csdid_post event, level(`post_level') `post'
         }
         else {
-            _csdid_post aggte, level(`level') `post'
+            _csdid_post aggte, level(`post_level') `post'
         }
         if "`post'" == "" {
             * only `event' displays the coefficient vector; the
@@ -379,7 +386,7 @@ program define csdid_estat, eclass
                 * Same title, same header, from the same e() macros.
                 if `have_show' {
                     display as text _newline "Aggregated treatment effects"
-                    _csdid_estat_inf_header, level(`level')
+                    _csdid_estat_inf_header, level(`post_level')
                     matlist `show_b', names(columns) format(%10.6g)
                 }
             }
@@ -397,6 +404,20 @@ program define csdid_estat, eclass
         * added.
         display as error `"estat `subcmd' does not accept dropmissing; specify it on the aggregation (e.g. estat dynamic, dropmissing) before exporting"'
         exit 198
+    }
+    if inlist(`"`subcmd'"', "tidy", "glance") {
+        * The same accepting-then-ignoring rule for every aggregation option
+        * these export routes never consume (cold-audit round 9, F2:
+        * `estat tidy, window(-1 1) level(80) post' returned rc 0 and
+        * silently discarded all three).
+        local tg_bad ""
+        if `"`window'"' != "" local tg_bad "`tg_bad' window()"
+        if "`post'" != "" local tg_bad "`tg_bad' post"
+        if `"`level'"' != "" local tg_bad "`tg_bad' level()"
+        if "`tg_bad'" != "" {
+            display as error `"estat `subcmd' does not accept:`tg_bad'. Specify these on the aggregation (e.g. estat dynamic, window(-1 1) level(90) post) before exporting"'
+            exit 198
+        }
     }
     if `"`subcmd'"' == `"tidy"' {
         * see the attgt branch. tidy exports and returns nothing, so

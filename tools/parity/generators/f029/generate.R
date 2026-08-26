@@ -17,6 +17,7 @@ if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWo
 fixture <- file.path(root, "tests/fixtures/parity/f029")
 dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "expected/r"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(fixture, "expected/contract"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "metadata"), recursive = TRUE, showWarnings = FALSE)
 
 ids <- 1:24
@@ -98,8 +99,8 @@ events <- data.frame(
   stringsAsFactors = FALSE
 )
 
-write.csv(events, file.path(fixture, "expected/r/events.csv"), row.names = FALSE, na = "")
-writeLines(jsonlite::toJSON(events, dataframe = "rows", auto_unbox = TRUE, pretty = TRUE), file.path(fixture, "expected/r/events.json"))
+write.csv(events, file.path(fixture, "expected/contract/events.csv"), row.names = FALSE, na = "")
+writeLines(jsonlite::toJSON(events, dataframe = "rows", auto_unbox = TRUE, pretty = TRUE), file.path(fixture, "expected/contract/events.json"))
 
 manifest <- list(
   matrix_id = "F029",
@@ -118,8 +119,8 @@ manifest <- list(
   runtimes = list(list(name = "R", version = paste(R.version$major, R.version$minor, sep = "."), package_versions = list(did = as.character(packageVersion("did")), jsonlite = as.character(packageVersion("jsonlite"))))),
   rng = NULL,
   expected_outputs = list(
-    list(path = "expected/r/events.json", schema = "error-warning-events"),
-    list(path = "expected/r/events.csv", schema = "error-warning-events-csv")
+    list(path = "expected/contract/events.json", schema = "error-warning-events"),
+    list(path = "expected/contract/events.csv", schema = "error-warning-events-csv")
   ),
   comparison_plan = list(
     list(actual = "Stata captured validation events", expected = "expected/r/events.csv", tolerance_id = "EXACT", key_columns = c("event_key"))

@@ -459,4 +459,52 @@ capture estat event, post
 assert _rc == 0
 assert "`e(cmd)'" == "csdid"
 
+* cold-audit round 9: the export routes refuse the aggregation options they
+* never consume, and a saved RIF's CONTENT is signed -- a sum-preserving
+* row-level weight edit that every aggregate check missed now refuses by
+* name, while the untouched file loads exactly as before.
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet
+quietly estat event
+tempfile tgout
+capture estat tidy, saving("`tgout'") window(-1 1)
+assert _rc == 198
+capture estat tidy, saving("`tgout'") level(80)
+assert _rc == 198
+capture estat tidy, saving("`tgout'") post
+assert _rc == 198
+capture estat glance, post
+assert _rc == 198
+estat tidy, saving("`tgout'", replace)
+
+tempfile sigrif
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet saverif("`sigrif'") replace
+quietly csdid_stats using "`sigrif'", type(dynamic)
+preserve
+use "`sigrif'", clear
+quietly replace weight = weight + 0.5 in 1
+quietly replace weight = weight - 0.5 in 2
+quietly save "`sigrif'", replace
+restore
+capture csdid_stats using "`sigrif'", type(dynamic)
+assert _rc == 459
+
+* cold-audit round 9a (recovered session): an EXPLICITLY typed level() is
+* honored verbatim even when it equals the session default -- the case a
+* cilevel parse read as omission, inheriting the estimation's level and
+* labeling its bands with the typed one. Omission still inherits.
+import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
+set level 95
+quietly csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical notyet level(90)
+quietly estat event, level(95)
+assert e(agg_level) == 95
+quietly estat event
+assert e(agg_level) == 90
+quietly csdid_stats, type(dynamic) level(95)
+assert e(agg_level) == 95
+quietly csdid_stats, type(dynamic)
+assert e(agg_level) == 90
+capture csdid_stats, type(dynamic) level(200)
+assert _rc == 198
+
 display as text "test-postestimation-contract: the saved-RIF route is transactional, and the signature covers rcs, interactions and reloaded artifacts"

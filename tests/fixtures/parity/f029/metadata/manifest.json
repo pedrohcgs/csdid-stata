@@ -47,11 +47,11 @@
   "rng": {},
   "expected_outputs": [
     {
-      "path": "expected/r/events.json",
+      "path": "expected/contract/events.json",
       "schema": "error-warning-events"
     },
     {
-      "path": "expected/r/events.csv",
+      "path": "expected/contract/events.csv",
       "schema": "error-warning-events-csv"
     }
   ],

@@ -91,14 +91,24 @@ for id in $gen_ids; do
     fail=1
     continue
   fi
-  # Provenance (cold-audit round 7, F3): expected/r is R-authored BY
-  # DEFINITION -- a python generator that writes beneath it would launder
-  # non-R numbers into the R-oracle channel and this diff would certify
-  # them. Refuse the file, not the intent.
-  if [ ! -f "tools/parity/generators/$id/generate.R" ]; then
-    r_authored=$(find "$scratch/tests/fixtures/parity/$id/expected/r" -type f 2>/dev/null | wc -l | tr -d ' ')
-    if [ "$r_authored" -gt 0 ]; then
+  # Provenance (cold-audit rounds 7 and 9): expected/r is authored by the
+  # reference estimator BY DEFINITION. A python generator that writes
+  # beneath it would launder non-R numbers into the R-oracle channel, and
+  # an R generator that writes there without ever CALLING the estimator
+  # would launder hard-coded ones -- byte-identity certifies
+  # reproducibility, not provenance. Both refuse here; the semantic half
+  # of provenance (the right arguments to the right calls) is what code
+  # review of the generator diff is for. Generators that author only
+  # inputs, metadata, or contract channels owe no estimator call.
+  r_authored=$(find "$scratch/tests/fixtures/parity/$id/expected/r" -type f 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$r_authored" -gt 0 ]; then
+    if [ ! -f "tools/parity/generators/$id/generate.R" ]; then
       echo "generator $id is not an R generator but wrote $r_authored file(s) under expected/r; only R may author the R-oracle channel" >&2
+      fail=1
+      continue
+    fi
+    if ! grep -qE 'att_gt|aggte|drdid' "tools/parity/generators/$id/generate.R"; then
+      echo "R generator $id wrote under expected/r without ever calling the reference estimator (no att_gt/aggte/drdid call); a hard-coded oracle certifies nothing" >&2
       fail=1
       continue
     fi

@@ -142,7 +142,7 @@ program define _csdid_stats_main, eclass
     * bad window()) made the FIRST syntax fail, and the SECOND syntax then
     * reported "using not allowed" r(101). One declarative syntax reports the
     * option that is actually wrong, on both paths.
-    syntax [anything(name=subcmd)] [using/] [, TYPE(string) Level(cilevel) ///
+    syntax [anything(name=subcmd)] [using/] [, TYPE(string) Level(string) ///
         WINdow(string) BALance(string) DROPMissing FROM(string) *]
     * from() is unsupported by design; see csdid.ado for the full rationale.
     * Legacy accepted it on the simple, group and calendar aggregations.
@@ -159,13 +159,13 @@ program define _csdid_stats_main, eclass
             exit 301
         }
     }
-    * F-034 fix: inherit the ESTIMATION-time confidence level from
-    * e(level). The direct path defaulted to the SESSION c(level), so
-    * every aggregation after "csdid ..., level(90)" silently banded at
-    * 95. Level(cilevel) cannot distinguish an explicit level(c(level))
-    * from the default; in that (value-identical) case the estimation
-    * level wins - the same rule R applies by construction, since aggte
-    * has no level knob and always follows the estimation alp.
+    * F-034 fix: an OMITTED level() inherits the ESTIMATION-time
+    * confidence level from e(level). The direct path defaulted to the
+    * SESSION c(level), so every aggregation after "csdid ..., level(90)"
+    * silently banded at 95 - the same inheritance R applies by
+    * construction, since aggte follows the estimation alp. An EXPLICITLY
+    * typed level() is honored verbatim, whatever its value - the string
+    * parse below sees presence where cilevel could not.
     *
     * this block used to live ONLY in the non-`using' branch, so
     * the saved-RIF path banded at the session c(level) even though
@@ -173,7 +173,23 @@ program define _csdid_stats_main, eclass
     * Measured: "csdid ..., level(90) saverif(r90)" then "csdid_stats using
     * r90" gave e(level)=90 with e(agg_level)=95, contradicting
     * csdid_stats.sthlp and the comment above it. It now runs on BOTH paths.
-    if `level' == c(level) {
+    * level() is parsed as a STRING so that an explicitly typed level --
+    * even one equal to the session default, which a cilevel parse cannot
+    * distinguish from omission -- is honored verbatim (cold-audit round 9a,
+    * measured: estimate at level(90) under c(level)=95, then level(95)
+    * typed explicitly inherited the 90 and labeled it 95). Only a truly
+    * OMITTED level inherits: first from e(level), the estimation's own
+    * level (the F-034 rule, R's alp inheritance by construction), then
+    * from the session default.
+    if `"`level'"' != "" {
+        capture confirm number `level'
+        if _rc | !(`level' >= 10 & `level' <= 99.99) {
+            display as error "level(`level') is not a confidence level; specify a value between 10 and 99.99"
+            exit 198
+        }
+    }
+    else {
+        local level = c(level)
         capture confirm scalar e(level)
         if !_rc {
             if !missing(e(level)) {
@@ -1199,6 +1215,20 @@ program define _csdid_stats_load_rif, eclass
     tempname IF UG ATT GP CL
     preserve
     use `"`using'"', clear
+    * -datasignature confirm- verifies the row-level content signature the
+    * writer set: any edit to the ordered values of any column -- including
+    * a sum-preserving weight shift that every aggregate check would miss
+    * (cold-audit round 9) -- refuses here by name. Artifacts written before
+    * the signature existed carry none and are told to be rewritten.
+    capture datasignature confirm
+    if _rc == 9 {
+        display as error "saved RIF artifact fails its content signature: the file's rows are not the rows csdid wrote, so aggregating it would report the tampered content under the original estimation's certificate. Re-run csdid with saverif() to rewrite the file."
+        exit 459
+    }
+    if _rc != 0 {
+        display as error "saved RIF artifact carries no content signature (it predates the signed format); re-run csdid with saverif() to rewrite the file with one."
+        exit 459
+    }
     if "`: char _dta[csdid_artifact]'" != "rif" {
         display as error "saved file is not a csdid RIF artifact"
         exit 498

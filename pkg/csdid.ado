@@ -2684,6 +2684,15 @@ program define _csdid_save_rif
     forvalues i = 1/`ngp' {
         char _dta[csdid_group_prob_`i'] "`=`GP'[`i',1]' `=`GP'[`i',2]' `=`GP'[`i',3]'"
     }
+    * The artifact's integrity was guarded by aggregate moments alone --
+    * counts and group probabilities -- which cannot see a sum-preserving
+    * row-level edit: shift weight between two units of one cohort and the
+    * totals match, the load accepts the file as the original estimation's,
+    * and the reconstructed standard errors are different numbers under the
+    * same certificate (cold-audit round 9, computed witness: SE 2.5 became
+    * 2.652 with every aggregate check green). -datasignature set- signs the
+    * ordered content of every variable, and the loader confirms it.
+    quietly datasignature set, reset
     save `"`using'"', `replace'
     restore
     * The reader (csdid_stats using) must materialize an N_units-row classic

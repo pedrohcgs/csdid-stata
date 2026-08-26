@@ -23,14 +23,6 @@ invisible(file.copy(file.path(f011_fixture, "inputs/input.csv"),
                     file.path(fixture, "inputs/input.csv"), overwrite = TRUE))
 invisible(file.copy(file.path(f011_fixture, "inputs/sparse-factor.csv"),
                     file.path(fixture, "inputs/sparse-factor.csv"), overwrite = TRUE))
-invisible(file.copy(file.path(f011_fixture, "expected/r/covariate-grid.csv"),
-                    file.path(fixture, "expected/r/covariate-grid.csv"), overwrite = TRUE))
-invisible(file.copy(file.path(f011_fixture, "expected/r/dense-factor-dummy-grid.csv"),
-                    file.path(fixture, "expected/r/dense-factor-dummy-grid.csv"), overwrite = TRUE))
-invisible(file.copy(file.path(f011_fixture, "expected/r/sparse-factor-grid.csv"),
-                    file.path(fixture, "expected/r/sparse-factor-grid.csv"), overwrite = TRUE))
-invisible(file.copy(file.path(f011_fixture, "expected/r/sparse-factor-events.csv"),
-                    file.path(fixture, "expected/r/sparse-factor-events.csv"), overwrite = TRUE))
 
 input_main <- read.csv(file.path(fixture, "inputs/input.csv"))
 input_sparse <- read.csv(file.path(fixture, "inputs/sparse-factor.csv"))

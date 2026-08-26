@@ -37,10 +37,10 @@ end
 
 confirm file "`root'/tests/fixtures/parity/rt019/inputs/input.csv"
 confirm file "`root'/tests/fixtures/parity/rt019/inputs/sparse-factor.csv"
-confirm file "`root'/tests/fixtures/parity/rt019/expected/r/covariate-grid.csv"
-confirm file "`root'/tests/fixtures/parity/rt019/expected/r/dense-factor-dummy-grid.csv"
-confirm file "`root'/tests/fixtures/parity/rt019/expected/r/sparse-factor-grid.csv"
-confirm file "`root'/tests/fixtures/parity/rt019/expected/r/sparse-factor-events.csv"
+confirm file "`root'/tests/fixtures/parity/f011/expected/r/covariate-grid.csv"
+confirm file "`root'/tests/fixtures/parity/f011/expected/r/dense-factor-dummy-grid.csv"
+confirm file "`root'/tests/fixtures/parity/f011/expected/r/sparse-factor-grid.csv"
+confirm file "`root'/tests/fixtures/parity/f011/expected/r/sparse-factor-events.csv"
 confirm file "`root'/tests/fixtures/parity/rt019/expected/contract/upstream-test-map.csv"
 confirm file "`root'/tests/fixtures/parity/rt019/expected/contract/upstream-test-map.json"
 confirm file "`root'/tests/fixtures/parity/rt019/expected/contract/approved-divergence.csv"
@@ -133,7 +133,7 @@ foreach scenario in numeric factor factor_dr factor_ipw interaction interaction_
     }
 }
 
-import delimited using "`root'/tests/fixtures/parity/rt019/expected/r/covariate-grid.csv", clear asdouble
+import delimited using "`root'/tests/fixtures/parity/f011/expected/r/covariate-grid.csv", clear asdouble
 merge 1:1 scenario est_method group time using "`allactual'", nogen assert(match)
 assert abs(att - att_stata) <= 1e-10 + 1e-10 * abs(att)
 assert !missing(se)
@@ -181,7 +181,7 @@ foreach panel_mode in panel repeated-cross-section {
     }
 }
 
-import delimited using "`root'/tests/fixtures/parity/rt019/expected/r/dense-factor-dummy-grid.csv", clear asdouble
+import delimited using "`root'/tests/fixtures/parity/f011/expected/r/dense-factor-dummy-grid.csv", clear asdouble
 merge 1:1 panel_mode covariate_spec method group time using "`denseactual'", nogen assert(match)
 assert event_time == event_time_stata
 assert abs(att - att_stata) <= 1e-10 + 1e-10 * abs(att)
@@ -274,7 +274,7 @@ foreach panel_mode in panel repeated-cross-section {
     }
 }
 
-import delimited using "`root'/tests/fixtures/parity/rt019/expected/r/sparse-factor-grid.csv", clear asdouble
+import delimited using "`root'/tests/fixtures/parity/f011/expected/r/sparse-factor-grid.csv", clear asdouble
 merge 1:1 panel_mode covariate_spec group time using "`sparseactual'", nogen assert(match)
 assert event_time == event_time_stata
 assert att_missing == att_missing_stata
@@ -284,6 +284,6 @@ assert missing(se) == missing(se_stata)
 assert missing(att) | abs(att - att_stata) <= 1e-10 + 1e-10 * abs(att)
 assert missing(se) | abs(se - se_stata) <= 1e-10 + 1e-10 * abs(se)
 
-import delimited using "`root'/tests/fixtures/parity/rt019/expected/r/sparse-factor-events.csv", clear varnames(1)
+import delimited using "`root'/tests/fixtures/parity/f011/expected/r/sparse-factor-events.csv", clear varnames(1)
 merge 1:1 panel_mode covariate_spec event_key using "`sparseevents'", nogen assert(match)
 assert expected_count == singular_count_stata

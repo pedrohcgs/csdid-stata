@@ -178,8 +178,13 @@ log using "`riflog'", text replace name(f062rif)
 capture noisily csdid_stats using "`riffile'"
 local rc_rif = _rc
 log close f062rif
-assert `rc_rif' == 498
-f062_log_has using "`riflog'", message("damaged ATT metadata")
+* the metadata signature now catches ANY characteristic edit before the
+* specific damaged-ATT diagnosis can run (cold-audit round 10): the edited
+* char breaks the signed canonical record, and the refusal names tampering.
+* The 498 diagnosis remains for a signature-valid file whose metadata is
+* malformed -- a writer defect, not an edit.
+assert `rc_rif' == 459
+f062_log_has using "`riflog'", message("fails its metadata signature")
 assert r(found)
 
 display as text "test-f062: silent no-ops and silent blanks now refuse or report OK"

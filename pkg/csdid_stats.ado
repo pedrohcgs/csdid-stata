@@ -1220,7 +1220,7 @@ program define _csdid_stats_load_rif, eclass
     * a sum-preserving weight shift that every aggregate check would miss
     * (cold-audit round 9) -- refuses here by name. Artifacts written before
     * the signature existed carry none and are told to be rewritten.
-    capture datasignature confirm
+    capture datasignature confirm, strict
     if _rc == 9 {
         display as error "saved RIF artifact fails its content signature: the file's rows are not the rows csdid wrote, so aggregating it would report the tampered content under the original estimation's certificate. Re-run csdid with saverif() to rewrite the file."
         exit 459
@@ -1229,6 +1229,34 @@ program define _csdid_stats_load_rif, eclass
         display as error "saved RIF artifact carries no content signature (it predates the signed format); re-run csdid with saverif() to rewrite the file with one."
         exit 459
     }
+    * the canonical metadata record must equal what the characteristics say
+    * NOW: any characteristic edit -- a blanked cluster variable, a moved
+    * level, doctored counts or probabilities -- breaks the equality even
+    * though characteristics sit outside -datasignature-'s own coverage.
+    capture confirm variable __csdid_meta
+    if _rc {
+        display as error "saved RIF artifact carries no signed metadata record (it predates the signed format); re-run csdid with saverif() to rewrite the file."
+        exit 459
+    }
+    local meta_canon ""
+    foreach ck in artifact cmdline panel_mode control_group base_period method N N_units N_attgt N_groups N_time anticipation level cluster_recorded clustervar N_clusters time_first group_prob_rows {
+        local meta_canon `"`meta_canon'|`ck'=`: char _dta[csdid_`ck']'"'
+    }
+    local ngp "`: char _dta[csdid_group_prob_rows]'"
+    capture confirm integer number `ngp'
+    if !_rc {
+        forvalues mi = 1/`ngp' {
+            local meta_canon `"`meta_canon'|gp`mi'=`: char _dta[csdid_group_prob_`mi']'"'
+        }
+    }
+    foreach mv of varlist rif* {
+        local meta_canon `"`meta_canon'|`mv'=`: char `mv'[csdid_attgt]'"'
+    }
+    if `"`meta_canon'"' != `"`=__csdid_meta[1]'"' {
+        display as error "saved RIF artifact fails its metadata signature: the file's characteristics are not the ones csdid wrote (a cluster marker, level, count, or cell record has been edited), so aggregating it would report altered inference under the original estimation's certificate. Re-run csdid with saverif() to rewrite the file."
+        exit 459
+    }
+    quietly drop __csdid_meta
     if "`: char _dta[csdid_artifact]'" != "rif" {
         display as error "saved file is not a csdid RIF artifact"
         exit 498

@@ -8,11 +8,18 @@ program dipt, eclass
     display as text "note: dipt is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
 
-syntax varlist(fv ts) [if] [iw pw fw], [cluster(passthru) from(passthru)] 
+* [in] restored: the help always promised it (cold-audit round 10). And
+* cluster() is TRANSLATED, not passed through: mlexp spells clustering
+* vce(cluster varname) and refuses a bare cluster() outright, so the
+* passthru forwarded an option the receiving command rejects -- measured
+* rc 198 on every clustered call.
+syntax varlist(fv ts) [if] [in] [iw pw fw], [CLuster(varname) from(passthru)] 
 
 // ML
 gettoken y xvar:varlist
 marksample touse
+local vceopt ""
+if "`cluster'" != "" local vceopt "vce(cluster `cluster')"
 
 * cluster() was parsed and then never passed to mlexp, so `dipt y x,
 * cluster(id)' returned rc 0 with UNCLUSTERED standard errors and said
@@ -25,7 +32,7 @@ marksample touse
 mlexp (`y'*{xb:`xvar' _cons}-(`y'==0)*exp({xb:}))  ///
 					if `touse' [`weight'`exp'],  ///
 					 derivative(/xb=`y'-(`y'==0)*exp({xb:})) ///
-                     `from' `cluster'
+                     `from' `vceopt'
                      
 end                     
 

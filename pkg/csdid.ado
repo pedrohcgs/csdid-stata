@@ -2692,6 +2692,27 @@ program define _csdid_save_rif
     * same certificate (cold-audit round 9, computed witness: SE 2.5 became
     * 2.652 with every aggregate check green). -datasignature set- signs the
     * ordered content of every variable, and the loader confirms it.
+    * Every operative characteristic joins the signed surface (cold-audit
+    * round 10: blanking the clustervar characteristic turned a clustered
+    * artifact into IID inference at rc 0, and an added rif column with
+    * edited counts rode in under a plain signature). The canonical record
+    * of every _dta[csdid_*] characteristic and every column's csdid_attgt
+    * characteristic is written into a variable, where -datasignature-
+    * covers it; the loader rebuilds the record from the characteristics it
+    * finds and requires equality, and confirms the signature with -strict-
+    * so an added variable refuses too.
+    local meta_canon ""
+    foreach ck in artifact cmdline panel_mode control_group base_period method N N_units N_attgt N_groups N_time anticipation level cluster_recorded clustervar N_clusters time_first group_prob_rows {
+        local meta_canon `"`meta_canon'|`ck'=`: char _dta[csdid_`ck']'"'
+    }
+    forvalues mi = 1/`ngp' {
+        local meta_canon `"`meta_canon'|gp`mi'=`: char _dta[csdid_group_prob_`mi']'"'
+    }
+    foreach mv of varlist rif* {
+        local meta_canon `"`meta_canon'|`mv'=`: char `mv'[csdid_attgt]'"'
+    }
+    quietly generate strL __csdid_meta = ""
+    quietly replace __csdid_meta = `"`meta_canon'"' in 1
     quietly datasignature set, reset
     save `"`using'"', `replace'
     restore

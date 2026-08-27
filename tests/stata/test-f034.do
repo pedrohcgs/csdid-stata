@@ -65,7 +65,7 @@ foreach scenario in panel_reg rc_reg {
 
     use "`rif'", clear
     unab vars : _all
-    assert "`vars'" == "rif_row id group weight rif1 rif2 rif3 rif4 rif5 rif6"
+    assert "`vars'" == "rif_row id group weight rif1 rif2 rif3 rif4 rif5 rif6 __csdid_meta"
     assert weight == 1
     assert "`: char _dta[csdid_artifact]'" == "rif"
     assert "`: char _dta[csdid_control_group]'" == "nevertreated"

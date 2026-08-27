@@ -340,14 +340,16 @@ end
 	// SB type
 	local rtype 1
 	if "`cluster'" != "" local rtype 2 
+	* a nonpositive replication count is nonsense WHEREVER it is typed --
+	* outside wboot it was silently accepted and ignored (cold-audit round
+	* 10); the refusal now precedes any use, and still precedes `set seed'
+	* so a refused request cannot reseed the session's RNG stream (LEG-4).
+	if `reps' < 1 {
+		display as error "reps(`reps') is not a positive replication count"
+		exit 198
+	}
 	if "`wboot'"   != "" {
 		local rtype 3
-		* refused BEFORE `set seed': an invalid replication count must not
-		* first reseed the session's RNG stream (cold-audit LEG-4).
-		if `reps' < 1 {
-			display as error "reps(`reps') is not a positive replication count"
-			exit 198
-		}
 		if "`seed'"!="" set seed `seed'
 	}
 	tempname cband bmat vmat nclust

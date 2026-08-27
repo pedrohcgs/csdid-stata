@@ -50,6 +50,6 @@ csdid y, time(time) gvar(g) method(reg) saverif("`rif'") replace analytical neve
 confirm file "`rif'"
 use "`rif'", clear
 unab vars : _all
-assert "`vars'" == "rif_row id group weight rif1"
+assert "`vars'" == "rif_row id group weight rif1 __csdid_meta"
 assert weight == 1
 assert "`: char _dta[csdid_artifact]'" == "rif"

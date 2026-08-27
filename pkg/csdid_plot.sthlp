@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 26aug2026}{...}
+{* *! version 2.0.0 27aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -333,8 +333,10 @@ there is nothing to plot; {cmd:csdid_plot} exits with return code 498 and a
 message saying so.{p_end}
 
 {phang2}
-o {bf:Unknown cohorts} named in {cmd:group()} are reported and {cmd:csdid_plot}
-falls back to every available cohort.{p_end}
+o {bf:Unknown cohorts} named in {cmd:group()}: when none of the requested
+cohorts exists, they are reported and {cmd:csdid_plot} falls back to every
+available cohort; when the request mixes known and unknown cohorts, the known
+ones are plotted.{p_end}
 
 {phang2}
 o {cmd:group()} is honored on {cmd:type(group)} aggregation plots as well as

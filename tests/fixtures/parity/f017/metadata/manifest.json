@@ -31,18 +31,18 @@
   "rng": {},
   "expected_outputs": [
     {
-      "path": "expected/r/events.json",
+      "path": "expected/contract/events.json",
       "schema": "error-warning-events"
     },
     {
-      "path": "expected/r/events.csv",
+      "path": "expected/contract/events.csv",
       "schema": "error-warning-events-csv"
     }
   ],
   "comparison_plan": [
     {
       "actual": "Stata captured balance-vocabulary refusals and legacy-option warnings",
-      "expected": "expected/r/events.csv",
+      "expected": "expected/contract/events.csv",
       "tolerance_id": "EXACT",
       "key_columns": "event_key"
     }

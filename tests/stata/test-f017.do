@@ -53,11 +53,11 @@ program define f017_assert_log_omits
 end
 
 confirm file "`root'/tests/fixtures/parity/f017/inputs/input.csv"
-confirm file "`root'/tests/fixtures/parity/f017/expected/r/events.csv"
-confirm file "`root'/tests/fixtures/parity/f017/expected/r/events.json"
+confirm file "`root'/tests/fixtures/parity/f017/expected/contract/events.csv"
+confirm file "`root'/tests/fixtures/parity/f017/expected/contract/events.json"
 confirm file "`root'/tests/fixtures/parity/f017/metadata/manifest.json"
 
-import delimited using "`root'/tests/fixtures/parity/f017/expected/r/events.csv", clear varnames(1)
+import delimited using "`root'/tests/fixtures/parity/f017/expected/contract/events.csv", clear varnames(1)
 assert _N == 12
 foreach key in removed_balanceall removed_balancepair removed_bal_all ///
     removed_bal_unbal removed_bal_unbalanced removed_bal_allow_unbalanced ///
@@ -160,7 +160,7 @@ assert mreldif(PairMode, FullBalance) > 1e-8
 * replaces the data in memory with the input fixture, so the table cannot be
 * re-read from the dataset inside the loop.
 * ---------------------------------------------------------------------------
-import delimited using "`root'/tests/fixtures/parity/f017/expected/r/events.csv", clear varnames(1) stringcols(_all)
+import delimited using "`root'/tests/fixtures/parity/f017/expected/contract/events.csv", clear varnames(1) stringcols(_all)
 preserve
 quietly keep if event_type == "error"
 local n_removed = _N

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 26aug2026}{...}
+{* *! version 2.0.0 27aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -161,8 +161,12 @@ error. Comma-separated bounds, as in {cmd:window(-3,3)}, are also accepted.
 {pmore}
 The upper bound is not only a reporting filter. For {cmd:type(simple)} and
 {cmd:type(group)} it restricts which post-treatment cells enter the average to
-those with t <= g + {it:max}; the lower bound has no effect on those two types,
-because they average post-treatment cells only. For {cmd:type(dynamic)} both
+those within {it:max} observed periods of the cohort's first treatment -- on a
+calendar recorded without gaps that is exactly t <= g + {it:max}, and on a
+gapped calendar (biennial data, a skipped wave) the bound counts positions on
+the grid of observed periods and cohort dates;
+the lower bound has no effect on those two types, because they average
+post-treatment cells only. For {cmd:type(dynamic)} both
 bounds select the reported event times, and the overall post-treatment effect
 is the average of the effects that survive the window. For
 {cmd:type(calendar)} the window has no effect and a warning says so. This is
@@ -328,8 +332,9 @@ effects that are still reported, not the unwindowed overall effect. Narrowing
 the window therefore changes the headline number.
 
 {phang}
-The upper bound also trims {cmd:simple} and {cmd:group}. Both average the cells
-with t <= g + {it:max}, so {cmd:csdid_stats group, window(-3 1)} reports, for
+The upper bound also trims {cmd:simple} and {cmd:group}. Both average the
+cells within {it:max} observed periods of first treatment (t <= g + {it:max}
+on a gapless calendar), so {cmd:csdid_stats group, window(-3 1)} reports, for
 each cohort, the average effect over its first two treated periods rather than
 over all of them. Use the upper bound deliberately, and remember that the lower
 bound does nothing for these two types.

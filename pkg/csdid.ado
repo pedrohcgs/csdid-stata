@@ -1,4 +1,4 @@
-*! csdid 2.0.0 26aug2026
+*! csdid 2.0.0 27aug2026
 program define csdid, eclass sortpreserve
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts

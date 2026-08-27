@@ -5,6 +5,7 @@
 # Version 1.82 kept, for each comparison, the units observed in BOTH of that
 # comparison's periods, and did it without saying so. bal(pair) is that mode.
 #
+# CSDID-ORACLE: derived-reference (no estimator call by design)
 # The oracle here deliberately does NOT call did::att_gt. Under pair balancing
 # every cell has its own unit set, and an oracle earns its name by deriving the
 # answer a second way rather than asking the same library the same question.

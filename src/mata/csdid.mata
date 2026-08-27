@@ -1,4 +1,4 @@
-*! csdid 2.0.0 26aug2026
+*! csdid 2.0.0 27aug2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -7051,6 +7051,7 @@ class csdid__Agg {
 
     // ---- what the aggregation produces ----
     real colvector egt
+    real colvector tgrid_full
     real colvector effects
     real colvector ses
     real matrix    effect_if_mat
@@ -7190,6 +7191,16 @@ void csdid__Agg::load()
     csdid__engine_ensure()
 
     attgt = st_matrix("e(attgt)")
+    // The original rank grid, taken BEFORE any missing-cell filtering:
+    // R builds it as sort(unique(c(originaltlist, originalglist))) --
+    // compute.aggte.R:239, "In case g's are not part of tlist" -- so the
+    // union here is every cell's time, every cell's base period (the
+    // periods that survive standardization are exactly those some cell
+    // references), and every cohort date. Ranking on the SURVIVING cell
+    // times alone was wrong twice over (cold-audit round 11): dropmissing
+    // shifted the ranks, and an off-grid cohort has a rank of its own in
+    // R's map rather than an exclusion.
+    tgrid_full = uniqrows(attgt[., 1] \ attgt[., 2] \ attgt[., 10])
     group_prob = st_matrix("e(group_prob)")
     if (use_cache != 0) {
         inffunc = CSDID_ENGINE.inffunc
@@ -7542,7 +7553,7 @@ void csdid__Agg::agg_simple()
     // its count of grid points at or below it, exact for every on-grid
     // value; missing max_e still means unbounded, since a comparison
     // against missing is true for the same reason it was on the raw scale.
-    agg_tgrid = uniqrows(tt)
+    agg_tgrid = tgrid_full
     agg_tr = J(rows(tt), 1, 0)
     agg_gr = J(rows(group), 1, 0)
     for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
@@ -7590,7 +7601,7 @@ void csdid__Agg::agg_group()
     n_effects = 0
     // same rank recode as agg_simple (R compute.aggte.R:335): max_e counts
     // observed periods on the group keepers too.
-    agg_tgrid = uniqrows(tt)
+    agg_tgrid = tgrid_full
     agg_tr = J(rows(tt), 1, 0)
     agg_gr = J(rows(group), 1, 0)
     for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {

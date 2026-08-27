@@ -45,6 +45,35 @@ done
 # generate.R resolves the repo root from its own script path, so a copy of
 # tools/parity under the scratch root writes into $scratch/tests/... .
 mkdir -p "$scratch/tools" "$scratch/tests"
+# The attestation harness: R generators run under a trace on the reference
+# estimator's own functions, which prints a marker to stderr WHEN THEY
+# EXECUTE. Provenance is then attested by execution, not by the lexical
+# presence of a call (cold-audit round 11: a call in a comment satisfied
+# the old grep).
+# Installed as R_PROFILE_USER so each generator still runs as its own
+# `Rscript generate.R` -- its --file= self-location and sibling source()
+# calls keep working -- while the estimator functions are traced the
+# moment their package loads.
+cat > "$scratch/csdid-attest-profile.R" <<'ATTEOF'
+local({
+  # the exit expression must be SELF-CONTAINED: trace() evaluates it in the
+  # traced function's frame, where no profile-local helper exists
+  arm <- function(pkg, fns) {
+    setHook(packageEvent(pkg, "onLoad"), function(...) {
+      suppressMessages(suppressWarnings({
+        for (fn in fns) {
+          try(trace(fn, where = asNamespace(pkg),
+                    exit = quote(cat("CSDID_ATTEST_CALL\n", file = stderr())),
+                    print = FALSE), silent = TRUE)
+        }
+      }))
+    })
+  }
+  arm("did", c("att_gt", "aggte"))
+  arm("DRDID", c("drdid", "drdid_panel", "drdid_rc", "reg_did_panel",
+                 "reg_did_rc", "std_ipw_did_panel", "std_ipw_did_rc"))
+})
+ATTEOF
 cp -R tools/parity "$scratch/tools/parity"
 # read-only inputs some generators consume from the repo root
 [ -d inst ] && cp -R inst "$scratch/inst"
@@ -76,7 +105,7 @@ for id in $gen_ids; do
   else
     runner="python3 tools/parity/generators/$id/generate.py"
   fi
-  if ! (cd "$scratch" && $runner >"$scratch/$id.log" 2>&1); then
+  if ! (cd "$scratch" && R_PROFILE_USER="$scratch/csdid-attest-profile.R" $runner >"$scratch/$id.log" 2>&1); then
     echo "generator $id FAILED; log tail:" >&2
     tail -5 "$scratch/$id.log" >&2
     fail=1
@@ -107,10 +136,15 @@ for id in $gen_ids; do
       fail=1
       continue
     fi
-    if ! grep -qE 'att_gt|aggte|drdid' "tools/parity/generators/$id/generate.R"; then
-      echo "R generator $id wrote under expected/r without ever calling the reference estimator (no att_gt/aggte/drdid call); a hard-coded oracle certifies nothing" >&2
-      fail=1
-      continue
+    if ! grep -q 'CSDID_ATTEST_CALL' "$scratch/$id.log"; then
+      # A derived-reference oracle -- computed from first principles where
+      # the reference package has no counterpart mode -- may declare itself
+      # instead: the exemption is then explicit in the generator's own diff.
+      if ! grep -q 'CSDID-ORACLE: derived-reference' "tools/parity/generators/$id/generate.R"; then
+        echo "R generator $id wrote under expected/r without the reference estimator ever EXECUTING (no attested call, no declared derived-reference exemption); a hard-coded oracle certifies nothing" >&2
+        fail=1
+        continue
+      fi
     fi
   fi
   n_ok=$((n_ok + 1))

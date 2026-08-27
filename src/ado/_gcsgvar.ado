@@ -1,4 +1,4 @@
-*! _gcsgvar 2.0.0 26aug2026
+*! _gcsgvar 2.0.0 27aug2026
 * Cohort ("gvar") variable from a binary treatment indicator.
 *
 * This file holds the single implementation. `_g<name>' is Stata's egen entry
@@ -51,7 +51,8 @@ program _gcsgvar, sortpreserve
 	tempvar touse
 	qui:gen byte `touse'=0
 	qui:replace `touse'=1 `if' `in'
-	qui:replace `touse'=0 if `tvar'==. | `ivar'==. | `csg_expv'==.
+	* missing(), not == . : extended missings (.a-.z) are missing too
+	qui:replace `touse'=0 if missing(`tvar') | missing(`ivar') | missing(`csg_expv')
 
 	tempvar vals
 	bys `touse' `csg_expv' : gen byte `vals' = (_n == 1) * `touse'
@@ -111,7 +112,8 @@ program _gcsgvar, sortpreserve
 		bysort `touse' `ivar' `csg_expv': egen double `aux' = min(`tvar')
 		replace `aux' = 0 if `csg_expv' == 0
 		by     `touse' `ivar': egen double `csg_gvar' = max(`aux')
-		replace `csg_gvar' = . if `csg_expv' == . | !`touse'
+		* missing(), not == . : extended missings (.a-.z) are missing too
+		replace `csg_gvar' = . if missing(`csg_expv') | !`touse'
 		generate `typlist' `varlist' = `csg_gvar'
 	}
 

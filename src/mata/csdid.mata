@@ -943,10 +943,15 @@ real scalar csdid__overlap_status(real matrix x, real colvector d)
 
     // With an intercept-only design the unweighted logit MLE fits EVERY unit at
     // mean(d), so max(fitted) is mean(d) and the guard's answer is known in
-    // both directions with no fit at all. That is exactly R's structure --
+    // both directions with no fit at all. That mirrors R's structure --
     // overlap_check_fail() returns `pbar >= 0.999' outright outside the
-    // knife-edge band and only defers to a real fit inside it, where the IRLS
-    // iterate (tol 1e-8, observed error ~1.5e-9) can land on either side.
+    // knife-edge band and defers to a fit inside it. INSIDE the band on an
+    // intercept-only design, the fit below is the closed form (the exact
+    // MLE), which reproduces pbar and refuses at the exact tie -- the
+    // registered trim-tie rule: R's outcome there is the sign of fastglm's
+    // terminal float residue, which no deterministic rule can match, so
+    // csdid refuses loudly rather than chase it (AGENTS.md register). With
+    // covariates the IRLS below runs and its iterate decides, as R's does.
     //
     // csdid used the closed form only to REFUSE. When the cell was fine -- the
     // common case -- it fell through and ran the fit anyway: a logit, an

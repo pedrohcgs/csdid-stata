@@ -66,6 +66,15 @@ call a syntax error, is fixed.
 {p_end}
 
 {marker replacements}{...}
+{pstd}
+Two numerical details are frozen at their Version 1.82 values, deliberately:
+the wild-bootstrap band quantile in {cmd:csdid_rif} selects the order
+statistic at {it:floor(np)+1}, one position above the type-1 quantile the
+2.0.0 engine uses, and {cmd:csdid_table}'s {cmd:p} row is left blank, as the
+Version 1.82 table always left it. Both reproduce the legacy commands' published
+behavior exactly; the 2.0.0 estimation and aggregation commands use the
+modern definitions.
+
 {marker syntax}{...}
 {title:Syntax and stored results of the deprecated commands}
 

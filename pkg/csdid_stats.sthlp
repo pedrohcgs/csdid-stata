@@ -367,14 +367,13 @@ Aggregation inherits the confidence level of the estimation rather than any
 session setting.
 
 {pstd}
-There is one boundary case. Stata's option parser cannot distinguish an
-explicitly typed level from an omitted one when the value typed equals the
-current session {help level:set level} value. In that case the estimation-time
-level wins.
-Concretely, after {cmd:csdid ..., level(90)} with the session default at 95,
-{cmd:csdid_stats simple, level(95)} reports 90% intervals; ask for any other
-level, or re-run {cmd:csdid} at the level you want, and the requested level is
-used.
+An explicitly typed {cmd:level()} is honored verbatim, whatever its value --
+including a value equal to the current session {help level:set level} default.
+Only an omitted {cmd:level()} inherits, first from the estimation's own
+{cmd:e(level)} and then from the session default. Concretely, after
+{cmd:csdid ..., level(90)}, a bare {cmd:csdid_stats simple} bands at 90, and
+{cmd:csdid_stats simple, level(95)} bands at 95 even when the session default
+is also 95.
 
 {pstd}
 Under analytical inference the interval is the estimate plus or minus the

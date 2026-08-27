@@ -37,3 +37,23 @@ bash tools/release/preflight.sh --list   # what would run, and why
 
 `--fast` is a pre-commit convenience and never a merge verdict: it runs the
 spec tier only, and a full run is required before merge.
+
+## Reproducing the certification
+
+The Stata suite and every meta gate run from a clone with nothing but Stata:
+
+    bash tools/release/preflight.sh
+
+The deepest tiers compare against external references and report BLOCKED --
+never a pass -- when a prerequisite is absent:
+
+| Tier | Needs | Where |
+| --- | --- | --- |
+| R oracle environment + regeneration | R with the pinned `did` 2.5.1 and `DRDID` 1.3.0 packages (and the `digest` package) | install from CRAN/GitHub; the environment gate verifies both the versions and a content digest of the loaded code before any oracle is trusted |
+| Adversarial R differential | `CSDID_DID_UPSTREAM` pointing at a checkout of the `did` 2.5.1 sources | github.com/bcallaway11/did, tag v2.5.1 |
+| Legacy A/B certification | `CSDID_LEGACY_ROOT` pointing at the frozen Version 1.82 sources at the pinned commit recorded in the harness | any faithful copy of the Version 1.82 release sources |
+| JEL full reproduction | `JEL_DID_REFERENCE` pointing at the JEL-DiD replication materials | github.com/pedrohcgs/JEL-DiD |
+
+`preflight.sh --release` runs everything, including the tiers above and the
+timing rows, and writes a digest-bound receipt only when every check passed
+and the platform identified itself.

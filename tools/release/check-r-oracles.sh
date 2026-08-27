@@ -65,8 +65,11 @@ if [ "$FINGERPRINT" != "1" ]; then
   status=1
 fi
 CODE_DIGEST=$(Rscript -e '
-  fns <- list(did:::compute.att_gt, did:::compute.aggte, did:::mboot,
-              did:::pre_process_did, DRDID::drdid_panel)
+  fns <- list(did::att_gt, did::aggte, did:::compute.att_gt,
+              did:::compute.aggte, did:::mboot, did:::pre_process_did,
+              DRDID::drdid, DRDID::drdid_panel, DRDID::drdid_rc,
+              DRDID::reg_did_panel, DRDID::reg_did_rc,
+              DRDID::std_ipw_did_panel, DRDID::std_ipw_did_rc)
   txt <- paste(unlist(lapply(fns, deparse)), collapse = "\n")
   cat(substr(digest::digest(txt, algo = "sha256"), 1, 16))
 ' 2>/dev/null)

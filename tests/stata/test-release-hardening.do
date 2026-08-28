@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* This file exercises the whole shipped workflow on one awkward design --
+* an unbalanced, weighted, clustered panel with staggered adoption and a
+* near-collinear covariate -- rather than one feature at a time. It pins
+* the properties that only appear when pieces are combined: the cached and
+* the nofast paths agree on ATT(g,t) regardless of row order, csdid_plot
+* reproduces the aggregation's own critical value at level(90), estat event
+* replays csdid_stats without moving b or V, a saved RIF reloads to the
+* same aggregation as the live fit, full-storage variance matrices are not
+* diagonal, and a stale cache -- a cleared Mata session, or a restored
+* estimate from another fit -- is refused with rc 498 instead of answered
+* from the wrong data. It closes by running every shipped example, so the
+* documented commands are executed, not just published.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

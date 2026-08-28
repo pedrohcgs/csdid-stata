@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* Deep parametric grid (F037; expected values from R did 2.5.1).
+* Options interact, so this file crosses them rather than varying one at a time:
+* method by control group by base period, method by panel/repeated cross-section,
+* method by anticipation, and method by aggregation type - thirty-six scenarios
+* on one design. Both ATT(g,t) and the requested aggregation are compared
+* against the reference values, and a failing cell is listed before the assert
+* so the offending scenario is named rather than merely counted.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

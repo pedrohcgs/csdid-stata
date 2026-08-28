@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* F025 pins the aggregation window options against R did 2.5.1: min_e() and
+* max_e() on dynamic, balance_e() on dynamic, max_e() on simple and on group,
+* and the fact that calendar ignores all three. Every scenario is compared
+* estimate by estimate including the overall aggregate and its standard error,
+* so a build that filtered the reported rows but aggregated over the full set
+* -- or the reverse -- diverges on the overall row.
+*
+* Missing ATT(g,t) cells are pinned in the same file. With a cell blanked out
+* the aggregation must refuse (rc 498) rather than propagate or quietly skip;
+* na_rm must then drop that cell and its influence-function column together and
+* reproduce R's na.rm answer, both for a whole aggregation and in combination
+* with a window option.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

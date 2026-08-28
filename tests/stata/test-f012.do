@@ -1,3 +1,17 @@
+* ---------------------------------------------------------------------------
+* F012, fixture family weights: sampling weights through the whole stack. The
+* [iw=] grid crosses two weight variables, the four fix_weights settings, both
+* covariate specs, dr/reg/ipw and panel / repeated-cross-section / unbalanced,
+* pinned against R did 2.5.1 for ATT(g,t) (1e-10) and for all four aggregations
+* (1e-8). Three properties are pinned beyond the merge: scale invariance -- wt
+* and wt_scaled must agree to 1e-12 -- time-INVARIANT weights must be immune to
+* fix_weights, every setting reproducing the default, and the diagnostics must
+* fire exactly as the expected event counts say: the time-varying-weights
+* notice appears for wt and not for wt_unit, and fix_weights(first_period) on
+* an unbalanced panel reports the units it drops. Negative weights, and
+* fix_weights under repeated cross-section, must exit 198.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

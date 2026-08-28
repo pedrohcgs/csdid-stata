@@ -132,6 +132,13 @@ stata_do() {
   # stata-mp exits 0 even when a do-file aborts, so the log is authoritative
   [ -f "${base}.log" ] || return 1
   mv -f "${base}.log" "$LOGDIR/${base}.log"
+  # a session killed mid-do-file leaves a truncated log with no r(N) in it,
+  # which the error grep alone scored as PASS (in-house review, gates lens:
+  # SIGKILL during the do-file -> PASS with the trailing assert never run).
+  # Completion is therefore required, not just absence of errors: a batch
+  # log ends with Stata's own end-of-do-file sentinel, checked at the TAIL
+  # so an inner do-file's sentinel cannot vouch for a killed outer one.
+  tail -n 3 "$LOGDIR/${base}.log" | grep -q 'end of do-file' || return 1
   ! grep -qE '^r\([0-9]+\);' "$LOGDIR/${base}.log"
 }
 

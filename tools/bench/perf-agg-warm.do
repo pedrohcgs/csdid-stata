@@ -104,8 +104,8 @@ quietly generate double y = 0.5 * x1 - 0.3 * x2 + 0.05 * time ///
 tempfile d
 quietly save "`d'"
 
-local est_lean  "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical"
-local est_store "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical storeall"
+local est_lean  "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise"
+local est_store "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise storeall"
 
 tempname fh
 file open `fh' using "`out'", write append text

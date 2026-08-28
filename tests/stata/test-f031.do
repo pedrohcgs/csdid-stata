@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* State hygiene (F031 mutation-safety contract).
+* Estimation and postestimation must leave the user's session exactly as they
+* found it. After every csdid, csdid_stats, csdid_estat and csdid_plot call -
+* including the saved-RIF route and a deliberately failing one - the data in
+* memory are compared value by value against a snapshot, along with variable
+* list and order, labels, dataset characteristics, the current and auxiliary
+* frames, and a user matrix. A failed command must also leave the previous
+* e() results intact rather than half-overwritten.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

@@ -1,3 +1,17 @@
+* ---------------------------------------------------------------------------
+* F020 pins the design with no never-treated units. R did 2.5.1 makes the
+* last-treated cohort serve as the control by dropping every period from that
+* cohort's treatment date onward and recoding it to group 0, and csdid must do
+* the same. The per-row mask is compared to R's rowid by rowid, so the recoded
+* group, the dropped periods, and the reason each row is out are all pinned,
+* not just the resulting sample size.
+*
+* Both comparison groups are then estimated on the surviving sample and
+* compared to R cell by cell. With no never-treated units the two control
+* groups need not agree, so running both is what catches a build that resolves
+* one option into the other.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

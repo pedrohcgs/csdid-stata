@@ -13,8 +13,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[4]
 FIXTURE = ROOT / "tests/fixtures/parity/py020"
 SOURCE_FILE = "csdid/test_csdid/test_review_fixes.py"
-SOURCE_SHA256 = "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711"
-SOURCE_COMMIT = "555f28bc12fcafa9c099e6e5503a30a4c22fc89f"
+SOURCE_SHA256 = "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4"
+SOURCE_COMMIT = "c37d39d5d0c28c345f2950db734d7a0f5e02aceb"
 
 
 def make_panel(

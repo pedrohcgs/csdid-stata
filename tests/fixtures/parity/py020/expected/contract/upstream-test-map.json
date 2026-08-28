@@ -1,7 +1,7 @@
 [
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestFactorCovariates.test_factor_not_silently_dropped",
     "mapped_scenario": "factor_not_dropped",
     "assertion_family": "factor covariates materially change ATT(g,t)",
@@ -11,7 +11,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestFactorCovariates.test_factor_faster_mode_matches_standard[panel=True]",
     "mapped_scenario": "factor_fast_panel",
     "assertion_family": "fast request with factor covariates matches standard panel path",
@@ -21,7 +21,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestFactorCovariates.test_factor_faster_mode_matches_standard[panel=False]",
     "mapped_scenario": "factor_fast_rc",
     "assertion_family": "fast request with factor covariates matches standard repeated-cross-section path",
@@ -31,7 +31,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestFactorCovariates.test_mixed_factor_numeric_runs",
     "mapped_scenario": "mixed_factor_numeric",
     "assertion_family": "factor plus numeric covariates produce finite public estimates",
@@ -41,7 +41,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestSEScaling.test_se_scaling_formula",
     "mapped_scenario": "clustered_bootstrap_se_reasonable",
     "assertion_family": "clustered bootstrap SEs are positive and not inflated",
@@ -51,7 +51,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestChunking.test_biters_less_than_cores",
     "mapped_scenario": "python-mboot-helper-only",
     "assertion_family": "Python multiprocessing chunk helper has no Stata command analogue",
@@ -61,7 +61,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestChunking.test_biters_equals_one",
     "mapped_scenario": "python-mboot-helper-only",
     "assertion_family": "Python multiprocessing chunk helper has no Stata command analogue",
@@ -71,7 +71,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestChunking.test_biters_exact_multiple_of_cores",
     "mapped_scenario": "python-mboot-helper-only",
     "assertion_family": "Python multiprocessing chunk helper has no Stata command analogue",
@@ -81,7 +81,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestMemoryChunkedBootstrap.test_chunked_matches_shape",
     "mapped_scenario": "python-mboot-helper-only",
     "assertion_family": "Python chunked multiplier helper has no Stata command analogue",
@@ -91,7 +91,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestMemoryChunkedBootstrap.test_chunked_statistical_properties",
     "mapped_scenario": "python-mboot-helper-only",
     "assertion_family": "Python chunked multiplier helper has no Stata command analogue",
@@ -101,7 +101,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestAnticipation.test_asif_nevertreated_uses_anticipation",
     "mapped_scenario": "late_cohort_anticipation",
     "assertion_family": "late cohorts respect anticipation/coercion public behavior",
@@ -111,7 +111,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestAnticipation.test_treated_fp_uses_anticipation",
     "mapped_scenario": "first_period_treated_drop",
     "assertion_family": "first-period treated units are dropped from estimated groups",
@@ -121,7 +121,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestBooleanOutcome.test_bool_outcome_accepted",
     "mapped_scenario": "boolean_outcome",
     "assertion_family": "numeric 0/1 outcome is accepted as a Stata boolean analogue",
@@ -131,7 +131,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestFormulaValidation.test_bad_formula_raises",
     "mapped_scenario": "bad_formula",
     "assertion_family": "missing covariate is rejected",
@@ -141,7 +141,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestFormulaValidation.test_intercept_formula_still_works",
     "mapped_scenario": "intercept_formula",
     "assertion_family": "intercept-only public command succeeds",
@@ -151,7 +151,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUnbalancedPanel.test_allow_unbalanced_false_runs",
     "mapped_scenario": "balance_full_runs",
     "assertion_family": "bal(full) runs on an unbalanced panel",
@@ -161,7 +161,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUnbalancedPanel.test_allow_unbalanced_false_balances",
     "mapped_scenario": "balance_full_drops_units",
     "assertion_family": "bal(full) drops units not observed in every period and reports how many",
@@ -171,7 +171,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUnbalancedPanel.test_unbalanced_switches_to_rc",
     "mapped_scenario": "unbalanced_switches_to_rc",
     "assertion_family": "unbalanced ivar() routes to repeated-cross-section computation",
@@ -181,7 +181,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUnbalancedPanel.test_balanced_panel_stays_panel",
     "mapped_scenario": "balanced_stays_panel",
     "assertion_family": "balanced ivar() data stays on panel path",
@@ -191,7 +191,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUnbalancedPanel.test_uniform_count_but_missing_periods_is_unbalanced",
     "mapped_scenario": "uniform_missing_periods",
     "assertion_family": "equal row counts with missing periods are still unbalanced",
@@ -201,7 +201,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestNevertreatedCoercion.test_last_cohort_coerced_to_control",
     "mapped_scenario": "last_cohort_coerced",
     "assertion_family": "last cohort is recoded to controls when no never-treated group exists",
@@ -211,7 +211,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestAnalyticalClusterSEScaling.test_analytical_se_formula_directly",
     "mapped_scenario": "analytical_cluster_se_public",
     "assertion_family": "public clustered analytical SE uses cluster-sum scaling",
@@ -221,7 +221,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestPostKeyAlias.test_both_post_keys_present_and_equal",
     "mapped_scenario": "python-results-dict-alias-only",
     "assertion_family": "Python results dict legacy alias has no Stata object analogue",
@@ -231,7 +231,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestPostKeyAlias.test_summ_attgt_robust_to_alias",
     "mapped_scenario": "python-results-dict-alias-only",
     "assertion_family": "Python summary dataframe alias handling has no Stata object analogue",
@@ -241,7 +241,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUniversalBaseNaN.test_universal_base_cell_se_is_nan",
     "mapped_scenario": "universal_base_nan",
     "assertion_family": "universal base cell SE is missing",
@@ -251,7 +251,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUniversalBaseNaN.test_varying_base_has_no_nan_se",
     "mapped_scenario": "varying_base_finite_se",
     "assertion_family": "varying base has finite SEs",
@@ -261,7 +261,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestUniversalBaseNaN.test_only_base_cell_nan_when_estimated_cells_are_degenerate",
     "mapped_scenario": "deterministic_zero_if_r_behavior",
     "assertion_family": "Python deterministic zero-IF expectation diverges from R did 2.5.1",
@@ -271,7 +271,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestIdnameNumericValidation.test_string_idname_raises",
     "mapped_scenario": "string_id_rejected",
     "assertion_family": "string id variable is rejected",
@@ -281,7 +281,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestIdnameNumericValidation.test_numeric_idname_ok",
     "mapped_scenario": "numeric_id_ok",
     "assertion_family": "numeric id variable is accepted",
@@ -291,7 +291,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestIdnameNumericValidation.test_nullable_int_idname_accepted",
     "mapped_scenario": "numeric_storage_id_ok",
     "assertion_family": "Stata numeric storage classes are accepted as the nullable-int analogue",
@@ -301,7 +301,7 @@
   },
   {
     "source_file": "csdid/test_csdid/test_review_fixes.py",
-    "source_sha256": "e0206e8d37d5577d9616449dda9d1d0e74ffce4adb0f608cf36aa9f02b816711",
+    "source_sha256": "a53c282cfdba0061cf0a208f579828fd3c6421f45795aa966c53b757e9e108d4",
     "source_test": "TestIdnameNumericValidation.test_bool_idname_rejected",
     "mapped_scenario": "python-bool-id-dtype-only",
     "assertion_family": "Python boolean id dtype has no Stata logical-type analogue",

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -53,7 +53,9 @@ was asked for. Version 2.0.0 runs the multiplier bootstrap over 1,000
 iterations by default and reports bands that cover every reported effect
 jointly, because a staggered design produces dozens of estimates and pointwise
 intervals do not account for looking at all of them at once.
-{cmd:analytical} restores pointwise analytical standard errors, and
+{cmd:analytical} restores analytical standard errors (aggregations still
+carry a simultaneous band, its critical value bootstrapped with a note,
+unless {cmd:pointwise} is added), and
 {cmd:pointwise} gives pointwise intervals from the bootstrap. Point estimates
 are unaffected by either.
 

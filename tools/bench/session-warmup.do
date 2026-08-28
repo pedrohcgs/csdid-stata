@@ -78,8 +78,8 @@ if "`phase'" != "rif" {
 tempname fh
 file open `fh' using "`out'", write append text
 
-local est "csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)"
-local warm "csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)"
+local est "csdid y x1 x2, ivar(id) time(time) gvar(g) method(dr) analytical pointwise nevertreated base_period(varying) bal(none)"
+local warm "csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)"
 
 capture program drop swu_time
 program define swu_time

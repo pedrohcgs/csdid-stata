@@ -66,7 +66,10 @@ assert r(N) == 12
 tempfile tidy_attgt tidy_agg actual_nobs
 
 import delimited using "`root'/tests/fixtures/parity/rt026/inputs/mpdta.csv", clear asdouble
-csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical nevertreated base_period(varying) bal(none)
+* the rt026 fixtures are generated with cband = FALSE, so the Stata side
+* runs analytical POINTWISE: analytical alone now bands aggregations
+* simultaneously by bootstrap, as R's bstrap = FALSE cband = TRUE does.
+csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical pointwise nevertreated base_period(varying) bal(none)
 csdid_estat tidy, saving("`tidy_attgt'") replace
 rt026_append_nobs, object(MP) outfile("`actual_nobs'")
 

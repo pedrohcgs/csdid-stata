@@ -1,3 +1,12 @@
+* ---------------------------------------------------------------------------
+* F005, fixture family aggte-calendar: csdid_stats, type(calendar) on the F002
+* design, against R did 2.5.1. Two calendar periods contribute, so the merge on
+* egt asserts exactly two rows; per-period and overall att/se are pinned at
+* 1e-10. Calendar aggregation must include, in each period, exactly the cohorts
+* already treated by then -- an off-by-one in that eligibility rule shifts every
+* number here without changing the shape of the output.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

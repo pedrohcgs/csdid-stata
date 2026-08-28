@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* Optimized-path equivalence (F032, oracle R did 2.5.1).
+* fast is an implementation detail and must never be a modelling choice. The
+* baseline and optimized routes are run over the same designs - both control
+* groups, both base periods, all three methods, covariates, weights, clustering,
+* balanced, row-shuffled and unbalanced inputs - and required to agree to 1e-12
+* on ATT(g,t) and on all four aggregations, to agree with the reference values,
+* and to produce identical influence functions (summaries and full gram matrix).
+* The e(fast_*) and e(compute_path) surface is pinned alongside, so a route is
+* never reported as taken when it was not.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

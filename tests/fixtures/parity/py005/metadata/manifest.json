@@ -2,7 +2,7 @@
   "matrix_id": "PY005",
   "fixture_family": "python-clustered-bootstrap-behavior",
   "normative_source": "Python csdid csdid/test_csdid/test_clustered.py subordinate to R did 2.5.1 clustered multiplier-bootstrap behavior",
-  "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+  "source_commit": "c37d39d5d0c28c345f2950db734d7a0f5e02aceb",
   "decision_refs": [
     "D004",
     "D013"

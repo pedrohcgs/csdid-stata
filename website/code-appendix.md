@@ -1542,7 +1542,7 @@ forvalues hh = 0/2 {
     local tr`hh' = ((1+2+3)/3) + 0.5*`hh'
     di "HX truth ES(`hh') = " %6.4f `tr`hh'' "   (cohort truths differ by ±0.32*(h+1) through x2)"
 }
-csdid y x1 x2, ivar(id) time(time) gvar(gvar) analytical
+csdid y x1 x2, ivar(id) time(time) gvar(gvar) analytical pointwise
 estat event, window(0 2)
 matrix E = e(aggte)
 di "HX csdid dr : ES0=" %6.4f E[1,2] " ES1=" %6.4f E[2,2] " ES2=" %6.4f E[3,2]
@@ -1568,7 +1568,8 @@ di "HXSE bjs   cluster(id): se0=" %8.6f B2[2,1] " se1=" %8.6f B2[2,2] " se2=" %8
 jwdid y x1 x2, ivar(id) tvar(time) gvar(gvar) cluster(id)
 estat event
 matrix J2 = r(table)
-di "HXSE jwdid cluster(id): se0=" %8.6f J2[2,1] " se1=" %8.6f J2[2,2] " se2=" %8.6f J2[2,3]</code></pre>
+di "HXSE jwdid cluster(id): se0=" %8.6f J2[2,1] " se1=" %8.6f J2[2,2] " se2=" %8.6f J2[2,3]
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -1588,14 +1589,15 @@ bysort id: gen time = _n
 gen double y = mu + 0.3*time + rnormal()
 replace y = y + (gvar-2) + 0.5*(time-gvar) if gvar&gt;0 &amp; time&gt;=gvar
 gen byte D = (gvar&gt;0 &amp; time&gt;=gvar)
-csdid y, ivar(id) time(time) gvar(gvar) analytical
+csdid y, ivar(id) time(time) gvar(gvar) analytical pointwise
 estat event, window(0 2)
 matrix E = e(aggte)
 di "DC csdid : e0=" %7.4f E[1,2] " (se " %6.4f E[1,3] ")  e1=" %7.4f E[2,2] " (se " %6.4f E[2,3] ")  e2=" %7.4f E[3,2] " (se " %6.4f E[3,3] ")"
 did_multiplegt_dyn y id time D, effects(3) graph_off
 matrix M = e(estimates)
 matrix V = e(variances)
-di "DC dcdh  : e0=" %7.4f M[1,1] " (se " %6.4f sqrt(V[1,1]) ")  e1=" %7.4f M[2,1] " (se " %6.4f sqrt(V[2,1]) ")  e2=" %7.4f M[3,1] " (se " %6.4f sqrt(V[3,1]) ")"</code></pre>
+di "DC dcdh  : e0=" %7.4f M[1,1] " (se " %6.4f sqrt(V[1,1]) ")  e1=" %7.4f M[2,1] " (se " %6.4f sqrt(V[2,1]) ")  e2=" %7.4f M[3,1] " (se " %6.4f sqrt(V[3,1]) ")"
+</code></pre>
 </details>
 
 

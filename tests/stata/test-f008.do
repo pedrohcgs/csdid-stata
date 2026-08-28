@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* F008, fixture family control-group: the never-treated and not-yet-treated
+* comparison groups estimated on the same panel and merged 1:1 against R did
+* 2.5.1's control-group grid on (control_group, group, time), ATT to 1e-10 and
+* se to 1e-8. Each arm NAMES its comparison group rather than leaning on the
+* omitted-option default, so the test measures the option and not the default.
+* e(control_group) is asserted per arm, and the (3,3) cell -- where the two
+* control groups genuinely disagree -- is checked explicitly, so an arm that
+* quietly estimated the other one's comparison set cannot pass.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

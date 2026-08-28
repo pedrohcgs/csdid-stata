@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* Inference dimensions and inheritance (F039; oracle R did 2.5.1).
+* Standard errors are only as trustworthy as the influence-function matrix
+* behind them, so this file pins its shape as well as its values: one column per
+* ATT(g,t), one row per unit in panel mode and per observation in repeated cross
+* sections, all entries finite, and a counted number of nonzero entries. All
+* three methods are run in both panel modes; ATT(g,t) and all four aggregations
+* are compared against the reference values, and every reported standard error
+* must be strictly positive.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

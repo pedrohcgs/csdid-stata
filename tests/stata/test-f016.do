@@ -1,3 +1,22 @@
+* ---------------------------------------------------------------------------
+* F016 pins the unbalanced panel: csdid routes it through the
+* repeated-cross-section estimators, reporting e(panel_mode) as
+* allow_unbalanced, and must reproduce R did 2.5.1's allow_unbalanced_panel
+* path. The full 12-cell grid is run -- dr/reg/ipw, with and without iweights,
+* with and without covariates -- unclustered and again clustered, comparing
+* ATT(g,t), SEs, the per-cell treated and control counts, and the cluster
+* count.
+*
+* Two edge cases sit alongside. A panel where every unit has the same number
+* of rows can still be unbalanced if the periods differ across units, so the
+* balance test must not be a row count; that fixture is asserted to have
+* uniform counts and is still required to take the unbalanced path and match.
+* And a shuffled unbalanced clustered fit under baseperiod(universal) pins the
+* aggregations plus the alignment between the cluster vector and the influence
+* function rows, which a sort-order dependence would break silently. A missing
+* cluster() variable is refused with rc 459.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

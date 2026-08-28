@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* F010, fixture family method-boundary: every estimation method (dr, reg, ipw)
+* crossed with panel and repeated-cross-section, with and without covariates,
+* and -- on the staggered input -- crossed again with both control groups, all
+* merged cell by cell against the R did 2.5.1 grids (ATT 1e-10, se 1e-8, and
+* missingness required to agree). e(panel_mode), e(control_group) and e(method)
+* are asserted per run, so a cell that quietly fell back to another method or
+* to panel mode fails rather than matching some other cell's oracle. The tail
+* pins the option boundary itself: method(bad), method(drimp), method(aipw)
+* exit 198, while the dripw and stdipw aliases must resolve to dr and ipw and
+* reproduce them to mreldif < 1e-14 while reporting the requested spelling.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

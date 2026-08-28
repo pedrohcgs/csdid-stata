@@ -1,0 +1,33 @@
+{
+  "matrix_id": "RT035",
+  "fixture_family": "dr-covariate-inference-element-wise",
+  "normative_source": "R did 2.5.1 att_gt influence functions (DRDID drdid_rc kernel) on the covariate-adjusted DR repeated-cross-section and allow-unbalanced routes, element by element",
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt035/generate.R",
+      "path": "tools/parity/generators/rt035/generate.R"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "inputs/dr-rcs.csv",
+      "rows": 1600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/dr-unbalanced.csv",
+      "rows": 901,
+      "columns": 6
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0"
+    }
+  ],
+  "consumers": [
+    "tests/stata/r/test-dr-inffunc-elementwise.do"
+  ]
+}

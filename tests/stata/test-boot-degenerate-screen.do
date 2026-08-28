@@ -156,9 +156,11 @@ foreach eng in plugin mata {
     if "`eng'" == "mata" global CSDID_BOOT_PLUGIN_DISABLE 1
     else global CSDID_BOOT_PLUGIN_DISABLE
     foreach cl in "" "cluster(cl50)" {
-        quietly use "`aggdegen'", clear
-        csdid y, ivar(id) time(t) gvar(g) method(reg) `cl' wboot(reps(1000) rseed(1))
         foreach ty in simple group dynamic {
+            * refit per type: aggregation draws continue R's live stream, so
+            * each type's screen is checked against the same seeded block
+            quietly use "`aggdegen'", clear
+            quietly csdid y, ivar(id) time(t) gvar(g) method(reg) `cl' wboot(reps(1000) rseed(1))
             quietly csdid_stats, type(`ty')
             tempname AG BG
             matrix `AG' = e(aggte)
@@ -203,9 +205,11 @@ foreach eng in plugin mata {
         quietly bysort id: generate int t = _n
         generate double y = 0
         quietly replace y = `y0' if id == 1 & t == 2
-        quietly csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) ///
-            wboot(reps(1000) rseed(1))
         foreach ty in simple group {
+            * refit per type (live stream, as above): the pinned R value is a
+            * first-aggregation-after-set.seed quantity
+            quietly csdid y, ivar(id) time(t) gvar(g) method(reg) cluster(cl) ///
+                wboot(reps(1000) rseed(1))
             quietly csdid_stats, type(`ty')
             tempname AB BB
             matrix `AB' = e(aggte)

@@ -22,14 +22,14 @@ foreach spec in unseeded seeded analytical {
     use "`d'", clear
     if "`spec'" == "unseeded"   capture quietly csdid y, ivar(id) time(time) gvar(gvar)
     if "`spec'" == "seeded"     capture quietly csdid y, ivar(id) time(time) gvar(gvar) wboot(reps(999) rseed(20260729))
-    if "`spec'" == "analytical" capture quietly csdid y, ivar(id) time(time) gvar(gvar) analytical
+    if "`spec'" == "analytical" capture quietly csdid y, ivar(id) time(time) gvar(gvar) analytical pointwise
     forvalues k = 1/3 {
         use "`d'", clear
         timer clear 9
         timer on 9
         if "`spec'" == "unseeded"   capture quietly csdid y, ivar(id) time(time) gvar(gvar)
         if "`spec'" == "seeded"     capture quietly csdid y, ivar(id) time(time) gvar(gvar) wboot(reps(999) rseed(20260729))
-        if "`spec'" == "analytical" capture quietly csdid y, ivar(id) time(time) gvar(gvar) analytical
+        if "`spec'" == "analytical" capture quietly csdid y, ivar(id) time(time) gvar(gvar) analytical pointwise
         timer off 9
         quietly timer list 9
         local a  "`e(bootstrap_accelerator)'"

@@ -95,13 +95,13 @@ import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-hand
 rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) method(bad) analytical") message("method() must be one of dr, reg, or ipw")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) fix_weights(bad) analytical") message("fixweights() must be one of varying, base, or first")
+rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) fix_weights(bad) analytical") message("fix_weights() must be one of varying, base, or first")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
 rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) control_group(NotYetTreated) analytical") message("unsupported option")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) base_period(Universal) analytical") message("baseperiod() must be varying or universal")
+rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) base_period(Universal) analytical") message("base_period() must be varying or universal")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
 rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) anticipation(-1) analytical") message("anticipation() must be nonnegative")
@@ -125,7 +125,7 @@ import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-hand
 rt011_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) wboot(reps(0))") message("positive integer")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
-rt011_expect_failure, command("csdid y, time(period) gvar(g) fix_weights(base_period) analytical") message("fixweights(base) requires ivar()")
+rt011_expect_failure, command("csdid y, time(period) gvar(g) fix_weights(base_period) analytical") message("fix_weights(base) requires ivar()")
 
 import delimited using "`root'/tests/fixtures/parity/rt011/inputs/sim-error-handling.csv", clear asdouble
 generate str8 period_str = string(period)

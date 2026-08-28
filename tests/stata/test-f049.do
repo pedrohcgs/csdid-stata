@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* F049 is the performance-pathology gate: twenty-four benchmarks timed
+* against the wall-clock and memory budgets frozen in the fixture contract,
+* covering the small smoke fit, 50k-row analytical fits (plain, covariate
+* DR, weighted IPW, clustered REG), seeded and unseeded default bootstraps,
+* the unbalanced covariate-weighted DR paths, all four aggregations, the
+* bootstrap aggregation, and csdid_plot saving() plot-data export. Each row
+* also pins the resolved compute path and storage policy -- lean storage at
+* every size, storeall the only opt-in that materializes e(inffunc),
+* e(unit_group), and e(cluster_vec) -- and asserts the fast paths agree with
+* the default fit to 1e-10, so a run that meets its budget by computing
+* something cheaper still fails. Timings are volatile, so they are written
+* to build/f049/results.csv rather than kept as a tracked fixture.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off
@@ -76,12 +91,12 @@ local machine_type "`c(machine_type)'"
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/small-smoke.csv", clear asdouble
 local rows = _N
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
 scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -101,7 +116,7 @@ import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.cs
 local rows = _N
 timer clear 1
 timer on 1
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
 timer off 1
 quietly timer list 1
 scalar f049_seconds = r(t1)
@@ -188,7 +203,7 @@ scalar f049_seconds = .
 forvalues rr = 1/3 {
     timer clear 1
     timer on 1
-    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+    quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
     timer off 1
     quietly timer list 1
     if missing(f049_seconds) | r(t1) < f049_seconds scalar f049_seconds = r(t1)
@@ -631,7 +646,7 @@ post `benchpost' ("aggregation_bootstrap_dynamic_medium") (`rows') (f049_cells) 
 
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/aggregation-medium.csv", clear asdouble
 local rows = _N
-quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
 assert e(fast_requested) == 0
 assert e(fast_auto) == 1
 assert e(fast_used) == 1

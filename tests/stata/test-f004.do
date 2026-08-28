@@ -1,3 +1,12 @@
+* ---------------------------------------------------------------------------
+* F004, fixture family aggte-group: csdid_stats, type(group) on the F002
+* design. Two cohorts, so the oracle CSV from R did 2.5.1 has exactly two egt
+* rows, merged 1:1 on egt; per-group att/se and the overall att/se are pinned
+* at 1e-10. This is where a group aggregation that averaged over the wrong set
+* of post-treatment periods, or reported the overall figure with cohort rather
+* than exposure weights, stops being invisible.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

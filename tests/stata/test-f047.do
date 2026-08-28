@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* F047 is the seeded randomized differential: five small panels crossing
+* the paths that are easy to get right one at a time and wrong together --
+* balanced panel, true repeated cross sections, unbalanced ivar() falling
+* through to the allow_unbalanced path; dr/ipw/reg; never-treated and
+* not-yet-treated controls; varying and universal base periods; with and
+* without covariates and weights. Each cell asserts the resolved options in
+* e() and then matches ATT(g,t) and both simple and dynamic aggregation to
+* R did 2.5.1, listing offending rows before asserting. It is a smoke
+* differential across the option space, not a substitute for the
+* per-feature fixtures.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

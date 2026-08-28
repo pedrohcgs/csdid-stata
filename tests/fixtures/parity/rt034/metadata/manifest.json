@@ -1,0 +1,33 @@
+{
+  "matrix_id": "RT034",
+  "fixture_family": "group-narm-offgrid-cohorts",
+  "normative_source": "R did 2.5.1 compute.aggte: under na.rm the type='group' cohort screen runs on raw calendar values with max_e before the rank recode, and the recode grid is the original tlist joined with the surviving glist",
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt034/generate.R",
+      "path": "tools/parity/generators/rt034/generate.R"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "inputs/offgrid-balanced.csv",
+      "rows": 640,
+      "columns": 4
+    },
+    {
+      "path": "inputs/offgrid-gap.csv",
+      "rows": 600,
+      "columns": 4
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0"
+    }
+  ],
+  "consumers": [
+    "tests/stata/r/test-group-grid-narm.do"
+  ]
+}

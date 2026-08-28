@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* F015 pins clustered analytical inference against R did 2.5.1. The
+* cluster-summed influence function must reach every reported channel, so the
+* comparison runs the full grid -- balanced panel reg, panel dr with
+* covariates, and true repeated cross sections -- and checks the ATT(g,t)
+* estimates and clustered SEs, then all four aggregations (simple, group,
+* calendar, dynamic) including their overall estimate and overall SE.
+*
+* Point estimates are unaffected by clustering, so a build that computed
+* clustered SEs at the ATT(g,t) level and then aggregated unclustered ones
+* would pass on the grid alone; the aggregation rows are what catch it. The
+* cluster count is pinned alongside, and a cluster() variable that does not
+* exist must fail with rc 459 rather than falling back to unclustered.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

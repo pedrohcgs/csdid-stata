@@ -59,7 +59,7 @@ Three choices matter:
   `estat calendar`, `estat simple`
 
 Inference is a multiplier bootstrap with simultaneous confidence bands by
-default. `analytical` gives pointwise analytical standard errors instead.
+default. `analytical` gives analytical standard errors instead; aggregations still carry a simultaneous band (its critical value is bootstrapped, with a note) unless `pointwise` is added.
 
 ## Install
 
@@ -326,7 +326,7 @@ path.
 | `[iw=varname]` | sampling weights |
 | `cluster(varname)` | cluster the influence function above the unit level |
 | `wboot(reps(#) rseed(#))` | bootstrap settings; `reps()` must exceed 20 |
-| `analytical` | analytical pointwise standard errors instead of the bootstrap |
+| `analytical` | analytical standard errors instead of the bootstrap (aggregation bands still bootstrap their critical value unless `pointwise`) |
 | `pointwise` | pointwise intervals instead of simultaneous bands |
 | `level(#)` | confidence level; default 95 |
 

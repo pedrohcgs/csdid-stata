@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* Automatic fast selection over the earlier parity grids (F032 surface).
+* When fast is neither requested nor refused, csdid picks a route on its own.
+* This file re-runs the F010 control/method grid, the F012 weighting grid, the
+* F015 clustered scenarios and the F016 unbalanced grid twice - nofast and
+* default - and requires the auto route to reproduce the explicit baseline to
+* 1e-10 and still match the R did 2.5.1 reference values those fixtures were
+* built from. Bootstrap runs are included so draws, boot_attgt and boot_draws
+* must also survive the route change unchanged.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

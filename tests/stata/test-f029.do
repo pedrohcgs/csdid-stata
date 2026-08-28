@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* Validation and message surface (F029 error/warning event contract).
+* Every refusal a user can trigger is pinned twice: the return code and the
+* text of the message that explains it. The fourteen event keys in the fixture
+* contract are each exercised once - bad method(), base_period(), fix_weights(),
+* negative anticipation() and iweights, duplicated ivar-time pairs, unknown
+* options, postestimation without prior results, an empty estimation sample -
+* plus the unseeded-bootstrap and no-never-treated notes, so no edit can
+* silently drop or reword guidance the help promises.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off
@@ -75,7 +86,7 @@ log close f029event
 f029_assert_failure using "`evlog'", ///
     rc(198) ///
     actual(`actual') ///
-    message("baseperiod() must be varying or universal")
+    message("base_period() must be varying or universal")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
@@ -86,7 +97,7 @@ log close f029event
 f029_assert_failure using "`evlog'", ///
     rc(198) ///
     actual(`actual') ///
-    message("fixweights() must be one of varying, base, or first")
+    message("fix_weights() must be one of varying, base, or first")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event
@@ -97,7 +108,7 @@ log close f029event
 f029_assert_failure using "`evlog'", ///
     rc(198) ///
     actual(`actual') ///
-    message("fixweights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported")
+    message("fix_weights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported")
 
 import delimited using "`root'/tests/fixtures/parity/f029/inputs/input.csv", clear asdouble
 capture log close f029event

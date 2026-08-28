@@ -1,3 +1,19 @@
+* ---------------------------------------------------------------------------
+* F013 pins analytical inference: the ATT(g,t) standard errors and the
+* influence function behind them, against R did 2.5.1 on three slices of one
+* fixture -- balanced panel without covariates, balanced panel with numeric
+* covariates under dr, and a true repeated cross section.
+*
+* Standard errors alone are too weak a check: a wrongly shaped or wrongly
+* scaled influence function can still average out to a plausible SE. So the
+* stored e(inffunc) is summarized column by column (mean, sd, L1/L2 norms,
+* min, max, nonzero count, sum, sum of squares, and the SE implied by the
+* column) and every summary is compared to R's. Its dimensions are pinned too:
+* one column per ATT(g,t) cell, and one row per unit in panel mode but per
+* observation in repeated cross sections -- the two shapes a build most easily
+* confuses.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

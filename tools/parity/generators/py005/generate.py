@@ -13,8 +13,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[4]
 FIXTURE = ROOT / "tests/fixtures/parity/py005"
 SOURCE_FILE = "csdid/test_csdid/test_clustered.py"
-SOURCE_SHA256 = "bb9b20f7acdfdd01a1dda9a13bbe4a33635ed5460053e1e3be88de8c6bf3b462"
-SOURCE_COMMIT = "555f28bc12fcafa9c099e6e5503a30a4c22fc89f"
+SOURCE_SHA256 = "0290932d54694d4010912249202cd7521df35836c6c1a388e891ff4a71816cfd"
+SOURCE_COMMIT = "c37d39d5d0c28c345f2950db734d7a0f5e02aceb"
 
 
 def make_clustered_data() -> pd.DataFrame:

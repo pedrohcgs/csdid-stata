@@ -122,7 +122,24 @@ def python_problems():
     if not os.path.exists(PY_INVENTORY):
         return []
     inv = read_inventory(PY_INVENTORY)
-    raw, _ = read_maps_ext(".py")
+    raw, py_shas = read_maps_ext(".py")
+    # freshness, same rule as the did channel below: a map may not cite a
+    # sha the pin does not know. This dictionary used to be discarded, so
+    # the 392-test Python half never had its recorded source_sha256 compared
+    # to the pin at all (in-house review, gates lens: three upstream files
+    # were mapped against a revision the pin does not name while the gate
+    # reported full coverage; corrupting every recorded sha changed nothing).
+    py_pinned = {}
+    for r in inv:
+        py_pinned[r["source_file"]] = r["source_sha256"]
+    py_problems = []
+    for (sf, sha), where in sorted(py_shas.items()):
+        base = os.path.basename(sf)
+        pin_sha = py_pinned.get(sf, py_pinned.get(base))
+        if pin_sha and sha and sha != pin_sha:
+            py_problems.append(
+                f"STALE SHA(py)  {sf} recorded {sha[:12]} but pin is {pin_sha[:12]} "
+                f"({os.path.dirname(where[0]).split('/')[-3]})")
     covered = set()
     for f, t in raw:
         for k in py_keys(t):
@@ -133,10 +150,10 @@ def python_problems():
         if not any((f, k) in covered for k in py_keys(r["source_test"])):
             miss[f] = miss.get(f, 0) + 1
     n = sum(miss.values())
-    if not n:
-        print(f"python csdid coverage OK ({len(inv)} tests, all mapped)")
+    if not n and not py_problems:
+        print(f"python csdid coverage OK ({len(inv)} tests, all mapped, shas fresh)")
         return []
-    return [f"UNCOVERED(py) {c} test(s) in {f}" for f, c in
+    return py_problems + [f"UNCOVERED(py) {c} test(s) in {f}" for f, c in
             sorted(miss.items(), key=lambda kv: -kv[1])]
 
 

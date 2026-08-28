@@ -12,8 +12,15 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
-# Everything whose contents can change a preflight verdict.
-PATHS=(src inst/spec tests tools csdid.pkg stata.toc pkg)
+# Everything whose contents can change a preflight verdict. docs/, website/,
+# packaging/ and NEWS.md are in scope because preflight tiers READ them:
+# tests/meta/test-gate-qualification.sh reads the gate-qualification register under docs/,
+# tools/docs/check-doc-examples.py executes the Stata blocks in
+# packaging/README.md and website/**/*.md, test-news-help-agreement.sh reads
+# NEWS.md, and the website speed gates read website/ (in-house review, gates
+# lens: seeding red into any of them left the release receipt's digest
+# byte-identical, so the receipt validated a tree whose gates fail).
+PATHS=(src inst/spec tests tools csdid.pkg stata.toc pkg docs website packaging NEWS.md)
 
 # --production digests ONLY the code that ships and computes. Nothing here is a
 # test, a fixture, a document or a tool: if none of it moved, no estimate can

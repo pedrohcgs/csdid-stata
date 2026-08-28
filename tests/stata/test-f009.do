@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* F009, fixture family anticipation: anticipation(0) and anticipation(1) on the
+* same 300-row panel, merged 1:1 against R did 2.5.1's anticipation grid on
+* (anticipation, group, time), ATT to 1e-10 and se to 1e-8. Anticipation moves
+* the base period back and shrinks the usable comparison window, so the (3,3)
+* cell under anticipation(1) is asserted on its own. A negative anticipation
+* must exit 198: it is not a permitted lead, and accepting it would produce
+* numbers with no estimand behind them.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

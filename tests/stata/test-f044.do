@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* F044 is the JEL artifact inventory gate. It asserts that all eighteen
+* JEL001-JEL018 reference artifacts -- seven tables, nine figures, and the
+* rest -- are mapped, present on both sides, marked release-blocking, and
+* carry full-reproduction-pass status, and that each smoke gate points at
+* the fixture that actually covers it. It also pins the evidence record:
+* the report path and the exact opt-in command that produces it. This is
+* the check that catches an artifact quietly dropped from the replication
+* set, or an evidence pointer that no longer resolves.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

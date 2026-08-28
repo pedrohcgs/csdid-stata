@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* Estimator boundary against DRDID 1.3.0, as called by R did 2.5.1 (F033).
+* Each csdid 2x2 cell must land on the DRDID estimator the method() name
+* promises. Twenty-eight scenarios span panel and repeated cross-sections,
+* intercept-only and covariate specifications, weighted and unweighted, and a
+* tightened pscoretrim(), each fit with dr, reg and ipw. Alongside the direct
+* comparison, a diagnostic grid holds the values the neighbouring DRDID routine
+* would have produced: the test requires those to differ by more than 1e-5, so
+* a silent swap of one estimator for another cannot pass unnoticed.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

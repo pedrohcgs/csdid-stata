@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* User-reported edge cases (F038; oracle R did 2.5.1).
+* The awkward datasets that break DiD implementations, each pinned to reference
+* values: a design with a single treated cohort, a missing covariate cell (which
+* under bal(none) costs its row and not the whole unit, leaving 239 rows and 60
+* units in an allow_unbalanced fit), a short panel with few periods, a cohort
+* with no pre-treatment periods under both base periods, and anticipation(2)
+* shifting which cohorts are estimable. A missing variable name must still fail
+* with rc 111 and say which variable.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

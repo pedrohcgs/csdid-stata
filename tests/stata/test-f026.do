@@ -1,3 +1,21 @@
+* ---------------------------------------------------------------------------
+* F026 pins the stored-result contract: what csdid leaves in e() is a public
+* interface, so names, dimensions, row and column labels and values are all
+* asserted exactly, not just checked for existence. e(attgt), e(inffunc),
+* e(group_prob), e(unit_group), e(cluster_vec), e(aggte) and the descriptive
+* macros and scalars are pinned for three sample shapes -- balanced panel, true
+* repeated cross section, and clustered panel -- with the e() semantics mapped
+* from R did 2.5.1's outputs.
+*
+* The shape-dependent pieces are the point. The influence function and the unit
+* map are per unit in a panel and per observation in a repeated cross section,
+* and the unit map carries a fourth column, the cached period, exactly on the
+* sample shapes whose bootstrap draw order is period-major; that column is
+* checked against the data so a wrong pairing cannot survive a resort. e()
+* must also survive postestimation: the ATT(g,t) matrices are re-asserted after
+* csdid_estat and csdid_stats have run.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

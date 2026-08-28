@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* F023 pins irregular time spacing. When the periods in the data are not
+* consecutive integers, the calendar must be used as given: cells are formed
+* over the observed periods, and event time is the difference between the
+* period and the cohort date on that same calendar, never a position in a
+* reindexed sequence.
+*
+* The whole ATT(g,t) grid, its event-time column and its standard errors are
+* compared against R did 2.5.1 on the same gapped design. A build that
+* renumbered periods to 1..T would still produce a full grid, with the same
+* number of rows and shifted event times, and fails here.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

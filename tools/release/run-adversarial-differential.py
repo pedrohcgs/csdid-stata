@@ -618,6 +618,14 @@ def compare_outputs(scenarios: list[Scenario]) -> None:
 
 def main() -> int:
     BUILD.mkdir(parents=True, exist_ok=True)
+    # Fail closed on a half that silently did not run: every output this run
+    # is supposed to write is deleted first, so compare_outputs() can only
+    # ever read THIS run's artifacts. Without this, a Stata half that aborted
+    # left last run's -stata.csv files in place and the gate certified R
+    # against stale numbers (in-house review, gates lens: a csdid seeded to
+    # exit 198 on its first statement still reported "gate passed").
+    for stale in BUILD.glob("*.csv"):
+        stale.unlink()
     for idx, scenario in enumerate(SCENARIOS):
         make_data(20260707 + idx, scenario).to_csv(BUILD / f"{scenario.name}.csv", index=False)
     r_script = BUILD / "run-r.R"
@@ -626,6 +634,20 @@ def main() -> int:
     write_stata_script(stata_script, SCENARIOS)
     run(["Rscript", str(r_script), str(BUILD)])
     run([STATA_CMD, "-b", "do", str(stata_script)])
+    # stata -b exits 0 even when the do-file aborts (the repository's cardinal
+    # rule), so the batch log is authoritative: it must exist, END with the
+    # end-of-do-file sentinel (a killed session truncates before it), and
+    # contain no r(N) error lines.
+    stata_log = ROOT / f"{stata_script.stem}.log"
+    if not stata_log.exists():
+        raise SystemExit(f"adversarial differential: {stata_log} was not written; the Stata half did not run")
+    log_text = stata_log.read_text(errors="replace")
+    stata_log.replace(BUILD / stata_log.name)
+    if "end of do-file" not in "\n".join(log_text.splitlines()[-3:]):
+        raise SystemExit("adversarial differential: the Stata half did not reach the end of its do-file; see build/adversarial-differential/run-stata.log")
+    errs = [ln for ln in log_text.splitlines() if ln.startswith("r(") and ln.endswith(");")]
+    if errs:
+        raise SystemExit(f"adversarial differential: the Stata half raised {errs[0]}; see build/adversarial-differential/run-stata.log")
     compare_outputs(SCENARIOS)
     print(f"adversarial differential gate passed; see {BUILD / 'comparison.csv'}")
     return 0

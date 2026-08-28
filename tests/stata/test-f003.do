@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* F003, fixture family aggte-simple: csdid_stats, type(simple) on the F002
+* design, against R did 2.5.1's aggte. The simple aggregation collapses the
+* whole grid to one number, so the fixture is a single row: egt must be
+* missing on both sides, and att/se and overall_att/overall_se must match to
+* 1e-10. Pins the weighting that turns ATT(g,t) into the overall summary --
+* the layer where a plausible-looking but differently weighted average is
+* indistinguishable from the right one without an oracle.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

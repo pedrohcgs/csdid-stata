@@ -95,11 +95,20 @@ foreach eng in plugin mata {
     quietly csdid_stats, type(group)
     matrix G = e(boot_aggte)
     assert rowsof(G) == 1
-    assert e(agg_cband) == 1
+    * R clamps this band: its sup-|t| quantile comes out below qnorm(.975),
+    * so aggte warns ("narrower than the pointwise..."), sets cband FALSE and
+    * reports the pointwise quantile (measured: crit 1.9599639845400534,
+    * cband FALSE, same se.egt/overall.se). The label follows the clamp.
+    assert e(agg_cband) == 0
+    assert reldif(e(crit_val), invnormal(.975)) < 1e-9
+    assert e(crit_val) == e(point_crit_val)
     assert reldif(G[1, 3], 0.027519264974) < 1e-9
     assert reldif(G[1, 10], 0.030705903510) < 1e-9
-    * multi-effect control on the same fit: R overall.se = 0.0286931625218,
-    * crit.val.egt = 2.18421813193
+    * multi-effect control, re-fit first: the aggregation bootstrap now
+    * continues R's live draw stream, and this pin is a
+    * first-aggregation-after-set.seed quantity. R overall.se =
+    * 0.0286931625218, crit.val.egt = 2.18421813193
+    quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) rseed(1234) reps(1000)
     quietly csdid_stats, type(calendar)
     matrix C = e(boot_aggte)
     assert rowsof(C) == 4
@@ -157,8 +166,10 @@ quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) ///
     cluster(stfips) analytical saverif("`rif'") replace
 quietly csdid_stats, type(dynamic)
 matrix DIR = e(aggte)
-* analytical inference bands pointwise, live and off the artifact alike
-assert e(agg_cband) == 0
+* the LIVE analytical aggregation now bands simultaneously (R's aggte on a
+* bstrap = FALSE fit bootstraps the band, with a warning); the saved-RIF
+* route posts no band request and keeps its documented analytical fallback
+assert e(agg_cband) == 1
 
 quietly csdid_stats using "`rif'", type(dynamic)
 matrix RIF = e(aggte)

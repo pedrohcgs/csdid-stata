@@ -1,3 +1,20 @@
+* ---------------------------------------------------------------------------
+* F014 pins the ATT(g,t) multiplier bootstrap, clustered and unclustered, on a
+* balanced-panel method(reg) design. The bootstrap must not move the point
+* estimates: e(attgt) is compared cell by cell against the same fit run without
+* wboot(), and the analytical SEs still match R did 2.5.1 exactly. The
+* rademacher draws themselves are stochastic here, so the bootstrap SEs are
+* checked as a smoke band around R's (the exact seeded BMisc draw stream is
+* pinned by F035).
+*
+* What is pinned exactly is everything around the draws: seed, reps,
+* distribution, cluster count and cluster metadata; that the uniform critical
+* value is never below the pointwise one and stays finite; that pointwise
+* collapses the two; that every reported interval is exactly att +/- crit * se
+* for its own critical value; and that wboot(reps(0)) is refused with rc 198
+* rather than silently running.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

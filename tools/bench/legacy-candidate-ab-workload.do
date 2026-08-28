@@ -167,8 +167,12 @@ program define csdid_ab_estimate
     }
     else if "`scenario'" == "balanced_event_analytical" {
         if "`implementation'" == "candidate" {
+            * pointwise: Version 1.82's analytical run computes no
+            * simultaneous band, and this cell certifies the SHARED analytic
+            * work; the candidate's banded-analytical default would add a
+            * 1,000-draw band bootstrap the legacy side never pays.
             quietly csdid y, ivar(id) time(time) gvar(g) method(reg) ///
-                analytical agg(event) `cpin'
+                analytical pointwise agg(event) `cpin'
         }
         else quietly csdid y, ivar(id) time(time) gvar(g) method(reg) agg(event) `cpin'
     }

@@ -47,9 +47,11 @@ are over-read. The default is now the multiplier bootstrap with simultaneous
 bands over 1,000 iterations, so the interval you are shown is the one that
 covers every reported effect jointly.
 
-`analytical` (or `vce(analytical)`) restores pointwise analytical standard
-errors, and `pointwise` gives pointwise intervals from the bootstrap. Point
-estimates are unaffected by any of this.
+`analytical` (or `vce(analytical)`) restores analytical standard errors;
+aggregations still carry a simultaneous band — its critical value is
+bootstrapped, with a note, because there is no other way to compute one —
+unless `pointwise` is added. `pointwise` gives pointwise intervals from
+either inference. Point estimates are unaffected by any of this.
 
 **Unbalanced panels are balanced, and say so.** Version 1.82 dropped, without
 comment, the units not observed in both periods of each comparison — silently

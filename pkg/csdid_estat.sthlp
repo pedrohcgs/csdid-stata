@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -247,11 +247,14 @@ aggregation per command; the guarantee is that {cmd:estat event} and
 {cmd:estat dynamic} can never disagree.
 
 {phang}
-Recomputing is exactly reproducible, bootstrap inference included. The
-multiplier draws come from the random-number state {cmd:csdid} stored at
-estimation time ({cmd:e(boot_rng_state)}, or {cmd:e(boot_seed)}), which survives
-posting, so repeated aggregations of one estimation are bit-identical to each
-other and to the same aggregation computed immediately after estimating.
+Recomputing draws from the live multiplier stream. The draws start from the
+random-number state {cmd:csdid} stored ({cmd:e(boot_rng_state)}, or
+{cmd:e(boot_seed)}), which survives posting, and each bootstrap aggregation
+advances that state and re-stores it -- so a sequence of aggregations after
+one seeded estimation is reproducible as a sequence, while each aggregation's
+draws depend on its position in it. Re-running the estimation restarts the
+stream; repeating the identical aggregation sequence then returns identical
+numbers.
 
 {phang}
 Each one replaces the active aggregation in {cmd:e()}. Running
@@ -295,8 +298,9 @@ coefficient is fabricated for an event time that does not exist, and none is
 given a zero variance to fill a gap in the grid.
 
 {pstd}
-A window that leaves no event time at all, that is reversed, or that contains
-only pre-treatment event times is refused with return code 498. In the example
+A window that leaves no event time at all, or that contains only
+pre-treatment event times, is refused with return code 498; a reversed window
+is caught earlier, at parse time, with return code 198. In the example
 below, whose event times run from -3 to 3, both
 {cmd:estat event, window(5 8)} and {cmd:estat event, window(-3 -1)} stop with a
 message naming the empty window rather than reporting an average of nothing.
@@ -360,8 +364,12 @@ no estimated variance, so {cmd:test} and {cmd:lincom} treat that term as known.
 {title:Confidence levels}
 
 {pstd}
-Under analytical inference the interval always follows the level in force: the
-estimation level, or the level requested with {cmd:level()}.
+Under fully analytical inference ({cmd:analytical} with {cmd:pointwise}) the
+interval always follows the level in force: the estimation level, or the
+level requested with {cmd:level()}. Under {cmd:analytical} alone the
+recomputed aggregation carries a simultaneous band whose critical value is
+bootstrapped at the level in force, with the note {helpb csdid_stats} prints
+(see {it:Confidence bands} in {helpb csdid_stats}).
 
 {pstd}
 Under the default multiplier bootstrap the interval uses the bootstrap critical
@@ -370,11 +378,13 @@ level in force when the aggregation is computed. Because {cmd:estat} recomputes
 the aggregation whenever it is asked for one, the level you type is the level
 the band is computed at, on the first request and on every later one. After a
 seeded estimation, {cmd:estat event, level(90)} and then
-{cmd:estat event, level(99)} report two different critical values, each the one
-its own level implies, and repeating a request reproduces its critical value
-exactly no matter what other {cmd:estat} calls came in between. The value
-{cmd:estat event, level(99)} reports is the value a fresh run of the same
-seeded estimation followed by {cmd:estat event, level(99)} reports. A narrower
+{cmd:estat event, level(99)} report two different critical values, each the
+one its own level implies. Because every bootstrap aggregation consumes
+further multiplier draws from the live stream (see
+{helpb csdid##remarks:Random numbers} in {helpb csdid}), repeating a request
+after other aggregation calls uses later draws and reports a slightly
+different bootstrap critical value; to reproduce a particular value, re-run
+the seeded estimation and repeat the same sequence of requests. A narrower
 or wider {cmd:window()} likewise recomputes the band over the event times that
 survive it.
 

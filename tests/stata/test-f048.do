@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* F048 is the known-DGP sanity check: 200 replications of a two-period
+* balanced panel, 120 treated and 120 never-treated units, method(reg) with
+* analytical SEs and a true ATT of 1.0. Every replication's ATT, SE, and
+* 95% interval must match R did 2.5.1 cell by cell, and the pooled summary
+* must satisfy the frozen sampling criterion: absolute mean bias at most
+* 0.02 and empirical coverage within 0.03 of nominal. Cross-runtime
+* agreement alone cannot catch an estimator that is wrong in both; the bias
+* and coverage gates are what make this a statistical check.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

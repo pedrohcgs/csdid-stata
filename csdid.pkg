@@ -48,7 +48,7 @@ d Support: email pedro.santanna@emory.edu
 d
 d Version: 2.0.0
 d
-d Distribution-Date: 20260827
+d Distribution-Date: 20260828
 d
 f pkg/csdid.ado
 f pkg/_csdid_post.ado

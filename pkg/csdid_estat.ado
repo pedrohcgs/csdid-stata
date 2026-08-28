@@ -1,4 +1,4 @@
-*! csdid_estat 2.0.0 27aug2026
+*! csdid_estat 2.0.0 28aug2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -220,10 +220,12 @@ program define csdid_estat, eclass
         *     level(99)' returned the 90% bootstrap band (crit 2.2777391) for
         *     the 99% request; a fresh estimation at level(99) gives 2.8658043.
         *     The help's rationale for this - "a bootstrap band cannot be
-        *     re-levelled" - is false: csdid_stats re-levels by recomputing off
-        *     the SAME stored multiplier state e(boot_rng_state), which is why
-        *     `csdid_stats, type(dynamic) level(99)' already returned
-        *     2.8658043 from the identical session.
+        *     re-levelled" - is false: csdid_stats re-levels by recomputing
+        *     from e(boot_rng_state) (measured under the then-current
+        *     restart semantics: `csdid_stats, type(dynamic) level(99)'
+        *     returned 2.8658043 from the identical session; the stream now
+        *     chains, so the level(99) recomputation uses its position's
+        *     draws, matching R -- see the stream note below).
         *   - e(agg_level) kept the STALE aggregation's level
         *     while r(table) carried the requested one, so r(table), `estat
         *     tidy' (which reads e(agg_level)) and csdid_plot reported three
@@ -234,12 +236,16 @@ program define csdid_estat, eclass
         *     the window it used, so a stale window is not detectable from e();
         *     recomputing unconditionally is the only way `estat event' and
         *     `estat dynamic' can be guaranteed to agree.
-        * Recomputation is exactly reproducible, including under wboot: the
-        * multiplier draws come from e(boot_rng_state) (or e(boot_seed)),
-        * both of which csdid posts at estimation time and
-        * _csdid_post_replace_bv preserves, so repeated aggregations of the
-        * same estimation are bit-identical (measured). The cost is one extra
-        * aggregation, the same cost the other four routes already pay.
+        * Recomputation draws from the LIVE multiplier stream: the draws
+        * start at e(boot_rng_state) (or e(boot_seed)), both of which csdid
+        * posts and _csdid_post_replace_bv preserves, and every bootstrap
+        * aggregation advances that state and re-posts it -- R's aggte
+        * consumes its session stream the same way, which is what makes
+        * chained aggregation sequences match R draw for draw (measured:
+        * chained group crit 2.1842515426051117 in both). Repeating a request
+        * therefore uses later draws; re-running the estimation restarts the
+        * stream. The cost is one extra aggregation, the same cost the other
+        * four routes already pay.
         *
         * The dynamic/simple/group/calendar routes used to share
         * everything with `event' EXCEPT the posting step: without `post' they
@@ -355,8 +361,12 @@ program define csdid_estat, eclass
         * through the eventnames branch of _csdid_post_aggte; the other four
         * types get the naming their own aggregation implies (G#, T#, ATT,
         * Overall). Both entry points build r(table).
-        local post_level = e(agg_level)
-        if missing(`post_level') local post_level = c(level)
+        * strofreal, NOT a bare numeric assignment: e(agg_level) at 99.9
+        * renders as 99.90000000000001 and the Level(cilevel) receivers
+        * refuse it r(198) -- after the aggregation had already replaced
+        * e() (in-house review, entry lens).
+        local post_level = strofreal(e(agg_level), "%12.0g")
+        if "`post_level'" == "." local post_level = strofreal(c(level), "%12.0g")
         if `"`subcmd'"' == `"event"' {
             _csdid_post event, level(`post_level') `post'
         }
@@ -566,8 +576,10 @@ program define _csdid_estat_tidy_attgt
         * crit_val and point_crit_val columns are constant across rows and
         * are carried across every posting round trip by _csdid_post.
         *
-        * Under analytical inference there is nothing to recover: csdid posts
-        * a pure normal quantile at e(level), which is what this table needs.
+        * Under analytical inference there is nothing to recover for THIS
+        * table: the ATT(g,t) band is the normal quantile at e(level) (the
+        * banded-analytical AGGREGATION's bootstrapped e(crit_val) describes
+        * the aggregation, never the (g,t) cells, and is not read here).
         * On the saved-RIF path nothing posts crit_val at all, and reading it
         * unguarded wrote four ALL-MISSING confidence columns at rc 0 -- the
         * band this table's own help promises (csdid_estat.sthlp, "The conf_*
@@ -684,10 +696,25 @@ program define _csdid_estat_tidy_aggte
         else local agg_level = e(agg_level)
         local crit = invnormal(1 - (100 - `agg_level') / 200)
         local z = `crit'
+        * bootstrap inference, or the banded analytical aggregation whose
+        * simultaneous band csdid_stats bootstrapped (e(agg_cband) = 1 with
+        * e(bstrap) = 0): either way the posted critical values describe THIS
+        * aggregation and the export must carry them.
+        local tidy_use_crit 0
         capture confirm scalar e(bstrap)
-        if !_rc & e(bstrap) {
-            local crit = e(crit_val)
-            local z = e(point_crit_val)
+        if !_rc {
+            if e(bstrap) == 1 local tidy_use_crit 1
+        }
+        capture confirm scalar e(agg_cband)
+        if !_rc {
+            if e(agg_cband) == 1 local tidy_use_crit 1
+        }
+        if `tidy_use_crit' {
+            capture confirm scalar e(crit_val)
+            if !_rc {
+                local crit = e(crit_val)
+                local z = e(point_crit_val)
+            }
         }
 
         if "`e(agg_type)'" == "simple" {

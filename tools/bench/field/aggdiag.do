@@ -19,7 +19,7 @@ foreach fit in analytical wboot {
     foreach stor in default lean {
         use "`d'", clear
         local sopt = cond("`stor'" == "lean", "storage(lean)", "")
-        local fopt = cond("`fit'" == "wboot", "wboot(reps(999) rseed(20260729))", "analytical")
+        local fopt = cond("`fit'" == "wboot", "wboot(reps(999) rseed(20260729))", "analytical pointwise")
         timer clear 8
         timer on 8
         capture quietly csdid y, ivar(id) time(time) gvar(gvar) `fopt' `sopt'

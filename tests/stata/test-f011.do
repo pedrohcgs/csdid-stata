@@ -1,3 +1,17 @@
+* ---------------------------------------------------------------------------
+* F011, fixture family covariates: how a Stata covariate specification is
+* turned into the design matrix R did 2.5.1 builds. Twenty-two scenarios cross
+* numeric lists, i.factor, c.x1##c.x2 interactions and c.x1#c.x1 squares with
+* dr/reg/ipw and with panel vs repeated cross-section, all merged against the
+* oracle covariate grid at 1e-10 relative. Two further properties are pinned
+* here and nowhere else: i.f and its hand-built dummies f_2 f_3 must agree to
+* 1e-12 -- factor expansion may not change the estimate -- and on a sparse
+* factor the run must SUCCEED with missing cells exactly where R has them,
+* emitting the ill-conditioning notice the expected event counts specify and
+* never the internal 2x2 error. A collinear covariate must degrade the way the
+* reference implementation degrades, not abort.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

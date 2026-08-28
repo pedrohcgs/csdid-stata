@@ -82,9 +82,9 @@ events <- data.frame(
   ),
   message_normalized = c(
     "method() must be one of dr, reg, or ipw",
-    "baseperiod() must be varying or universal",
-    "fixweights() must be one of varying, base, or first",
-    "fixweights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported",
+    "base_period() must be varying or universal",
+    "fix_weights() must be one of varying, base, or first",
+    "fix_weights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported",
     "anticipation() must be nonnegative",
     "iweights must be nonnegative",
     "The value of ivar() must be unique within time(). Some units are observed more than once in a period.",

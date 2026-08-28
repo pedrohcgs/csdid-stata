@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* F050 is the clean-install portability gate. It builds the package from
+* source, asserts the build directory holds no stray package or toc file,
+* redirects PLUS and PERSONAL to throwaway directories, net installs from
+* the repository, and then requires every shipped ado, the Mata library,
+* and all five help files to resolve out of the isolated PLUS tree. It ends
+* with smoke commands on a fixture with a known ATT of 2 and a saverif()
+* export whose variable list and dataset characteristic are pinned. This is
+* what catches a file that works from the source tree but was never listed
+* for installation.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

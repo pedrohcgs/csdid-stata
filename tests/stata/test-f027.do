@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* F027 pins the exportable tables. csdid_estat tidy and csdid_estat glance are
+* the machine-readable surface of a fit, so every column is compared against R
+* did 2.5.1's tidy/glance formulas: estimate, standard error, statistic,
+* p-value, and both the uniform and pointwise interval bounds, for the ATT(g,t)
+* table and for all four aggregations. The glance rows are pinned exactly --
+* observations, group and period counts, comparison group, and estimation
+* method.
+*
+* The p-value and the interval bounds are derived quantities that a build can
+* get wrong while reporting correct estimates and SEs, and the pointwise
+* columns must stay distinct from the uniform ones. The fits run analytical
+* pointwise because the fixtures are generated with simultaneous bands off.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off
@@ -57,7 +72,10 @@ confirm file "`root'/tests/fixtures/parity/f027/expected/new-stata/export-schema
 tempfile tidy_attgt glance_attgt tidy_agg glance_agg actual
 
 import delimited using "`root'/tests/fixtures/parity/f027/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+* the f027 fixtures are generated with cband = FALSE, so the Stata side runs
+* analytical POINTWISE: analytical alone now bands aggregations
+* simultaneously by bootstrap, as R's bstrap = FALSE cband = TRUE does.
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
 csdid_estat tidy, saving("`tidy_attgt'") replace
 csdid_estat glance, saving("`glance_attgt'") replace
 
@@ -73,7 +91,7 @@ compare_glance_export, ///
 
 foreach agg_type in simple group calendar dynamic {
     import delimited using "`root'/tests/fixtures/parity/f027/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
     csdid_stats, type(`agg_type')
     csdid_estat tidy, saving("`tidy_agg'") replace
     csdid_estat glance, saving("`glance_agg'") replace

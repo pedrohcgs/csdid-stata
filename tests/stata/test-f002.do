@@ -1,3 +1,12 @@
+* ---------------------------------------------------------------------------
+* F002, fixture family attgt-balanced-staggered: the same reg/never-treated/
+* varying-base configuration as F001 on a 192-row BALANCED PANEL with staggered
+* adoption, so the (g,t) grid is six cells rather than one. ATT is pinned to R
+* did 2.5.1 at 1e-10 and the analytical standard errors at 1e-8, with the row
+* count asserted at exactly 6 -- a grid that silently gains or loses a cell is
+* the failure this catches, and it would otherwise hide inside a merge.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

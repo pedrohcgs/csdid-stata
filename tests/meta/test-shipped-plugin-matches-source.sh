@@ -133,8 +133,12 @@ done
 # Mach-O at all) may skip -- and then the success banner below must not
 # claim the comparison ran.
 provenance_ran=0
-if command -v clang >/dev/null 2>&1 && command -v lipo >/dev/null 2>&1 \
-   && [ -f tools/plugin/_deps/stplugin.h ] && [ -f tools/plugin/_deps/stplugin.c ]; then
+# The sha-pinned SDK headers are NOT a precondition: the build script fetches
+# them itself, verifying each against its pinned sha256 and failing loudly on
+# a mismatch or an offline host -- so a fresh clone (and the release payload,
+# whose assembly clears the gitignored _deps directory) still runs the full
+# comparison. Only the toolchain gates entry.
+if command -v clang >/dev/null 2>&1 && command -v lipo >/dev/null 2>&1; then
   scratch="$(mktemp -d)"
   trap 'rm -rf "$scratch"' EXIT
   if CSDID_PLUGIN_OUTDIR="$scratch" bash tools/plugin/build-bootstrap-plugin.sh macos >/dev/null 2>&1; then
@@ -142,9 +146,13 @@ if command -v clang >/dev/null 2>&1 && command -v lipo >/dev/null 2>&1 \
     compared=0
     for placed in pkg/csdid_bootstrap_macosx.plugin src/ado/csdid_bootstrap_macosx.plugin; do
       if [ ! -f "$placed" ]; then
-        # In the full source tree BOTH copies must exist; the release payload
-        # strips src/ado, recognised by the absence of the C source itself.
-        if [ -f src/plugin/csdid_bootstrap_plugin.c ] || [ "$placed" = "pkg/csdid_bootstrap_macosx.plugin" ]; then
+        # In the full source tree BOTH copies must exist. The release payload
+        # ships the C source (it certifies itself) but carries the binary
+        # ONCE, in pkg/: its builder strips the src/ado copy by name. The
+        # payload is therefore recognised by the marker that same builder
+        # strips -- itself -- not by the C source, whose presence proves
+        # nothing about which tree this is.
+        if [ -f tools/release/build-release-payload.sh ] || [ "$placed" = "pkg/csdid_bootstrap_macosx.plugin" ]; then
           echo "$placed is missing, so its provenance cannot be compared" >&2
           fail=1
         fi
@@ -171,7 +179,7 @@ if command -v clang >/dev/null 2>&1 && command -v lipo >/dev/null 2>&1 \
   fi
 else
   if [ "$(uname -s)" = "Darwin" ]; then
-    echo "provenance check FAILED: clang/lipo or the pinned SDK headers are absent on this macOS host, where the release binary is built" >&2
+    echo "provenance check FAILED: clang or lipo is absent on this macOS host, where the release binary is built" >&2
     fail=1
   else
     echo "provenance check not runnable on this host (no Mach-O toolchain); the comparison DID NOT RUN"

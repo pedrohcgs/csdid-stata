@@ -240,7 +240,7 @@ the resulting number of rows, as these levers impact speed directly. We separate
 
 We start delving into the balanced panel data case. The first thing we highlight here is that different commands have different defaults. `csdid` uses bootstrap-based inference as the default, as that is necessary to conduct simultaneous/uniform inference across event times and groups. Most of the other packages use analytical/plug-in inference procedures, and, therefore, comparing `csdid` and all these other packages is not an apples to apples comparison. Yet, speed matters!
 
-To clear this bar, our first comparison is within `csdid` only. We compare speeds using analytical standard errors (and turning off uniform confidence bands) with 999 multiplier-bootstrap-based procedures, allowing for uniform confidence bands.
+To clear this bar, our first comparison is within `csdid` only. We compare speeds using analytical standard errors with uniform confidence bands turned off (`analytical pointwise`) against 999 multiplier-bootstrap-based procedures, allowing for uniform confidence bands.
 
 <p class="table-title" markdown="span">`csdid` on a balanced panel, seconds to estimate all ATT(g,t)</p>
 

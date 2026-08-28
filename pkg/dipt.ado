@@ -1,4 +1,4 @@
-*! dipt 2.0.0 27aug2026
+*! dipt 2.0.0 28aug2026
 **program drop dipt
 program dipt, eclass
     version 14

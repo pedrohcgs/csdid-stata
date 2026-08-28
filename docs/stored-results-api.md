@@ -21,7 +21,7 @@ The following results are intended to be stable across compatible releases:
 | `e(agg_inffunc)` | matrix | conditional stable | Aggregation influence functions, subject to the same storage policy as ATT(g,t) IFs. |
 | `e(boot_aggte)` | matrix | stable when present | Bootstrap aggregation output when the aggregation ran under the bootstrap. |
 | `e(agg_boot_draws)` | matrix | diagnostic-adjacent | Aggregation bootstrap draws; same caveat as `e(boot_draws)`. |
-| `e(boot_rng_state)` | matrix | replay | The bootstrap RNG state (1 x 625). Exists so `csdid_stats`/`estat` can replay the identical draw stream; not a user-facing result. |
+| `e(boot_rng_state)` | matrix | replay | The bootstrap RNG state (1 x 625) after the most recent bootstrap in this estimation's chain. Each bootstrap aggregation continues the stream from it and re-posts the advanced state, mirroring how the reference implementation's session stream behaves across chained aggregations; not a user-facing result. |
 
 ## Stable Macros And Scalars
 
@@ -63,8 +63,11 @@ three could not all be right at once.
 `e(agg_cband)` reports the band the aggregation in `e(aggte)` actually carries,
 which is 0 whenever the aggregation is banded pointwise however the estimation
 was banded: `type(simple)`, whose single overall effect has no simultaneous
-band distinct from the pointwise one, and an estimation whose settled time grid
-has two periods. It is posted by every aggregation route, so code that draws
+band distinct from the pointwise one; an estimation whose settled time grid
+has two periods; and the run-time fallback, when the bootstrap simultaneous
+critical value cannot be computed or comes out below the pointwise quantile
+(the aggregation then warns and bands pointwise). It is posted by every
+aggregation route, so code that draws
 bands by hand should read `e(agg_cband)`, not `e(cband)`, after `csdid_stats`,
 `estat` *type*, or `csdid ..., agg()`.
 

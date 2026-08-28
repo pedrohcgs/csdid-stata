@@ -1,4 +1,4 @@
-*! csdid_plot 2.0.0 27aug2026
+*! csdid_plot 2.0.0 28aug2026
 program define csdid_plot
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -53,6 +53,13 @@ program define csdid_plot
     }
 
     local drawplot 0
+    * replace is meaningless without saving(): the plot then writes only its
+    * own tempfile, which needs no permission to overwrite. Refused before
+    * any work, mirroring csdid_estat's rule for replace without saving().
+    if "`replace'" != "" & `"`saving'"' == "" {
+        display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
+        exit 198
+    }
     if `"`savefile'"' == "" {
         tempfile csdid_plotdata
         local savefile `"`csdid_plotdata'"'
@@ -98,7 +105,22 @@ program define _csdid_plot_attgt
         generate double x = time
         generate str32 x_label = strtrim(strofreal(time, "%21.0g"))
         rename att estimate
-        local crit = e(crit_val)
+        * The ATT(g,t) band, from the matrix an aggregation cannot touch:
+        * every bootstrap aggregation overwrites e(crit_val) with its OWN
+        * critical value (and the banded analytical aggregation now posts
+        * one too), so reading e(crit_val) here banded this table with
+        * whatever aggregation happened to run last. Same fix as estat
+        * attgt's (F-057): the (g,t) critical value lives in e(boot_attgt),
+        * and a run without one is analytical, whose table is banded at the
+        * normal quantile.
+        local crit = .
+        capture confirm matrix e(boot_attgt)
+        if !_rc {
+            tempname plot_ba
+            matrix `plot_ba' = e(boot_attgt)
+            local plot_ba_c = colnumb(`plot_ba', "crit_val")
+            if !missing(`plot_ba_c') local crit = `plot_ba'[1, `plot_ba_c']
+        }
         if missing(`crit') local crit = invnormal(1 - (100 - e(level)) / 200)
         generate double ci_low = estimate - `crit' * se
         generate double ci_high = estimate + `crit' * se
@@ -178,8 +200,23 @@ program define _csdid_plot_aggte
     if _rc local agg_level = e(level)
     else local agg_level = e(agg_level)
     local crit = invnormal(1 - (100 - `agg_level') / 200)
+    * the band critical value applies under bootstrap inference AND under the
+    * banded analytical aggregation (e(agg_cband) = 1 with e(bstrap) = 0),
+    * whose simultaneous band is bootstrapped by csdid_stats -- the exported
+    * band must match the displayed one.
+    local plot_use_crit 0
     capture confirm scalar e(bstrap)
-    if !_rc & e(bstrap) local crit = e(crit_val)
+    if !_rc {
+        if e(bstrap) == 1 local plot_use_crit 1
+    }
+    capture confirm scalar e(agg_cband)
+    if !_rc {
+        if e(agg_cband) == 1 local plot_use_crit 1
+    }
+    if `plot_use_crit' {
+        capture confirm scalar e(crit_val)
+        if !_rc local crit = e(crit_val)
+    }
     generate double ci_low = estimate - `crit' * se
     generate double ci_high = estimate + `crit' * se
     generate double group = .

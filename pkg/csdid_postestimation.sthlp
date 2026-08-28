@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -212,8 +212,12 @@ the cohorts already treated{p_end}
 {pstd}
 Two cautions carry over from Callaway and Sant'Anna (2021). Effects at event
 times e < 0 are placebo estimates of a maintained assumption, not treatment
-effects, and the reference-cell coefficient (e = -1 on a gapless calendar; on a gapped one, the true calendar difference to the previous observed period) is reported like the others rather than
-being pinned at zero. And a dynamic profile computed on the full sample changes
+effects, and the reference cell (e = -1 on a gapless calendar; on a gapped
+one, the true calendar difference to the previous observed period) depends on
+the base period: under the default {helpb csdid##opt_base:base_period(universal)}
+it is the normalisation itself -- identically zero, with no standard error --
+while under {cmd:base_period(varying)} it is reported like the others rather
+than being pinned at zero. And a dynamic profile computed on the full sample changes
 composition along the x-axis, since only early-treated cohorts reach long event
 times; {helpb csdid_stats##balance:csdid_stats, balance()} holds the
 composition fixed.

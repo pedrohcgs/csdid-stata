@@ -65,8 +65,11 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) analytical
 ```
 
 <div class="tip" markdown="1">
-These are faster, noticeably so on large panels, and pointwise only. We use them
-while iterating on a specification -- the estimates do not change, only the
+These are faster, noticeably so on large panels. The standard errors are
+analytical; an aggregation of an analytical fit still carries a simultaneous
+band -- its critical value is bootstrapped, and `csdid_stats` says so in a
+note -- unless you add `pointwise`. We use `analytical pointwise` while
+iterating on a specification -- the estimates do not change, only the
 standard errors -- and we report the bootstrap.
 </div>
 

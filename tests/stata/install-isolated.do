@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* The package as NET INSTALL delivers it, in a throwaway PLUS/PERSONAL tree:
+* every ado, the Mata source, and all five help files must arrive, and the
+* csdid2-distributed lcsdid.mlib planted beforehand must survive byte-identical
+* -- our library is lcsdid_v2.mlib so the two installs cannot clobber each
+* other. Then two things no numeric assertion can see: the engine stamp in
+* $CSDID_ENGINE_RESOLVED must name a Stata version, not `source' (a permanent
+* silent fall-through to recompiling csdid.mata every session), and on macOS
+* the installed run must report plugin-active with the .plugin file sitting
+* next to csdid.ado, which is how the shipped binary is caught lagging its C.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

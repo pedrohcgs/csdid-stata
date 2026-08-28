@@ -1,4 +1,4 @@
-*! _csdid_post 2.0.0 27aug2026
+*! _csdid_post 2.0.0 28aug2026
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")
@@ -257,6 +257,14 @@ program define _csdid_post_aggte, eclass
     capture confirm scalar e(bstrap)
     if !_rc {
         if e(bstrap) == 1 local use_boot_crit 1
+    }
+    * the banded analytical aggregation (e(agg_cband) = 1 with e(bstrap) = 0)
+    * posts a bootstrapped band critical value too; like the bootstrap band,
+    * it describes the aggregation it was computed for and is not
+    * re-levelled after the fact.
+    capture confirm scalar e(agg_cband)
+    if !_rc {
+        if e(agg_cband) == 1 local use_boot_crit 1
     }
     if `use_boot_crit' {
         capture local bandcrit = e(crit_val)

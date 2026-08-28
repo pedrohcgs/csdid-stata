@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid legacy utilities" "help csdid_legacy"}{...}
 {vieweralsosee "" "--"}{...}
@@ -155,8 +155,10 @@ messages and the variable label report the expression as you typed it.
 behind:
 
 {p2colset 5 14 16 2}{...}
-{p2col:{cmd:r(198)}}the expression cannot be evaluated, or the requested
-storage type would round the cohort code{p_end}
+{p2col:{cmd:r(198)}}the requested storage type would round the cohort code.
+An expression that cannot be evaluated aborts earlier with Stata's own code
+for the specific failure (for example 111 for an unknown variable, 133 for an
+unknown function, 109 for a type mismatch){p_end}
 {p2col:{cmd:r(459)}}the indicator takes more than two values on the selected
 sample, or takes two values neither of which is {cmd:0}; the message names the
 values it found{p_end}

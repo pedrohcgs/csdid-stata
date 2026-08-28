@@ -1,3 +1,12 @@
+* ---------------------------------------------------------------------------
+* Plot-data export parity (F028, plot-data fixtures from R did 2.5.1 ggdid).
+* csdid_plot, saving() writes the series, x labels, point estimates, confidence
+* bounds and significance flags that a graph is drawn from; this file merges
+* that export cell by cell against the reference plot data for ATT(g,t), a
+* single-cohort ATT(g,t) view, and dynamic/group/calendar aggregations, and
+* pins that a simple aggregation has no plot and refuses with rc 498.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off
@@ -65,7 +74,10 @@ confirm file "`root'/tests/fixtures/parity/f028/expected/r/events.json"
 tempfile plotdata
 
 import delimited using "`root'/tests/fixtures/parity/f028/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+* the f028 plot-data fixtures are generated with cband = FALSE, so the Stata
+* side runs analytical POINTWISE: analytical alone now bands aggregations
+* simultaneously by bootstrap, as R's bstrap = FALSE cband = TRUE does.
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
 csdid_plot, saving("`plotdata'") replace
 compare_plot_data, ///
     actual("`plotdata'") ///
@@ -80,7 +92,7 @@ compare_plot_data, ///
 
 foreach agg_type in dynamic group calendar {
     import delimited using "`root'/tests/fixtures/parity/f028/inputs/input.csv", clear asdouble
-    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+    csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
     csdid_stats, type(`agg_type')
     csdid_plot, saving("`plotdata'") replace
     compare_plot_data, ///
@@ -90,7 +102,7 @@ foreach agg_type in dynamic group calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/f028/inputs/input.csv", clear asdouble
-csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none)
+csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)
 csdid_stats, type(simple)
 capture noisily csdid_plot, saving("`plotdata'") replace
 assert _rc == 498

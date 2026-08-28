@@ -102,7 +102,7 @@ def main() -> None:
     upstream_map = pd.DataFrame([
         {
             "source_file": "csdid/test_csdid/test_error_handling.py",
-            "source_sha256": "fa1824e14730746a442ca24fd234aa9aafa50e0fd53d7540a5f6ca98f4951d73",
+            "source_sha256": "362c474af005a224bb24bacd74b36c35e4857bdcab4611b1cb9cc867b1db2342",
             "source_test": test,
             "mapped_scenario": scenario,
             "assertion_family": assertion,
@@ -120,7 +120,7 @@ def main() -> None:
         "matrix_id": "PY008",
         "fixture_family": "python-error-handling",
         "normative_source": "Python csdid csdid/test_csdid/test_error_handling.py subordinate to R did 2.5.1 validation behavior",
-        "source_commit": "555f28bc12fcafa9c099e6e5503a30a4c22fc89f",
+        "source_commit": "c37d39d5d0c28c345f2950db734d7a0f5e02aceb",
         "decision_refs": ["D004", "D010", "D014", "D015"],
         "tolerance_ids": ["EXACT"],
         "inputs": [

@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* Legacy option inventory (F036; behavior adjudicated against R did 2.5.1).
+* Scripts written for csdid 1.x must keep running or be told precisely why not.
+* Legacy method spellings (dripw, stdipw) map onto the supported estimators and
+* are echoed in e(method_requested); asinr is accepted and ignored with a note;
+* from() and dryrun are refused by name; agg() supports event/dynamic only, and
+* every option-value refusal returns 198. pscoretrim() at or above 1 means no
+* trimming and is accepted, as the reference implementation accepts it. estat
+* event posts only event times the aggregation actually estimated - the posted
+* column names must equal the e(aggte) rows in order plus Post_avg, on both the
+* analytical and the bootstrap route.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

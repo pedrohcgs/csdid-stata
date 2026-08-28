@@ -13,7 +13,7 @@ bysort id: gen time = _n
 gen double y = mu + 0.3*time + rnormal()
 replace y = y + (gvar-2) + 0.5*(time-gvar) if gvar>0 & time>=gvar
 gen byte D = (gvar>0 & time>=gvar)
-csdid y, ivar(id) time(time) gvar(gvar) analytical
+csdid y, ivar(id) time(time) gvar(gvar) analytical pointwise
 estat event, window(0 2)
 matrix E = e(aggte)
 di "DC csdid : e0=" %7.4f E[1,2] " (se " %6.4f E[1,3] ")  e1=" %7.4f E[2,2] " (se " %6.4f E[2,3] ")  e2=" %7.4f E[3,2] " (se " %6.4f E[3,3] ")"

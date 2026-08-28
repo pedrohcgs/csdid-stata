@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* Variable names and data types (F030, oracle R did 2.5.1).
+* Estimates must depend on the data, never on what the columns are called. The
+* same design is fit under ordinary names, under names that collide with the
+* internal argument names (idname/tname/gname), with cohort variables named
+* group/time/unit, and with covariates named att, se, event_time and
+* overall_att; ATT(g,t) must match the reference values in every case and e()
+* must echo the user's names back. String outcome, covariate, ivar(), time(),
+* gvar() and cluster() variables must each be refused by name, not silently
+* coerced.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

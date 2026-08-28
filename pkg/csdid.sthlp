@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -496,9 +496,17 @@ and {cmd:e(crit_val)} holds the critical value actually applied.
 {phang}
 {opt analytical}, or equivalently {cmd:vce(analytical)}, replaces the
 bootstrap with analytical standard errors computed directly from the
-influence function. Analytical standard errors are pointwise only; requesting
-{cmd:reps()}, {cmd:biters()}, {cmd:seed()}, {cmd:rseed()}, or {cmd:wboot()}
-alongside them is an error rather than a silent no-op.
+influence function. The ATT(g,t) table is then banded pointwise. An
+AGGREGATION of an analytical fit still carries a simultaneous band unless
+{cmd:pointwise} is also specified: a simultaneous band can only be computed
+by the multiplier bootstrap, so the aggregation bootstraps the band's
+critical value (1,000 draws from the session's random-number stream --
+{cmd:set seed} reproduces it) and prints a note saying so, while every
+standard error remains analytical. Specify {cmd:pointwise} together with
+{cmd:analytical} for fully analytical, pointwise intervals everywhere.
+Requesting {cmd:reps()}, {cmd:biters()}, {cmd:seed()}, {cmd:rseed()}, or
+{cmd:wboot()} alongside {cmd:analytical} is an error rather than a silent
+no-op.
 
 {phang}
 {opth cluster(varname)} clusters the influence function on {it:varname},
@@ -553,8 +561,9 @@ way the estimation did.
 {pmore}
 The destination is checked {it:before} estimation starts, as
 {helpb bootstrap}'s {cmd:saving()} is: naming a file that already exists
-without {cmd:replace}, or a path that cannot be written, refuses immediately
-with return code 602. Nothing is estimated, no partial results are posted, and
+without {cmd:replace} refuses immediately with return code 602, and a path
+that cannot be written refuses with the file-system's own code (typically
+603). Nothing is estimated, no partial results are posted, and
 whatever estimation results were already in memory remain exactly as they
 were, so an unwritable destination costs you the refusal and not the run. An
 artifact holding more unit rows than this Stata flavour's matrix limit
@@ -1132,9 +1141,12 @@ study, which is nearly always. Use {cmd:pointwise} only when a single,
 pre-specified cell is the object of interest.
 
 {pstd}
-{cmd:analytical} skips the bootstrap. It is faster and deterministic, and
-appropriate for a single pre-specified comparison or for a first look at a
-large dataset, but it delivers pointwise standard errors only.
+{cmd:analytical} skips the bootstrap for the standard errors. It is faster,
+and appropriate for a single pre-specified comparison or for a first look at
+a large dataset. Aggregations of an analytical fit still band simultaneously
+by default -- the band's critical value is bootstrapped, with a note, because
+there is no other way to compute one; add {cmd:pointwise} to avoid the
+bootstrap entirely.
 
 {pstd}
 {cmd:cluster()} is required whenever treatment is assigned, or shocks arrive,
@@ -1336,9 +1348,12 @@ nonnegative is not enough; a monotone relabelling of the periods leaves the
 estimates unchanged.{p_end}
 
 {phang2}
-o {bf:Very large period or cohort codes.} {cmd:csdid} refuses when they would
-push the ATT(g,t) coefficient names past Stata's 32-character limit, and names
-the rescaling that fixes it.{p_end}
+o {bf:Very large period or cohort codes.} Values so large that the literal
+{cmd:g}{it:g}{cmd:___}{it:t}{cmd:_}{it:base} coefficient names would exceed
+Stata's 32-character limit estimate normally: {cmd:csdid} prints a note and
+posts each affected cell under the fallback name {cmd:att_}{it:#} instead,
+with {cmd:e(attgt)} carrying the group, time and base period of every
+cell.{p_end}
 
 {phang2}
 o {bf:fast and nofast.} These select internal Mata kernels and exist for
@@ -1658,8 +1673,11 @@ columns {cmd:group}, {cmd:time}, {cmd:event_time}, {cmd:att}, {cmd:se_boot},
 {cmd:point_crit_val}, {cmd:point_ci_low}, and {cmd:point_ci_high}
 {it:(conditional: bootstrap)}{p_end}
 {synopt:{cmd:e(boot_draws)}}{cmd:e(biters)}-by-{cmd:e(N_attgt)} matrix of
-bootstrap draws {it:(conditional: bootstrap)}{p_end}
-{synopt:{cmd:e(boot_rng_state)}}final random-number state
+studentizable bootstrap deviations, centred on zero, not on ATThat; the
+storage scale and the reconstruction of {cmd:se_boot} from a column are given
+under {it:Methods and formulas} {it:(conditional: bootstrap)}{p_end}
+{synopt:{cmd:e(boot_rng_state)}}random-number state after the most recent
+bootstrap in this estimation's chain; each bootstrap aggregation advances it
 {it:(conditional: seeded bootstrap)}{p_end}
 {synopt:{cmd:e(profile)}}timing by estimation phase
 {it:(diagnostic)}{p_end}
@@ -1788,7 +1806,16 @@ No re-estimation takes place, so the cost is one matrix multiplication per
 iteration. The reported standard error of each cell is the interquartile range
 of its bootstrap deviations across iterations, divided by the interquartile
 range of the standard normal, {it:z(.75) - z(.25)}: a robust scale estimate
-that is insensitive to a few extreme draws. This is why a bootstrap standard
+that is insensitive to a few extreme draws. What {cmd:e(boot_draws)} stores
+is neither ATTstar_b nor the raw deviation but the studentizable form
+{it:(ATTstar_b - ATThat) * n / sqrt(m)}, where {it:m} is the number of
+multipliers drawn per iteration -- {cmd:e(N_units)} without {cmd:cluster()},
+{cmd:e(N_clusters)} with it (the multiplier then applies to within-cluster
+sums of the influence function). A cell's {cmd:se_boot} is therefore
+reconstructed from its column as the interquartile range divided by
+{it:z(.75) - z(.25)}, times {it:sqrt(m)/n}; applying the deviation formula
+above to the stored columns without that rescaling overstates every standard
+error by {it:n/sqrt(m)}. This is why a bootstrap standard
 error can differ noticeably from the analytical one in small samples even
 though both are consistent for the same quantity.
 
@@ -1847,7 +1874,14 @@ analytical matrix, never the bootstrap one, so the pre-test is the same under
 
 {pstd}
 {bf:Random numbers.} Seeded runs draw the multipliers from a Mersenne-Twister
-stream, and the resulting state is stored in {cmd:e(boot_rng_state)}.
+stream, and the resulting state is stored in {cmd:e(boot_rng_state)}. The
+stream is LIVE: each later bootstrap aggregation ({helpb csdid_stats},
+{helpb csdid_estat:estat}) continues it from where the last draw left off and
+re-stores the advanced state, so a sequence of aggregations after one seeded
+estimation is reproducible as a sequence -- re-run the estimation and the same
+sequence returns the same numbers -- while an individual aggregation's draws
+depend on its position in that sequence. To reproduce one aggregation's
+numbers in isolation, re-run the estimation first.
 Unseeded runs use Stata's own random-number stream, so {cmd:set seed} before
 {cmd:csdid} also makes a run reproducible.
 

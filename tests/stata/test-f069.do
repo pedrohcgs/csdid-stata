@@ -100,10 +100,27 @@ f069_expect, logfile("`lg'") ///
               "add~rseed(#)~to~reproduce")
 
 * ---------------------------------------------------------------------------
-* 3. Analytical: named as such, and not described as a bootstrap.
+* 3. Analytical WITH the band request (the default): the standard errors are
+*    named analytical, the band is simultaneous, and the note says the band's
+*    critical value came from the bootstrap -- R's aggte does exactly this on
+*    a bstrap = FALSE fit, warning "Used bootstrap procedure to compute
+*    simultaneous confidence band".
 * ---------------------------------------------------------------------------
 quietly use "`mp'", clear
 quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) notyet analytical
+capture log close _all
+log using "`lg'", text replace
+csdid_stats group
+log close
+f069_expect, logfile("`lg'") ///
+    fragments("analytical~(influence~function)" "95%~simultaneous~bands" ///
+              "note:~simultaneous~confidence~bands")
+
+* ---------------------------------------------------------------------------
+* 3b. Analytical + pointwise: fully analytical, no bootstrap anywhere.
+* ---------------------------------------------------------------------------
+quietly use "`mp'", clear
+quietly csdid lemp, ivar(countyreal) time(year) gvar(firsttreat) notyet analytical pointwise
 capture log close _all
 log using "`lg'", text replace
 csdid_stats group

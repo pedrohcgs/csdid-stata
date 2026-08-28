@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -194,6 +194,17 @@ range are dropped, because they are not available for every retained cohort.
 {pmore}
 Truncation is what makes the retained cohorts comparable; without it the
 reported profile would mix event times that only some cohorts contribute to.
+
+{pmore}
+Both restrictions are computed from the cells that survive estimation, so
+under {opt dropmissing} the guarantee is conditional: cohort admission tests
+whether a cohort's last surviving period is at least {it:#} periods after
+treatment, not whether every event time inside the window was estimated for
+it. A cohort with a missing cell at an interior event time therefore drops
+out of that one event time while still contributing to the others, and the
+composition inside the balanced window can then differ across event times. When
+{opt dropmissing} was needed, inspect {cmd:e(attgt)} for which cells are
+missing before reading the balanced profile as composition-constant.
 {cmd:balance(0)} is legal and keeps every cohort with at least one
 post-treatment period. {cmd:balance()} needs the first period of the estimation
 sample, which {cmd:csdid} stores in {cmd:e(time_first)}; a RIF file written by
@@ -349,11 +360,17 @@ downward-sloping profile can be composition rather than dynamics.
 {cmd:balance(#)} removes that by keeping only cohorts with at least {it:#}
 post-treatment periods and then truncating the event-time grid to the range
 those cohorts share. Both steps matter: the cohort restriction alone would
-leave event times that not every retained cohort reaches.
+leave event times that not every retained cohort reaches. The guarantee is
+exact when every retained cohort's cells inside the window were estimated;
+when {opt dropmissing} removes a failed cell at an interior event time, its
+cohort leaves that one event time but remains in the rest of the window, so
+some composition change survives the balancing. If that matters for the
+application, resolve the failed cells -- the estimation names each one and
+its cause -- rather than dropping them.
 
 {pstd}
 With the county-level example below, which runs from 2003 to 2007,
-{cmd:balance(1)} keeps the 2004 and 2006 cohorts and reports event times -2
+{cmd:balance(1)} keeps the 2004 and 2006 cohorts and reports event times -3
 through 1. {cmd:balance(3)} keeps only the 2004 cohort and truncates the grid to
 event times -1 through 3, of which 0 through 3 are estimated -- the base period
 of that cohort is not an estimated cell. Because the retained cohorts change,
@@ -376,8 +393,13 @@ Only an omitted {cmd:level()} inherits, first from the estimation's own
 is also 95.
 
 {pstd}
-Under analytical inference the interval is the estimate plus or minus the
-normal quantile at the reported level. Under the default multiplier bootstrap
+Under fully analytical inference ({cmd:analytical} together with
+{cmd:pointwise}) the interval is the estimate plus or minus the normal
+quantile at the reported level. Under {cmd:analytical} alone the standard
+errors are analytical but the SIMULTANEOUS band's critical value is
+bootstrapped -- there is no other way to compute one -- with a note saying
+so; the draws come from the session's random-number stream and {cmd:set seed}
+reproduces them. Under the default multiplier bootstrap
 the interval uses the bootstrap critical value, which is recomputed by the
 aggregation bootstrap each time {cmd:csdid_stats} runs, at the level in force
 for that run; with simultaneous bands it exceeds the pointwise normal quantile.
@@ -390,13 +412,18 @@ for, and the header above the table says so. {cmd:type(simple)} reports a
 single overall effect, for which a simultaneous band over one effect is the
 pointwise interval; and when the estimation's time grid has only two periods
 there is one comparison to band, so the simultaneous band is not defined
-separately from the pointwise one. The ATT(g,t) table keeps the simultaneous
-band it was estimated with in both cases; only the aggregation is affected.
+separately from the pointwise one. A third case arises at run time: when the
+bootstrap simultaneous critical value cannot be computed, or comes out below
+the pointwise normal quantile (common for a single-effect aggregation such as
+a one-period {cmd:window()}), the band falls back to pointwise with a warning,
+and the header and {cmd:e(agg_cband)} say so. The ATT(g,t) table keeps the
+simultaneous band it was estimated with in every case; only the aggregation
+is affected.
 
 {pstd}
 {cmd:e(agg_cband)} reports which band the aggregation just computed carries: 1
 simultaneous, 0 pointwise. Read it rather than {cmd:e(cband)}, which describes
-the estimation and stays 1 through both cases above.
+the estimation and stays 1 through all the cases above.
 
 {marker rif}{...}
 {title:Aggregating a saved RIF file}
@@ -492,7 +519,8 @@ results of the estimation itself are preserved, including {cmd:e(b)},
 {synopt:{cmd:e(agg_cband)}}1 if the band reported for this aggregation is
 simultaneous, 0 if it is pointwise{p_end}
 {synopt:{cmd:e(crit_val)}}the aggregation's own simultaneous critical value
-{it:(posted only under bootstrap inference)}{p_end}
+{it:(posted under bootstrap inference, and under analytical inference}
+{it:when the simultaneous band was computed)}{p_end}
 {synopt:{cmd:e(point_crit_val)}}the aggregation's own pointwise critical value
 {it:(posted only under bootstrap inference)}{p_end}
 {synopt:{cmd:e(agg_boot_accel_rc)}}return code of the optional bootstrap
@@ -532,13 +560,15 @@ row per iteration; posted under bootstrap inference{p_end}
 
 {pstd}
 Under {cmd:analytical} inference {cmd:csdid_stats} posts none of the
-bootstrap results above, and {cmd:e(crit_val)} and {cmd:e(point_crit_val)} are
-left holding the values {cmd:csdid} stored at estimation time. They do
-{bf:not} track a {cmd:level()} given to {cmd:csdid_stats}: under analytical
-inference the aggregation's critical value is the normal quantile at
-{cmd:e(agg_level)}. {cmd:estat} {it:type}, {cmd:estat tidy}, and
-{helpb csdid_plot} already apply that rule; apply it too if you build bands by
-hand.
+bootstrap draw matrices above. When the simultaneous band was computed (the
+default), {cmd:e(crit_val)} and {cmd:e(point_crit_val)} hold that band's
+bootstrapped critical value and the pointwise quantile, at the level in
+force for this aggregation. Under {cmd:analytical} with {cmd:pointwise} they
+are left holding the values {cmd:csdid} stored at estimation time and do
+{bf:not} track a {cmd:level()} given to {cmd:csdid_stats}: the aggregation's
+critical value is then the normal quantile at {cmd:e(agg_level)}.
+{cmd:estat} {it:type}, {cmd:estat tidy}, and {helpb csdid_plot} already
+apply these rules; apply them too if you build bands by hand.
 
 {pstd}
 The {cmd:using} form additionally rebuilds the estimation results it needs from

@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* F042 pins the JEL-DiD 2xT event study end to end: the weighted Figure 2
+* trend series rebuilt from the committed sample, and the analytical
+* ATT(g,t), full dynamic aggregation, and the e in [0,5] post-treatment
+* window for the weighted no-covariate reg design plus the weighted
+* covariate-adjusted reg/ipw/dr designs, all under base_period(universal)
+* against R did 2.5.1. A drift in weighting, in the universal base period,
+* or in how csdid_stats windows event time shows up here as a published
+* empirical number that no longer reproduces.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

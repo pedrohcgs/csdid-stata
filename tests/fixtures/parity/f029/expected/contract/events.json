@@ -11,21 +11,21 @@
     "return_code": 198,
     "event_type": "error",
     "offending_option": "base_period(Universal)",
-    "message_normalized": "baseperiod() must be varying or universal"
+    "message_normalized": "base_period() must be varying or universal"
   },
   {
     "event_key": "invalid_fix_weights",
     "return_code": 198,
     "event_type": "error",
     "offending_option": "fix_weights(bad)",
-    "message_normalized": "fixweights() must be one of varying, base, or first"
+    "message_normalized": "fix_weights() must be one of varying, base, or first"
   },
   {
     "event_key": "fix_weights_requires_panel",
     "return_code": 198,
     "event_type": "error",
     "offending_option": "fix_weights(first_period)",
-    "message_normalized": "fixweights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported"
+    "message_normalized": "fix_weights(first) requires ivar(); repeated cross-section fixed-weight modes are unsupported"
   },
   {
     "event_key": "negative_anticipation",

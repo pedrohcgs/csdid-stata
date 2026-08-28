@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27aug2026}{...}
+{* *! version 2.0.0 28aug2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -221,18 +221,20 @@ reverse-engineering a graph.
 (uniform) critical value{p_end}
 {p2col :bootstrap with {cmd:pointwise}}{cmd:e(crit_val)}, which under
 {cmd:pointwise} is the normal quantile{p_end}
-{p2col :{cmd:analytical}, {cmd:vce(analytical)}}the normal quantile at the
-reported confidence level{p_end}
+{p2col :{cmd:analytical} (aggregations)}{cmd:e(crit_val)}, the simultaneous
+critical value the aggregation bootstrapped; with {cmd:pointwise}, or for the
+ATT(g,t) table, the normal quantile at the reported confidence level{p_end}
 {p2line}
 {p2colreset}{...}
 
 {pmore}
-Exactly: the ATT(g,t) plot uses {cmd:e(crit_val)} (falling back to the normal
-quantile at {cmd:e(level)} if it is missing). An aggregation plot uses
-{cmd:e(crit_val)} when the estimation used the bootstrap, and otherwise the
-normal quantile at {cmd:e(agg_level)}, the level the aggregation itself
-reported. That distinction matters only if you asked for a {cmd:level()}
-different from the estimation level under analytical inference.
+Exactly: the ATT(g,t) plot reads its critical value from {cmd:e(boot_attgt)}
+(falling back to the normal quantile at {cmd:e(level)} on an analytical run),
+so an aggregation run in between cannot change the ATT(g,t) band. An
+aggregation plot uses {cmd:e(crit_val)} whenever the aggregation carried a
+simultaneous band ({cmd:e(agg_cband)} = 1, under the bootstrap or under
+{cmd:analytical}), and otherwise the normal quantile at {cmd:e(agg_level)},
+the level the aggregation itself reported.
 
 {pmore}
 Either way, the band drawn or exported is the band of the aggregation that is

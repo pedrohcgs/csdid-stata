@@ -1,3 +1,12 @@
+* ---------------------------------------------------------------------------
+* F006, fixture family aggte-dynamic: csdid_stats, type(dynamic) on the F002
+* design, against R did 2.5.1. Four event times survive, merged 1:1 on egt with
+* the row count asserted; att/se per event time and the overall att/se are
+* pinned at 1e-10. Pins both the event-time map and which horizons enter the
+* overall average -- the two places a dynamic aggregation can be wrong while
+* still producing a well-formed, plausible event study.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

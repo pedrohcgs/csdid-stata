@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* F043 is the staggered-adoption half of the JEL-DiD replication: weighted
+* timing-group trends for Figure 5, and covariate-adjusted DR ATT(g,t) plus
+* dynamic and post-window aggregation with not-yet-treated controls and a
+* universal base period, compared against R did 2.5.1. Raw ATT/SE cells use
+* the recorded 1e-8 absolute plus 2e-6 relative allowance for cross-runtime
+* solver drift on this design; the aggregates are held to it as well, and
+* the failing cells are listed before the assertion so a real divergence is
+* readable rather than a bare assert. Run outputs go to build/, never under
+* expected/, so a stale artefact can never be mistaken for the oracle.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

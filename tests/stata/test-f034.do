@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* Saved-RIF artifacts (F034; influence functions from R did 2.5.1).
+* saverif() writes a dataset later runs aggregate from, so its contents and its
+* schema are both contract. Per-column RIF summaries are compared against the
+* reference influence functions for panel and repeated-cross-section fits, and
+* the artifact itself is pinned: variable list and order, one row per unit or
+* observation, the RIF variable labels carrying group/time/event_time, the
+* csdid_* dataset characteristics, and refusal to overwrite without replace.
+* Aggregations reloaded from the file must equal those computed in place.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

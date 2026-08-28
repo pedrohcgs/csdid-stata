@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* JEL Table 7 empirical smoke gate (F041).
+* A published two-period, covariate-adjusted application run on real data rather
+* than a constructed fixture: 2200 counties over two years, universal base
+* period, weighted and unweighted, with reg, ipw and dr. The overall simple
+* aggregation and its standard error are compared against R did 2.5.1 to 1e-8,
+* the sample sizes are pinned at 4400 rows and 2200 units, and the estimates are
+* checked against the committed published values at display precision.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

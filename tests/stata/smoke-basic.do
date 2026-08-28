@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* The cheapest proof that the tree is runnable at all: a ten-unit 2x2 panel
+* with a known ATT of exactly 1, estimated from src/ through adopath, then
+* read back through csdid_estat. It pins that csdid loads, estimates, posts a
+* one-row e(attgt) with the right number in column 4, and that postestimation
+* can consume what estimation left behind. It is the gate that separates a
+* broken build from a wrong answer, so every other test's failure means what
+* it says.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

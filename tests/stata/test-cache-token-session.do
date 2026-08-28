@@ -220,7 +220,7 @@ capture noisily {
     * disturbs this session's engine.
     * -----------------------------------------------------------------------
     import delimited using "`data'", clear asdouble
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical notyet
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical pointwise notyet
     csdid_estat event
     tempname LIVE
     matrix `LIVE' = r(table)
@@ -253,12 +253,12 @@ capture noisily {
     * -----------------------------------------------------------------------
     mata: mata clear
     import delimited using "`data'", clear asdouble
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical notyet
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical pointwise notyet
     estimates store ct_first
     mata: mata clear
     import delimited using "`data'", clear asdouble
     quietly replace y = y * 10
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical notyet
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical pointwise notyet
     estimates restore ct_first
     tempname AFTERCLEAR
     tempfile clearlog
@@ -286,12 +286,12 @@ capture noisily {
     * the one the caller is holding.
     * -----------------------------------------------------------------------
     import delimited using "`data'", clear asdouble
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical notyet
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical pointwise notyet
     estimates store ct_saved
     local saved_token = e(mata_cache_token)
     import delimited using "`data'", clear asdouble
     quietly replace y = y * 10
-    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical notyet
+    csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical pointwise notyet
     assert e(mata_cache_token) != `saved_token'
     assert e(N_units) == `restored_units' & e(N_attgt) == `restored_cells'
     mata: CSDID_ENGINE.token = `saved_token'

@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* F018 pins the true repeated cross section: with no ivar(), csdid must take
+* the repeated-cross-section path rather than inventing a panel. e(idvar) is
+* empty, e(panel_mode) reports repeated-cross-section, and the unit count is
+* the observation count -- the substitution a build makes when it silently
+* treats rows as units.
+*
+* The ATT(g,t) grid, its standard errors and its per-cell treated and control
+* counts are then compared against R did 2.5.1 on the same design, along with
+* the event-time column, which must equal time minus group.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

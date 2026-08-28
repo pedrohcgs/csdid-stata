@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* F021 pins the handling of units treated in the first period. They have no
+* pre-treatment period and so contribute no identifiable ATT(g,t); R did 2.5.1
+* drops them from the sample entirely, and csdid must drop the same rows for
+* the same stated reason -- the per-row mask is compared rowid by rowid.
+*
+* The estimation is then held to the consequence: the first-period cohort
+* produces no rows in the ATT(g,t) grid, the sample size is the reduced one,
+* and the surviving cells match R's estimates and standard errors. A build that
+* kept those units would report extra cells or a larger n here.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

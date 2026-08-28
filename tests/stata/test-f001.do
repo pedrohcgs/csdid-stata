@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* F001, fixture family attgt: the smallest possible ATT(g,t) against R did
+* 2.5.1. A 40-row repeated-cross-section two-by-two, method(reg), never-treated
+* controls, varying base period -- one cell, and its ATT must match the oracle
+* CSV to 1e-10 after a 1:1 merge on (group, time) that asserts every row pairs.
+* Standard errors are pinned only by their missingness pattern, since this is
+* the cell where R reports none. First line of defense for the ATT kernel
+* itself: if this file fails, no other parity result means anything.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

@@ -85,7 +85,9 @@ are recorded as documented divergences.
 The remaining defaults follow R: the method is `dr`, the confidence level is 95,
 and omitted inference is the multiplier bootstrap with simultaneous confidence
 bands over 1000 iterations. Use `analytical` or `vce(analytical)` only when
-analytical standard errors are deliberately needed.
+analytical standard errors are deliberately needed; aggregations of an
+analytical fit still band simultaneously (the band's critical value is
+bootstrapped, with a note) unless `pointwise` is added.
 
 An unbalanced `ivar()` panel is balanced by dropping the units not observed in
 every period -- `bal(full)`, matching R -- and csdid reports how many units and

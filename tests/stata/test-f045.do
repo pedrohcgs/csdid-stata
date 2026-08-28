@@ -1,3 +1,17 @@
+* ---------------------------------------------------------------------------
+* F045 freezes what csdid does when options are omitted, so that migrating
+* code fails loudly rather than silently changing estimator. It pins the
+* balanced default to the explicit dr/varying/nevertreated call, unbalanced
+* ivar() to the allow_unbalanced path, omitted ivar() to repeated cross
+* sections, asinr to an accepted no-op with its warning, method(dripw) and
+* method(stdipw) to dr and ipw with theirs, long/long2 to base_period
+* universal with a strong warning, balance(full) to silence on an already
+* balanced panel, and dryrun to an explicit unsupported error. The forty
+* ATT/SE cells this default surface produces are then matched to R did
+* 2.5.1 within 1e-9, so the defaults are pinned to numbers, not only to
+* stored metadata.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

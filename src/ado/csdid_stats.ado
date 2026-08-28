@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 27aug2026
+*! csdid_stats 2.0.0 28aug2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -182,8 +182,15 @@ program define _csdid_stats_main, eclass
     * level (the F-034 rule, R's alp inheritance by construction), then
     * from the session default.
     if `"`level'"' != "" {
+        * two separate tests: -if- evaluates its whole expression, so a
+        * non-numeric token inside the range comparison aborted with the
+        * stock r(111) before the message could print (in-house review).
         capture confirm number `level'
-        if _rc | !(`level' >= 10 & `level' <= 99.99) {
+        if _rc {
+            display as error "level(`level') is not a confidence level; specify a value between 10 and 99.99"
+            exit 198
+        }
+        if !(`level' >= 10 & `level' <= 99.99) {
             display as error "level(`level') is not a confidence level; specify a value between 10 and 99.99"
             exit 198
         }
@@ -672,6 +679,9 @@ program define _csdid_stats_main, eclass
         local agg_boot_accel "mata"
         local agg_boot_status "mata-unseeded"
         local agg_boot_rc 0
+        * stale flags from an earlier aggregation must not label this one
+        capture scalar drop CSDID_AGG_CRIT_FALLBACK
+        capture scalar drop CSDID_AGG_CRIT_LARGE
         local agg_plugin_success 0
         * type(simple) is the ONLY aggregation whose overall column reuses
         * the effect column's draws: R computes it with one getSE/mboot call
@@ -825,6 +835,14 @@ program define _csdid_stats_main, eclass
                     local agg_plugin_success 1
                     local agg_boot_accel "plugin"
                     local agg_boot_status "plugin-active"
+                    if `agg_simple' {
+                        * the plugin consumed an overall-column block R never
+                        * draws for type(simple); the state posted below must
+                        * be R's, so rewind and advance by the single block
+                        * R's one mboot call consumes.
+                        matrix `boot_rng_state' = `agg_rng_backup'
+                        mata: csdid_bmisc_skiponce(st_numscalar("`agg_plugin_nc'"), `biters', "`boot_rng_state'")
+                    }
                 }
                 else {
                     matrix `boot_rng_state' = `agg_rng_backup'
@@ -959,6 +977,29 @@ program define _csdid_stats_main, eclass
                 exit `agg_boot_kernel_rc'
             }
         }
+        * The kernels reproduce R's aggregation-level band fallbacks by VALUE
+        * (crit clamped up to the pointwise quantile); R also warns and
+        * relabels the band as pointwise (cband <- FALSE) when that happens.
+        * Reproduce the label and the warning here: `cband' feeds both the
+        * header line and e(agg_cband) below.
+        capture confirm scalar CSDID_AGG_CRIT_FALLBACK
+        if !_rc {
+            local agg_crit_fallback = scalar(CSDID_AGG_CRIT_FALLBACK)
+            scalar drop CSDID_AGG_CRIT_FALLBACK
+            if `cband' & `agg_crit_fallback' == 1 {
+                display as text "warning: the simultaneous confidence band is narrower than the pointwise confidence interval, which is unexpected. Falling back to pointwise confidence intervals."
+                local cband 0
+            }
+            else if `cband' & `agg_crit_fallback' == 2 {
+                display as text "warning: simultaneous critical value is NA, likely because the standard errors could not be computed. Falling back to pointwise confidence intervals."
+                local cband 0
+            }
+        }
+        capture confirm scalar CSDID_AGG_CRIT_LARGE
+        if !_rc {
+            scalar drop CSDID_AGG_CRIT_LARGE
+            if `cband' display as text "warning: simultaneous critical value is very large, suggesting it may be unreliable. This typically happens when the number of observations per group is small and/or there is not much variation in outcomes. Consider using pointwise confidence intervals instead (specify pointwise on the estimation)."
+        }
         mata: st_matrix("`agg_bootstrap_profile'", CSDID_AGG_BOOT_PROFILE)
         matrix colnames `agg_bootstrap_profile' = seconds calls work
         matrix rownames `agg_bootstrap_profile' = setup multiplier_summary result_post
@@ -971,6 +1012,87 @@ program define _csdid_stats_main, eclass
         ereturn local agg_boot_accelerator "`agg_boot_accel'"
         ereturn local agg_boot_accel_status "`agg_boot_status'"
         ereturn scalar agg_boot_accel_rc = `agg_boot_rc'
+        * R's aggte draws from the live session stream, so a second
+        * aggregation after the same estimation uses FURTHER draws (executed
+        * witness: R's chained group crit 2.5068146 against the restarted
+        * 2.2719166). The kernels advance `boot_rng_state' in place; posting
+        * it back makes the next aggregation start where R's stream stands.
+        if "`boot_rng_arg'" != "" {
+            tempname agg_rng_out
+            matrix `agg_rng_out' = `boot_rng_state'
+            ereturn matrix boot_rng_state = `agg_rng_out'
+        }
+    }
+    else if `cband' {
+        * R parity, the banded ANALYTICAL aggregation: aggte() on a fit with
+        * the bootstrap off but the band request on still computes the
+        * SIMULTANEOUS band -- by multiplier bootstrap, because that is the
+        * only way to compute one -- and says so (compute.aggte's "Used
+        * bootstrap procedure to compute simultaneous confidence band"). The
+        * standard errors in the table stay analytical; only the band's
+        * critical value is bootstrapped, from ONE joint draw block over the
+        * effect columns. Draws come from the session's random-number stream
+        * (set seed reproduces them), the reference's own semantics for a fit
+        * carrying no bootstrap state, and the reference's default 1000 draws
+        * are used since analytical fits carry no reps(). type(simple) and a
+        * two-period grid never reach here: their `cband' is already 0 above,
+        * as it is in the reference. The saved-RIF route posts no e(cband),
+        * so it keeps its documented fully-analytical fallback.
+        display as text "note: simultaneous confidence bands can only be computed by the multiplier bootstrap, so the bootstrap was used for the band below: its critical value comes from 1,000 multiplier draws on the session's random-number stream (set seed reproduces it). The standard errors remain analytical (influence function). Specify pointwise for fully analytical, pointwise intervals."
+        capture scalar drop CSDID_AGG_CRIT_FALLBACK
+        capture scalar drop CSDID_AGG_CRIT_LARGE
+        tempname agg_crit agg_pointcrit
+        local agg_unit_src "e(unit_group)"
+        if "`e(panel_mode)'" == "allow_unbalanced" {
+            capture confirm matrix e(unit_group_boot)
+            if !_rc local agg_unit_src "e(unit_group_boot)"
+        }
+        local agg_time_src ""
+        if "`e(idvar)'" == "" local agg_time_src "`e(timevar)'"
+        if `use_cache' {
+            capture mata: csdid_analytical_cband("`aggte'", "", "", "`agg_unit_src'", "`agg_time_src'", `use_cluster', 1000, (100 - `level') / 100, "", "`agg_crit'", "`agg_pointcrit'")
+        }
+        else {
+            local band_cluster_vec ""
+            if `use_cluster' {
+                capture confirm matrix e(cluster_vec)
+                if !_rc {
+                    tempname band_cluster_raw
+                    matrix `band_cluster_raw' = e(cluster_vec)
+                    local band_cluster_vec "`band_cluster_raw'"
+                }
+            }
+            capture mata: csdid_analytical_cband("`aggte'", "`agg_inffunc'", "`band_cluster_vec'", "", "", `use_cluster', 1000, (100 - `level') / 100, "", "`agg_crit'", "`agg_pointcrit'")
+        }
+        local band_rc = _rc
+        if `band_rc' == 1 exit 1
+        if `band_rc' {
+            display as error `"csdid_stats could not bootstrap the simultaneous band for the type(`type') aggregation; rerun csdid before csdid_stats, or specify pointwise"'
+            exit `band_rc'
+        }
+        * the same fallback labeling the seeded band carries: a band that
+        * clamped to (or could not beat) the pointwise quantile is reported
+        * AS pointwise, with the reference's warning.
+        capture confirm scalar CSDID_AGG_CRIT_FALLBACK
+        if !_rc {
+            local agg_crit_fallback = scalar(CSDID_AGG_CRIT_FALLBACK)
+            scalar drop CSDID_AGG_CRIT_FALLBACK
+            if `agg_crit_fallback' == 1 {
+                display as text "warning: the simultaneous confidence band is narrower than the pointwise confidence interval, which is unexpected. Falling back to pointwise confidence intervals."
+                local cband 0
+            }
+            else if `agg_crit_fallback' == 2 {
+                display as text "warning: simultaneous critical value is NA, likely because the standard errors could not be computed. Falling back to pointwise confidence intervals."
+                local cband 0
+            }
+        }
+        capture confirm scalar CSDID_AGG_CRIT_LARGE
+        if !_rc {
+            scalar drop CSDID_AGG_CRIT_LARGE
+            if `cband' display as text "warning: simultaneous critical value is very large, suggesting it may be unreliable. This typically happens when the number of observations per group is small and/or there is not much variation in outcomes. Consider using pointwise confidence intervals instead (specify pointwise on the estimation)."
+        }
+        ereturn scalar crit_val = `agg_crit'
+        ereturn scalar point_crit_val = `agg_pointcrit'
     }
     matrix colnames `aggte' = egt att se overall_att overall_se
     * When every standard error in the aggregation is
@@ -1238,7 +1360,16 @@ program define _csdid_stats_load_rif, eclass
         display as error "saved RIF artifact carries no signed metadata record (it predates the signed format); re-run csdid with saverif() to rewrite the file."
         exit 459
     }
-    local meta_canon ""
+    * the positional digest must be recomputed over the numeric content in
+    * the same shape the writer hashed: read the stored record, drop the
+    * record variable, hash what remains, and require the rebuilt canonical
+    * record (digest included) to equal the stored one. Any within-column
+    * permutation, cross-column exchange, or sign flip -- invisible to
+    * -datasignature- -- changes the serialized stream and refuses here.
+    local meta_stored = __csdid_meta[1]
+    quietly drop __csdid_meta
+    mata: st_local("rif_cdigest", strofreal(hash1(st_data(., .), 2147483647), "%12.0f") + "-" + strofreal(hash1(st_data(., .)', 2147483647), "%12.0f"))
+    local meta_canon `"|cdigest=`=subinstr(strtrim("`rif_cdigest'"), " ", "", .)'"'
     foreach ck in artifact cmdline panel_mode control_group base_period method N N_units N_attgt N_groups N_time anticipation level cluster_recorded clustervar N_clusters time_first group_prob_rows {
         local meta_canon `"`meta_canon'|`ck'=`: char _dta[csdid_`ck']'"'
     }
@@ -1252,11 +1383,10 @@ program define _csdid_stats_load_rif, eclass
     foreach mv of varlist rif* {
         local meta_canon `"`meta_canon'|`mv'=`: char `mv'[csdid_attgt]'"'
     }
-    if `"`meta_canon'"' != `"`=__csdid_meta[1]'"' {
-        display as error "saved RIF artifact fails its metadata signature: the file's characteristics are not the ones csdid wrote (a cluster marker, level, count, or cell record has been edited), so aggregating it would report altered inference under the original estimation's certificate. Re-run csdid with saverif() to rewrite the file."
+    if `"`meta_canon'"' != `"`meta_stored'"' {
+        display as error "saved RIF artifact fails its metadata signature: the file's rows or characteristics are not the ones csdid wrote (values moved, exchanged, or flipped; or a cluster marker, level, count, or cell record edited), so aggregating it would report altered inference under the original estimation's certificate. Re-run csdid with saverif() to rewrite the file."
         exit 459
     }
-    quietly drop __csdid_meta
     if "`: char _dta[csdid_artifact]'" != "rif" {
         display as error "saved file is not a csdid RIF artifact"
         exit 498

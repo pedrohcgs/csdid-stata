@@ -1,3 +1,15 @@
+* ---------------------------------------------------------------------------
+* F046 pins the exact wording and return codes of the legacy-alias surface:
+* method(dripw) and method(stdipw) run dr and ipw while reporting the
+* requested spelling in e(method_requested), asinr is accepted and ignored
+* to the last digit of the estimates, wboot(wtype(rademacher)) is accepted,
+* and a mammen multiplier is refused with rc 498 and a message naming the
+* limitation. It also binds the shipped migration guide to this evidence:
+* the checklist must list every surface with its classification and the
+* fixture that demonstrates it. Warning text users are told to grep for is
+* a contract; this file is what keeps it from drifting.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

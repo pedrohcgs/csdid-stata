@@ -202,8 +202,15 @@ program define pd_cell
         restore
     }
 
-    * every aggregation the run supports
+    * every aggregation the run supports. The estimation is RE-RUN before
+    * each one: the aggregation bootstrap continues the live draw stream
+    * (R's semantics), so aggregation k of one fit and aggregation k of
+    * another are comparable only at the same stream position. Re-fitting
+    * pins every recorded aggregation at position #1, which keeps this
+    * harness's A/B rows comparable across builds whatever each build's
+    * stream policy is.
     foreach a of local aggs {
+        capture quietly `cmd'
         capture quietly csdid_stats, type(`a') dropmissing
         if !_rc {
             capture confirm matrix e(aggte)

@@ -1,4 +1,4 @@
-*! csdid_table 2.0.0 27aug2026
+*! csdid_table 2.0.0 28aug2026
 program csdid_table, rclass
 	version 14
     * DEPRECATED in csdid 2.0.0. Shipped only so existing do-files keep

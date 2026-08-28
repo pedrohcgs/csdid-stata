@@ -1,3 +1,14 @@
+* ---------------------------------------------------------------------------
+* Replication-scenario coverage map (F040).
+* The six JEL replication scenarios inherited from the reference test suites are
+* each claimed by a Stata gate; this file asserts the coverage contract lists
+* all six as covered, that each names an existing fixture (F040-F043), and that
+* the reference-source audit still resolves. It then executes the scenario it
+* owns itself - the Table 7 doubly robust weighted fit - under nofast and fast,
+* requiring ATT(g,t) and the simple aggregation to agree to 1e-12 so the
+* coverage claim rests on a run rather than on a table entry.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

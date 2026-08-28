@@ -148,25 +148,25 @@ foreach n of local nlist {
     quietly count
     local nobs = r(N)
 
-    ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical")
+    ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise")
     file write `fh' "`tag',panel_reg_analytic,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
-    ps_time, data("`d'") cmd("csdid y x1, ivar(id) time(time) gvar(g) method(dr) notyet analytical")
+    ps_time, data("`d'") cmd("csdid y x1, ivar(id) time(time) gvar(g) method(dr) notyet analytical pointwise")
     file write `fh' "`tag',panel_dr_cov,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
-    ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical cluster(cl)")
+    ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise cluster(cl)")
     file write `fh' "`tag',panel_reg_cluster,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
-    ps_time, data("`d'") cmd("csdid y, time(time) gvar(g) method(reg) notyet analytical")
+    ps_time, data("`d'") cmd("csdid y, time(time) gvar(g) method(reg) notyet analytical pointwise")
     file write `fh' "`tag',rcs_reg,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
-    ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical bal(none)")
+    ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise bal(none)")
     file write `fh' "`tag',unbal_reg_none,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
     ps_time, data("`d'") cmd("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet wboot(reps(199) rseed(20260806))")
     file write `fh' "`tag',panel_reg_wboot,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
-    local est_lean "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical"
+    local est_lean "csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise"
     ps_time_agg, data("`d'") est("`est_lean'") agg("estat event")
     file write `fh' "`tag',agg_dynamic,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
 
@@ -178,7 +178,7 @@ foreach n of local nlist {
     * size the cell would measure the crossing rather than the aggregation.
     if `n' <= 5000 {
         ps_time_agg, data("`d'") reps(5) ///
-            est("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical storeall") ///
+            est("csdid y, ivar(id) time(time) gvar(g) method(reg) notyet analytical pointwise storeall") ///
             agg("estat event")
         file write `fh' "`tag',agg_storeall,`n',`nobs',`=r(median)',`=r(min)',`=r(max)'" _n
     }

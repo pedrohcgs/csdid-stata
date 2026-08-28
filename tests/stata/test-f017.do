@@ -1,3 +1,21 @@
+* ---------------------------------------------------------------------------
+* F017 pins the bal() vocabulary as exactly full / pair / none. The fixture is
+* deliberately unbalanced, so the three modes are three genuinely different
+* estimands on it: each is checked against the answer it claims to produce and
+* against the other two, so a build that quietly folded two modes together
+* fails rather than passing a zero-return-code check. bal(full) must also
+* report how many units it dropped and why, since dropping them changes the
+* estimand.
+*
+* The synonym and legacy surface is pinned in the same place. unbalanced and
+* its longhand allowunbalanced / allow_unbalanced must reproduce bal(none)
+* exactly and silently -- a printed deprecation note would make them a
+* deprecation -- and must error rather than silently resolve when they
+* contradict an explicit bal(). The development-era spellings are refused with
+* rc 198, and the Version 1.82 options long / long2 / asinr stay accepted with
+* their warnings, long and long2 implying baseperiod(universal).
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

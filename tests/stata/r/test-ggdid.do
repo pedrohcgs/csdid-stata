@@ -113,7 +113,11 @@ quietly summarize group, meanonly
 local first_group = r(min)
 
 import delimited using "`root'/tests/fixtures/parity/rt013/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
+* the rt013 fixtures are generated with cband = FALSE (aggte pointwise), so
+* the Stata side runs analytical POINTWISE: analytical alone now bands
+* aggregations simultaneously by bootstrap, exactly as R's bstrap = FALSE
+* cband = TRUE does, which is a different estimand than these fixtures pin.
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical pointwise nevertreated base_period(varying) bal(none)
 csdid_plot, saving("`plotdata'") replace
 rt013_compare_plot_data, ///
     actual("`plotdata'") ///
@@ -140,7 +144,7 @@ rt013_compare_plot_data, ///
 
 foreach agg_type in dynamic group calendar {
     import delimited using "`root'/tests/fixtures/parity/rt013/inputs/sim-ggdid.csv", clear asdouble
-    csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
+    csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical pointwise nevertreated base_period(varying) bal(none)
     csdid_stats, type(`agg_type')
     csdid_plot, saving("`plotdata'") replace
     rt013_compare_plot_data, ///
@@ -150,7 +154,7 @@ foreach agg_type in dynamic group calendar {
 }
 
 import delimited using "`root'/tests/fixtures/parity/rt013/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical pointwise nevertreated base_period(varying) bal(none)
 csdid_stats, type(simple)
 capture log close rt013event
 log using "`evlog'", text replace name(rt013event)
@@ -161,7 +165,7 @@ assert `actual_rc' == 498
 rt013_assert_log_contains using "`evlog'", message("Plot method not available for this type of aggregation")
 
 import delimited using "`root'/tests/fixtures/parity/rt013/inputs/sim-ggdid.csv", clear asdouble
-csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical nevertreated base_period(varying) bal(none)
+csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical pointwise nevertreated base_period(varying) bal(none)
 capture log close rt013event
 log using "`evlog'", text replace name(rt013event)
 capture noisily csdid_plot, saving("`plotdata'") replace xlab(Time)

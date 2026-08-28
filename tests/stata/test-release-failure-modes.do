@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* This file pins how csdid fails. Bad syntax (id() with ivar(), an unknown
+* method, nevertreated with notyettreated, universal with varying, an
+* unknown storage option, dryrun), a missing outcome, negative weights, and
+* a design with no usable comparison must all stop with the documented
+* return code -- and must leave the previous estimation in e() intact,
+* since refusal happens before the engine runs. A failed call that half
+* overwrote e() would make the next postestimation command report numbers
+* from two different fits, silently. Accepted legacy spellings are
+* re-checked at the end so the refusals above are a narrowing of the
+* surface and not a loss of supported behavior.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

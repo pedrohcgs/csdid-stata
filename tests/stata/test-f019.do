@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* F019 pins which rows enter the estimation when the sample is restricted. An
+* if condition and missing outcomes must select exactly the rows R did 2.5.1
+* keeps, and for the same reason: the per-row mask -- included, drop reason,
+* and cell membership -- is compared rowid by rowid against R's, not merely
+* summarized as a count.
+*
+* The restricted fit then has to agree on the numbers as well: e(N) is the
+* surviving row count, and ATT(g,t) and its SEs match R's estimates computed on
+* the same subsample. A build that dropped the right number of rows but the
+* wrong ones would pass a count check and fail here.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

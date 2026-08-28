@@ -1,4 +1,4 @@
-*! csdid 2.0.0 27aug2026
+*! csdid 2.0.0 28aug2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -81,7 +81,7 @@ mata:
 // three classes: `mata mlib add csdid*()' writes one library member per free
 // function and ONE per class, so the compiled library holds 135 top-level
 // names and the 28 class methods travel inside the three classdef entries
-// rather than beside them (163 members in all: 21 methods on csdid__Agg,
+// rather than beside them (165 members in all: 21 methods on csdid__Agg,
 // 3 on csdid__Boot, 4 on csdid__Engine). Mata answers a global name it
 // is not already holding by walking c(matalibs), so each free name is a
 // first-call lookup a session pays once and a method is not.
@@ -5067,8 +5067,28 @@ real scalar csdid__bootstrap_cband_crit(
         if (rows(scaled) > 0) rowmax[b] = max(scaled)
     }
     bT = select(rowmax, rowmax :< .)
-    if (rows(bT) > 0) crit = csdid__type1_quantile(bT, 1 - alp)
-    if (crit < pointcrit) crit = pointcrit
+    // R's aggregation-level fallbacks are LABELED, not silent: when the
+    // band quantile cannot be computed, or comes back below the pointwise
+    // quantile, compute.aggte warns, uses qnorm(1-alp/2) and sets
+    // cband <- FALSE (so the reported band is pointwise by name). The
+    // clamp below reproduces the VALUE; the scalar tells the ado which
+    // fallback fired so it can reproduce the warning and the label too.
+    // 1 = quantile below pointwise, 2 = no drawable max-|t| at all.
+    if (rows(bT) > 0) {
+        crit = csdid__type1_quantile(bT, 1 - alp)
+        if (crit >= .) {
+            st_numscalar("CSDID_AGG_CRIT_FALLBACK", 2)
+            crit = pointcrit
+        }
+        else if (crit < pointcrit) {
+            st_numscalar("CSDID_AGG_CRIT_FALLBACK", 1)
+            crit = pointcrit
+        }
+    }
+    else st_numscalar("CSDID_AGG_CRIT_FALLBACK", 2)
+    // R warns without falling back when the band critical value is >= 7
+    // (compute.aggte's very-large-crit warning); same channel, no clamp.
+    if (crit < . & crit >= 7) st_numscalar("CSDID_AGG_CRIT_LARGE", 1)
     return(crit)
 }
 
@@ -6826,6 +6846,28 @@ void csdid__bmisc_skipboot(
     }
 }
 
+// Advance a stored multiplier state by exactly one bootstrap block of n
+// units x biters replications, in place. The type(simple) plugin call
+// consumes an overall-column block that R's single-mboot simple aggregation
+// never draws (compute.aggte.R:310); the ado rewinds to the pre-call state
+// and calls this once so the state it reports is the one R's stream holds.
+void csdid_bmisc_skiponce(
+    real scalar n,
+    real scalar biters,
+    string scalar statename)
+{
+    real rowvector rng_state
+
+    rng_state = st_matrix(statename)
+    if (cols(rng_state) != 625 | csdid__mt_state_absorbing(rng_state)) {
+        errprintf("the bootstrap random-number state is invalid; re-run csdid, specifying rseed() if you need a reproducible draw\n")
+        _error(498)
+    }
+    if (n < 1 | biters < 1) _error(498)
+    csdid__bmisc_skipboot(n, biters, rng_state)
+    st_matrix(statename, rng_state)
+}
+
 void csdid_bmisc_aggskip(
     string scalar ifname,
     real scalar biters,
@@ -7205,7 +7247,13 @@ void csdid__Agg::load()
     // times alone was wrong twice over (cold-audit round 11): dropmissing
     // shifted the ranks, and an off-grid cohort has a rank of its own in
     // R's map rather than an exclusion.
-    tgrid_full = uniqrows(attgt[., 1] \ attgt[., 2] \ attgt[., 10])
+    // the tlist half only: R's tlist stays the ORIGINAL periods under
+    // na.rm (its recompute lines are commented out in compute.aggte.R:163,
+    // :194), and every period survives preprocessing exactly when some cell
+    // references it as its time or base. The glist half joins per route,
+    // because R DOES refilter glist under na.rm (:164) and refilters it
+    // again for type=group after a raw-scale max_e screen (:177-195).
+    tgrid_full = uniqrows(attgt[., 2] \ attgt[., 10])
     group_prob = st_matrix("e(group_prob)")
     if (use_cache != 0) {
         inffunc = CSDID_ENGINE.inffunc
@@ -7558,7 +7606,9 @@ void csdid__Agg::agg_simple()
     // its count of grid points at or below it, exact for every on-grid
     // value; missing max_e still means unbounded, since a comparison
     // against missing is true for the same reason it was on the raw scale.
-    agg_tgrid = tgrid_full
+    // grid = original tlist UNION the surviving cohort dates (R
+    // compute.aggte.R:239 with glist as it stands after the na.rm filter)
+    agg_tgrid = uniqrows(tgrid_full \ group)
     agg_tr = J(rows(tt), 1, 0)
     agg_gr = J(rows(group), 1, 0)
     for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
@@ -7585,7 +7635,7 @@ void csdid__Agg::agg_group()
 {
     real rowvector keep
     real colvector weights, effect_if, overall_weights
-    real colvector agg_tgrid, agg_tr, agg_gr
+    real colvector agg_tgrid, agg_tr, agg_gr, agg_gscreen
     real matrix wif
     real scalar i, g, n_effects, n_max, agg_i
 
@@ -7604,9 +7654,22 @@ void csdid__Agg::agg_group()
     pgg = J(n_max, 1, .)
     effect_if_mat = J(rows(inffunc), n_max, .)
     n_effects = 0
-    // same rank recode as agg_simple (R compute.aggte.R:335): max_e counts
-    // observed periods on the group keepers too.
-    agg_tgrid = tgrid_full
+    // R's type=group na.rm screen runs BEFORE the rank recode, on RAW
+    // calendar values (compute.aggte.R:177): a cohort with no surviving
+    // cell inside (g <= t <= g + max_e) leaves glist entirely, and the
+    // grid is then built from the SURVIVING cohorts (:195 feeding :239).
+    // Without na.rm the screen never runs (it sits inside R's na.rm
+    // block), and every cohort is present anyway.
+    agg_gscreen = J(rows(glist), 1, 1)
+    if (na_rm) {
+        for (i = 1; i <= rows(glist); i++) {
+            g = glist[i]
+            if (cols(which((group :== g) :& (g :<= tt) :& (tt :<= g :+ max_e))) == 0) {
+                agg_gscreen[i] = 0
+            }
+        }
+    }
+    agg_tgrid = uniqrows(tgrid_full \ select(glist, agg_gscreen))
     agg_tr = J(rows(tt), 1, 0)
     agg_gr = J(rows(group), 1, 0)
     for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
@@ -7615,6 +7678,7 @@ void csdid__Agg::agg_group()
     }
     for (i = 1; i <= n_max; i++) {
         g = glist[i]
+        if (agg_gscreen[i] == 0) continue
         keep = which((group :== g) :& (group :<= tt) :& (agg_tr :<= agg_gr :+ max_e))
         if (cols(keep) == 0) {
             if (na_rm) continue
@@ -8055,6 +8119,82 @@ void csdid__Agg::cluster_core()
     phase_t0 = csdid__profile_start()
     csdid__agg_assemble_bootout(agg, seboot, crit, pointcrit, bootout)
     csdid__agg_boot_profile_add(3, phase_t0, biters * k)
+}
+
+// R parity for aggte() on a bstrap = FALSE fit: compute.aggte still runs the
+// multiplier bootstrap for the SIMULTANEOUS band -- one joint draw block over
+// the effect columns, nothing else -- warns that it did, and keeps every
+// standard error analytic. This entry is that one block and nothing else:
+// no per-effect draws, no overall draw, so a banded analytical aggregation
+// consumes exactly the one block R's session stream loses (measured: R
+// set.seed(2468) + aggte(dynamic) crit 2.5879258429398755, the second call
+// 2.595670815356983, type(simple) consuming nothing in between). ifname
+// empty reads the aggregation cache like csdid_bootstrap_aggte_direct;
+// otherwise the influence functions come from the named Stata matrix, with
+// the cluster vector resolved exactly as csdid_bootstrap_aggte_cluster
+// resolves it. statename empty draws from the session stream (R's own
+// semantics for a fit that carries no bootstrap state; set seed reproduces
+// it); a supplied state uses the seeded emulation, which is how the R
+// bit-parity of this block is tested. csdid__bootstrap_cband_crit sets the
+// same fallback flags the seeded band sets, so the clamp labeling is shared.
+void csdid_analytical_cband(
+    string scalar aggname,
+    string scalar ifname,
+    string scalar clustervecname,
+    string scalar unitname,
+    string scalar timename,
+    real scalar use_cluster,
+    real scalar reps,
+    real scalar alpha,
+    string scalar statename,
+    string scalar critname,
+    string scalar pointcritname)
+{
+    external class csdid__Engine scalar CSDID_ENGINE
+    class csdid__Agg scalar ag
+    real matrix inf, bres_cband
+    real colvector cluster_vec, bsigma_cband
+    real scalar j, k_eff, nc_l, crit, pointcrit, iqr_norm
+
+    ag.agg = st_matrix(aggname)
+    ag.use_cluster = use_cluster
+    ag.boot_setup(reps, alpha, 1, "rademacher", 0, statename)
+    if (ifname == "") {
+        ag.n = csdid__agg_boot_assemble(unitname, timename, use_cluster, ag.sc)
+    }
+    else {
+        inf = st_matrix(ifname)
+        ag.n = rows(inf)
+        if (use_cluster) {
+            csdid__engine_ensure()
+            if (clustervecname != "") cluster_vec = st_matrix(clustervecname)
+            else cluster_vec = CSDID_ENGINE.cluster_vec
+            if (rows(cluster_vec) != ag.n | sum(cluster_vec :>= .) > 0) {
+                errprintf("cluster() could not be aligned with aggregate influence functions\n")
+                _error(498)
+            }
+            ag.sc = csdid__cluster_sums(cluster_vec, inf)
+        }
+        else ag.sc = inf
+    }
+    k_eff = rows(ag.agg)
+    nc_l = rows(ag.sc)
+    if (nc_l == 0 | k_eff == 0 | cols(ag.sc) != k_eff + 1) {
+        errprintf("stored aggregate influence functions do not match aggregation results\n")
+        _error(498)
+    }
+    if (reps < 1) _error(198)
+    pointcrit = invnormal(1 - alpha / 2)
+    iqr_norm = invnormal(.75) - invnormal(.25)
+    bres_cband = csdid__bootstrap_auto(ag.sc[., 1..k_eff], reps, "rademacher", ag.rng_state, ag.use_bmisc, 1) / sqrt(nc_l)
+    bsigma_cband = J(k_eff, 1, .)
+    for (j = 1; j <= k_eff; j++) {
+        bsigma_cband[j] = csdid__bootstrap_sigma(bres_cband[., j], iqr_norm)
+    }
+    crit = csdid__bootstrap_cband_crit(bres_cband, bsigma_cband, alpha, pointcrit)
+    st_numscalar(critname, crit)
+    st_numscalar(pointcritname, pointcrit)
+    if (statename != "") st_matrix(statename, ag.rng_state)
 }
 
 void csdid_bootstrap_aggte(

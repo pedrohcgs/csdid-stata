@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* F051 pins the surface a first-time user meets. Omitted options must
+* resolve to dr, never-treated, varying base period, lean storage, the
+* bootstrap with cband at 1000 iterations and level 95, and must reproduce
+* R did 2.5.1 ATT(g,t) to 1e-10; each documented alias -- id(), notyet,
+* notyettreated, bare universal/varying, vce(cluster), wboot shorthand,
+* fixweights spellings, storeall/store_all, the csdid_stats and estat
+* aggregation names -- must produce the same matrices as its canonical
+* form. Just as binding are the refusals: unbalanced-panel synonyms are
+* typed in full or not at all, contradictory pairs are rejected rather than
+* silently resolved to one side, performance() and a bare lean are unknown
+* options, and csdid_estat names its supported subcommands. An alias that
+* quietly does something slightly different is the failure this catches.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off
@@ -278,24 +293,34 @@ f051_assert_matrix_equal WB1 WB2 1e-10
 capture noisily csdid y, ivar(id) time(time) gvar(g) method(reg) analytical reps(31) nevertreated base_period(varying) bal(none)
 assert _rc == 198
 
+* the aggregation bootstrap now continues R's live draw stream (a second
+* aggregation after the same estimation uses further draws, as R's aggte
+* does), so each aggregation whose table is compared below re-fits first:
+* equal tables are then a claim about option aliases, not about the stream.
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 quietly csdid_stats
 assert "`e(agg_type)'" == "group"
 assert e(agg_level) == 95
 matrix G = e(aggte)
 assert rowsof(G) == e(N_aggte)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(dynamic) min_e(-1) max_e(1) balance_e(1) na_rm
 matrix W1 = e(aggte)
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(dynamic) window(-1 1) balance(1) dropmissing
 matrix W2 = e(aggte)
 f051_assert_matrix_equal W1 W2 1e-10
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 quietly csdid_stats event, window(-1 1) balance(1) dropmissing
 assert "`e(agg_type)'" == "dynamic"
 matrix W3 = e(aggte)
 f051_assert_matrix_equal W1 W3 1e-10
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(event) window(-1 1) balance(1) dropmissing
 assert "`e(agg_type)'" == "dynamic"
 matrix W4 = e(aggte)
 f051_assert_matrix_equal W1 W4 1e-10
+quietly csdid y, ivar(id) time(time) gvar(g) method(reg) wboot(reps(31) seed(24680)) pointwise nevertreated base_period(varying) bal(none)
 quietly csdid_stats, type(group)
 matrix G2 = e(aggte)
 f051_assert_matrix_equal G G2 1e-10

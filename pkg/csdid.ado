@@ -1,5 +1,6 @@
-*! csdid 2.0.0 27aug2026
+*! csdid 2.0.0 28aug2026
 program define csdid, eclass sortpreserve
+    local csdid_zero_entry `"`0'"'
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
     * first with Stata's own generic message. Hoisting it above `version 14'
@@ -77,7 +78,7 @@ program define csdid, eclass sortpreserve
             exit 498
         }
         syntax [, Level(passthru)]
-        local replay_level = e(level)
+        local replay_level = strofreal(e(level), "%12.0g")
         if `"`level'"' != "" {
             local 0 `", `level'"'
             syntax [, Level(cilevel)]
@@ -135,6 +136,11 @@ program define csdid, eclass sortpreserve
     local base_period_alias ""
     local fix_weights_alias ""
     local fix_weights_alias_n 0
+    * which spelling supplied the value, so a refusal names the option the
+    * user actually typed (in-house review, entry lens: base_period(bogus)
+    * was refused as "baseperiod() must be ...")
+    local base_period_src "base_period"
+    local fix_weights_src "fix_weights"
     local wboot_flag 0
     local nevertreated_alias 0
     * reps()/biters()/seed()/rseed() used to be declared
@@ -194,7 +200,15 @@ program define csdid, eclass sortpreserve
                 local base_period_alias `"`opt_l'"'
             }
             else if regexm(`"`opt_l'"', "^baseperiod\((.*)\)$") {
-                local base_period_value = strtrim(regexs(1))
+                * the value comes from the ORIGINAL token, not the lowered
+                * one: option NAMES are matched case-insensitively in this
+                * catch-all, but option VALUES are strict lowercase exactly
+                * as the reference implementation's match.arg is, so
+                * baseperiod(Universal) must refuse the way
+                * base_period(Universal) does (in-house review, entry lens).
+                local opt_val = strtrim(substr(`"`opt'"', strpos(`"`opt'"', "(") + 1, .))
+                local base_period_value = substr(`"`opt_val'"', 1, strlen(`"`opt_val'"') - 1)
+                local base_period_value = strtrim(`"`base_period_value'"')
                 if `"`base_period_alias'"' != "" & `"`base_period_alias'"' != `"`base_period_value'"' {
                     display as error "baseperiod() aliases universal and varying cannot be combined"
                     exit 198
@@ -212,7 +226,10 @@ program define csdid, eclass sortpreserve
                     exit 198
                 }
                 local ++fix_weights_alias_n
-                local fix_weights_alias = strtrim(regexs(1))
+                * original token, same strict-value rule as baseperiod() above
+                local opt_val = strtrim(substr(`"`opt'"', strpos(`"`opt'"', "(") + 1, .))
+                local fix_weights_alias = substr(`"`opt_val'"', 1, strlen(`"`opt_val'"') - 1)
+                local fix_weights_alias = strtrim(`"`fix_weights_alias'"')
             }
             else {
                 local options_clean `"`options_clean' `opt'"'
@@ -240,13 +257,15 @@ program define csdid, eclass sortpreserve
             display as error "baseperiod() cannot be combined with a different base-period value"
             exit 198
         }
+        if `"`base_period'"' == "" local base_period_src "baseperiod"
         local base_period `"`base_period_alias'"'
     }
     if `"`fix_weights_alias'"' != "" {
-        if `"`fix_weights'"' != "" & lower(strtrim(`"`fix_weights'"')) != `"`fix_weights_alias'"' {
+        if `"`fix_weights'"' != "" & strtrim(`"`fix_weights'"') != `"`fix_weights_alias'"' {
             display as error "fixweights() cannot be combined with a different fixed-weight value"
             exit 198
         }
+        if `"`fix_weights'"' == "" local fix_weights_src "fixweights"
         local fix_weights `"`fix_weights_alias'"'
     }
     if "`dryrun'" != "" {
@@ -432,6 +451,11 @@ program define csdid, eclass sortpreserve
         }
         else if "`vce_type'" == "cluster" & `vce_words' == 2 {
             local vce_cluster : word 2 of `vce_clean'
+            * resolve the abbreviation BEFORE comparing: cluster() arrives
+            * syntax-expanded while vce() keeps the typed text, so the same
+            * variable spelled two legal ways read as two variables
+            * (in-house review, entry lens).
+            capture unab vce_cluster : `vce_cluster'
             if "`cluster'" != "" & "`cluster'" != "`vce_cluster'" {
                 display as error "vce(cluster `vce_cluster') and cluster(`cluster') name different variables. Specify only one, or give both the same variable."
                 exit 198
@@ -464,6 +488,14 @@ program define csdid, eclass sortpreserve
     * command that had just failed. `bootstrap, saving()' refuses before the
     * first replication; do the same here, in the option block, and clear e()
     * so a failed csdid never leaves estimation results behind.
+    * replace is meaningless without saverif(): accepting it as a silent
+    * no-op would let a user believe an artifact was (re)written when
+    * nothing was. Refused BEFORE estimation, mirroring csdid_estat's rule
+    * for replace without saving().
+    if "`replace'" != "" & `"`saverif'"' == "" {
+        display as error "replace has no effect without saverif(); specify saverif(filename) or drop replace"
+        exit 198
+    }
     if `"`saverif'"' != "" {
         * The standard saving idiom -- saverif(filename, replace) -- is parsed
         * rather than swallowed: before this block, the whole parenthesised
@@ -552,7 +584,14 @@ program define csdid, eclass sortpreserve
     local boot_dist ""
     local boot_dist_requested ""
     local boot_cluster ""
-    local cband = 0
+    * e(cband) records the BAND REQUEST, exactly as the reference object's
+    * cband slot does: TRUE unless pointwise was asked for, whatever the
+    * inference. Under analytical the ATT(g,t) table itself stays pointwise
+    * (the reference's fit carries the pointwise quantile when bstrap is
+    * off), but the AGGREGATION reads this request and computes the
+    * simultaneous band by multiplier bootstrap, with a note -- see the
+    * banded-analytical branch in csdid_stats.ado.
+    local cband = ("`pointwise'" == "")
     if !`bstrap' & (`"`rseed_top'"' != "" | `"`seed_top'"' != "" | `"`reps_top'"' != "" | `"`biters_top'"' != "") {
         display as error "reps(), biters(), seed(), and rseed() require bootstrap inference; omit vce(analytical)"
         exit 198
@@ -570,6 +609,19 @@ program define csdid, eclass sortpreserve
                 exit 198
             }
         }
+        else if regexm(lower(`"`csdid_zero_entry'"'), "[, ]`csdid_intopt'\( *\)") {
+            * a TYPED-but-empty count or seed -- reps(), rseed(`unset') --
+            * fell through to the defaults silently, so a run the user
+            * believed seeded was unseeded and unreproducible at rc 0
+            * (in-house review, entry lens). An empty option is a typo, not
+            * a request for the default.
+            display as error "`csdid_intopt'() is empty; supply a positive integer or omit the option"
+            exit 198
+        }
+    }
+    if regexm(lower(`"`wboot'"'), "(reps|biters|seed|rseed)\( *\)") {
+        display as error "wboot(`=regexs(1)'()) is empty; supply a positive integer or omit the sub-option"
+        exit 198
     }
     if `bstrap' {
         local biters 1000
@@ -713,7 +765,6 @@ program define csdid, eclass sortpreserve
             local boot_seed : display %21.0f `seed_value'
             local boot_seed = strtrim("`boot_seed'")
         }
-        local cband = ("`pointwise'" == "")
     }
     if "`boot_cluster'" != "" {
         local boot_cluster_words : word count `boot_cluster'
@@ -794,6 +845,10 @@ program define csdid, eclass sortpreserve
         quietly generate double `wtmp' `exp'
         local wvar "`wtmp'"
     }
+    * The VALUES are strict lowercase in both spellings, exactly as the
+    * reference implementation's match.arg is -- the synonyms used to be
+    * lenient only because the catch-all lowers whole tokens (in-house
+    * review, entry lens). The refusals below name the spelling typed.
     local base_period = strtrim(`"`base_period'"')
     local fix_weights = strtrim(`"`fix_weights'"')
     if "`base_period'" == "" {
@@ -808,14 +863,14 @@ program define csdid, eclass sortpreserve
         local base_period "universal"
     }
     if !inlist("`base_period'", "varying", "universal") {
-        display as error "baseperiod() must be varying or universal"
+        display as error "`base_period_src'() must be varying or universal"
         exit 198
     }
     if "`fix_weights'" != "" {
         if inlist("`fix_weights'", "base", "baseperiod") local fix_weights "base_period"
         if inlist("`fix_weights'", "first", "firstperiod") local fix_weights "first_period"
         if !inlist("`fix_weights'", "varying", "base_period", "first_period") {
-            display as error "fixweights() must be one of varying, base, or first"
+            display as error "`fix_weights_src'() must be one of varying, base, or first"
             exit 198
         }
         if inlist("`fix_weights'", "base_period", "first_period") & ///
@@ -824,10 +879,10 @@ program define csdid, eclass sortpreserve
             if "`fix_weights'" == "base_period" local fix_weights_label "base"
             if "`fix_weights'" == "first_period" local fix_weights_label "first"
             if "`rcs'" != "" {
-                display as error "fixweights(`fix_weights_label') holds each unit's weight fixed across periods, which requires following the same unit over time. rcs declares the data to be repeated cross sections, where each observation is a different unit. Use fixweights(varying), or drop rcs if these data are a panel."
+                display as error "`fix_weights_src'(`fix_weights_label') holds each unit's weight fixed across periods, which requires following the same unit over time. rcs declares the data to be repeated cross sections, where each observation is a different unit. Use `fix_weights_src'(varying), or drop rcs if these data are a panel."
                 exit 198
             }
-            display as error "fixweights(`fix_weights_label') requires ivar(); repeated cross-section fixed-weight modes are unsupported"
+            display as error "`fix_weights_src'(`fix_weights_label') requires ivar(); repeated cross-section fixed-weight modes are unsupported"
             exit 198
         }
     }
@@ -973,6 +1028,20 @@ program define csdid, eclass sortpreserve
                 }
                 else {
                     quietly bysort `ivar': egen byte `xmiss_unit' = max(`xmiss') if `touse'
+                    * R reaches the same estimation sample by a different
+                    * route -- complete-case ROWS first, then balancing --
+                    * so a unit removed whole here, if it still had complete
+                    * rows, is a unit R counts in its balance announcement.
+                    * Record those units and their complete rows now; the
+                    * balance warning below adds them so its count is R's
+                    * (in-house review: R announced 1 and 3 units where the
+                    * balance scan alone announced 0 and 2).
+                    tempvar xtag
+                    quietly egen byte `xtag' = tag(`ivar') if `touse' & `xmiss_unit' == 1 & `xmiss' == 0
+                    quietly count if `xtag' == 1
+                    local xdrop_bal_units = r(N)
+                    quietly count if `touse' & `xmiss_unit' == 1 & `xmiss' == 0
+                    local xdrop_bal_obs = r(N)
                     quietly replace `touse' = 0 if `xmiss_unit' == 1
                 }
                 * on the panel path a unit is dropped whole
@@ -1267,6 +1336,17 @@ program define csdid, eclass sortpreserve
         * then :437-446), so a unit missing only a deleted period is kept.
         local bal_T = __csdid_ps_baltime
         local balance_dropped_units = __csdid_ps_incunits
+        if "`xdrop_bal_units'" == "" local xdrop_bal_units 0
+        if "`xdrop_bal_obs'" == "" local xdrop_bal_obs 0
+        * Units the covariate screen removed whole never reach the balance
+        * scan, but R counts them in ITS balance message when they still had
+        * complete rows -- so they join the announcement here, and the
+        * announcement fires even when the scan itself found nothing left to
+        * drop. The drop mechanics below still run only on the scan's count.
+        if `balance_dropped_units' == 0 & `xdrop_bal_units' > 0 {
+            local xdrop_bal_all = `xdrop_bal_units'
+            display as error "warning: `xdrop_bal_all' unit(s) are not observed in all `bal_T' periods; the panel is being balanced by dropping them (`xdrop_bal_obs' observation(s)). Use bal(none) to keep every unit, or bal(pair) to balance each 2×2 separately."
+        }
         if `balance_dropped_units' > 0 {
             * The announced count is not the marked count. A unit whose every
             * row lies at or beyond the cutoff is removed by R's period filter
@@ -1274,8 +1354,8 @@ program define csdid, eclass sortpreserve
             * :437-446), so R never announces it as a balance drop; csdid still
             * marks it, which the kernel's own cutoff makes numerically
             * irrelevant. Say what R says.
-            local balance_announced_units = __csdid_ps_balunits
-            local balance_dropped_obs = __csdid_ps_balobs
+            local balance_announced_units = __csdid_ps_balunits + `xdrop_bal_units'
+            local balance_dropped_obs = __csdid_ps_balobs + `xdrop_bal_obs'
             * "as error" is a DISPLAY STYLE here, not an error: it is the only
             * channel Stata does not suppress under `quietly csdid ...'.
             * Verified: `noisily display' inside a program does NOT survive a
@@ -1531,8 +1611,10 @@ program define csdid, eclass sortpreserve
     }
     if `__n_usable' <= 0 {
         display as error "No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings."
-        * F-010 (repaired): a refusal must not leave a previous estimation's
-        * e() posted (test-release-failure-modes asserts e(cmd) == "" here).
+        * Pre-kernel refusal: nothing has been estimated, so whatever
+        * estimation results were already in memory stay posted -- the
+        * refusal doctrine this file follows everywhere (measured: e(cmd)
+        * still names the prior estimator after this exit).
         exit 459
     }
     * F-014 R parity: group size is ROWS / n_periods (R's average units per
@@ -1583,7 +1665,8 @@ program define csdid, eclass sortpreserve
     }
     if "`small_groups'" != "" & `never_small' & "`notyet'" == "" {
         display as error "The never-treated group is too small to serve as a reliable comparison group. Try specifying notyet to include not-yet-treated units in the comparison group."
-        * As with the F-010 refusal, do not leave a previous estimation posted.
+        * Pre-kernel refusal: as at the No-valid-groups stop above, whatever
+        * estimation results were already in memory stay posted.
         exit 459
     }
     * Both of these announce a change to the SAMPLE or the ESTIMAND, so they
@@ -2573,9 +2656,13 @@ program define Display
         if !_rc local inf_line "`inf_line' (`=e(N_clusters)' clusters)"
     }
     local band_kind "pointwise"
+    * the ATT(g,t) band is simultaneous only when the bootstrap ran: with
+    * analytical inference the request e(cband) can be 1 while this table's
+    * critical value is the pointwise quantile (the aggregation is where the
+    * request is honored, by its own bootstrap).
     capture confirm scalar e(cband)
     if !_rc {
-        if e(cband) == 1 local band_kind "simultaneous"
+        if e(cband) == 1 & e(bstrap) == 1 local band_kind "simultaneous"
     }
     display as text "`inf_line'; `level'% `band_kind' bands"
     if `unseeded' {
@@ -2701,7 +2788,16 @@ program define _csdid_save_rif
     * covers it; the loader rebuilds the record from the characteristics it
     * finds and requires equality, and confirms the signature with -strict-
     * so an added variable refuses too.
-    local meta_canon ""
+    * Positional content digest: -datasignature-'s checksum is invariant to
+    * permuting values within a variable, to exchanging two variables'
+    * contents, and to negating a variable (measured: six such mutations of
+    * the influence-function, cluster, and weight columns reloaded at rc 0
+    * with changed standard errors -- in-house review, artifact lens). The
+    * Mata hash below serializes the full numeric content in row-and-column
+    * order, so none of those rearrangements survives it; it rides inside
+    * the canonical metadata record, which the row signature covers.
+    mata: st_local("rif_cdigest", strofreal(hash1(st_data(., .), 2147483647), "%12.0f") + "-" + strofreal(hash1(st_data(., .)', 2147483647), "%12.0f"))
+    local meta_canon `"|cdigest=`=subinstr(strtrim("`rif_cdigest'"), " ", "", .)'"'
     foreach ck in artifact cmdline panel_mode control_group base_period method N N_units N_attgt N_groups N_time anticipation level cluster_recorded clustervar N_clusters time_first group_prob_rows {
         local meta_canon `"`meta_canon'|`ck'=`: char _dta[csdid_`ck']'"'
     }

@@ -57,7 +57,13 @@ program define f074_sortcheck
     syntax , TYpe(string) LABel(string) [ESTOpts(string) NOPLUGin]
 
     if "`noplugin'" != "" global CSDID_BOOT_PLUGIN_DISABLE "1"
+    * The aggregation bootstrap continues R's live draw stream, so only
+    * aggregations at the SAME stream position are comparable: the baseline
+    * is estimation -> aggregation -> aggregation with the data untouched,
+    * and the probe is the same sequence with the user's reorder in between
+    * the two aggregations. The second aggregation must not notice the sort.
     quietly csdid y, time(t) gvar(g) method(reg) reps(199) rseed(12345) `estopts'
+    quietly csdid_stats, type(`type')
     quietly csdid_stats, type(`type')
     tempname agg_o draws_o b_o v_o
     matrix `agg_o'   = e(aggte)
@@ -67,8 +73,12 @@ program define f074_sortcheck
     local crit_o = e(crit_val)
     local pcrit_o = e(point_crit_val)
 
-    * The reorder a user is entitled to make. It changes nothing about the
-    * estimation sample, only the order the rows sit in.
+    * Same sequence, with the reorder a user is entitled to make between the
+    * two aggregations. It changes nothing about the estimation sample, only
+    * the order the rows sit in.
+    sort orig
+    quietly csdid y, time(t) gvar(g) method(reg) reps(199) rseed(12345) `estopts'
+    quietly csdid_stats, type(`type')
     gsort -orig
     quietly csdid_stats, type(`type')
     tempname agg_r draws_r b_r v_r
@@ -156,11 +166,18 @@ display as text "test-f074: the unit map's period column pairs with the data"
 * ---------------------------------------------------------------------------
 * CONTROLS. Neither was exposed, and neither may become so.
 * ---------------------------------------------------------------------------
+* Same positioned comparison as f074_sortcheck: the live draw stream makes
+* only same-position aggregations comparable, so the baseline runs the two
+* aggregations with the data untouched and the probe sorts in between.
 f074_data 5 8
 quietly csdid y, time(t) gvar(g) method(reg) reps(199) rseed(12345) cluster(cl)
 quietly csdid_stats, type(dynamic)
+quietly csdid_stats, type(dynamic)
 tempname cluster_o
 matrix `cluster_o' = e(aggte)
+sort orig
+quietly csdid y, time(t) gvar(g) method(reg) reps(199) rseed(12345) cluster(cl)
+quietly csdid_stats, type(dynamic)
 gsort -orig
 quietly csdid_stats, type(dynamic)
 tempname cluster_r
@@ -178,8 +195,12 @@ quietly generate long orig = _n
 quietly generate double y = sin(orig/7) + t + 2*(g == 3 & t >= 3)
 quietly csdid y, time(t) gvar(g) ivar(uid) method(reg) reps(199) rseed(12345)
 quietly csdid_stats, type(dynamic)
+quietly csdid_stats, type(dynamic)
 tempname panel_o
 matrix `panel_o' = e(aggte)
+sort orig
+quietly csdid y, time(t) gvar(g) ivar(uid) method(reg) reps(199) rseed(12345)
+quietly csdid_stats, type(dynamic)
 gsort -orig
 quietly csdid_stats, type(dynamic)
 tempname panel_r

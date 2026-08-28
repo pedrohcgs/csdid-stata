@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* Multiplier bootstrap option surface and draw stream (F035).
+* The four accepted wboot spellings - reps()/biters(), rseed()/seed(), inline or
+* nested - must be four ways of writing one run: same seed, same draws, same
+* boot_attgt to 1e-12, with the resulting seeded ATT(g,t) matched against R did
+* 2.5.1. The Mata multiplier generators are checked directly against the seeded
+* BMisc rademacher stream and against their own scalar reference, states
+* included, so a vectorized rewrite cannot shift the stream. Unsupported
+* multiplier types, non-integer or nonpositive reps()/rseed(), bootstrap options
+* under analytical inference, and conflicting cluster variables are all refused
+* by message and return code.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

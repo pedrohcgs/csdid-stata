@@ -1,3 +1,18 @@
+* ---------------------------------------------------------------------------
+* F022 pins how treatment timing is encoded. A cohort whose treatment date is
+* later than any period in the data is never observed treated, so R did 2.5.1
+* treats it as a comparison unit: those rows stay in the sample with their
+* group recoded to 0. csdid must do the same, and the per-row mask -- recoded
+* group, inclusion, and cell membership -- is compared rowid by rowid rather
+* than inferred from the estimates.
+*
+* The ATT(g,t) grid and its SEs are then compared against R on the recoded
+* sample, so a build that dropped the future-treated rows instead of reusing
+* them as controls fails on the numbers too. Negative gvar() values are not a
+* timing encoding csdid accepts: they are refused with rc 198 and a message
+* saying so.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

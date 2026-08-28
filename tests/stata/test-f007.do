@@ -1,3 +1,13 @@
+* ---------------------------------------------------------------------------
+* F007, fixture family base-period: base_period(varying) and base_period
+* (universal) are estimated on the same 192-row panel, stacked, and merged 1:1
+* against R did 2.5.1's base-period grid on (base_period, group, time) -- so
+* the two arms are pinned both to the oracle and, implicitly, to differing from
+* each other exactly where R differs. ATT to 1e-10, se to 1e-8. The file closes
+* by requiring base_period(bad) to exit 198 rather than falling through to a
+* default, which would make the option look supported and silently ignored.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

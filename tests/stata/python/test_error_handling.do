@@ -121,10 +121,10 @@ assert rowsof(M) > 0
 assert !missing(M[1,4])
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv", clear asdouble
-py008_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) fix_weights(nope) analytical") message("fixweights() must be one of varying, base, or first")
+py008_expect_failure, command("csdid y, ivar(id) time(period) gvar(g) fix_weights(nope) analytical") message("fix_weights() must be one of varying, base, or first")
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv", clear asdouble
-py008_expect_failure, command("csdid y, time(period) gvar(g) fix_weights(first_period) analytical") message("fixweights(first) requires ivar()")
+py008_expect_failure, command("csdid y, time(period) gvar(g) fix_weights(first_period) analytical") message("fix_weights(first) requires ivar()")
 
 import delimited using "`root'/tests/fixtures/parity/py008/inputs/sim-data.csv", clear asdouble
 py008_expect_failure, command("csdid y, ivar(id) time(period) gvar(nonexistent_col) fast analytical") message("variable nonexistent_col not found")

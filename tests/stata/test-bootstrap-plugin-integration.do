@@ -1,3 +1,16 @@
+* ---------------------------------------------------------------------------
+* The compiled bootstrap accelerator is an optimization, not a second method:
+* on the same seed it must reproduce the Mata path bit-for-bit. Each pair of
+* runs below is identical except for CSDID_BOOT_PLUGIN_DISABLE, and every
+* channel the bootstrap posts -- e(attgt), e(boot_attgt), e(boot_draws),
+* e(V), and the aggregate e(aggte)/e(boot_aggte)/e(agg_boot_draws) -- is
+* compared, with e(boot_rng_state) required to match EXACTLY. Covered:
+* weighted DR with covariates, clustered reg, an unbalanced panel, and the
+* aggregation bootstrap under both lean and cached storage. The accelerator
+* status strings are asserted too, so a plugin that silently declines to load
+* fails here instead of passing as a slower green run.
+* ---------------------------------------------------------------------------
+
 version 15
 clear all
 set more off

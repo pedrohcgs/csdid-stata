@@ -1,0 +1,25 @@
+SHAPE: s04_dead_g
+faster_mode: TRUE
+ERROR: <none>
+N_WARNINGS: 1
+WARNING[1]: dropped 90 rows from original data due to missing or non-finite data
+N_MESSAGES: 0
+tlist: 1 2 4 5
+glist: 3 4
+fit_t_unique: 2 4 5
+fit_group_unique: 3 4
+fit_n: 90
+DIDparams_panel: TRUE
+DIDparams_allow_unbalanced_panel: FALSE
+DIDparams_true_repeated_cross_sections: FALSE
+inffunc_nrow: 90
+inffunc_ncol: 6
+n_cells: 6
+--- (g,t) table ---
+group	time	att	se
+3	2	-0.26972531160426599	0.28118326410291472
+3	4	2.0155418577713937	0.26178872849956369
+3	5	2.7703845807269136	0.28779513385479455
+4	2	-0.49833422745628153	0.28353822439326787
+4	4	1.9396814421150597	0.25123415430074431
+4	5	2.6643188408437362	0.32179527216508752

@@ -1,0 +1,29 @@
+SHAPE: s09_partial_control
+faster_mode: TRUE
+ERROR: <none>
+N_WARNINGS: 3
+WARNING[1]: dropped 30 rows from original data due to missing or non-finite data
+WARNING[2]: 30 units are missing in some periods. Converting to balanced panel by dropping them.
+WARNING[3]: No pre-treatment periods available for the Wald pre-test of parallel trends: pre-treatment ATT(g,t) estimates exist, but all of them have missing or zero variance (e.g., because the underlying 2x2 estimation failed for those cells), so they were dropped from the pre-test.
+N_MESSAGES: 0
+tlist: 1 2 3 4 5
+glist: 3 4
+fit_t_unique: 2 3 4 5
+fit_group_unique: 3 4
+fit_n: 60
+DIDparams_panel: TRUE
+DIDparams_allow_unbalanced_panel: FALSE
+DIDparams_true_repeated_cross_sections: FALSE
+inffunc_nrow: 60
+inffunc_ncol: 8
+n_cells: 8
+--- (g,t) table ---
+group	time	att	se
+3	2	NA	NA
+3	3	NA	NA
+3	4	NA	NA
+3	5	NA	NA
+4	2	NA	NA
+4	3	NA	NA
+4	4	NA	NA
+4	5	NA	NA

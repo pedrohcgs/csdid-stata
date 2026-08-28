@@ -596,12 +596,30 @@ program define _csdid_stats_main, eclass
     * "missing values found in ATT(g,t) estimates", ...) arrived with two
     * lines of Mata frames stapled underneath it. Run it under -capture- and
     * re-raise the diagnosis from the ado.
+    capture scalar drop CSDID_AGG_BAL_DRIFT
+    global CSDID_AGG_BAL_DRIFT_LIST
     capture mata: csdid_aggte("`type'", `min_e', `max_e', `balance_e', `na_rm_flag', `use_cluster', `use_cache', "`aggte'", "`agg_inffunc'", `agg_store_large')
     local aggte_rc = _rc
     if `aggte_rc' {
         _csdid_stats_aggfail, type(`type') mine(`min_e') maxe(`max_e') ///
             bale(`balance_e') narm(`na_rm_flag') usecache(`use_cache')
         exit `aggte_rc'
+    }
+    * Owner decision 2026-08-28: when dropmissing removed an estimated cell
+    * INSIDE the balanced window, the balanced profile's cohort composition
+    * differs across the event times it reports -- announced here, error-styled
+    * so it survives a caller's `quietly' (a composition property of the
+    * reported table changed; the rule stated at the bal() drop in csdid.ado
+    * applies identically).
+    capture confirm scalar CSDID_AGG_BAL_DRIFT
+    if !_rc {
+        local bal_drift = scalar(CSDID_AGG_BAL_DRIFT)
+        scalar drop CSDID_AGG_BAL_DRIFT
+        local bal_drift_list `"$CSDID_AGG_BAL_DRIFT_LIST"'
+        global CSDID_AGG_BAL_DRIFT_LIST
+        local bal_drift_more ""
+        if `bal_drift' > 5 local bal_drift_more "; ..."
+        display as error `"warning: `bal_drift' missing cell(s) fall inside the balance(`balance_e') window (`bal_drift_list'`bal_drift_more'), so under dropmissing their cohorts leave those event times while remaining in the rest of the window: the balanced profile's cohort composition differs across event times. See e(attgt) for the missing cells."'
     }
     capture confirm scalar e(bstrap)
     local bstrap = 0

@@ -1,0 +1,21 @@
+{
+  "matrix_id": "RT036",
+  "fixture_family": "dead-period-covariate-rule",
+  "normative_source": "R did 2.5.1 pre_process_did.R: a period whose covariates are missing on every row is deleted before the period list exists; the reduced calendar governs the grid, base re-anchoring, the first-period cohort trim, balancing, and n",
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt036/generate.R",
+      "path": "tools/parity/generators/rt036/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": ["aarch64-apple-darwin23.aarch64-apple-darwin23", "aarch64.aarch64", "darwin23.darwin23", "aarch64, darwin23.aarch64, darwin23", ".", "4.4", "6.0.6.0", "2026.2026", "04.04", "24.24", "89956.89956", "R.R", "R version 4.6.0 (2026-04-24).R version 4.6.0 (2026-04-24)", "Because it was There.Because it was There"]
+    }
+  ],
+  "consumers": [
+    "tests/stata/r/test-dead-period-covariate.do"
+  ]
+}

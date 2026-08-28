@@ -202,9 +202,10 @@ whether a cohort's last surviving period is at least {it:#} periods after
 treatment, not whether every event time inside the window was estimated for
 it. A cohort with a missing cell at an interior event time therefore drops
 out of that one event time while still contributing to the others, and the
-composition inside the balanced window can then differ across event times. When
-{opt dropmissing} was needed, inspect {cmd:e(attgt)} for which cells are
-missing before reading the balanced profile as composition-constant.
+composition inside the balanced window can then differ across event times.
+When that happens {cmd:csdid_stats} says so: a warning names each missing
+cell inside the window and its cohort. Inspect {cmd:e(attgt)} for the missing
+cells before reading the balanced profile as composition-constant.
 {cmd:balance(0)} is legal and keeps every cohort with at least one
 post-treatment period. {cmd:balance()} needs the first period of the estimation
 sample, which {cmd:csdid} stores in {cmd:e(time_first)}; a RIF file written by
@@ -364,7 +365,8 @@ leave event times that not every retained cohort reaches. The guarantee is
 exact when every retained cohort's cells inside the window were estimated;
 when {opt dropmissing} removes a failed cell at an interior event time, its
 cohort leaves that one event time but remains in the rest of the window, so
-some composition change survives the balancing. If that matters for the
+some composition change survives the balancing -- and {cmd:csdid_stats}
+warns, naming each such cell. If composition constancy matters for the
 application, resolve the failed cells -- the estimation names each one and
 its cause -- rather than dropping them.
 

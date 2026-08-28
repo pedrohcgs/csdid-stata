@@ -7065,6 +7065,10 @@ class csdid__Agg {
     real matrix    inffunc
     real matrix    group_prob
     real matrix    unit_map
+    // (group, event_time) of the cells na_rm dropped, kept so the dynamic
+    // aggregation can see whether a dropped cell sat inside a balanced
+    // window it is about to report as composition-constant
+    real matrix    dropped_gt
     real colvector group
     real colvector tt
     real colvector event_time
@@ -7297,6 +7301,7 @@ void csdid__Agg::load()
     }
 
     att = attgt[., 4]
+    dropped_gt = J(0, 2, .)
     if (sum(att :>= .) > 0) {
         if (!na_rm) {
             // Say how many cells are missing and out of how many, so the user
@@ -7321,6 +7326,7 @@ void csdid__Agg::load()
             _error(498)
         }
         keep_notmiss = which(notmiss)
+        dropped_gt = select(attgt[., (1, 3)], att :>= .)
         attgt = attgt[keep_notmiss, .]
         inffunc = inffunc[., keep_notmiss]
     }
@@ -7722,6 +7728,8 @@ void csdid__Agg::agg_dynamic()
     real rowvector keep, keep2
     real scalar i, e, n_effects, max_t, effect, se
     real scalar t_first  // F-009: balance_e truncation needs e(time_first)
+    real scalar drift_n
+    string scalar drift_list
 
     include_balanced = J(rows(group), 1, 1)
     if (balance_e >= 0) {
@@ -7753,6 +7761,32 @@ void csdid__Agg::agg_dynamic()
     if (rows(egt) == 0) {
         errprintf("no event times fall within the requested aggregation window\n")
         _error(498)
+    }
+    // Owner decision 2026-08-28: composition drift inside the balanced
+    // window is ANNOUNCED. The balance rule admits cohorts by cohort alone
+    // -- (maxT - g) >= balance_e, no per-event-time presence test, exactly
+    // the reference's own rule -- so a cell removed by dropmissing at an
+    // event time the window still reports takes its cohort out of that one
+    // event time while leaving it in the rest. The numbers match the
+    // reference either way; the reference says nothing when it happens, and
+    // a balanced profile is read as composition-constant, so csdid says so
+    // (the register's over-warn precedent). The ado prints from the flags.
+    if (balance_e >= 0 & na_rm & rows(dropped_gt) > 0) {
+        drift_n = 0
+        drift_list = ""
+        for (i = 1; i <= rows(dropped_gt); i++) {
+            if ((max_t - dropped_gt[i, 1]) >= balance_e & sum(egt :== dropped_gt[i, 2]) > 0) {
+                drift_n = drift_n + 1
+                if (drift_n <= 5) {
+                    drift_list = drift_list + (drift_list == "" ? "" : "; ") +
+                        sprintf("cohort %g at event time %g", dropped_gt[i, 1], dropped_gt[i, 2])
+                }
+            }
+        }
+        if (drift_n > 0) {
+            st_numscalar("CSDID_AGG_BAL_DRIFT", drift_n)
+            st_global("CSDID_AGG_BAL_DRIFT_LIST", drift_list)
+        }
     }
     n_effects = rows(egt)
     effects = J(n_effects, 1, .)

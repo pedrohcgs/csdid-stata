@@ -915,15 +915,18 @@ values, while pre-treatment cells use covariates measured within the
 pre-treatment window.
 
 {pstd}
-{bf:Covariates on the panel path.} A unit whose covariates are missing in any
-period is dropped whole, because the estimator differences that unit over time.
-A covariate that is missing for {it:every} observation of one period therefore
-removes the entire sample. {cmd:csdid} detects that shape and refuses with
-{cmd:r(459)}, naming the covariate and the period, rather than quietly
-dropping that period and estimating on what remains. The remedies the message
-names are to exclude the period (for
-example {cmd:if} {it:timevar} {cmd:!=} {it:t}), to supply the covariate for it,
-or to drop the covariate.
+{bf:Covariates on the panel path.} A covariate that is missing for
+{it:every} observation of one calendar period removes that period from the
+estimation before anything else runs: the remaining periods form the
+calendar, base periods re-anchor to the previous surviving period, no unit
+is dropped, and {cmd:csdid} announces the deletion in a warning naming the
+covariate and the period -- estimation then proceeds exactly as if the
+sample had excluded the period (for example
+{cmd:if} {it:timevar} {cmd:!=} {it:t}). Supply the covariate for the period
+to keep it. On the periods that remain, a unit whose covariates are missing
+in any period is dropped whole, because the estimator differences that unit
+over time; when every period is affected nothing remains, and {cmd:csdid}
+refuses with {cmd:r(459)} naming the cause.
 
 {pstd}
 {bf:Period and cohort codes.} Values so large that the ATT(g,t) coefficient

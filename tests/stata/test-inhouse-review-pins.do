@@ -298,4 +298,43 @@ tempname SEB
 matrix `SEB' = e(aggte)
 assert mreldif(`SEA', `SEB') == 0
 display as text "pin 6: banded analytical aggregation mirrors R, bit for bit at the kernel"
+
+* ---------------------------------------------------------------------------
+* 7. Composition drift inside a balanced window is announced (owner decision
+*    2026-08-28). The panel kills two cells via a singular covariate design;
+*    under balance(1) dropmissing their event times are inside the reported
+*    window, so the warning names them; restricting the window to exclude
+*    them silences it; without balance() there is no promise and no warning.
+* ---------------------------------------------------------------------------
+clear
+quietly set obs 120
+generate long id = _n
+generate double g = cond(mod(id, 3) == 0, 0, cond(mod(id, 3) == 1, 6, 7))
+quietly expand 8
+bysort id: generate double t = _n
+generate double z1 = sin(id) + 0.1 * t
+generate double z2 = cond(t == 2, z1, cos(id) - 0.2 * t)
+generate double y = 1 + 0.2 * t + 0.4 * z1 + 0.2 * z2 + 0.5 * (g > 0 & t >= g) + mod(id * 7 + t * 11, 19) / 19
+quietly csdid y z1 z2, ivar(id) time(t) gvar(g) method(dr) nevertreated base_period(varying) analytical pointwise
+capture log close ihrdrift
+log using "`evlog'", text replace name(ihrdrift)
+csdid_stats event, balance(1) dropmissing
+log close ihrdrift
+ihr_assert_log_contains using "`evlog'", message("fall inside the balance(1) window")
+capture log close ihrdrift2
+log using "`evlog'", text replace name(ihrdrift2)
+csdid_stats event, balance(1) window(-1 1) dropmissing
+csdid_stats event, dropmissing
+log close ihrdrift2
+tempname fh2
+local found2 0
+file open `fh2' using "`evlog'", read text
+file read `fh2' line
+while r(eof) == 0 {
+    if strpos(`"`macval(line)'"', "fall inside the balance(") local found2 1
+    file read `fh2' line
+}
+file close `fh2'
+assert `found2' == 0
+display as text "pin 7: balanced-window composition drift warns by name, and only when real"
 display as text "test-inhouse-review-pins: all pins green"

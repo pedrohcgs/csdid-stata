@@ -1011,6 +1011,51 @@ program define csdid, eclass sortpreserve
                 foreach xv of local xvars_expanded {
                     quietly replace `xmiss' = 1 if `touse' & missing(`xv')
                 }
+                * -----------------------------------------------------------
+                * A calendar period whose covariates are missing on EVERY row
+                * ceases to exist before the period list is built -- R's rule
+                * exactly (pre_process_did.R: the row-level complete-cases
+                * drop at :162 runs before tlist is read off the surviving
+                * rows at :215, so a wholly dead period is simply absent, no
+                * unit is dropped, and everything downstream -- base-period
+                * re-anchoring, the first-period cohort trim, balancing, n --
+                * runs on the reduced calendar). The rows are removed here for
+                * ALL units so the bal(full) whole-unit rule below cannot
+                * over-fire on misses confined to dead periods, and -- the
+                * owner's 2026-08-28 decision -- the deletion is ANNOUNCED by
+                * period and covariate, where R says only how many rows left.
+                * Detection precedes the whole-unit propagation and applies on
+                * every balance mode; a period only PARTIALLY missing keeps
+                * its survivors and takes the ordinary route below.
+                * -----------------------------------------------------------
+                quietly levelsof `time' if `touse', local(ds07_periods)
+                local ds07_dead ""
+                foreach tv of local ds07_periods {
+                    quietly count if `touse' & `time' == `tv' & `xmiss' == 0
+                    if r(N) == 0 {
+                        local ds07_dead "`ds07_dead' `tv'"
+                    }
+                }
+                local ds07_dead = strtrim("`ds07_dead'")
+                if "`ds07_dead'" != "" {
+                    local ds07_nleft : word count `ds07_periods'
+                    local ds07_ndead : word count `ds07_dead'
+                    local ds07_nleft = `ds07_nleft' - `ds07_ndead'
+                    foreach tv of local ds07_dead {
+                        local ds07_names ""
+                        foreach xv of local xvars_expanded {
+                            quietly count if `touse' & `time' == `tv' & !missing(`xv')
+                            if r(N) == 0 {
+                                local ds07_lbl "`xv'"
+                                if substr("`xv'", 1, 2) == "__" local ds07_lbl "a covariate built from `xvars'"
+                                local ds07_names "`ds07_names'`=cond("`ds07_names'" == "", "", ", ")'`ds07_lbl'"
+                            }
+                        }
+                        display as error "warning: covariate `ds07_names' is missing for every observation in period `tv' of time(`time'); the period was dropped and estimation proceeds on the `ds07_nleft' remaining period(s), exactly as if the sample had excluded it (if `time' != `tv'). Supply the covariate for that period to keep it."
+                        quietly replace `touse' = 0 if `touse' & `time' == `tv'
+                        quietly replace `xmiss' = . if `time' == `tv'
+                    }
+                }
                 if inlist("`balance_mode'", "pair", "none") {
                     * Under bal(pair) and bal(none) a row with a missing
                     * covariate is treated as an UNOBSERVED row: only that

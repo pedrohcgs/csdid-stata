@@ -1,0 +1,23 @@
+SHAPE: s11_dead_1and2
+faster_mode: TRUE
+ERROR: <none>
+N_WARNINGS: 3
+WARNING[1]: dropped 180 rows from original data due to missing or non-finite data
+WARNING[2]: Dropped 30 units that were already treated in the first period.
+WARNING[3]: No pre-treatment periods available for the Wald pre-test of parallel trends. This can happen when all groups are first treated early in the panel (e.g., in the second time period) so that no pre-treatment ATT(g,t) estimates exist.
+N_MESSAGES: 0
+tlist: 3 4 5
+glist: 4
+fit_t_unique: 4 5
+fit_group_unique: 4
+fit_n: 60
+DIDparams_panel: TRUE
+DIDparams_allow_unbalanced_panel: FALSE
+DIDparams_true_repeated_cross_sections: FALSE
+inffunc_nrow: 60
+inffunc_ncol: 2
+n_cells: 2
+--- (g,t) table ---
+group	time	att	se
+4	4	1.7406781518591703	0.3094356043130011
+4	5	2.4588267653763531	0.31530197888988593

@@ -1,0 +1,11 @@
+units_in_raw_data: 90
+rows_raw: 450
+rows_after_row_level_NA_drop: 360
+periods_surviving: 1 3 4 5
+units_surviving_all_surviving_periods: 90
+fit_n_fmTRUE: 90
+inffunc_rownames_count_fmTRUE: 90
+fit_n_fmFALSE: 90
+rows_in_dp_data_fmFALSE: 360
+units_in_dp_data_fmFALSE: 90
+periods_in_dp_data_fmFALSE: 1 3 4 5

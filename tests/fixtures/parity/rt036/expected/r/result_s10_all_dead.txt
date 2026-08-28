@@ -1,0 +1,9 @@
+SHAPE: s10_all_dead
+faster_mode: TRUE
+ERROR: All observations dropped while converting data to balanced panel. Consider setting `panel = FALSE` and/or revisiting 'idname'.
+N_WARNINGS: 4
+WARNING[1]: dropped 450 rows from original data due to missing or non-finite data
+WARNING[2]: no non-missing arguments to max; returning -Inf
+WARNING[3]: no non-missing arguments to max; returning -Inf
+WARNING[4]: No never-treated group is available. The last treated cohort is being coerced as 'never-treated' units, and data from periods after that is being filtered out (no available comparison groups).
+N_MESSAGES: 0

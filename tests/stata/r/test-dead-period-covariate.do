@@ -12,7 +12,16 @@
 * periods at once, universal base (the normalised zero moves to the last
 * surviving pre period), anticipation (the base shifts on the reduced
 * calendar), the early-period kill that deletes a whole cohort through the
-* first-period trim, and the all-dead refusal. Reference values from
+* first-period trim, and the all-dead refusal. Shape 9 pins the family's
+* boundary: a covariate missing for SOME rows of a period, for every
+* never-treated unit, so that balancing removes the never-treated group
+* whole. R's never-treated availability check has already run on the
+* pre-balancing cohort list, so R returns an all-NA grid in silence; csdid
+* re-checks on the settled sample, applies R's OWN no-never-treated rule
+* there (the latest cohort becomes the comparison group, later periods are
+* dropped) and says so. Shape 9b is R run on the balanced sample, where that
+* rule fires: csdid's grid on the raw data is that grid (owner decision
+* 2026-08-28, AGENTS.md sixth registered divergence). Reference values from
 * tools/parity/generators/rt036/generate.R.
 * ---------------------------------------------------------------------------
 
@@ -121,6 +130,25 @@ csdid y x1, ivar(id) time(time) gvar(g) method(dr) nevertreated base_period(vary
 log close rt036log
 rt036_log_has using "`evlog'", message("already treated in the first period")
 rt036_assert_matches_r, expected("`fixture'/expected/r/attgt_s11_dead_1and2.csv") nunits(60) ntime(3)
+
+* --- shape 9: balancing removes the never-treated group whole. The oracle's
+*     own grid on the raw data is all NA and says nothing; csdid announces
+*     R's no-never-treated fallback and reports the grid R produces when
+*     handed the balanced sample (shape 9b)
+import delimited using "`fixture'/expected/r/attgt_s09_partial_control.csv", clear asdouble
+capture confirm string variable att
+if !_rc quietly destring att, replace force
+assert _N == 8
+assert missing(att)
+import delimited using "`fixture'/inputs/input_s09_partial_control.csv", clear asdouble
+capture log close rt036log
+log using "`evlog'", text replace name(rt036log)
+csdid y x1, ivar(id) time(time) gvar(g) method(dr) nevertreated base_period(varying) analytical pointwise
+log close rt036log
+rt036_log_has using "`evlog'", message("No never-treated group available")
+assert "`e(control_group)'" == "nevertreated"
+assert e(N_attgt) == 2
+rt036_assert_matches_r, expected("`fixture'/expected/r/attgt_s09b_partial_control_balanced.csv") nunits(60) ntime(3)
 
 * --- shape 10: total annihilation refuses
 import delimited using "`fixture'/inputs/input_s10_all_dead.csv", clear asdouble

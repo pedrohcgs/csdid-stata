@@ -7,8 +7,15 @@
 # dead middle/first/last period, a dead varying base, a cohort's own
 # treatment period dead, two dead periods, universal base, anticipation, and
 # the early-period kill that trims a whole cohort -- plus the all-dead
-# refusal. Inputs are quantized to exact multiples of 2^-13 so 17-digit CSVs
-# replay bit-identically through R and Stata parsers alike.
+# refusal. Shape 9 is the boundary the family surfaced: a covariate missing
+# for SOME rows of a period such that balancing removes exactly the
+# never-treated units. R's never-treated availability check has already run
+# on the pre-balancing cohort list, so R returns an all-NA grid in silence;
+# shape 9b feeds R the balanced sample itself, where its own fallback fires,
+# and pins the grid csdid reports on the raw data (owner decision
+# 2026-08-28: csdid keeps the loud fallback -- R's own rule, applied to the
+# settled sample). Inputs are quantized to exact multiples of 2^-13 so
+# 17-digit CSVs replay bit-identically through R and Stata parsers alike.
 
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
@@ -71,6 +78,13 @@ kill_periods <- function(d, periods, only_g = NULL) {
   if (!is.null(only_g)) m <- m & (d$g %in% only_g)
   d$x1[m] <- NA_real_
   d
+}
+
+# the sample R's balanced-panel coercion leaves behind: every unit with a
+# missing covariate cell is gone whole (pre_process_did2.R, the
+# "units are missing in some periods" step)
+drop_incomplete_units <- function(d) {
+  d[!(d$id %in% unique(d$id[is.na(d$x1)])), ]
 }
 
 # ------------------------------------------------------------------ runner ----
@@ -170,6 +184,8 @@ shapes <- list(
   list(name = "s07_dead_universal", d = kill_periods(BASE, 2),         args = list(base_period = "universal")),
   list(name = "s08_dead_anticip",   d = kill_periods(BASE, 2),         args = list(anticipation = 1)),
   list(name = "s09_partial_control", d = kill_periods(BASE, 2, only_g = 0), args = list()),
+  list(name = "s09b_partial_control_balanced",
+       d = drop_incomplete_units(kill_periods(BASE, 2, only_g = 0)), args = list()),
   list(name = "s10_all_dead",       d = kill_periods(BASE, PERIODS),   args = list()),
   # extra boundary: the dead periods push the first SURVIVING period up onto a
   # cohort's own treatment date, so that cohort is dropped as "already treated in

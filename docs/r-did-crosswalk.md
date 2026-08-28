@@ -279,6 +279,19 @@ reproduce R's random-number stream, so the accelerator is a speed decision and
 never an estimand decision. `e(bootstrap_accelerator)` and
 `e(bootstrap_accelerator_status)` report which path ran.
 
+**6.7 A never-treated group that balancing empties is replaced out loud, not
+left to return blanks.**
+Both packages drop a unit whole when any of its covariate cells is missing
+(`bal(full)`, `allow_unbalanced_panel = FALSE`). When that step removes every
+never-treated unit, R has already decided that a never-treated group exists
+and goes on to estimate: under `control_group = "nevertreated"` every ATT(g,t)
+is `NA`, and no warning says why. `csdid` makes that decision on the sample it
+actually estimates on, so it applies the rule both packages use when no
+never-treated unit exists to begin with -- the latest treated cohort becomes
+the comparison group and the periods from its treatment date on are dropped --
+and warns that it did so. The numbers are the ones R reports when it is given
+the balanced sample directly.
+
 Legacy-Stata-facing divergences (options that exist only to ease migration from
 Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in
 `docs/legacy-stata-compatibility.md` and `docs/legacy-migration-guide.md`.

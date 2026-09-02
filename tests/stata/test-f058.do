@@ -91,6 +91,45 @@ f058_log_has using "`lg'", message("`nmiss' of the `ntot' ATT(g,t) cells have a 
 assert r(found)
 f058_log_has using "`lg'", message("Specify dropmissing to aggregate over the `nkeep' cells that were estimated")
 assert r(found)
+* the refusal spells out the retype for THIS surface: dropmissing beside
+* agg(event), or an aggregation of the standing results.
+f058_log_has using "`lg'", message("(that is: csdid ..., agg(event) dropmissing")
+assert r(found)
+
+* -----------------------------------------------------------------------
+* 1b. The same refusal, reached from the other two surfaces, names the
+*     retype for the surface the user is on (remedy() plumbing).
+* -----------------------------------------------------------------------
+tempfile lgs
+log using "`lgs'", text replace name(f058s)
+capture noisily csdid_stats, type(dynamic)
+local rc_stats = _rc
+log close f058s
+assert `rc_stats' == 498
+f058_log_has using "`lgs'", message("(that is: csdid_stats, type(dynamic) dropmissing)")
+assert r(found)
+
+* -- and the retype carries the options that change WHICH aggregation it is.
+*    Advice that drops window() names a command that runs and returns a
+*    different aggregation than the one that just failed: the numbers come
+*    back and nothing says they answer a different question.
+tempfile lgw
+log using "`lgw'", text replace name(f058w)
+capture noisily csdid_stats, type(dynamic) window(-3 2)
+local rc_win = _rc
+log close f058w
+assert `rc_win' == 498
+f058_log_has using "`lgw'", message("(that is: csdid_stats, type(dynamic) dropmissing window(-3 2))")
+assert r(found)
+
+tempfile lge
+log using "`lge'", text replace name(f058e)
+capture noisily estat event
+local rc_estat = _rc
+log close f058e
+assert `rc_estat' == 498
+f058_log_has using "`lge'", message("(that is: estat event, dropmissing)")
+assert r(found)
 
 * -----------------------------------------------------------------------
 * 2. agg(event) dropmissing runs, and gives exactly what the hand-typed

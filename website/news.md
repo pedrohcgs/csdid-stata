@@ -48,8 +48,10 @@ period — often dozens — and pointwise intervals do not account for looking a
 all of them at once. Reading a 95% pointwise band as though it covered the whole
 event study understates uncertainty, and it is the most common way these results
 are over-read. The default is now the multiplier bootstrap with simultaneous
-bands over 1,000 iterations, so the interval you are shown is the one that
-covers every reported effect jointly.
+bands over 1,000 iterations, so the interval you are shown on each estimated
+effect is the one that covers them jointly. (An aggregation's overall summary
+effect is the exception: being a single number, it is reported with a pointwise
+interval.)
 
 `analytical` (or `vce(analytical)`) restores pointwise analytical standard
 errors, and `pointwise` gives pointwise intervals from the bootstrap. Point

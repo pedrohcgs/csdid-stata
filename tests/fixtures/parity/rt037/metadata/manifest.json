@@ -1,0 +1,66 @@
+{
+  "matrix_id": "RT037",
+  "fixture_family": "r-aggregation-band",
+  "normative_source": "R did 2.5.1 R/AGGTEobj.R (summary.AGGTEobj overall block) and R/tidy.R",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/mpdta.csv",
+      "rows": 2500,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt037/generate.R",
+      "path": "tools/parity/generators/rt037/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "jsonlite": "2.0.0"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 20200806,
+    "kind": ["Mersenne-Twister", "Inversion", "Rejection"]
+  },
+  "aggregation_sequence": ["dynamic", "group", "calendar", "simple"],
+  "expected_outputs": [
+    {
+      "path": "expected/r/overall-band.csv",
+      "schema": "overall-band"
+    },
+    {
+      "path": "expected/r/overall-band-rule.csv",
+      "schema": "overall-band-rule"
+    },
+    {
+      "path": "expected/r/tidy-aggte-group-bootstrap.csv",
+      "schema": "tidy-aggte-group"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata r(table) overall column implied critical value",
+      "expected": "expected/r/overall-band-rule.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "rule_id"
+    },
+    {
+      "actual": "Stata estat tidy group Average row",
+      "expected": "expected/r/tidy-aggte-group-bootstrap.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["type", "term"]
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT037 pins the critical value applied to an aggregation's overall summary effect under bstrap = TRUE and cband = TRUE, the configuration in which the simultaneous and pointwise critical values differ. csdid reproduces this package's multiplier draws draw for draw from the same seed, so the comparison is by VALUE as well as by rule, but only at a matched stream position: the recorded numbers belong to the aggregation order dynamic, group, calendar, simple, issued once after a single seeded estimation. A different order is equally valid R and will not reproduce these numbers. Every other generator emitting an overall row runs bstrap = FALSE and cband = FALSE, where the two critical values coincide."
+}

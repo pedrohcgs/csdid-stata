@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 28aug2026}{...}
+{* *! version 2.0.0 01sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -243,8 +243,8 @@ silently redefine the estimand. Use {cmd:window(}{it:# #}{cmd:)} with
 {phang}
 {opt dropmissing} drops ATT(g,t) cells whose estimate is missing before
 aggregating. Without it, a missing cell stops the aggregation with return code
-498 and a message that names the option, so a silently dropped cell can never
-change a reported average. {opt na_rm} and {cmd:na.rm} are the alternative
+498 and a message that names the option and the exact command to retype, so a
+silently dropped cell can never change a reported average. {opt na_rm} and {cmd:na.rm} are the alternative
 spellings. The same option, with the same meaning, is accepted on every
 {cmd:estat} aggregation route; see
 {helpb csdid_estat##opt_dropmissing:csdid_estat}.
@@ -402,15 +402,32 @@ errors are analytical but the SIMULTANEOUS band's critical value is
 bootstrapped -- there is no other way to compute one -- with a note saying
 so; the draws come from the session's random-number stream and {cmd:set seed}
 reproduces them. Under the default multiplier bootstrap
-the interval uses the bootstrap critical value, which is recomputed by the
-aggregation bootstrap each time {cmd:csdid_stats} runs, at the level in force
-for that run; with simultaneous bands it exceeds the pointwise normal quantile.
-Both critical values are stored, in {cmd:e(crit_val)} and
+the per-effect intervals use the bootstrap critical value, which is recomputed
+by the aggregation bootstrap each time {cmd:csdid_stats} runs, at the level in
+force for that run; with simultaneous bands it exceeds the pointwise normal
+quantile. Both critical values are stored, in {cmd:e(crit_val)} and
 {cmd:e(point_crit_val)}.
 
+{marker overallband}{...}
 {pstd}
-Two aggregations are always banded pointwise, whatever the estimation asked
-for, and the header above the table says so. {cmd:type(simple)} reports a
+{bf:The overall summary effect is always banded pointwise.} Whatever band the
+per-effect rows carry, the aggregation's overall effect --
+{cmd:overall_att}/{cmd:overall_se} in {cmd:e(aggte)} -- is
+interval-estimated at the normal quantile for {cmd:e(agg_level)}.
+({cmd:csdid_stats} posts {cmd:e()} only; the same effect appears as the
+{cmd:Post_avg}/{cmd:Overall}/{cmd:ATT} column of {cmd:r(table)} after
+{helpb csdid_estat} or {cmd:csdid, agg()}, which are what build it.)
+A simultaneous band answers whether a set of effects
+all lie inside their intervals at once; a single summary number is not a set.
+{cmd:csdid} bands the overall effect this way at every option combination.
+{cmd:e(agg_cband)} therefore describes the per-effect rows
+only, and building an overall interval from {cmd:e(crit_val)} gives one that is
+too wide.
+
+{pstd}
+Beyond that, two aggregations have their PER-EFFECT rows banded pointwise as
+well, whatever the estimation asked for, and the header above the table says
+so. {cmd:type(simple)} reports a
 single overall effect, for which a simultaneous band over one effect is the
 pointwise interval; and when the estimation's time grid has only two periods
 there is one comparison to band, so the simultaneous band is not defined
@@ -423,9 +440,11 @@ simultaneous band it was estimated with in every case; only the aggregation
 is affected.
 
 {pstd}
-{cmd:e(agg_cband)} reports which band the aggregation just computed carries: 1
-simultaneous, 0 pointwise. Read it rather than {cmd:e(cband)}, which describes
-the estimation and stays 1 through all the cases above.
+{cmd:e(agg_cband)} reports which band the aggregation just computed carries on
+its per-effect rows: 1 simultaneous, 0 pointwise. Read it rather than
+{cmd:e(cband)}, which describes the estimation and stays 1 through all the
+cases above. It never describes the overall summary row, which is banded
+pointwise either way.
 
 {marker rif}{...}
 {title:Aggregating a saved RIF file}
@@ -570,7 +589,13 @@ are left holding the values {cmd:csdid} stored at estimation time and do
 {bf:not} track a {cmd:level()} given to {cmd:csdid_stats}: the aggregation's
 critical value is then the normal quantile at {cmd:e(agg_level)}.
 {cmd:estat} {it:type}, {cmd:estat tidy}, and {helpb csdid_plot} already
-apply these rules; apply them too if you build bands by hand.
+apply these rules; apply them too if you build bands by hand -- including the
+overall-row rule above, which is the one most easily missed: the per-effect
+rows take {cmd:e(crit_val)}, and the overall summary takes the normal quantile
+at {cmd:e(agg_level)}. {cmd:e(point_crit_val)} holds that quantile in every
+case except the {cmd:analytical}-with-{cmd:pointwise} one just described,
+where both critical values are the estimation-time ones; compute the quantile
+from {cmd:e(agg_level)} if you want a rule that holds everywhere.
 
 {pstd}
 The {cmd:using} form additionally rebuilds the estimation results it needs from
@@ -631,7 +656,9 @@ simultaneous bands, the critical value is the 1 - alpha quantile of the maximum
 over reported effects of the absolute studentized draw, floored at the
 pointwise normal quantile, so the band covers the whole profile with the stated
 probability; {cmd:pointwise} at estimation time asks for the pointwise quantile
-instead. See Callaway and Sant'Anna (2021, section 4.2).
+instead. That maximum is taken over the aggregation's per-effect estimates; its
+overall summary effect is a single number and is interval-estimated at the
+pointwise quantile. See Callaway and Sant'Anna (2021, section 4.2).
 
 {pstd}
 The aggregation bootstrap is implemented in Mata. On macOS the package also

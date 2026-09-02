@@ -1,4 +1,4 @@
-*! csdid 2.0.0 28aug2026
+*! csdid 2.0.0 01sep2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -77,11 +77,11 @@ mata:
 // ([M-3] lmbuild, "Version control") -- never a hard edit; see
 // docs/stored-results-api.md for the policy.
 //
-// HOW MANY NAMES, and why the count is worth keeping. 132 free functions and
+// HOW MANY NAMES, and why the count is worth keeping. 135 free functions and
 // three classes: `mata mlib add csdid*()' writes one library member per free
-// function and ONE per class, so the compiled library holds 135 top-level
+// function and ONE per class, so the compiled library holds 138 top-level
 // names and the 28 class methods travel inside the three classdef entries
-// rather than beside them (165 members in all: 21 methods on csdid__Agg,
+// rather than beside them (166 members in all: 21 methods on csdid__Agg,
 // 3 on csdid__Boot, 4 on csdid__Engine). Mata answers a global name it
 // is not already holding by walking c(matalibs), so each free name is a
 // first-call lookup a session pays once and a method is not.
@@ -1878,7 +1878,7 @@ void csdid__prescan(
     external class csdid__Engine scalar CSDID_ENGINE
     real colvector tv, gv, idv, clv, rowsel, runlen, runstart, runheads, gsmall
     real colvector tlev, glev, gcnt, ord, badunit, okrow, csum
-    real colvector sid, stime, sg, scl, same, ordf, d_id, within, fpsel
+    real colvector sid, stime, sg, scl, same, ordf, d_id, within, fpsel, keep
     real scalar n, i, r0, nrun, tmin, tmax, gmin, gmax, nt, cutoff
     real scalar nt_bal, unit_bal, bal_units, bal_obs
     real scalar never_ct, firstper_ct, firstper_units, n_units, inc_units, inc_obs, grouped
@@ -1957,6 +1957,194 @@ void csdid__prescan(
             else firstper_units = length(ord)
         }
     }
+    // The shape refusals are computed BEFORE the line-319 reduction below,
+    // which is where they have always been measured: on touse as it stands.
+    // R does the same -- validate_args() runs the gname-irreversibility,
+    // duplicate-(id,time) and time-varying-cluster checks on the RAW data
+    // before any filtering. Measuring them after the reduction hid a real
+    // violation: test-f068 moves a unit's cohort to the FIRST period, so the
+    // rows that prove treatment timing runs backwards are exactly the rows
+    // the reduction removes, and the 459 refusal stopped firing.
+
+    // ---- panel shape flags -------------------------------------------
+    // The four shape refusals the ado raises before the kernel runs: unit
+    // count, gvar varying within a unit, cluster varying within a unit, and
+    // duplicate (id, time) rows. They are computed HERE, from the id, time and
+    // gvar this routine already holds, rather than in a pass of their own -- a
+    // separate pass re-reading the same three variables measured 0.19s of a
+    // 0.79s panel run at 600,000 rows.
+    //
+    // What sample they describe: touse, as it stands on the call that computes
+    // them. The driver calls this routine again on the reduced sample whenever
+    // bal(full) dropped a unit, and keeps the three VIOLATION flags from the
+    // FIRST call -- the pre-balance sample, which is the one R checks them on
+    // -- while the unit count comes from the last call, which describes the
+    // sample that will be estimated. The three flags are then widened once
+    // more, by csdid_shapescan below, onto the sample as it stood before the
+    // missingness screen; what the driver finally refuses on is the OR of the
+    // two, and that routine's header is where the per-check screens live.
+    // They do NOT describe the sample the
+    // kernel finally estimates on, which is smaller again:
+    // csdid__settle_sample() drops the periods from
+    // the last cohort's onward, less anticipation, when no never-treated
+    // group exists, and the units treated at or before the first period plus
+    // anticipation, and neither reduction is modelled here. A duplicate
+    // (id, time) row, or a cluster that varies only inside rows one of those
+    // reductions would have removed, therefore refuses a design the kernel
+    // could have estimated.
+    //
+    // That is R's placement and not a divergence from it. did 2.5.1 runs the
+    // same three checks -- gname irreversibility, duplicate (id, time), and
+    // time-varying clustervars -- in validate_args() on the RAW data
+    // (pre_process_did2.R:72-86 and 96-109), and validate_args() is called
+    // at pre_process_did2.R:736, before did_standardization() at 763, which
+    // is where the no-comparison-group period filter happens (247-264). So
+    // for the two reductions this placement is about -- the period filter and
+    // the first-period-treated drop -- csdid refuses where R refuses.
+    //
+    // bal(full) is the third reduction, and it happens between the two calls
+    // rather than after both, which is why the driver keeps the first call's
+    // violation flags: a duplicate (id, time), a time-varying clustervar or a
+    // gname reversal confined to a unit that bal(full) drops is refused, as R
+    // refuses it. Verified against did 2.5.1 on 12 units x 3 periods with
+    // unit 1 present only at t=1 -- duplicated there, its cohort reversed, or
+    // its cluster changed -- all three stop in R and all three now stop here.
+    sh_nunit = .
+    sh_gvary = 0
+    sh_cvary = 0
+    sh_dup = 0
+    if (idname != "" & n > 0) {
+        if (n == 1) {
+            sh_nunit = 1
+        }
+        else {
+            // Real panels arrive in (id, time) order, and checking that is one
+            // pass with no allocation; only an out-of-order dataset pays for a
+            // sort. The row number is the final key so the permutation is
+            // unique -- Mata's order() is not stable across ties.
+            // Vectorized: an interpreted scan of 600,000 rows costs more
+            // than the pass it is trying to avoid.
+            d_id = idv[2::n] :- idv[1::(n - 1)]
+            if (min(d_id) < 0) {
+                sorted_it = 0
+            }
+            else {
+                within = csdid__selidx(d_id :== 0)
+                if (rows(within) == 0) {
+                    sorted_it = 1
+                }
+                else {
+                    sorted_it = (min(tv[within :+ 1] :- tv[within]) >= 0)
+                }
+            }
+            if (sorted_it) {
+                sid = idv
+                stime = tv
+                sg = gv
+                if (hascl) scl = clv
+            }
+            else {
+                ordf = order((idv, tv, (1::n)), (1, 2, 3))
+                sid = idv[ordf]
+                stime = tv[ordf]
+                sg = gv[ordf]
+                if (hascl) scl = clv[ordf]
+            }
+            same = (sid[2::n] :== sid[1::(n - 1)])
+            sh_nunit = 1 + sum(!same)
+            sh_gvary = any(same :& (sg[2::n] :!= sg[1::(n - 1)]))
+            if (hascl) sh_cvary = any(same :& (scl[2::n] :!= scl[1::(n - 1)]))
+            sh_dup = any(same :& (stime[2::n] :== stime[1::(n - 1)]))
+        }
+    }
+    st_numscalar("__csdid_ps_shape_nunit", sh_nunit)
+    st_numscalar("__csdid_ps_shape_gvary", sh_gvary)
+    st_numscalar("__csdid_ps_shape_cvary", sh_cvary)
+    st_numscalar("__csdid_ps_shape_dup", sh_dup)
+
+    // ---- R's line-319 drop, applied to this scan's own view -------------
+    // R does not merely COUNT the first-period-treated rows, it REMOVES them
+    // and then re-derives the period and cohort lists from what is left
+    // (pre_process_did.R:319, then the tlist/glist recompute at :321-334).
+    // Every denominator R takes afterwards reads those reduced lists: the
+    // balanced-panel grid (:468 length(unique(data[[tname]]))), the group-size
+    // divisor (:608 length(tlist)), and first.period (:336).
+    //
+    // csdid measured all three on the PRE-drop sample. On a panel whose first
+    // period exists only because of first-period-treated units, every other
+    // unit then looked short of the grid and was balanced away: measured, 12
+    // cells where R computes 20, 30 where R computes 42, or an outright
+    // refusal. The cells csdid did report were correct -- it lost cells, it
+    // never got one wrong -- but that is R's estimand, not csdid's.
+    //
+    // Doing the removal HERE, once, is what keeps the three denominators
+    // consistent with each other: the balance verdict, the published period
+    // and cohort lists, the unit and group counts and the shape flags below
+    // all read the reduced view, exactly as R's do. Patching only the balance
+    // denominator would leave the group-size divisor on the old grid, which
+    // trades this divergence for the opposite one -- csdid refusing a design R
+    // estimates.
+    //
+    // Guarded by firstper_ct, so a run with no such cohort does no extra work.
+    // firstper_units above was taken BEFORE this reduction and stays the
+    // announced count, which is R's own (it reports what it removed).
+    if (firstper_ct > 0 & rows(fpsel) == n) {
+        keep = csdid__selidx(!fpsel)
+        // Every row first-period-treated: R stops at :488 ("All observations
+        // dropped..."), and csdid's kernel raises its own no-valid-groups
+        // refusal on the same sample. Leave the pre-drop view standing so that
+        // refusal is reached with the counts it has always reported.
+        if (length(keep) > 0) {
+            rowsel = rowsel[keep]
+            tv = tv[keep]
+            gv = gv[keep]
+            if (idname != "") {
+                idv = idv[keep]
+                if (hascl) clv = clv[keep]
+            }
+            n = rows(rowsel)
+
+            tmin = min(tv); tmax = max(tv)
+            gmin = min(gv); gmax = max(gv)
+
+            ord = sort(tv, 1)
+            if (n > 1) runstart = csdid__selidx((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
+            else runstart = J(1, 1, 1)
+            tlev = ord[runstart]
+            nt = rows(tlev)
+            tlist = ""
+            for (i = 1; i <= nt; i++) tlist = tlist + (i > 1 ? " " : "") + strofreal(tlev[i], "%21.0g")
+
+            // The cohorts are RECOUNTED on the reduced rows, but the fold to
+            // never-treated is NOT re-applied: `cutoff' is the one computed
+            // above from the full frame, and recomputing it from the reduced
+            // tmax would be wrong. R folds as-if-never-treated exactly once,
+            // off the pre-drop period list (pre_process_did.R:215-223), and
+            // never revisits it after dropping the first-period-treated units
+            // at :309. Re-folding here would silently reclassify every cohort
+            // above the new tmax as never-treated -- emptying glev, and turning
+            // a run that R estimates into a no-valid-groups refusal -- whenever
+            // the dropped units were the only ones occupying the last period.
+            gsmall = gv :* (gv :<= cutoff)
+            ord = sort(gsmall, 1)
+            if (n > 1) runstart = csdid__selidx((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
+            else runstart = J(1, 1, 1)
+            glev = ord[runstart]
+            if (rows(runstart) > 1) gcnt = (runstart[|2 \ rows(runstart)|] \ (n + 1)) :- runstart
+            else gcnt = J(1, 1, n)
+            ord = csdid__selidx(glev :> 0)
+            if (length(ord) > 0) {
+                glev = glev[ord]
+                gcnt = gcnt[ord]
+            }
+            else {
+                glev = J(0, 1, .)
+                gcnt = J(0, 1, .)
+            }
+            never_ct = n - sum(gcnt)
+        }
+    }
+
     // the counts matrix is (value, rows) per distinct group value in
     // ascending order, with never-treated (0) first when present
     if (never_ct > 0) st_matrix(gcountname, (0, never_ct \ (glev, gcnt)))
@@ -2089,101 +2277,6 @@ void csdid__prescan(
     st_numscalar("__csdid_ps_balunits", bal_units)
     st_numscalar("__csdid_ps_balobs", bal_obs)
 
-    // ---- panel shape flags -------------------------------------------
-    // The four shape refusals the ado raises before the kernel runs: unit
-    // count, gvar varying within a unit, cluster varying within a unit, and
-    // duplicate (id, time) rows. They are computed HERE, from the id, time and
-    // gvar this routine already holds, rather than in a pass of their own -- a
-    // separate pass re-reading the same three variables measured 0.19s of a
-    // 0.79s panel run at 600,000 rows.
-    //
-    // What sample they describe: touse, as it stands on the call that computes
-    // them. The driver calls this routine again on the reduced sample whenever
-    // bal(full) dropped a unit, and keeps the three VIOLATION flags from the
-    // FIRST call -- the pre-balance sample, which is the one R checks them on
-    // -- while the unit count comes from the last call, which describes the
-    // sample that will be estimated. The three flags are then widened once
-    // more, by csdid_shapescan below, onto the sample as it stood before the
-    // missingness screen; what the driver finally refuses on is the OR of the
-    // two, and that routine's header is where the per-check screens live.
-    // They do NOT describe the sample the
-    // kernel finally estimates on, which is smaller again:
-    // csdid__settle_sample() drops the periods from
-    // the last cohort's onward, less anticipation, when no never-treated
-    // group exists, and the units treated at or before the first period plus
-    // anticipation, and neither reduction is modelled here. A duplicate
-    // (id, time) row, or a cluster that varies only inside rows one of those
-    // reductions would have removed, therefore refuses a design the kernel
-    // could have estimated.
-    //
-    // That is R's placement and not a divergence from it. did 2.5.1 runs the
-    // same three checks -- gname irreversibility, duplicate (id, time), and
-    // time-varying clustervars -- in validate_args() on the RAW data
-    // (pre_process_did2.R:72-86 and 96-109), and validate_args() is called
-    // at pre_process_did2.R:736, before did_standardization() at 763, which
-    // is where the no-comparison-group period filter happens (247-264). So
-    // for the two reductions this placement is about -- the period filter and
-    // the first-period-treated drop -- csdid refuses where R refuses.
-    //
-    // bal(full) is the third reduction, and it happens between the two calls
-    // rather than after both, which is why the driver keeps the first call's
-    // violation flags: a duplicate (id, time), a time-varying clustervar or a
-    // gname reversal confined to a unit that bal(full) drops is refused, as R
-    // refuses it. Verified against did 2.5.1 on 12 units x 3 periods with
-    // unit 1 present only at t=1 -- duplicated there, its cohort reversed, or
-    // its cluster changed -- all three stop in R and all three now stop here.
-    sh_nunit = .
-    sh_gvary = 0
-    sh_cvary = 0
-    sh_dup = 0
-    if (idname != "" & n > 0) {
-        if (n == 1) {
-            sh_nunit = 1
-        }
-        else {
-            // Real panels arrive in (id, time) order, and checking that is one
-            // pass with no allocation; only an out-of-order dataset pays for a
-            // sort. The row number is the final key so the permutation is
-            // unique -- Mata's order() is not stable across ties.
-            // Vectorized: an interpreted scan of 600,000 rows costs more
-            // than the pass it is trying to avoid.
-            d_id = idv[2::n] :- idv[1::(n - 1)]
-            if (min(d_id) < 0) {
-                sorted_it = 0
-            }
-            else {
-                within = csdid__selidx(d_id :== 0)
-                if (rows(within) == 0) {
-                    sorted_it = 1
-                }
-                else {
-                    sorted_it = (min(tv[within :+ 1] :- tv[within]) >= 0)
-                }
-            }
-            if (sorted_it) {
-                sid = idv
-                stime = tv
-                sg = gv
-                if (hascl) scl = clv
-            }
-            else {
-                ordf = order((idv, tv, (1::n)), (1, 2, 3))
-                sid = idv[ordf]
-                stime = tv[ordf]
-                sg = gv[ordf]
-                if (hascl) scl = clv[ordf]
-            }
-            same = (sid[2::n] :== sid[1::(n - 1)])
-            sh_nunit = 1 + sum(!same)
-            sh_gvary = any(same :& (sg[2::n] :!= sg[1::(n - 1)]))
-            if (hascl) sh_cvary = any(same :& (scl[2::n] :!= scl[1::(n - 1)]))
-            sh_dup = any(same :& (stime[2::n] :== stime[1::(n - 1)]))
-        }
-    }
-    st_numscalar("__csdid_ps_shape_nunit", sh_nunit)
-    st_numscalar("__csdid_ps_shape_gvary", sh_gvary)
-    st_numscalar("__csdid_ps_shape_cvary", sh_cvary)
-    st_numscalar("__csdid_ps_shape_dup", sh_dup)
 
     // The same measurements, on the object. The named Stata scalars above are
     // the ado's contract and stay exactly as they are -- csdid.ado reads and
@@ -2745,6 +2838,22 @@ void csdid__settle_sample(
     // whenever the drop leaves the earliest period populated.
     first_t = min(tlevels)
     glevels = uniqrows(select(geff, (use :!= 0) :& (geff :> 0)))'
+    // R re-trims the cohort list against the POST-drop first period, on both
+    // of its paths (pre_process_did.R:316-317, pre_process_did2.R:310-311).
+    // Without this, a cohort at or before the new first period keeps a row in
+    // group_prob_mat -- and so an entry in the aggregation's glist -- while
+    // cell_grid emits no cell for it, because previous_time(g - anticipation)
+    // is missing on exactly that condition. The estimation then succeeds and
+    // the AGGREGATION fails: measured on a five-period panel whose only
+    // first-period unit is treated at t == 1, `csdid ..., bal(none)' reported
+    // cohort 4's cells and `estat group' exited 498 with "no valid ATT(g,t)
+    // estimates found for group aggregation".
+    //
+    // The trim removes only cohorts that already produce zero cells, so no
+    // reported estimate changes, and it cannot empty the list behind the
+    // driver's back: csdid.ado applies the same predicate to the same
+    // post-drop floor and refuses with "No valid groups" first.
+    glevels = select(glevels, glevels :> first_t + anticipation)
     if (exclude_latest_g < .) glevels = select(glevels, glevels :< exclude_latest_g)
 }
 
@@ -2920,7 +3029,14 @@ void csdid__build_layout(
             wcount_vec = J(n_units, 1, nt)
             first_weight = w_panel[., 1]
             unit_weight_ref = first_weight
-            if (max(abs(w_panel :- unit_weight_ref)) > 1e-12) {
+            // R's own tolerance, not a tighter one: pre_process_did.R tests
+            // (mx - mn) > .Machine$double.eps^0.5 = 1.4901161193847656e-08.
+            // At 1e-12 csdid announced time-varying weights on panels R treats
+            // as weight-invariant -- measured: a per-unit weight perturbed by
+            // 1e-10 in one period printed the notice here and nothing in R,
+            // sending the user to fix_weights() over floating-point residue.
+            // The flag drives the MESSAGE only; no estimate depends on it.
+            if (max(abs(w_panel :- unit_weight_ref)) > 1.4901161193847656e-08) {
                 weight_varying = 1
             }
         }
@@ -2956,7 +3072,7 @@ void csdid__build_layout(
         wsum_vec = panelsum(ww[use_rows], uid_info)
         wcount_vec = uid_info[., 2] :- uid_info[., 1] :+ 1
         unit_weight_ref = ww[unit_first_row]
-        if (has_w & max(abs(ww[use_rows] :- unit_weight_ref[uid_vec])) > 1e-12) {
+        if (has_w & max(abs(ww[use_rows] :- unit_weight_ref[uid_vec])) > 1.4901161193847656e-08) {
             weight_varying = 1
         }
         if (has_cluster) {
@@ -3028,7 +3144,7 @@ void csdid__build_layout(
                 if (unit_weight_ref[k] >= .) {
                     unit_weight_ref[k] = ww[r]
                 }
-                else if (abs(ww[r] - unit_weight_ref[k]) > 1e-12) {
+                else if (abs(ww[r] - unit_weight_ref[k]) > 1.4901161193847656e-08) {
                     weight_varying = 1
                 }
             }
@@ -4113,7 +4229,35 @@ void csdid__cells_rc(
         if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret,
             g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
 
-        if (!balanced_panel & (has_w | has_x | notyet != "")) {
+        // dr and ipw ALWAYS take the fitted route, even with no covariates, no
+        // weights and a never-treated comparison group. The four-means closed
+        // form below carries neither propensity-score refusal -- R's overlap
+        // check nor DRDID's control trim at pscoretrim() -- so on this one
+        // option combination a trim the user asked for was silently inert:
+        // measured, `csdid y, time(t) gvar(g) method(dr) nevertreated
+        // pscoretrim(.5)' on a 0.995-treated repeated cross section reported
+        // att = 0.462311557788945 while the SAME request with the default
+        // not-yet-treated group, or with any covariate added, refused the cell
+        // with the documented "trim left no comparison units" message. The
+        // panel twin (csdid__cells_fast) reimplements both guards in closed
+        // form for exactly this reason; here the cells are routed to the
+        // fitted path instead, so there is no second copy of the refusal
+        // arithmetic to drift from the first. reg has no propensity score and
+        // keeps the closed form -- EXCEPT under fix_weights(), which the
+        // closed form does not implement at all.
+        //
+        // fix_weights on this route freezes each unit's weight at the base or
+        // first period and DROPS the units that period does not observe (the
+        // lookup below, and the warning at "units not observed in"). R applies
+        // that drop whenever fix_weights is set, weights supplied or not,
+        // because its .w defaults to 1 and the match still fails for an absent
+        // unit (compute.att_gt.R:765-810). Measured on an unbalanced panel
+        // whose one absent never-treated unit is missing from the base period:
+        // routed to the closed form, method(reg) kept all six controls and
+        // reported ATT = .2099498 / .1269936 with no warning, where R dropped
+        // the unit and reported .1201847 / .2589032. method(dr) already
+        // matched R, because `method != "reg"' sent it here.
+        if (!balanced_panel & (has_w | has_x | notyet != "" | method != "reg" | fix_weights == "base_period" | fix_weights == "first_period")) {
             if (rc_built) {
                 // union of the four slices, deduplicated and ascending -
                 // identical to select() over the OR of the masks; the
@@ -5173,6 +5317,24 @@ real matrix csdid__boot_table(
         // of max-|t| (did::att_gt l240-266, no pointwise floor); only the
         // AGGREGATION level clamps to pointwise (compute.aggte l242-246),
         // which csdid__bootstrap_cband_crit — used only by agg kernels — keeps.
+        //
+        // R warns here and csdid did not. did/R/att_gt.R:754-756 emits
+        // "Simultaneous critical value is arguably `too large' to be reliable"
+        // whenever the estimation-level critical value reaches 7, and csdid
+        // carried the aggregation-level twin of this warning
+        // (csdid_stats.ado) but nothing at the ATT(g,t) level -- so a user
+        // whose (g,t) band was built from an unreliable critical value was
+        // told so by R and not by csdid. Same threshold, same reason, on the
+        // errprintf channel a caller's -quietly- cannot swallow (see the
+        // CHANNEL note above).
+        // Signalled as a SCALAR, not printed here. The plugin entry point
+        // csdid_boot_plugin_finish is called under a plain -capture-
+        // (csdid.ado), which suppresses errprintf as well as errors, so a
+        // warning written from this function would be silently lost on the
+        // DEFAULT accelerator path while appearing on the pure-Mata one. The
+        // aggregation level already solves this the same way with
+        // CSDID_AGG_CRIT_LARGE; csdid.ado reads this one after the capture.
+        if (crit < . & crit >= 7) st_numscalar("CSDID_ATTGT_CRIT_LARGE", 1)
     }
     csdid__boot_profile_add(5, boot_t0, biters * k)
 
@@ -8809,5 +8971,39 @@ void csdid__globals_init()
 }
 
 csdid__globals_init()
+
+
+// ---------------------------------------------------------------------------
+// Is the outcome constant over the estimation sample?
+//
+// One read of the outcome column on the rows touse marks, and the extremes off
+// that. It exists because the ado-level -summarize- this replaces cost about
+// 6% of a plain estimation -- measured on the medium_panel ratio cell, which
+// went from 1.61 to 1.91 against a 1.9 limit -- for a question asked on every
+// run and answered "no" on all but degenerate data.
+//
+// EXACT equality, no tolerance: an outcome that varies by one part in a
+// million is degenerate-but-estimable and must keep running (that is what
+// tests/stata/test-boot-degenerate-screen.do pins). Only a literally constant
+// outcome is reported here.
+void csdid__outcome_is_constant(
+    string scalar yname,
+    string scalar tousename,
+    string scalar flagname,
+    string scalar minname)
+{
+    real colvector yv
+    real scalar lo, hi
+    yv = st_data(., yname, tousename)
+    if (rows(yv) == 0) {
+        st_numscalar(flagname, 0)
+        st_numscalar(minname, .)
+        return
+    }
+    lo = min(yv)
+    hi = max(yv)
+    st_numscalar(minname, lo)
+    st_numscalar(flagname, (lo == hi))
+}
 
 end

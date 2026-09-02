@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 28aug2026}{...}
+{* *! version 2.0.0 01sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -38,6 +38,11 @@ average treatment effects{p_end}
 {pstd}
 Without {opt sav:ing()}, {cmd:csdid_plot} draws the graph; with
 {opt sav:ing()} it writes the plot data to a dataset and draws nothing.
+
+{pstd}
+{cmd:estat plot} is the same command under its {cmd:estat} spelling: the
+options are handed to {cmd:csdid_plot} unchanged, so the two forms are
+interchangeable after {cmd:csdid}.
 
 {pstd}
 The same syntax covers two plots. Run directly after {cmd:csdid}, it plots the
@@ -335,6 +340,17 @@ there is nothing to plot; {cmd:csdid_plot} exits with return code 498 and a
 message saying so.{p_end}
 
 {phang2}
+o {bf:The reference period is drawn at exactly zero.} Under the default
+{helpb csdid##opt_base:base_period(universal)} each cohort's {it:g-1} cell is
+the normalisation the other cells are measured against, not an estimate: it is
+identically 0 and has no standard error, so it appears as a point on zero with
+no interval. It is not a precisely estimated null effect, and no pre-trend
+conclusion should be drawn from it. Under {cmd:base_period(varying)} the
+{it:e = -1} cell is an estimated placebo and does carry an interval. The
+exported dataset shows the same thing: {cmd:estimate} is 0 while
+{cmd:ci_low} and {cmd:ci_high} are missing.{p_end}
+
+{phang2}
 o {bf:Unknown cohorts} named in {cmd:group()}: when none of the requested
 cohorts exists, they are reported and {cmd:csdid_plot} falls back to every
 available cohort; when the request mixes known and unknown cohorts, the known
@@ -485,10 +501,14 @@ documented in {help csdid_plot##schema:Plot-data schema} above.
 {it:saving() accepts only the replace sub-option; cannot parse: ...}{p_end}
 {p2col :{cmd:198}}{cmd:saving()} has a comma but no filename before it:
 {it:saving() requires a filename before the comma, as in saving(myfile, replace)}{p_end}
-{p2col :{cmd:498}}The active aggregation is {cmd:type(simple)}:
-{it:Plot method not available for this type of aggregation}{p_end}
+{p2col :{cmd:498}}The active aggregation is {cmd:type(simple)}, which is one
+overall effect and so has no axis to plot against:
+{it:Plot method not available for this type of aggregation}. Plot a
+{cmd:dynamic}, {cmd:group}, or {cmd:calendar} aggregation instead, or re-run
+{cmd:csdid} to plot the ATT(g,t) estimates{p_end}
 {p2col :{cmd:498}}Every estimate to be drawn is missing:
-{it:nothing to plot: every estimate is missing}{p_end}
+{it:nothing to plot: every estimate is missing}, followed by the causes to
+check in the {cmd:csdid} run that produced them{p_end}
 {p2col :{cmd:602}}{it:filename} exists and {cmd:replace} was not specified{p_end}
 {p2line}
 {p2colreset}{...}

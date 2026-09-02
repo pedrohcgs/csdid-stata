@@ -379,6 +379,6 @@ local actual = _rc
 log close f051event
 assert `actual' == 498
 f051_assert_log_contains using "`evlog'", ///
-    message("csdid_estat subcommand unknown is not supported; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, and glance")
+    message("csdid_estat subcommand unknown is not supported; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, glance, and plot")
 
 display as text "test-f051 passed"

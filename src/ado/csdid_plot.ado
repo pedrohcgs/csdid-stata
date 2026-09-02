@@ -1,4 +1,4 @@
-*! csdid_plot 2.0.0 28aug2026
+*! csdid_plot 2.0.0 01sep2026
 program define csdid_plot
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -131,8 +131,11 @@ program define _csdid_plot_attgt
             foreach g of numlist `group' {
                 replace _csdid_keep = 1 if group == `g'
             }
-            count if _csdid_keep
-            if r(N) == 0 {
+            * Mata, not -count-: see the note in _csdid_plot_draw. This export
+            * path is r()-transparent for the same reason.
+            tempname nkeep
+            mata: st_numscalar("`nkeep'", sum(st_data(., "_csdid_keep")))
+            if scalar(`nkeep') == 0 {
                 noisily display as text "Some of the specified groups do not exist in the data. Reporting all available groups."
                 replace _csdid_keep = 1
             }
@@ -153,12 +156,20 @@ program define _csdid_plot_aggte
     * F-053: accept the group() option forwarded by csdid_plot.
     syntax using/ [, REPLACE GROUP(numlist)]
 
+    * The refusal line is R's own (did, ggdid.R), kept verbatim for parity and
+    * pinned by the rt013/f028/f029 contract fixtures. What it does not do is
+    * say what to type instead, and the answer is not obvious: the simple
+    * aggregation is a single overall number, so it has no axis to plot along.
+    * The way forward goes on its own line, error-styled so a caller's
+    * -quietly- cannot swallow half a diagnosis.
     if "`e(agg_type)'" == "simple" {
         display as error "Plot method not available for this type of aggregation"
+        display as error "The simple aggregation is one overall effect, so there is no axis to plot it against. Compute an aggregation that has one (estat event, estat group, or estat calendar) and plot that, or re-run csdid to plot the ATT(g,t) estimates themselves."
         exit 498
     }
     if !inlist("`e(agg_type)'", "dynamic", "group", "calendar") {
         display as error "unknown aggregation type `e(agg_type)'"
+        display as error "csdid_plot draws the ATT(g,t) estimates or a dynamic, group, or calendar aggregation. Re-run csdid, or compute one of those aggregations, before plotting."
         exit 498
     }
     * F-053: group() selects treatment cohorts, which only exist as rows on a
@@ -183,8 +194,10 @@ program define _csdid_plot_aggte
         foreach g of numlist `group' {
             replace _csdid_keep = 1 if egt == `g'
         }
-        count if _csdid_keep
-        if r(N) == 0 {
+        * Mata, not -count-: see the note in _csdid_plot_draw.
+        tempname nkeep
+        mata: st_numscalar("`nkeep'", sum(st_data(., "_csdid_keep")))
+        if scalar(`nkeep') == 0 {
             noisily display as text "Some of the specified groups do not exist in the data. Reporting all available groups."
             replace _csdid_keep = 1
         }
@@ -264,20 +277,34 @@ program define _csdid_plot_draw
     * A series can be absent (a group-type aggregation has no pre rows, a
     * two-period panel may have no pre estimates), and an empty if-subset
     * aborts twoway; assemble only the series that exist.
+    * The series counts are taken in Mata rather than with -count-, which is
+    * r-class and replaces the caller's r() wholesale. csdid_plot computes no
+    * results of its own, so it has no business changing r(): before this, a
+    * bare `estat plot' after `estat event' left r(table) GONE (measured, rc
+    * 111 on the following -matrix list-), while `estat plot, saving()' left it
+    * standing -- the same command reporting two different r() states
+    * depending on an option that has nothing to do with r().
     local plots ""
     local legorder ""
     local j 0
     foreach s in Pre Post {
         local color = cond("`s'" == "Pre", "navy", "maroon")
-        quietly count if series == "`s'" & !missing(estimate)
-        if r(N) {
+        tempname nseries
+        mata: st_numscalar("`nseries'", sum((st_sdata(., "series") :== st_local("s")) :& (st_data(., "estimate") :< .)))
+        if scalar(`nseries') {
             local plots `"`plots' (rcap ci_high ci_low x if series == "`s'", lcolor(`color')) (scatter estimate x if series == "`s'", mcolor(`color'))"'
             local j = `j' + 2
             local legorder `"`legorder' `j' "`s'-treatment""'
         }
     }
     if `"`plots'"' == "" {
+        * Same class as the two refusals above: the diagnosis was accurate and
+        * silent about what to do next. Every estimate missing means the 2x2
+        * comparisons failed, which csdid's own estimation-time warning already
+        * names causes for; point at the same place rather than leaving the
+        * user with an empty graph window and a return code.
         display as error "nothing to plot: every estimate is missing"
+        display as error "The ATT(g,t) cells this plot draws from could not be estimated, so there is nothing to draw. The per-cell warnings from the csdid run name the cause; the usual ones are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim that empties a comparison group, or too few comparison units. Check e(attgt), then re-run csdid with a different covariate list or method(reg)."
         restore
         exit 498
     }

@@ -1,0 +1,4 @@
+"rule_id","statement","holds_in_r","pointwise_crit"
+"overall-is-pointwise","The overall summary effect's half-width divided by its standard error equals qnorm(1-alp/2), for every aggregation type, under bstrap=TRUE and cband=TRUE.",TRUE,1.95996398454005
+"egt-is-simultaneous","The per-effect rows' critical value (crit.val.egt) is strictly greater than qnorm(1-alp/2) when a simultaneous band was computed.",TRUE,1.95996398454005
+"tidy-average-pairs-agree","In the tidy group export, the ATT(Average) row has conf_low/conf_high equal to point_conf_low/point_conf_high, while the per-cohort rows do not.",TRUE,1.95996398454005

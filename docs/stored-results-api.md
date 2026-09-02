@@ -58,6 +58,16 @@ estimates come from, and on a balanced panel
 from the pre-drop sample while `e(N_units)` came from the post-drop one, so the
 three could not all be right at once.
 
+`e(agg_cband)` describes the band on the aggregation's **per-effect** rows, not
+on its overall summary. The overall effect — `overall_att`/`overall_se` in
+`e(aggte)`, and the `Post_avg`/`Overall`/`ATT` column of `r(table)` — is always
+interval-estimated at the pointwise normal quantile for `e(agg_level)`, exactly
+as the reference implementation bands it, whatever `e(agg_cband)` says. Code
+that reads `e(agg_cband)` = 1 and applies `e(crit_val)` to `overall_att`
+produces an interval that is too wide; use `e(point_crit_val)` there, or read
+the per-column `crit` row of `r(table)`, which carries the critical value each
+column's own limits were built from.
+
 `e(cband)` and `e(agg_cband)` answer different questions and are both stable.
 `e(cband)` is the estimation's band request and governs the ATT(g,t) table.
 `e(agg_cband)` reports the band the aggregation in `e(aggte)` actually carries,

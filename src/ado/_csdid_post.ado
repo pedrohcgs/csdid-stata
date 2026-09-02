@@ -1,4 +1,4 @@
-*! _csdid_post 2.0.0 28aug2026
+*! _csdid_post 2.0.0 01sep2026
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")
@@ -67,6 +67,8 @@ program define _csdid_post_aggte, eclass
     local renamed = 0
     local has_agg_if 0
     local overall_col 0
+    * 0 = this aggregation posted no overall summary column.
+    local overall_k = 0
     local post_if_src "e(agg_inffunc)"
     capture confirm matrix e(agg_inffunc)
     if !_rc {
@@ -179,6 +181,10 @@ program define _csdid_post_aggte, eclass
 
             local ++k
             local semiss`k' = missing(`post_se')
+            * Remember WHICH column is the overall summary effect: its band is
+            * the pointwise one, not the simultaneous band the per-effect
+            * columns carry. See the critical-value block below.
+            local overall_k = `k'
             if `k' == 1 {
                 matrix `B' = (`post_att')
                 matrix `V' = (`post_v')
@@ -211,14 +217,28 @@ program define _csdid_post_aggte, eclass
         local post_token .
         capture confirm scalar e(mata_cache_token)
         if !_rc local post_token = e(mata_cache_token)
+        * The correlations come from the influence functions, never from
+        * e(agg_boot_draws). Only the CORRELATION structure of this matrix
+        * survives: csdid_post_mapped_v rescales the result so the diagonal is
+        * the reported standard errors (csdid__rescale_v_to_se), which is why
+        * the posted diagonal matches the displayed se exactly. And
+        * e(agg_boot_draws) holds one INDEPENDENT multiplier vector per effect
+        * -- it mirrors R's one mboot call per getSE, which is what makes the
+        * per-effect SEs and the draw stream match R -- so it carries no
+        * correlation at all. Feeding it here made every off-diagonal Monte
+        * Carlo noise around zero: measured on mpdta, corr(Tm3,Tm2) came out
+        * 0.006 where R's own aggregation influence functions give 0.664, and
+        * `lincom Tm3 - Tm2' reported 0.0234 against R's 0.0134388 -- 74% too
+        * wide, on the DEFAULT path, while csdid_estat.sthlp promises that
+        * test and lincom "account for the correlation between event times".
+        * The influence-function branch below is R's own construction,
+        * crossprod(inf)/n^2 (cluster-summed when clustered), and reproduces
+        * R to six significant figures. The joint draws the kernel builds for
+        * the simultaneous band would also carry the correlation, but they
+        * exist only when cband is on and cover only the per-effect columns;
+        * the influence functions are right in every mode and cost nothing.
         local post_boot ""
         local use_boot 0
-        capture confirm scalar e(bstrap)
-        if !_rc local use_boot = e(bstrap)
-        if `use_boot' {
-            capture confirm matrix e(agg_boot_draws)
-            if !_rc local post_boot "e(agg_boot_draws)"
-        }
         mata: csdid_post_mapped_v("`post_if_src'", "`post_cluster'", "`post_boot'", `use_boot', "`MAP'", "`V'", `post_token')
     }
     matrix colnames `B' = `names'
@@ -270,9 +290,34 @@ program define _csdid_post_aggte, eclass
         capture local bandcrit = e(crit_val)
         if missing(`bandcrit') local bandcrit = `pointcrit'
     }
+    * ---------------------------------------------------------------------
+    * The OVERALL summary column is banded pointwise, the per-effect columns
+    * with whatever band this aggregation carries. That split is R's, not a
+    * csdid convention: summary.AGGTEobj computes
+    *     pointwise_cval <- qnorm(1-alp/2)
+    *     overall_cband_upper <- overall.att + pointwise_cval*overall.se
+    * (did/R/AGGTEobj.R:80-83) for every aggregation type, whatever bstrap and
+    * cband were, and uses crit.val.egt only for the per-effect rows. The
+    * parity generators in this repo encode the same rule -- the Average row's
+    * conf_* and point_conf_* columns are equal in every group fixture.
+    *
+    * A simultaneous band answers "do these effects jointly lie in these
+    * intervals"; there is nothing joint about a single summary number, so the
+    * wider critical value is not the right one for it. csdid used to band it
+    * with the per-effect band, which on mpdta at default settings reported
+    * Post_avg as [-0.130008, -0.024791] where R reports
+    * [-0.118645, -0.036154] -- an interval about 28% too wide. No fixture
+    * caught it because every parity generator that emits an overall row runs
+    * bstrap = FALSE, cband = FALSE, where the two critical values coincide.
+    *
+    * Row 8 carries each column's OWN critical value, so r(table) stays
+    * internally consistent column by column: ll = b - crit*se everywhere.
+    * ---------------------------------------------------------------------
     forvalues j = 1/`k' {
         matrix `T'[1, `j'] = `EB'[1, `j']
         local v = `EV'[`j', `j']
+        local jcrit = `bandcrit'
+        if `j' == `overall_k' local jcrit = `pointcrit'
         * A row whose SE is missing was posted with variance 0, which is not
         * the same statement as an estimated variance of 0: se, z, p, ll and ul
         * stay missing (rows 8/9 follow Stata's own zero-variance convention).
@@ -283,10 +328,10 @@ program define _csdid_post_aggte, eclass
                 matrix `T'[3, `j'] = `EB'[1, `j'] / `se'
                 matrix `T'[4, `j'] = 2 * normal(-abs(`EB'[1, `j'] / `se'))
             }
-            matrix `T'[5, `j'] = `EB'[1, `j'] - `bandcrit' * `se'
-            matrix `T'[6, `j'] = `EB'[1, `j'] + `bandcrit' * `se'
+            matrix `T'[5, `j'] = `EB'[1, `j'] - `jcrit' * `se'
+            matrix `T'[6, `j'] = `EB'[1, `j'] + `jcrit' * `se'
         }
-        if !missing(`v') & `v' >= 0 matrix `T'[8, `j'] = `bandcrit'
+        if !missing(`v') & `v' >= 0 matrix `T'[8, `j'] = `jcrit'
         matrix `T'[9, `j'] = 0
     }
     matrix colnames `T' = `names'

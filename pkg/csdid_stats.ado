@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 28aug2026
+*! csdid_stats 2.0.0 01sep2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -142,8 +142,14 @@ program define _csdid_stats_main, eclass
     * bad window()) made the FIRST syntax fail, and the SECOND syntax then
     * reported "using not allowed" r(101). One declarative syntax reports the
     * option that is actually wrong, on both paths.
+    * remedy() is internal plumbing, deliberately undocumented: the callers
+    * that reach the aggregation through another surface (csdid_estat, and
+    * csdid's own agg()) pass the command THEIR user would retype, so the
+    * missing-cell refusal can name it verbatim instead of leaving the user
+    * to translate "specify dropmissing" into the surface they are on.
     syntax [anything(name=subcmd)] [using/] [, TYPE(string) Level(string) ///
-        WINdow(string) BALance(string) DROPMissing FROM(string) *]
+        WINdow(string) BALance(string) DROPMissing FROM(string) ///
+        REMEDY(string) *]
     * from() is unsupported by design; see csdid.ado for the full rationale.
     * Legacy accepted it on the simple, group and calendar aggregations.
     if `"`from'"' != "" {
@@ -192,6 +198,18 @@ program define _csdid_stats_main, eclass
         }
         if !(`level' >= 10 & `level' <= 99.99) {
             display as error "level(`level') is not a confidence level; specify a value between 10 and 99.99"
+            exit 198
+        }
+        * The receivers below parse the SAME value with Level(cilevel), which
+        * additionally refuses more than two decimals. Without this test the
+        * value passes here, the aggregation runs, e() is REPLACED and any
+        * saving() file is written, and only then does the display exit 198 --
+        * leaving a capture'd caller holding a half-finished aggregation from
+        * a command Stata said failed. Refuse before doing the work, which is
+        * what csdid itself does (it declares Level(cilevel) at entry).
+        * Three-decimal levels are not exotic: 1 - 0.05/3 is level(98.333).
+        if `level' != round(`level', 0.01) {
+            display as error "level(`level') can have at most two digits after the decimal point"
             exit 198
         }
     }
@@ -513,7 +531,13 @@ program define _csdid_stats_main, eclass
         if `max_e_specified' & `"`window'"' == "" local cal_ignored "`cal_ignored' max_e()"
         if `balance_e_specified' & !`balance_given' local cal_ignored "`cal_ignored' balance_e()"
         if "`cal_ignored'" == "" local cal_ignored " min_e(), max_e(), and balance_e()"
-        display as text "warning:`cal_ignored' is ignored for type(calendar); the full calendar aggregation is reported"
+        * as ERROR, not as text: this warning says a documented option the
+        * user typed was discarded and a DIFFERENT aggregation is being
+        * reported. On the text channel a caller's -quietly- removed it, so
+        * `quietly csdid_stats, type(calendar) window(0 1)' returned the full
+        * unwindowed calendar table with nothing said. errprintf survives
+        * quietly; the estat route was given the same treatment already.
+        display as error "warning:`cal_ignored' is ignored for type(calendar); the full calendar aggregation is reported"
     }
     local na_rm_flag = ("`na_rm'" != "")
     local use_cluster = ("`e(clustervar)'" != "")
@@ -601,8 +625,34 @@ program define _csdid_stats_main, eclass
     capture mata: csdid_aggte("`type'", `min_e', `max_e', `balance_e', `na_rm_flag', `use_cluster', `use_cache', "`aggte'", "`agg_inffunc'", `agg_store_large')
     local aggte_rc = _rc
     if `aggte_rc' {
+        * no caller-supplied remedy means the user typed csdid_stats
+        * themselves; name this command's own retype, keeping the saved-RIF
+        * path's `using' -- without it the advice would tell a RIF user to
+        * aggregate results that are not in e().
+        if `"`remedy'"' == "" {
+            local remedy "csdid_stats"
+            * The path is quoted in the advice, as the load call quotes it:
+            * a saved RIF under a directory with a space produced a retype
+            * line that Stata's own `using' qualifier could not parse, so the
+            * one caller the remedy exists to help was handed a command that
+            * does not run.
+            if `"`using'"' != "" local remedy `"`remedy' using "`using'""'
+            local remedy `"`remedy', type(`type') dropmissing"'
+            * and the options that change WHICH aggregation is computed,
+            * spelled as the user spelled them. Advice that drops window() or
+            * balance() names a command that runs and answers a different
+            * question than the one that just failed -- the numbers come back
+            * and nothing says they are a different aggregation.
+            if `"`window'"' != "" local remedy `"`remedy' window(`window')"'
+            if `"`balance'"' != "" local remedy `"`remedy' balance(`balance')"'
+            * level() is deliberately NOT carried: by this point an omitted
+            * level has already been filled in from e(level), so echoing it
+            * would add an option the user never typed to advice that means
+            * the same thing without it.
+        }
         _csdid_stats_aggfail, type(`type') mine(`min_e') maxe(`max_e') ///
-            bale(`balance_e') narm(`na_rm_flag') usecache(`use_cache')
+            bale(`balance_e') narm(`na_rm_flag') usecache(`use_cache') ///
+            remedy(`remedy')
         exit `aggte_rc'
     }
     * Owner decision 2026-08-28: when dropmissing removed an estimated cell
@@ -1000,23 +1050,36 @@ program define _csdid_stats_main, eclass
         * relabels the band as pointwise (cband <- FALSE) when that happens.
         * Reproduce the label and the warning here: `cband' feeds both the
         * header line and e(agg_cband) below.
+        *
+        * These band notes are error-styled, like the bal-drift warning below
+        * and for the same reason: -quietly- suppresses text but not error,
+        * and csdid_estat reaches this computation through
+        * `quietly csdid_stats'. On the text channel every one of them was
+        * lost on the estat route -- measured: `estat event' after an
+        * analytical estimation printed the aggregation with no hint that its
+        * simultaneous band came from 1,000 multiplier draws while the
+        * standard errors stayed analytical, a disclosure the identical
+        * direct `csdid_stats, type(dynamic)' call did print. Each of these
+        * says the band you are being shown is not the band you asked for, or
+        * not the band the header implies; none may be silenceable by a
+        * caller's -quietly-.
         capture confirm scalar CSDID_AGG_CRIT_FALLBACK
         if !_rc {
             local agg_crit_fallback = scalar(CSDID_AGG_CRIT_FALLBACK)
             scalar drop CSDID_AGG_CRIT_FALLBACK
             if `cband' & `agg_crit_fallback' == 1 {
-                display as text "warning: the simultaneous confidence band is narrower than the pointwise confidence interval, which is unexpected. Falling back to pointwise confidence intervals."
+                display as error "warning: the simultaneous confidence band is narrower than the pointwise confidence interval, which is unexpected. Falling back to pointwise confidence intervals."
                 local cband 0
             }
             else if `cband' & `agg_crit_fallback' == 2 {
-                display as text "warning: simultaneous critical value is NA, likely because the standard errors could not be computed. Falling back to pointwise confidence intervals."
+                display as error "warning: simultaneous critical value is NA, likely because the standard errors could not be computed. Falling back to pointwise confidence intervals."
                 local cband 0
             }
         }
         capture confirm scalar CSDID_AGG_CRIT_LARGE
         if !_rc {
             scalar drop CSDID_AGG_CRIT_LARGE
-            if `cband' display as text "warning: simultaneous critical value is very large, suggesting it may be unreliable. This typically happens when the number of observations per group is small and/or there is not much variation in outcomes. Consider using pointwise confidence intervals instead (specify pointwise on the estimation)."
+            if `cband' display as error "warning: simultaneous critical value is very large, suggesting it may be unreliable. This typically happens when the number of observations per group is small and/or there is not much variation in outcomes. Consider using pointwise confidence intervals instead (specify pointwise on the estimation)."
         }
         mata: st_matrix("`agg_bootstrap_profile'", CSDID_AGG_BOOT_PROFILE)
         matrix colnames `agg_bootstrap_profile' = seconds calls work
@@ -1056,7 +1119,7 @@ program define _csdid_stats_main, eclass
         * two-period grid never reach here: their `cband' is already 0 above,
         * as it is in the reference. The saved-RIF route posts no e(cband),
         * so it keeps its documented fully-analytical fallback.
-        display as text "note: simultaneous confidence bands can only be computed by the multiplier bootstrap, so the bootstrap was used for the band below: its critical value comes from 1,000 multiplier draws on the session's random-number stream (set seed reproduces it). The standard errors remain analytical (influence function). Specify pointwise for fully analytical, pointwise intervals."
+        display as error "note: simultaneous confidence bands can only be computed by the multiplier bootstrap, so the bootstrap was used for the band below: its critical value comes from 1,000 multiplier draws on the session's random-number stream (set seed reproduces it). The standard errors remain analytical (influence function). Specify pointwise for fully analytical, pointwise intervals."
         capture scalar drop CSDID_AGG_CRIT_FALLBACK
         capture scalar drop CSDID_AGG_CRIT_LARGE
         tempname agg_crit agg_pointcrit
@@ -1096,18 +1159,18 @@ program define _csdid_stats_main, eclass
             local agg_crit_fallback = scalar(CSDID_AGG_CRIT_FALLBACK)
             scalar drop CSDID_AGG_CRIT_FALLBACK
             if `agg_crit_fallback' == 1 {
-                display as text "warning: the simultaneous confidence band is narrower than the pointwise confidence interval, which is unexpected. Falling back to pointwise confidence intervals."
+                display as error "warning: the simultaneous confidence band is narrower than the pointwise confidence interval, which is unexpected. Falling back to pointwise confidence intervals."
                 local cband 0
             }
             else if `agg_crit_fallback' == 2 {
-                display as text "warning: simultaneous critical value is NA, likely because the standard errors could not be computed. Falling back to pointwise confidence intervals."
+                display as error "warning: simultaneous critical value is NA, likely because the standard errors could not be computed. Falling back to pointwise confidence intervals."
                 local cband 0
             }
         }
         capture confirm scalar CSDID_AGG_CRIT_LARGE
         if !_rc {
             scalar drop CSDID_AGG_CRIT_LARGE
-            if `cband' display as text "warning: simultaneous critical value is very large, suggesting it may be unreliable. This typically happens when the number of observations per group is small and/or there is not much variation in outcomes. Consider using pointwise confidence intervals instead (specify pointwise on the estimation)."
+            if `cband' display as error "warning: simultaneous critical value is very large, suggesting it may be unreliable. This typically happens when the number of observations per group is small and/or there is not much variation in outcomes. Consider using pointwise confidence intervals instead (specify pointwise on the estimation)."
         }
         ereturn scalar crit_val = `agg_crit'
         ereturn scalar point_crit_val = `agg_pointcrit'
@@ -1184,13 +1247,19 @@ end
 * way a hand-written name list did.
 program define _csdid_stats_optdup, rclass
     version 14
+    * REMEDY is declared here too, so this mirror keeps holding exactly the
+    * main syntax line's options: without it a repeated remedy() fell through
+    * to the catch-all and was reported as an UNSUPPORTED option, which is the
+    * one thing this program exists to prevent.
     syntax [, TYPE(string) Level(cilevel) WINdow(string) BALance(string) ///
+        REMEDY(string) ///
         DROPMissing FROM(string)]
     local hit ""
     if `"`type'"' != "" local hit "type"
     if `"`window'"' != "" local hit "window"
     if `"`balance'"' != "" local hit "balance"
     if `"`from'"' != "" local hit "from"
+    if `"`remedy'"' != "" local hit "remedy"
     if "`dropmissing'" != "" local hit "dropmissing"
     * level(cilevel) always resolves to a value, so it is the only declared
     * option a successful parse cannot distinguish by emptiness.
@@ -1201,7 +1270,7 @@ end
 program define _csdid_stats_aggfail
     version 14
     syntax , TYPE(string) MINE(string) MAXE(string) BALE(string) ///
-        NARM(integer) USECACHE(integer)
+        NARM(integer) USECACHE(integer) [REMEDY(string)]
     local msg ""
     capture mata: ///
         __csdid_pM = ""; ///
@@ -1216,7 +1285,7 @@ program define _csdid_stats_aggfail
             } ///
             if (__csdid_pM == "") { ///
                 if (sum(__csdid_pA[., 4] :>= .) > 0) { ///
-                    if (`narm' == 0) __csdid_pM = sprintf("%g of the %g ATT(g,t) cells have a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated, or address the cause of the failures (the per-cell warnings above name it) and re-run.", sum(__csdid_pA[., 4] :>= .), rows(__csdid_pA), sum(__csdid_pA[., 4] :< .)); ///
+                    if (`narm' == 0) __csdid_pM = sprintf("%g of the %g ATT(g,t) cells have a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated (that is: %s), or address the cause of the failures (the per-cell warnings above name it) and re-run.", sum(__csdid_pA[., 4] :>= .), rows(__csdid_pA), sum(__csdid_pA[., 4] :< .), st_local("remedy")); ///
                     if (`narm' != 0) { ///
                         __csdid_pA = select(__csdid_pA, __csdid_pA[., 4] :< .); ///
                         if (rows(__csdid_pA) == 0) __csdid_pM = "all ATT(g,t) estimates are missing; cannot aggregate"; ///

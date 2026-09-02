@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 28aug2026}{...}
+{* *! version 2.0.0 01sep2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -355,6 +355,16 @@ repeated-cross-section analogue. The resolved rule is reported in
 {cmd:e(fix_weights)}, which is empty when the option is not given.
 
 {pmore}
+A fixed rule also decides the {it:sample}: a unit that the target period does
+not observe has no weight to freeze, so it is excluded from that comparison and
+a warning names the period, the cohort and the time period it was excluded
+from. On a balanced panel every unit is observed everywhere and nothing is
+excluded; on an unbalanced panel this is how {cmd:fix_weights()} changes which
+units enter a cell, and it applies whether or not {cmd:iweight}s were supplied,
+because a unit with no observation in the target period has no weight of one
+either.
+
+{pmore}
 {bf:The default is not} {cmd:fix_weights(varying)}: it is to leave the option
 unset. On a balanced panel an
 unset {cmd:fix_weights()} uses, for each 2-by-2 comparison, the weight from the
@@ -496,8 +506,9 @@ and {cmd:e(crit_val)} holds the critical value actually applied.
 {phang}
 {opt analytical}, or equivalently {cmd:vce(analytical)}, replaces the
 bootstrap with analytical standard errors computed directly from the
-influence function. The ATT(g,t) table is then banded pointwise. An
-AGGREGATION of an analytical fit still carries a simultaneous band unless
+influence function. The ATT(g,t) table is then banded pointwise. The
+per-effect rows of an AGGREGATION of an analytical fit still carry a
+simultaneous band unless
 {cmd:pointwise} is also specified: a simultaneous band can only be computed
 by the multiplier bootstrap, so the aggregation bootstraps the band's
 critical value (1,000 draws from the session's random-number stream --
@@ -942,12 +953,23 @@ a comparison group -- for instance every unit is treated in the same period, or
 {cmd:r(459)} and the diagnostic {cmd:No valid groups.}
 
 {pstd}
+{bf:A constant outcome.} If the outcome takes the same value in every
+observation of the estimation sample, estimation stops with {cmd:r(459)} and a
+message naming the variable and the value. There is nothing to estimate: every
+ATT(g,t) would be exactly 0 with no standard error, which reads like a
+precisely estimated null rather than an empty result. The test is exact, and it
+is applied to the estimation sample, so an outcome that is flat only under an
+{cmd:if} is still refused, and an outcome that varies anywhere in that sample --
+by however little -- is estimated.
+
+{pstd}
 {bf:When every cell fails.} If all of the two-by-two comparisons fail, so that
 every ATT(g,t) is missing, {cmd:csdid} does not stop. It prints a warning
 naming
 the usual causes -- a collinear or constant covariate, a {cmd:pscoretrim()}
 that empties every comparison group, comparison groups with too few units, an
-outcome with no variation -- posts {bf:no} {cmd:e(b)} and {cmd:e(V)}, and
+outcome with no variation {it:within} the comparisons -- posts {bf:no}
+{cmd:e(b)} and {cmd:e(V)}, and
 leaves the all-missing table in {cmd:e(attgt)}. Aggregation and hypothesis
 testing then have nothing to work with and say so. Do not assume {cmd:e(b)}
 exists after a run that returned zero.
@@ -1146,10 +1168,12 @@ pre-specified cell is the object of interest.
 {pstd}
 {cmd:analytical} skips the bootstrap for the standard errors. It is faster,
 and appropriate for a single pre-specified comparison or for a first look at
-a large dataset. Aggregations of an analytical fit still band simultaneously
+a large dataset. The per-effect rows of an aggregation of an analytical fit
+still band simultaneously
 by default -- the band's critical value is bootstrapped, with a note, because
 there is no other way to compute one; add {cmd:pointwise} to avoid the
-bootstrap entirely.
+bootstrap entirely. An aggregation's overall summary effect is banded pointwise
+under either setting; see {helpb csdid_stats}.
 
 {pstd}
 {cmd:cluster()} is required whenever treatment is assigned, or shocks arrive,
@@ -1336,9 +1360,10 @@ o {bf:Immediate aggregation.} {cmd:agg()} accepts only {cmd:event} and
 route.{p_end}
 
 {phang2}
-o {bf:Covariate missing for a whole period.} {cmd:csdid} refuses and names the
-covariate and the period rather than quietly dropping that period, so that any
-change in the estimation sample is yours to make. See
+o {bf:Covariate missing for a whole period.} That period cannot enter any
+comparison, so it is dropped and estimation proceeds on the remaining periods
+-- exactly as if the sample had excluded it. {cmd:csdid} names the covariate
+and the period when it does so, rather than dropping it in silence. See
 {help csdid##remarks_data:What csdid requires of the data}.{p_end}
 
 {phang2}
@@ -1554,7 +1579,11 @@ analytical{p_end}
 {synopt:{cmd:e(biters)}}number of bootstrap iterations (0 when analytical){p_end}
 {synopt:{cmd:e(reps)}}number of bootstrap iterations, under the name Stata's
 own {helpb bootstrap} uses {it:(conditional: bootstrap)}{p_end}
-{synopt:{cmd:e(cband)}}1 if simultaneous confidence bands were computed{p_end}
+{synopt:{cmd:e(cband)}}1 when simultaneous bands were requested, that is
+whenever {cmd:pointwise} was not typed. Under {cmd:analytical} no simultaneous
+band is computed and {cmd:e(crit_val)} is the normal quantile, so read
+{cmd:e(crit_val)} against {cmd:e(point_crit_val)} to tell whether a band was
+actually built{p_end}
 {synopt:{cmd:e(pointwise)}}1 if pointwise intervals were requested{p_end}
 {synopt:{cmd:e(wald_stat)}}chi-squared statistic of the parallel-trends
 pre-test {it:(conditional: pre-test computable)}{p_end}

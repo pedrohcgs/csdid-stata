@@ -303,6 +303,20 @@ matrix CalUnrestricted = e(aggte)
 mata: st_numscalar("rt006_calendar_window_diff", rt006_matrix_maxabsdiff("CalWindow", "CalUnrestricted"))
 assert scalar(rt006_calendar_window_diff) <= 1e-10
 
+* The same warning must survive the CALLER's -quietly-. It says a documented
+* option the user typed was discarded and a DIFFERENT aggregation is being
+* reported, so a caller who wraps the call loses the one signal that the
+* window was not applied: on the text channel `quietly csdid_stats,
+* type(calendar) window(0 1)' returned the full unwindowed table in silence.
+* The two checks above both run under -capture noisily-, which shows the
+* message either way, so neither of them can see this.
+tempfile callogq
+capture log close rt006calq
+log using "`callogq'", text replace name(rt006calq)
+quietly csdid_stats, type(calendar) window(0 1) na_rm
+log close rt006calq
+rt006_assert_log_contains using "`callogq'", message("ignored for type(calendar)")
+
 import delimited using "`root'/tests/fixtures/parity/rt006/expected/r/calendar-ignored.csv", clear asdouble
 merge 1:1 scenario type seq using "`actual_cal'", nogen assert(match)
 foreach v in att se overall_att overall_se {

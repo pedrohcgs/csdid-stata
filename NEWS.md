@@ -44,14 +44,25 @@ period — often dozens — and pointwise intervals do not account for looking a
 all of them at once. Reading a 95% pointwise band as though it covered the whole
 event study understates uncertainty, and it is the most common way these results
 are over-read. The default is now the multiplier bootstrap with simultaneous
-bands over 1,000 iterations, so the interval you are shown is the one that
-covers every reported effect jointly.
+bands over 1,000 iterations, so the interval you are shown on each estimated
+effect is the one that covers them jointly. (An aggregation's overall summary
+effect is the exception: being a single number, it is reported with a pointwise
+interval.)
 
-`analytical` (or `vce(analytical)`) restores analytical standard errors;
-aggregations still carry a simultaneous band — its critical value is
-bootstrapped, with a note, because there is no other way to compute one —
-unless `pointwise` is added. `pointwise` gives pointwise intervals from
+`analytical` (or `vce(analytical)`) restores analytical standard errors; an
+aggregation's per-effect rows still carry a simultaneous band — its critical
+value is bootstrapped, with a note, because there is no other way to compute
+one — unless `pointwise` is added. `pointwise` gives pointwise intervals from
 either inference. Point estimates are unaffected by any of this.
+
+One effect is deliberately exempt: the overall summary of an aggregation —
+`Post_avg` on the event study, `Overall` on the group and calendar
+aggregations, `ATT` on the simple one, and the `ATT(Average)` row of
+`estat tidy` — is reported with a *pointwise* interval even when the effects
+it summarizes carry a simultaneous band. A simultaneous band answers whether a
+whole set of effects lies inside its intervals at once; a single summary number
+has no set to be simultaneous over. An `estat event` table can therefore show
+both kinds of interval at once, and it says so beneath the table.
 
 **Unbalanced panels are balanced, and say so.** Version 1.82 dropped, without
 comment, the units not observed in both periods of each comparison — silently
@@ -115,6 +126,20 @@ reduction and after `bal(full)` — because it describes the sample that will
 actually be estimated. Like the refusal above, this changes *whether the
 command runs*, never an estimate.
 
+**An outcome that never changes is refused.** When the outcome takes the same
+value in every observation of the estimation sample, Version 2.0.0 stops with
+`r(459)` and names the variable and the value. Version 1.82 estimated it, and
+returned a table in which every ATT(g,t) was exactly 0 with a missing standard
+error — which reads like a precisely estimated null rather than like an empty
+result. Warnings did fire, but each named the symptom (standard errors could
+not be computed) and none named this cause.
+
+The test is exact equality of the extremes, and it is applied to the estimation
+sample: an outcome flattened by an `if` is refused even when the variable
+varies elsewhere, and an outcome that varies by one part in a million is
+degenerate-but-estimable and still runs. This is the third refusal that changes
+*whether the command runs*, never an estimate.
+
 ### Stored results
 
 **`e()` carries the estimation contract; unit-level objects stay internal.**
@@ -158,7 +183,11 @@ as Stata matrices, and `saverif()` writes the durable dataset that
   `saverif()` writes them as a dataset that `csdid_stats using` aggregates
   later, in another session or on another machine.
 - **`estat event`, `estat group`, `estat calendar`, `estat simple`,
-  `estat dynamic` and `estat attgt`** as conventional postestimation forms.
+  `estat dynamic`, `estat attgt` and `estat plot`** as conventional
+  postestimation forms. `estat event` displays the full inference table —
+  estimate, standard error, z, p, and the aggregation's own confidence band —
+  with or without `post`; `estat plot` is `csdid_plot` under its `estat`
+  spelling.
 - **`saving()` on every `estat` subcommand**, which writes what that subcommand
   computed to a dataset — the same option `margins`, `simulate` and `graph`
   take, so there is no separate export command.

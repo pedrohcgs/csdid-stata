@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 28aug2026}{...}
+{* *! version 2.0.0 01sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -34,8 +34,8 @@ The following postestimation commands are available after {cmd:csdid}:
 {synoptline}
 {synopt :{helpb csdid_estat##syntax:estat attgt}}display the group-time
 ATT(g,t) table{p_end}
-{synopt :{helpb csdid_estat##syntax:estat event}}display the event study as
-coefficients, with {cmd:Post_avg}{p_end}
+{synopt :{helpb csdid_estat##syntax:estat event}}display the event study as a
+coefficient table with its confidence band, with {cmd:Post_avg}{p_end}
 {synopt :{helpb csdid_estat##syntax:estat simple}}overall average treatment
 effect on the treated{p_end}
 {synopt :{helpb csdid_estat##syntax:estat group}}average effect by treatment
@@ -48,6 +48,8 @@ time{p_end}
 one row per ATT(g,t) cell or per aggregated effect{p_end}
 {synopt :{helpb csdid_estat##syntax:estat glance}}write a single-row dataset of
 model metadata{p_end}
+{synopt :{helpb csdid_plot:estat plot}}draw the plot, or export plot-ready
+data; the {cmd:estat} spelling of {cmd:csdid_plot}{p_end}
 {synopt :{helpb csdid_stats}}aggregation with the full option set, including
 {cmd:balance()} and saved influence functions{p_end}
 {synopt :{helpb csdid_plot}}draw the plot, or export plot-ready data for
@@ -263,7 +265,9 @@ result that subcommand computed. {cmd:estat attgt, saving()} writes one row per
 ATT(g,t) cell; {cmd:estat event, saving()} writes the event study; and so on for
 {cmd:dynamic}, {cmd:simple}, {cmd:group} and {cmd:calendar}. Each row carries
 the estimate, standard error, test statistic, p-value, and both the reported and
-the pointwise confidence limits. Add {cmd:replace} to overwrite.
+the pointwise confidence limits. The two pairs coincide on an aggregation's
+overall summary row, which is banded pointwise to begin with. Add
+{cmd:replace} to overwrite.
 
 {phang}
 {helpb csdid_plot} draws the ATT(g,t) plot or the active dynamic, group, or

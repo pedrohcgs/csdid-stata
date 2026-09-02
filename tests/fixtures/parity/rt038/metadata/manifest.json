@@ -1,0 +1,60 @@
+{
+  "matrix_id": "RT038",
+  "fixture_family": "r-fix-weights-unbalanced",
+  "normative_source": "R did 2.5.1 R/compute.att_gt.R (the fix_weights base_period/first_period block on the RC/unbalanced route, and its \"not observed in\" warning)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "rows": 35,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt038/generate.R",
+      "path": "tools/parity/generators/rt038/generate.R"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1"
+      }
+    }
+  ],
+  "rng": {
+    "seed": 70707,
+    "kind": ["Mersenne-Twister", "Inversion", "Rejection"]
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/warnings.csv",
+      "schema": "warning-count"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata e(attgt) att and se columns",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["group", "time"]
+    },
+    {
+      "actual": "Stata log, count of \"units not observed in base_period\" warnings",
+      "expected": "expected/r/warnings.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "phrase"
+    }
+  ],
+  "approved_divergence": {},
+  "scope_note": "RT038 pins the one option combination on which fix_weights() was inert in the port: an unbalanced panel with method(reg), no covariates, no weights and the never-treated comparison group, where the cells took a four-means closed form that does not implement the base-period weight lookup. Every neighbouring combination -- any covariate, any weight, the not-yet-treated group, method(dr) or method(ipw) -- routes to the fitted path and already agreed, which is why no other fixture in the suite could see it. The warning count is a compared channel and not decoration: a run that skips the drop still returns a complete and plausible ATT(g,t) table, so the numbers alone do not reveal which sample was used."
+}

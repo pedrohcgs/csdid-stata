@@ -1,4 +1,4 @@
-*! csdid_estat 2.0.0 28aug2026
+*! csdid_estat 2.0.0 01sep2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -19,6 +19,29 @@ program define csdid_estat, eclass
     gettoken csdid_peek : 0, parse(" ,")
     local csdid_peek = lower(strtrim(`"`csdid_peek'"'))
     local csdid_peek_n = length("`csdid_peek'")
+    * `estat plot' is csdid_plot behind the estat wrapper. The remainder is
+    * handed over BEFORE this command's option parser runs, for the same
+    * reason estat_default's subcommands are (see below): csdid_plot must
+    * receive its OWN options (group(), saving(), replace) and refuse
+    * anything else in its own words, rather than have the catch-all here
+    * reject group() -- an option this parser does not declare -- as
+    * "unsupported". Exact spelling only, like every csdid subcommand.
+    if "`csdid_peek'" == "plot" {
+        gettoken csdid_discard 0 : 0, parse(" ,")
+        * A stray token before the comma (`estat plot foo') reached
+        * csdid_plot's own -syntax-, which has no positional argument and
+        * answered with Stata's stock "varlist not allowed" r(101) -- a
+        * message about variables, for what is really a mistyped subcommand.
+        * Name it here instead, as this file does for its own bare call.
+        local csdid_rest = strtrim(`"`0'"')
+        if `"`csdid_rest'"' != "" & substr(`"`csdid_rest'"', 1, 1) != "," {
+            gettoken csdid_stray : csdid_rest, parse(" ,")
+            display as error `"estat plot takes no argument; `csdid_stray' is not one. Options go after a comma, as in estat plot, group(2004) or estat plot, saving(myfile)"'
+            exit 198
+        }
+        csdid_plot `0'
+        exit
+    }
     if !inlist("`csdid_peek'", "attgt", "event", "dynamic", "simple", "group") & ///
        !inlist("`csdid_peek'", "calendar", "tidy", "glance", "", ",") {
         if "`csdid_peek'" == "ic" | "`csdid_peek'" == "vce" | ///
@@ -133,7 +156,7 @@ program define csdid_estat, eclass
     * while the informative subcommand list sat one branch away at the bottom
     * of this program. Name the subcommands instead.
     if `"`subcmd'"' == `""' {
-        display as error "csdid_estat requires a subcommand; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, and glance"
+        display as error "csdid_estat requires a subcommand; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, glance, and plot; the standard estat subcommands vce, summarize, ic and bootstrap are also accepted"
         exit 198
     }
     if `"`subcmd'"' == `"attgt"' {
@@ -282,6 +305,20 @@ program define csdid_estat, eclass
         if `"`level'"' != "" local stat_opts "`stat_opts' level(`level')"
         if "`dropmissing'" != "" local stat_opts "`stat_opts' dropmissing"
         if "`window'" != "" local stat_opts `"`stat_opts' window(`window')"'
+        * the missing-cell refusal inside csdid_stats spells out the exact
+        * command to retype (internal remedy() plumbing); reached from here,
+        * that command is the estat spelling the user actually typed, not
+        * csdid_stats's -- "Specify dropmissing" alone left the user to work
+        * out which of the two surfaces the option belongs to.
+        * The retype must carry the options that CHANGE THE ESTIMAND. Advice
+        * that drops window() or level() names a command which runs and
+        * returns a different aggregation than the one the user asked for,
+        * which is worse than no advice: the numbers come back and nothing
+        * says they answer a different question.
+        local remedy_opts "dropmissing"
+        if `"`level'"' != "" local remedy_opts `"`remedy_opts' level(`level')"'
+        if "`window'" != "" local remedy_opts `"`remedy_opts' window(`window')"'
+        local stat_opts `"`stat_opts' remedy(estat `subcmd', `remedy_opts')"'
         * csdid_stats reports two things on the TEXT channel that the
         * `quietly' below suppresses, so the estat route printed neither:
         *   - "window() is ignored for type(calendar)", so
@@ -305,8 +342,17 @@ program define csdid_estat, eclass
             display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
             exit 198
         }
+        * Error-styled, not text-styled: -quietly- suppresses text but not
+        * error, and this warning says the aggregation you get is NOT the one
+        * you asked for. On the text channel `quietly estat calendar,
+        * window(0 2) post' returned rc 0, printed nothing, and posted the
+        * FULL unwindowed calendar aggregation into e(b) -- the silent
+        * substitution this warning exists to prevent, restored in full by the
+        * one idiom (quietly + post) users reach for to script an aggregation.
+        * The tidy exports in this file already use the error channel for
+        * exactly this reason.
         if "`agg_type'" == "calendar" & `"`window'"' != "" {
-            display as text "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"
+            display as error "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"
         }
         _csdid_estat_rclear
         quietly csdid_stats, `stat_opts'
@@ -322,8 +368,13 @@ program define csdid_estat, eclass
                 forvalues agg_i = 1/`=rowsof(`agg_se_check')' {
                     if !missing(`agg_se_check'[`agg_i', `agg_se_col']) local agg_se_allmiss 0
                 }
+                * Error-styled for the same reason as the window warning
+                * above: a table whose every standard error is missing is a
+                * different object from the one the header describes, and a
+                * caller's -quietly- must not be able to remove the sentence
+                * that says so.
                 if `agg_se_allmiss' {
-                    display as text "note: every standard error in this type(`agg_type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance. The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
+                    display as error "note: every standard error in this type(`agg_type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance. The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
                 }
             }
         }
@@ -373,36 +424,70 @@ program define csdid_estat, eclass
         else {
             _csdid_post aggte, level(`post_level') `post'
         }
-        if "`post'" == "" {
-            * only `event' displays the coefficient vector; the
-            * aggregation routes display e(aggte). Without `post' nothing was
-            * posted, so the display vector comes from r(table) row 1 - the
-            * same values, with the same column names, the posting path would
-            * have put in e(b). The guard matters because _csdid_post returns
-            * no table when the aggregation produced no usable coefficient
-            * (every att missing).
-            local have_show 0
-            capture matrix `show_b' = r(table)
-            if !_rc {
-                matrix `show_b' = `show_b'[1, 1...]
-                local have_show 1
-            }
-            if `"`subcmd'"' == `"event"' {
-                * The event table arrived with nothing above it: no title, and
-                * no statement of how the standard errors beneath it were
-                * produced. `csdid_stats, type(dynamic)' prints both, but its
-                * copy is inside the `quietly' this route runs, so a user who
-                * reached the same aggregation through estat saw a bare matrix.
-                * Same title, same header, from the same e() macros.
-                if `have_show' {
-                    display as text _newline "Aggregated treatment effects"
-                    _csdid_estat_inf_header, level(`post_level')
-                    matlist `show_b', names(columns) format(%10.6g)
+        * The display runs on the post path too: `estat event, post' used to
+        * print NOTHING (the user had to type ereturn display themselves, and
+        * that recomputes normal-based intervals that contradict the
+        * simultaneous band the aggregation computed), and a plain
+        * `estat event' printed only row 1 of r(table) -- the point estimates,
+        * with the se/z/p/band columns the aggregation had already produced
+        * sitting undisplayed one row below (field report 2026-08-31;
+        * Version 1.82 displayed the full _coef_table here).
+        * The event table is r(table) rows 1-6 transposed: b, se, z, pvalue,
+        * and ll/ul carrying the aggregation's OWN band -- the simultaneous
+        * critical value under bootstrap or banded-analytical inference, which
+        * ereturn display cannot reproduce (it always bands at the normal
+        * quantile). Rows 7-9 (df, crit, eform) stay in r(table) only, as
+        * csdid's own ATT(g,t) display keeps base_time out of the printed
+        * table. The guard matters because _csdid_post returns no table when
+        * the aggregation produced no usable coefficient (every att missing).
+        local have_show 0
+        capture matrix `show_b' = r(table)
+        if !_rc {
+            matrix `show_b' = `show_b'[1..6, 1...]'
+            local have_show 1
+        }
+        * Both branches print the same title and inference header:
+        * `csdid_stats, type()' prints its own copy, but that copy is inside
+        * the `quietly' this route runs, so a user who reached the same
+        * aggregation through estat saw a bare matrix. Same title, same
+        * header, from the same e() macros.
+        * The poster returns no table when the aggregation yielded no usable
+        * coefficient at all. Every aggregation kernel refuses before that can
+        * happen today, so this is defensive -- but the alternative to naming
+        * it is the one outcome this whole route exists to prevent: a command
+        * that exits 0 having printed nothing whatsoever.
+        if !`have_show' {
+            display as error "the type(`agg_type') aggregation produced no usable coefficient, so there is nothing to report and r(table) was not built. Every aggregated effect is missing; see e(attgt) for the ATT(g,t) cells behind it."
+            exit 498
+        }
+        if `"`subcmd'"' == `"event"' {
+            if `have_show' {
+                display as text _newline "Aggregated treatment effects"
+                _csdid_estat_inf_header, level(`post_level')
+                * %10.6g overflows Stata's DEFAULT linesize of 80: six
+                * columns plus the row-name column need 82, so `ul' -- half of
+                * every confidence interval -- was orphaned into a second
+                * block below the table. Narrower cells keep one table whole
+                * at linesize 80, and r(table) carries the full precision.
+                matlist `show_b', format(%9.0g) twidth(9)
+                * One printed table now carries two kinds of interval, so it
+                * has to say which is which. Post_avg is a single summary
+                * number banded pointwise, as R bands it; the event-time
+                * effects carry the simultaneous band. Only worth saying when
+                * the two actually differ -- under a pointwise aggregation
+                * every row already uses the same critical value.
+                capture confirm scalar e(agg_cband)
+                if !_rc {
+                    if e(agg_cband) == 1 {
+                        display as text "Post_avg is the overall summary effect: its interval is pointwise, while the event-time effects use the simultaneous band."
+                    }
                 }
             }
-            else {
-                matlist e(aggte), names(columns) format(%10.6g)
-            }
+        }
+        else {
+            display as text _newline "Aggregated treatment effects"
+            _csdid_estat_inf_header, level(`post_level')
+            matlist e(aggte), names(columns) format(%10.6g)
         }
         * (the export ran above, before the posting step; see the F3-A note)
         exit
@@ -467,7 +552,7 @@ program define csdid_estat, eclass
     * after regress, measured), but rc 498 here is pinned by the frozen
     * test-f051 contract; changing the class would fail that test. Flagged to
     * the owner rather than changed.
-    display as error `"csdid_estat subcommand `subcmd' is not supported; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, and glance"'
+    display as error `"csdid_estat subcommand `subcmd' is not supported; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, glance, and plot; the standard estat subcommands vce, summarize, ic and bootstrap are also accepted"'
     exit 498
 end
 
@@ -723,8 +808,12 @@ program define _csdid_estat_tidy_aggte
             rename se std_error
             generate double statistic = estimate / std_error
             generate double p_value = 2 * normal(-abs(statistic))
-            generate double conf_low = estimate - `crit' * std_error
-            generate double conf_high = estimate + `crit' * std_error
+            * The simple aggregation IS one overall summary effect, so both
+            * band pairs are the pointwise one -- exactly as the oracle
+            * generator writes it (conf_low and point_conf_low are the same
+            * expression for this type, tools/parity/generators/f027).
+            generate double conf_low = estimate - `z' * std_error
+            generate double conf_high = estimate + `z' * std_error
             generate double point_conf_low = estimate - `z' * std_error
             generate double point_conf_high = estimate + `z' * std_error
             keep type term estimate std_error statistic p_value conf_low conf_high point_conf_low point_conf_high
@@ -777,8 +866,14 @@ program define _csdid_estat_tidy_aggte
             replace std_error = overall_se[1] in L
             replace statistic = estimate / std_error in L
             replace p_value = 2 * normal(-abs(statistic)) in L
-            replace conf_low = estimate - `crit' * std_error in L
-            replace conf_high = estimate + `crit' * std_error in L
+            * The Average row is the overall summary effect, banded pointwise
+            * like every other overall row (R: AGGTEobj.R:80-83). The two
+            * frozen group fixtures show the rule directly -- their Average
+            * row has conf_low == point_conf_low. This line used to reuse
+            * `crit', the per-cohort band, which is why the exported Average
+            * row disagreed with its own point_conf_* columns under bootstrap.
+            replace conf_low = estimate - `z' * std_error in L
+            replace conf_high = estimate + `z' * std_error in L
             replace point_conf_low = estimate - `z' * std_error in L
             replace point_conf_high = estimate + `z' * std_error in L
             generate byte _csdid_order = cond(group == "Average", 0, 1)

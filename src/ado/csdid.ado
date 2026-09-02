@@ -1,4 +1,4 @@
-*! csdid 2.0.0 28aug2026
+*! csdid 2.0.0 01sep2026
 program define csdid, eclass sortpreserve
     local csdid_zero_entry `"`0'"'
     * this guard used to sit BELOW `version 14', where it
@@ -1374,6 +1374,34 @@ program define csdid, eclass sortpreserve
             exit 459
         }
     }
+    * An outcome that never changes carries no information about anything, and
+    * estimating it produced a table that READ like a finding: every ATT(g,t)
+    * exactly 0 with a missing standard error and no band, which is easily
+    * taken for "a precisely estimated null" instead of "there is nothing
+    * here". The three warnings that did fire named the symptom (standard
+    * errors could not be computed) and listed causes that did not include
+    * this one. Refuse instead, and name it.
+    *
+    * The test is EXACT equality of the extremes over the estimation sample,
+    * not a tolerance: an outcome that varies by even one part in a million is
+    * degenerate-but-estimable and stays that way (tests/stata/
+    * test-boot-degenerate-screen.do pins those cells, and they must keep
+    * running). Only a literally constant outcome is refused.
+    *
+    * Owner-approved divergence from did 2.5.1, which runs and returns a
+    * critical value of -Inf with a table of zeros. csdid already refuses
+    * degenerate inputs R accepts -- too few units, a moving cohort, duplicate
+    * (id, time) rows -- and this is that class.
+    * Measured: a Stata -summarize- here cost ~6% of a plain estimation and
+    * pushed the medium_panel ratio gate from 1.61 to 1.91 against its 1.9
+    * limit. One Mata read of the same column, on the rows touse already
+    * marks, costs a fraction of that.
+    tempname yflat ymin
+    mata: csdid__outcome_is_constant("`yname'", "`touse'", "`yflat'", "`ymin'")
+    if scalar(`yflat') == 1 {
+        display as error "`yname' takes the same value (`=scalar(`ymin')') in every observation of the estimation sample, so there is nothing to estimate: every ATT(g,t) would be exactly 0 with no standard error. Check that the outcome variable is the one you meant and that if/in has not reduced it to a constant."
+        exit 459
+    }
     if `want_bal' {
         * the settled grid, not the raw one: with no never-treated group the
         * kernel deletes the periods at or beyond latest_g - anticipation, and
@@ -1846,6 +1874,13 @@ program define csdid, eclass sortpreserve
         local bootstrap_accelerator_status "mata-unseeded"
         local plugin_loaded 0
         local plugin_success 0
+        * Clear the large-critical-value signal BEFORE any kernel can set it,
+        * the way the aggregation twin does (csdid_stats.ado). The consume
+        * below drops it only on the path that reads it, so a run whose kernel
+        * sets the scalar and then exits through the error branch would leave
+        * it standing for the NEXT csdid, which would print the warning for a
+        * band that never earned it.
+        capture scalar drop CSDID_ATTGT_CRIT_LARGE
         if "$CSDID_BOOT_PLUGIN_DISABLE" == "1" {
             local bootstrap_accelerator_status "mata-plugin-disabled"
         }
@@ -2038,6 +2073,20 @@ program define csdid, eclass sortpreserve
                 ereturn clear
                 exit `csdid_rc'
             }
+        }
+        * R warns when the ATT(g,t) simultaneous critical value reaches 7
+        * (did/R/att_gt.R: "Simultaneous critical value is arguably `too
+        * large' to be reliable"); csdid carried the aggregation-level twin of
+        * this warning and nothing at the ATT(g,t) level, so a band built from
+        * an unreliable critical value was flagged by R and not here. The
+        * kernel signals it with a scalar rather than printing, because the
+        * plugin entry point above runs under -capture-, which would swallow
+        * anything the kernel wrote; this read sits outside that capture, and
+        * is error-styled so a caller's -quietly- cannot remove it either.
+        capture confirm scalar CSDID_ATTGT_CRIT_LARGE
+        if !_rc {
+            scalar drop CSDID_ATTGT_CRIT_LARGE
+            display as error "warning: the simultaneous critical value for the ATT(g,t) bands is arguably too large to be reliable. This usually happens when the number of observations per group is small and/or there is not much variation in outcomes. Specify pointwise for pointwise intervals."
         }
         matrix colnames `boot_attgt' = group time event_time att se_boot se_analytic crit_val ci_low ci_high point_crit_val point_ci_low point_ci_high
         mata: st_matrix("`bootstrap_profile'", CSDID_BOOT_PROFILE)
@@ -2629,7 +2678,11 @@ program define csdid, eclass sortpreserve
         * aggregation route a user reaches without asking for an aggregation
         * command. The flag is now the user's to set, under the same name
         * csdid_stats and estat use, and agg() refuses exactly as they do.
-        csdid_stats, type(dynamic) `dropmissing'
+        * remedy() names the retype for THIS surface: the estimation itself
+        * succeeded and is posted, so the user may either re-run with
+        * dropmissing beside agg(event) or aggregate the standing results.
+        csdid_stats, type(dynamic) `dropmissing' ///
+            remedy(csdid ..., agg(event) dropmissing -- or, on these results, csdid_stats, type(dynamic) dropmissing)
         * agg() posts by design: after `csdid, agg(event)' e(b)/e(V) hold the
         * aggregated coefficients (documented). The estat routes pass `post'
         * only when the user asks for it.

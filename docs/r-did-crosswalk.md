@@ -168,7 +168,7 @@ calendar, and `ATT` for simple.
 | --- | --- | --- |
 | `group` | `e(attgt)`, column `group` | |
 | `t` | `e(attgt)`, column `time` | Stata also exports `event_time` = `t - g`, which R computes on the fly. |
-| `att` | `e(attgt)`, column `att` | Also posted to `e(b)`, named `g<g>___<t>_<g-1>` (e.g. `g2004___2005_2003`). Cells at event time -1 and cells with a missing ATT are not posted, so `e(b)` can be shorter than `e(attgt)` has rows. |
+| `att` | `e(attgt)`, column `att` | Also posted to `e(b)`, named `g<g>___<t>_<base>` where `base` is the period the cell was actually differenced against (e.g. `g2004___2005_2003`), which under a varying base period differs from cell to cell. The cell NOT posted is the normalised one, identified by `base_time == time` rather than by event time -1; cells with a missing ATT are not posted either, so `e(b)` can be shorter than `e(attgt)` has rows. See `docs/stored-results-api.md`. |
 | `se` | `e(attgt)`, column `se` | Bootstrap SE when `bstrap`, analytical otherwise - same rule as R. Under the bootstrap, `e(boot_attgt)` carries both `se_boot` and `se_analytic`. |
 | `c` | `e(crit_val)` | The simultaneous critical value under `cband`, the pointwise one otherwise. `e(point_crit_val)` always holds the normal quantile. |
 | `inffunc` | `e(inffunc)` under `storeall`, or `saverif()` as a dataset | One column per ATT(g,t), one row per unit (per observation for repeated cross sections), as in R. R identifies rows by `rownames`; Stata identifies them by the `id` column of `e(unit_group)`. Stored subject to the storage policy in `docs/stored-results-api.md`. |
@@ -193,7 +193,8 @@ calendar, and `ATT` for simple.
 | `se.egt` | `e(aggte)`, column `se` | |
 | `overall.att` | `e(aggte)`, column `overall_att` | Constant down the column, so it survives `matlist`. `estat <type>, post` puts it in `e(b)`. |
 | `overall.se` | `e(aggte)`, column `overall_se` | |
-| `crit.val.egt` | `e(crit_val)` when a band was computed | Under the bootstrap, and under `analytical` when the simultaneous band was computed (the default), `csdid_stats` posts the aggregation's own `e(crit_val)` and `e(point_crit_val)`. Under `analytical` with `pointwise` it posts neither, and `e(crit_val)` still holds the value from the estimation step: the aggregation's critical value is then the normal quantile at `e(agg_level)`. `estat tidy` and `csdid_plot` key off `e(agg_cband)` and apply these rules; if you build bands by hand, apply them too. |
+| overall confidence interval | `r(table)` columns `Post_avg` / `Overall` / `ATT`, and the `ATT(Average)` row of `estat tidy` | **Pointwise, always.** `summary.AGGTEobj` bands the overall effect with `qnorm(1-alp/2)` whatever `bstrap` and `cband` were (`AGGTEobj.R`, the "overall estimates" block), using `crit.val.egt` only for the per-effect rows. csdid follows: the overall column's `crit` row in `r(table)` is the normal quantile at `e(agg_level)`, so one table can carry a simultaneous band on the effects and a pointwise interval on their summary. |
+| `crit.val.egt` | `e(crit_val)` when a band was computed | Under the bootstrap, and under `analytical` when the simultaneous band was computed (the default), `csdid_stats` posts the aggregation's own `e(crit_val)` and `e(point_crit_val)`. Under `analytical` with `pointwise` it posts neither, and `e(crit_val)` still holds the value from the estimation step: the aggregation's critical value is then the normal quantile at `e(agg_level)`. `estat tidy` and `csdid_plot` key off `e(agg_cband)` and apply these rules; if you build bands by hand, apply them too. R's name for this value says what it covers: `crit.val.egt` is the critical value of the `egt` (per-effect) rows. The overall summary effect is banded pointwise in both packages — see the row above. |
 | `inf.function` | `e(agg_inffunc)` | Columns `effect1 ... effectK`, then `overall`. |
 | `min_e`, `max_e`, `balance_e` | not stored | The values you passed are honored but are not echoed into `e()`; `e(cmdline)` and your own do-file are the record. |
 | `DIDparams` | inherited `e()` macros from the estimation step | `csdid_stats` does not clear them. |
@@ -209,7 +210,7 @@ calendar, and `ATT` for simple.
 | `ggdid(mp)` | `csdid_plot` after `csdid` | Draws the ATT(g,t) panels; `saving(f)` writes the plot data instead. See `help csdid_plot`. |
 | `ggdid(agg)` | `csdid_plot, saving(f) replace` after `csdid_stats` | Same for the active aggregation. `type(simple)` has no plot in either package (R stops, Stata exits 498, same message). |
 | `ggdid(..., group = c(...))` | `group(numlist)` | Same fallback behavior and message when a requested cohort does not exist. |
-| `tidy(mp)`, `tidy(agg)` | `estat tidy, saving(f) replace` | Same columns (order may differ), with `.` replaced by `_` in the Stata variable names (`std_error`, `conf_low`, `point_conf_high`, ...) and the R spelling kept as the variable label. Same `term` strings, including `ATT(Average)` / `ATT(simple average)`, and the same leading `Average` row for group aggregation. |
+| `tidy(mp)`, `tidy(agg)` | `estat tidy, saving(f) replace` | Same columns (order may differ), with `.` replaced by `_` in the Stata variable names (`std_error`, `conf_low`, `point_conf_high`, ...) and the R spelling kept as the variable label. Same `term` strings, including `ATT(Average)` / `ATT(simple average)`, and the same leading `Average` row for group aggregation. On that `Average` row, and on the single row of a `simple` aggregation, `conf_low`/`conf_high` equal `point_conf_low`/`point_conf_high`, because an overall summary effect is banded pointwise in both packages. |
 | `glance(mp)`, `glance(agg)` | `estat glance, saving(f) replace` | Same columns: `nobs`, `ngroup`, `ntime`, `control_group`, `est_method`, plus `type` for an aggregation. |
 | `summary(mp)` | the table `csdid` prints, or `estat attgt` | |
 | `did::mpdta` | `examples/data/mpdta.csv` | R's column `first.treat` is `first_treat` in the CSV, since Stata names cannot contain `.`. |
@@ -291,6 +292,17 @@ never-treated unit exists to begin with -- the latest treated cohort becomes
 the comparison group and the periods from its treatment date on are dropped --
 and warns that it did so. The numbers are the ones R reports when it is given
 the balanced sample directly.
+
+**6.8 An outcome with no variation at all is refused, not estimated.**
+When the outcome takes the same value in every observation of the estimation
+sample, R runs: it returns a table in which every ATT(g,t) is exactly 0 with a
+missing standard error, and a simultaneous critical value of `-Inf`. `csdid`
+stops first, with return code 459 and a message naming the variable and the
+value. The R table is not wrong, but it is indistinguishable at a glance from a
+precisely estimated null, and none of the warnings that do fire names this
+cause. The test is exact (`min == max`) and is applied to the estimation
+sample, so an outcome that varies by any amount, or that varies outside an
+`if`, still reaches R's answer. See `docs/behavior-decisions.md` D026.
 
 Legacy-Stata-facing divergences (options that exist only to ease migration from
 Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in

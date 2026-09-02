@@ -105,7 +105,7 @@ assert "`built_stamp'" == "2.0.0|`c(stata_version)'"
 * estimation, on whichever member did not travel. Trading that for a build
 * that stops here is not a close call.
 * ---------------------------------------------------------------------------
-* size() is explicit (165 members today, headroom to 512, hard Mata cap 2048),
+* size() is explicit (166 members today, headroom to 512, hard Mata cap 2048),
 * and the add is scoped to the package namespace rather than a bare *() --
 * the library's contents are an intended list, not whatever the session held.
 mata: mata mlib create lcsdid_v2, dir("build") replace size(512)
@@ -113,7 +113,7 @@ mata: mata mlib add lcsdid_v2 csdid*(), dir("build") complete
 mata: mata mlib index
 * ---------------------------------------------------------------------------
 * The member count is asserted against the engine's own banner arithmetic
-* (134 free functions + 3 classes + 28 methods = 165; src/mata/csdid.mata,
+* (135 free functions + 3 classes + 28 methods = 166; src/mata/csdid.mata,
 * "HOW MANY NAMES"). A count that moved means the source and this build
 * disagree about what the library holds -- drift this gate exists to stop.
 * ---------------------------------------------------------------------------
@@ -128,7 +128,7 @@ quietly log close csdid_desc
 adopath - "build"
 local member_ok 0
 if c(noisily) {
-    mata: st_local("member_ok", strofreal(rows(cat(st_local("desc_log"))) == 0 ? 0 : sum(strpos(cat(st_local("desc_log")), "library contains 165 members") :> 0)))
+    mata: st_local("member_ok", strofreal(rows(cat(st_local("desc_log"))) == 0 ? 0 : sum(strpos(cat(st_local("desc_log")), "library contains 166 members") :> 0)))
 }
 else {
     * the gate cannot read suppressed output; the noisy release build is
@@ -136,7 +136,7 @@ else {
     local member_ok 1
 }
 if `member_ok' == 0 {
-    display as error "lcsdid_v2 does not hold the 165 members the source declares (mata describe using lcsdid_v2 disagrees)"
+    display as error "lcsdid_v2 does not hold the 166 members the source declares (mata describe using lcsdid_v2 disagrees)"
     display as error "update the count here AND the csdid.mata banner together if the surface deliberately changed"
     exit 459
 }

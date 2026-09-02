@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 28aug2026}{...}
+{* *! version 2.0.0 01sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -54,6 +54,13 @@ Export a results dataset
 {cmd:estat} {cmd:glance}{cmd:,} {opt sav:ing(filename)} [{opt replace}]
 
 {pstd}
+Draw the plot, or export plot-ready data
+
+{p 8 16 2}
+{cmd:estat} {cmd:plot} [{cmd:,} {opt group(numlist)} {opt sav:ing(filename)}
+{opt replace}]
+
+{pstd}
 {it:aggregation} is {cmd:simple}, {cmd:group}, {cmd:calendar}, or
 {cmd:dynamic}.
 
@@ -98,6 +105,12 @@ separate command, does allow the abbreviation {cmd:win()}.
 computed by {helpb csdid_stats}.{p_end}
 
 {p 4 6 2}
+{cmd:estat plot} is {helpb csdid_plot} under its {cmd:estat} spelling: the
+command and its options are handed to {cmd:csdid_plot} unchanged, so
+{cmd:group()}, {cmd:saving()}, and {cmd:replace} mean exactly what they mean
+there, and anything else is refused in {cmd:csdid_plot}'s own words.{p_end}
+
+{p 4 6 2}
 The standard {cmd:estat} subcommands {cmd:vce}, {cmd:summarize}, {cmd:ic}, and
 {cmd:bootstrap} are passed through to Stata; see
 {help csdid_estat##standard:Standard estat subcommands}. Any other subcommand
@@ -116,11 +129,16 @@ inference commands, and exports them to datasets.
 {cmd:csdid} produced it.
 
 {pstd}
-{cmd:estat event} reports the event study as a coefficient vector: one
-coefficient per event time present in the data, including the e = -1 reference
-period, plus {cmd:Post_avg}, the average of the post-treatment event-time
-effects. Standard errors, tests, and confidence intervals are in
-{cmd:r(table)}.
+{cmd:estat event} reports the event study as a coefficient table: one row per
+event time present in the data, including the e = -1 reference period, plus
+{cmd:Post_avg}, the average of the post-treatment event-time effects. Each row
+shows the estimate, its standard error, z and p-value, and confidence limits.
+The event-time rows use the aggregation's own critical value -- the
+simultaneous band when one was computed, which {cmd:ereturn display}'s
+normal-based intervals cannot reproduce. {cmd:Post_avg} is a single summary
+number and is banded pointwise; see
+{help csdid_estat##overallband:The overall summary effect is banded pointwise}.
+The same numbers, with each row's critical value, are in {cmd:r(table)}.
 
 {pstd}
 {cmd:estat simple}, {cmd:estat group}, {cmd:estat calendar}, and
@@ -128,13 +146,14 @@ effects. Standard errors, tests, and confidence intervals are in
 {helpb csdid_stats} and display its table: one row per aggregated effect with
 its standard error, and the overall effect and its standard error repeated in
 the last two columns of every row. {cmd:estat dynamic} and
-{cmd:estat event} are the same aggregation shown two ways -- a table of effects
-and standard errors, or a posted coefficient vector.
+{cmd:estat event} are the same aggregation shown two ways -- the aggregation's
+own row layout, or a coefficient table with the confidence band.
 
 {pstd}
 {cmd:estat tidy} and {cmd:estat glance} write a Stata dataset of estimates and
 of model metadata, in a tidy column layout suited to tables and reporting.
-{helpb csdid_plot} draws the plot, or exports plot-ready data.
+{cmd:estat plot} -- the {cmd:estat} spelling of {helpb csdid_plot} -- draws
+the plot, or exports plot-ready data.
 
 
 {marker options}{...}
@@ -158,9 +177,11 @@ event times. Both bounds must be numeric. See
 commands operate on the aggregation rather than on the ATT(g,t) cells. It works
 on {cmd:event} and on all four aggregations; the coefficient names are listed
 under {help csdid_estat##post:Posting the aggregation}. Without {cmd:post},
-none of the five touches {cmd:e(b)} or {cmd:e(V)} at all -- the displayed
-table is built from {cmd:r(table)} directly -- so a display-only aggregation
-never changes what {cmd:test} or {cmd:lincom} would act on.
+none of the five touches {cmd:e(b)} or {cmd:e(V)} at all -- {cmd:event} builds
+its displayed table from {cmd:r(table)}, and the four aggregations display
+{cmd:e(aggte)} -- so a display-only aggregation never changes what
+{cmd:test} or {cmd:lincom} would act on. Both forms print the same title and
+the same inference header, and both fill {cmd:r(table)}.
 
 {marker opt_level}{...}
 {phang}
@@ -176,8 +197,8 @@ under analytical inference, because the aggregation is recomputed; see
 aggregating. It is forwarded to
 {helpb csdid_stats##opt_dropmissing:csdid_stats} and means there exactly what it
 means there. Without it, a missing cell stops the aggregation with return code
-498 and a message naming the option, on {cmd:estat event} as on the other four
-aggregation subcommands.
+498 and a message naming the exact command to retype, on {cmd:estat event} as
+on the other four aggregation subcommands.
 
 {dlgtab:Export}
 
@@ -218,15 +239,17 @@ how the numbers reach you.
 {p2colset 8 30 32 2}{...}
 {p2col:{bf:Command}}{bf:What you get}{p_end}
 {p2col:{cmd:estat attgt}}the ATT(g,t) table{p_end}
-{p2col:{cmd:estat event}}event-study coefficients and {cmd:Post_avg};
-{cmd:r(table)} carries the standard errors{p_end}
-{p2col:{cmd:estat dynamic}}the same aggregation as a table of effects and
-standard errors{p_end}
+{p2col:{cmd:estat event}}event-study coefficients and {cmd:Post_avg}, each
+with its standard error, z, p-value, and confidence band{p_end}
+{p2col:{cmd:estat dynamic}}the same aggregation in its own row layout, with
+the overall effect on every row{p_end}
 {p2col:{cmd:estat simple}}one overall effect{p_end}
 {p2col:{cmd:estat group}}one effect per treatment cohort, plus the overall
 effect{p_end}
 {p2col:{cmd:estat calendar}}one effect per period, plus the overall
 effect{p_end}
+{p2col:{cmd:estat plot}}the plot of the active result, drawn or exported;
+this is {helpb csdid_plot}{p_end}
 {p2col:{cmd:csdid_stats}}the same four aggregations with the full option set,
 including {cmd:balance()} and saved-influence-function input{p_end}
 {p2colreset}{...}
@@ -329,20 +352,36 @@ is named {cmd:eff_}{it:#} instead and the run reports how many were affected;
 {cmd:e(aggte)} always reports the event time, cohort or period of every row.
 
 {pstd}
+The overall summary effect is an exact average of the effects it summarizes, so
+the posted matrix is rank deficient by one on {cmd:event}, {cmd:dynamic} and
+{cmd:calendar}: a joint test that names {cmd:Post_avg} (or {cmd:Overall})
+alongside all of the effects behind it carries no more information than the
+same test without it, and Stata drops the redundant constraint and reports one
+fewer degree of freedom. That is the truth about the quantities, not a defect,
+and it is the same under bootstrap and analytical inference. {cmd:group}
+aggregations are not affected, and {cmd:simple} posts a single coefficient.
+
+{pstd}
 The event-time coefficient vector includes the e = -1 reference period, and what
 that row holds depends on the base period. Under the default
 {helpb csdid##opt_base:base_period(universal)} it is the normalisation itself:
 identically zero, with no standard error. Under {cmd:base_period(varying)} it is
 an estimated placebo, with a standard error of its own. The posted covariance
 matrix is not diagonal:
-it is built from the influence functions of the aggregated effects, or from the
-bootstrap draws under bootstrap inference, so {cmd:test} and {cmd:lincom}
-account for the correlation between event times.
+it is built from the influence functions of the aggregated effects, under both
+analytical and bootstrap inference, so {cmd:test} and {cmd:lincom}
+account for the correlation between event times. The reported standard errors
+are the ones the inference method produced; the influence functions supply the
+correlation structure around them.
 
 {pstd}
-{cmd:post} displays nothing. Use {cmd:estat event} or {cmd:estat} {it:type}
-without {cmd:post} to see the table, or read {cmd:r(table)}, or run
-{cmd:lincom} on the coefficient you care about. After {cmd:post}, an ordinary
+{cmd:post} displays the same table its display-only form shows, then leaves
+the effects posted -- posting never trades the display away. Read the band
+from that table or from {cmd:r(table)} rather than from a later
+{cmd:ereturn display}, which rebuilds every interval at the normal quantile and
+so cannot reproduce a simultaneous band on the per-effect rows. (It happens to
+agree on the overall row, which is banded pointwise to begin with.) After
+{cmd:post}, an ordinary
 {cmd:estimates store} keeps the aggregation, so several aggregations can be
 stored side by side and compared.
 
@@ -351,6 +390,13 @@ stored side by side and compared.
 {cmd:post} is given, and it always describes the aggregation just computed. It
 is never left holding an earlier aggregation's numbers: if the command you typed
 fails or posts nothing, {cmd:r(table)} is cleared rather than left standing.
+
+{pstd}
+{cmd:estat plot} computes no aggregation and so does not build an
+{cmd:r(table)} of its own. Exporting with {cmd:saving()} leaves the active
+aggregation's {cmd:r(table)} untouched; drawing the graph clears {cmd:r()}, as
+any Stata graph command does. Read {cmd:r(table)} before plotting, or re-run
+the aggregation after.
 
 {pstd}
 A row with no standard error -- the normalised base period under
@@ -367,13 +413,14 @@ no estimated variance, so {cmd:test} and {cmd:lincom} treat that term as known.
 Under fully analytical inference ({cmd:analytical} with {cmd:pointwise}) the
 interval always follows the level in force: the estimation level, or the
 level requested with {cmd:level()}. Under {cmd:analytical} alone the
-recomputed aggregation carries a simultaneous band whose critical value is
-bootstrapped at the level in force, with the note {helpb csdid_stats} prints
-(see {it:Confidence bands} in {helpb csdid_stats}).
+recomputed aggregation's per-effect rows carry a simultaneous band whose
+critical value is bootstrapped at the level in force, with the note
+{helpb csdid_stats} prints (see {it:Confidence bands} in {helpb csdid_stats}).
+The overall summary row is banded pointwise under either setting.
 
 {pstd}
-Under the default multiplier bootstrap the interval uses the bootstrap critical
-value in {cmd:e(crit_val)}, which the aggregation bootstrap produces at the
+Under the default multiplier bootstrap the per-effect rows use the bootstrap
+critical value in {cmd:e(crit_val)}, which the aggregation bootstrap produces at the
 level in force when the aggregation is computed. Because {cmd:estat} recomputes
 the aggregation whenever it is asked for one, the level you type is the level
 the band is computed at, on the first request and on every later one. After a
@@ -400,6 +447,27 @@ One consequence is worth stating because it is what users check: everything that
 reads the level agrees. {cmd:e(agg_level)}, {cmd:r(table)}, the displayed
 interval, {cmd:estat tidy}, and {helpb csdid_plot} all describe the level of the
 aggregation you last asked for, not of some earlier one.
+
+{marker overallband}{...}
+{pstd}
+{bf:The overall summary effect is banded pointwise.} {cmd:Post_avg} on
+{cmd:estat event}, {cmd:Overall} on the group and calendar aggregations,
+{cmd:ATT} on {cmd:estat simple}, and the {cmd:ATT(Average)} row of
+{cmd:estat tidy} all report a {it:pointwise} interval -- the normal quantile at
+the level in force -- even when the effects they summarize carry a simultaneous
+band. A simultaneous band answers whether a whole set of effects lies inside
+its intervals at once; a single summary number has no set to be simultaneous
+over. {cmd:csdid} bands the overall effect this way at every option
+combination.
+
+{pstd}
+So under the default bootstrap with confidence bands, one printed
+{cmd:estat event} table carries two kinds of interval, and it says so beneath
+the table. {cmd:r(table)} records this per column: row {cmd:crit} holds the
+critical value that column's own interval was built from, so
+{cmd:ll = b - crit*se} holds column by column. In {cmd:estat tidy}, the
+{cmd:conf_*} and {cmd:point_*} columns of the {cmd:ATT(Average)} row are
+therefore equal, while the per-effect rows differ.
 
 {marker export}{...}
 {title:Exported datasets}
@@ -536,6 +604,10 @@ file: {cmd:net get csdid} copies it into the current directory.
 {phang2}{cmd:. estat calendar, post}{p_end}
 {phang2}{cmd:. estimates store bycalendar}{p_end}
 {phang2}{cmd:. estimates table bycohort bycalendar, se}{p_end}
+
+{pstd}{bf:Plot the active result}{p_end}
+{phang2}{cmd:. estat event}{p_end}
+{phang2}{cmd:. estat plot}{p_end}
 
 {pstd}{bf:Export results}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}

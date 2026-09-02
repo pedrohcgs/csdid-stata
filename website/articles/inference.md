@@ -58,6 +58,14 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) pointwise    // one at a ti
 `e(cband)` and `e(pointwise)` record which of the two was used. `e(crit_val)` is
 the critical value actually applied (a saved run remembers both).
 
+One row is always pointwise, whichever band you choose: an aggregation's overall
+summary effect — `Post_avg` on an event study, `Overall` by cohort or period,
+`ATT` for the simple average. A simultaneous band answers whether a set of
+effects all lie inside their intervals at once, and a single summary number is
+not a set, so it is reported at the normal quantile (`e(point_crit_val)`). One
+`estat event` table can therefore show both kinds of interval, and it says so
+underneath. The reference implementation bands its overall effect the same way.
+
 ## Analytical standard errors
 
 ```stata

@@ -84,16 +84,18 @@ csdid version
 
 ### Pinning a version for a replication package
 
-Install from the release tag rather than from `main`, so the code is the same
+Install from a full commit ID rather than from `main`, so the code is the same
 on the day someone re-runs your do-files:
 
 <!-- norun -->
 ```stata
 cap ado uninstall csdid
-net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/2.0.0") replace
+net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/7e7ca810ce85939c5fb2eed27db868f667980173") replace
 ```
 
-The tag takes the place of `main` in the address; everything else is the same.
+The commit ID takes the place of `main` in the address; everything else is the
+same. This example pins version 2.0.0. Record both the full installation URL
+and the version reported by `csdid version` in your replication package.
 
 ### Troubleshooting
 

@@ -791,9 +791,9 @@ program define _csdid_stats_main, eclass
                 * Sibling of the resolved csdid.ado by trailing substr, never
                 * substring replacement -- same rule and reasons as the
                 * estimation stage's binding block in csdid.ado, which also
-                * documents why a plugin handle's aliveness check is the
-                * recorded rc-0 bind (program list cannot see plugins) and
-                * why rc 110 is never accepted as a load.
+                * documents why the recorded path is not a live-handle
+                * check (program list cannot see plugins) and why only a
+                * fresh rc-0 bind can recover a missing handle below.
                 local _ap_len = strlen("`agg_csdid_path'")
                 local agg_plugin_dir ""
                 if `_ap_len' > 9 & substr("`agg_csdid_path'", `_ap_len' - 8, .) == "csdid.ado" {
@@ -874,6 +874,22 @@ program define _csdid_stats_main, eclass
                         `agg_plugin_common' `boot_rng_state'
                     local agg_plugin_rc = _rc
                     if `agg_plugin_rc' == 1 exit 1
+                    if `agg_plugin_rc' == 199 {
+                        * As in csdid: bind without dropping the name. Only
+                        * rc 0 proves the failed call had no live handle;
+                        * rc 110 leaves recovery to the RNG-safe fallback.
+                        capture program __csdid_agg_boot_plugin, plugin using("`agg_plugin_path'")
+                        local agg_bind_rc = _rc
+                        if `agg_bind_rc' == 1 exit 1
+                        if !`agg_bind_rc' {
+                            capture plugin call __csdid_agg_boot_plugin `agg_plugin_if_vars' in 1/`agg_plugin_nc_value', ///
+                                bootstrap_agg_vars `biters' `agg_plugin_nc_value' `cband' ///
+                                `agg_plugin_independent' ///
+                                `agg_plugin_common' `boot_rng_state'
+                            local agg_plugin_rc = _rc
+                            if `agg_plugin_rc' == 1 exit 1
+                        }
+                    }
                 }
                 if !`agg_plugin_rc' & `agg_simple' {
                     * The duplicate rule, applied to the plugin's output: the

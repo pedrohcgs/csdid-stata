@@ -6,7 +6,8 @@
 * e(V), and the aggregate e(aggte)/e(boot_aggte)/e(agg_boot_draws) -- is
 * compared, with e(boot_rng_state) required to match EXACTLY. Covered:
 * weighted DR with covariates, clustered reg, an unbalanced panel, and the
-* aggregation bootstrap under both lean and cached storage. The accelerator
+* aggregation bootstrap under both lean and cached storage, and recovery of
+* both plugin handles after clear all or program drop _all. The accelerator
 * status strings are asserted too, so a plugin that silently declines to load
 * fails here instead of passing as a slower green run.
 * ---------------------------------------------------------------------------
@@ -165,5 +166,58 @@ mata: __csdid_assert_matrix_close("PLUGIN_AGG_BOOT", "MATA_AGG_BOOT", 1e-10)
 mata: __csdid_assert_matrix_close("PLUGIN_AGG_DRAWS", "MATA_AGG_DRAWS", 1e-10)
 
 global CSDID_BOOT_PLUGIN_DISABLE
+
+* Plugin path globals survive both commands below; plugin handles do not.
+* Persist the reference e() snapshots because clear all also removes matrices
+* and Mata helpers. Restoring the current fit after each comparison keeps its
+* cache identity in place for the aggregation that follows.
+* LIFECYCLE-COVERAGE-BEGIN
+tempfile lifecycle_fit lifecycle_agg
+tempname lifecycle_current
+forvalues lifecycle_pass = 1/3 {
+    if `lifecycle_pass' == 2 clear all
+    if `lifecycle_pass' == 3 program drop _all
+    import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
+    quietly csdid y x1 [iw=wt], ivar(id) time(time) gvar(g) method(reg) ///
+        reps(31) rseed(20260908) bal(none)
+    foreach lifecycle_stage in fit agg {
+        if "`lifecycle_stage'" == "fit" {
+            local lifecycle_snapshot "`lifecycle_fit'"
+            local lifecycle_channels "attgt boot_attgt boot_draws boot_rng_state V"
+            display "LIFECYCLE-`lifecycle_pass'-FIT: `e(bootstrap_accelerator)'|`e(bootstrap_accelerator_status)'|" e(bootstrap_accelerator_rc)
+            assert "`e(bootstrap_accelerator)'" == "plugin"
+            assert "`e(bootstrap_accelerator_status)'" == "plugin-active"
+            assert e(bootstrap_accelerator_rc) == 0
+        }
+        else {
+            quietly csdid_stats, type(dynamic) na_rm
+            local lifecycle_snapshot "`lifecycle_agg'"
+            local lifecycle_channels "aggte boot_aggte agg_boot_draws boot_rng_state V"
+            display "LIFECYCLE-`lifecycle_pass'-AGG: `e(agg_boot_accelerator)'|`e(agg_boot_accel_status)'|" e(agg_boot_accel_rc)
+            assert "`e(agg_boot_accelerator)'" == "plugin"
+            assert "`e(agg_boot_accel_status)'" == "plugin-active"
+            assert e(agg_boot_accel_rc) == 0
+        }
+        if `lifecycle_pass' == 1 {
+            estimates save "`lifecycle_snapshot'", replace
+        }
+        else {
+            foreach lifecycle_channel of local lifecycle_channels {
+                matrix LC_`lifecycle_channel' = e(`lifecycle_channel')
+            }
+            estimates store `lifecycle_current'
+            estimates use "`lifecycle_snapshot'"
+            foreach lifecycle_channel of local lifecycle_channels {
+                mata: assert(rows(st_matrix("LC_`lifecycle_channel'")) == rows(st_matrix("e(`lifecycle_channel')")))
+                mata: assert(cols(st_matrix("LC_`lifecycle_channel'")) == cols(st_matrix("e(`lifecycle_channel')")))
+                mata: assert(all(st_matrix("LC_`lifecycle_channel'") :== st_matrix("e(`lifecycle_channel')")))
+            }
+            estimates restore `lifecycle_current'
+            estimates drop `lifecycle_current'
+        }
+    }
+}
+display "LIFECYCLE-COVERAGE-COMPLETE"
+* LIFECYCLE-COVERAGE-END
 
 exit 0

@@ -43,7 +43,7 @@ program define csdid, eclass sortpreserve
             display as text "  engine: not loaded yet (loads on the first estimation of a session)"
         }
         if `"$CSDID_BOOT_PLUGIN_PATH"' != "" {
-            display as text `"  bootstrap accelerator: bound to $CSDID_BOOT_PLUGIN_PATH"'
+            display as text `"  bootstrap accelerator: last bound to $CSDID_BOOT_PLUGIN_PATH"'
         }
         display as text `"  (a stray older csdid can shadow this one: {stata which csdid, all} lists every copy on the adopath)"'
         exit
@@ -1895,16 +1895,15 @@ program define csdid, eclass sortpreserve
                 }
                 if !_rc {
                     * A plugin handle is not observable: `program list' on a
-                    * bound plugin reports not-found (measured, r(111) always),
-                    * so the record of the last successful bind -- the path
-                    * global, set only on a bind that returned 0 -- IS the
-                    * aliveness check, and `csdid reset' is what clears it. A
-                    * bind against a handle that already exists returns rc 110
-                    * WITHOUT re-reading the file, so 110 is never accepted as
-                    * a load: on a fresh bind it is a failure to report, and
-                    * on a moved installation it means the session holds an
-                    * image it cannot release, which is said in e() rather
-                    * than guessed around -- results still arrive, from Mata.
+                    * bound plugin reports not-found (measured, r(111) always).
+                    * The path global records the last successful bind, not
+                    * whether its handle survived `clear all' or program drop.
+                    * Reuse the path here; the call below recovers a missing
+                    * handle only after a fresh bind returns 0. A bind against
+                    * an existing handle returns 110 WITHOUT re-reading the
+                    * file, so 110 never establishes a new load: a moved
+                    * installation may still hold the earlier image, which
+                    * is reported in e() and uses the Mata fallback.
                     * A binary REPLACED at the same path in a live session is
                     * not detectable here at all; `csdid reset' names the
                     * restart that makes it certain.
@@ -2014,6 +2013,20 @@ program define csdid, eclass sortpreserve
                 capture plugin call `bootstrap_plugin_program' `plugin_if_vars' in 1/`plugin_nc_value', bootstrap_vars `biters' `plugin_nc_value' `plugin_draws' `boot_rng_state'
                 local plugin_rc = _rc
                 if `plugin_rc' == 1 exit 1
+                if `plugin_rc' == 199 {
+                    * Do not drop the name: bind 0 proves the prior call had
+                    * no handle and could not advance RNG or write draws.
+                    * A live plugin returning 199 still binds as 110 and
+                    * follows the existing transaction-restoring fallback.
+                    capture program `bootstrap_plugin_program', plugin using("`bootstrap_plugin_path'")
+                    local plugin_bind_rc = _rc
+                    if `plugin_bind_rc' == 1 exit 1
+                    if !`plugin_bind_rc' {
+                        capture plugin call `bootstrap_plugin_program' `plugin_if_vars' in 1/`plugin_nc_value', bootstrap_vars `biters' `plugin_nc_value' `plugin_draws' `boot_rng_state'
+                        local plugin_rc = _rc
+                        if `plugin_rc' == 1 exit 1
+                    }
+                }
             }
             if !`plugin_rc' {
                 capture mata: csdid_boot_plugin_record("`plugin_started'", st_numscalar("`plugin_nc'"), `biters')

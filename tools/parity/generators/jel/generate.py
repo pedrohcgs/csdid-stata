@@ -41,7 +41,9 @@ if JEL_ROOT is None:
         "JEL reference checkout not found. Set JEL_DID_REFERENCE, or create one of:\n  "
         + "\n  ".join(str(p) for p in _JEL_CANDIDATES[1:])
     )
-OUT_ROOT = ROOT / "tests" / "fixtures" / "jel"
+# A smoke run records its local observation outside the frozen fixture tree.
+# Explicit generator invocations still refresh the committed snapshot.
+OUT_ROOT = Path(os.environ.get("CSDID_JEL_FIXTURE_ROOT", ROOT / "tests" / "fixtures" / "jel")).expanduser()
 SOURCE_COMMIT = "50f4f183783d2344f85bc4f39bcbcc1b7eba6466"
 
 
@@ -102,7 +104,7 @@ def artifact_row(path: Path, role: str, artifact_type: str) -> dict[str, object]
     return row
 
 
-# The JEL run's own verdict, read once. Previously this module hardcoded
+# The JEL run's own verdict. Previously this module hardcoded
 # "status": "pass" into every fixture, so the fixture layer asserted success no
 # matter what the run did - it could not detect a FAILING JEL reproduction,
 # which is the only thing it exists to detect. Read the runner's summary
@@ -114,25 +116,34 @@ def _observed_run_status() -> str:
     try:
         with _RUN_SUMMARY.open() as fh:
             summary = json.load(fh)
-    except (OSError, ValueError):
+    except FileNotFoundError:
         return "not-run"
-    status = str(summary.get("status", "")).strip() or "unknown"
-    # A run is only "pass" if every recorded signal agrees.
-    oracle = str(summary.get("oracle_parity_status", "")).strip()
-    markers = summary.get("failure_markers") or []
+    except (OSError, ValueError):
+        return "invalid"
+    if not isinstance(summary, dict):
+        return "invalid"
+    status = summary.get("status")
+    if status not in ("pass", "failed", "needs-review", "running"):
+        return "invalid"
+    # A pass needs every signal, not merely the absence of a contrary one.
+    oracle = summary.get("oracle_parity_status")
+    markers = summary.get("failure_markers")
     codes = [summary.get("r_exit_code"), summary.get("stata_exit_code")]
     if status == "pass" and (
-        (oracle and oracle != "pass") or markers or any(c not in (0, None) for c in codes)
+        oracle != "pass" or markers != []
+        or any(type(code) is not int or code != 0 for code in codes)
     ):
         return "inconsistent"
     return status
 
 
-def full_reproduction_evidence(artifact_id: str, artifact_type: str) -> dict[str, object]:
+def full_reproduction_evidence(
+    artifact_id: str, artifact_type: str, run_status: str
+) -> dict[str, object]:
     return {
         "artifact_id": artifact_id,
         "artifact_type": artifact_type,
-        "status": _observed_run_status(),
+        "status": run_status,
         "full_gate": "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh",
         "analysis_gate": "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh --analyze-existing",
         "report": "reports/jel-full-reproduction-result.md",
@@ -198,6 +209,9 @@ def build() -> None:
     if not JEL_ROOT.exists():
         raise SystemExit(f"JEL-DiD checkout not found: {JEL_ROOT}")
 
+    # All artifact records describe one observation of the run, even if a
+    # concurrent reproduction replaces its summary while files are written.
+    run_status = _observed_run_status()
     rows: list[dict[str, object]] = []
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -312,7 +326,7 @@ def build() -> None:
             )
             outputs.append({"path": "expected/contract/figure-pdf-audit.csv", "schema": "jel-figure-pdf-audit"})
 
-        evidence = full_reproduction_evidence(aid, artifact_type)
+        evidence = full_reproduction_evidence(aid, artifact_type, run_status)
         write_csv(
             contract / "full-reproduction-evidence.csv",
             [evidence],
@@ -349,7 +363,7 @@ def build() -> None:
                 "r_artifact": item["r"],
                 "stata_artifact": item["stata"],
                 "audit_status": "recorded",
-                "parity_verified": 1,
+                "parity_verified": int(run_status == "pass"),
                 "evidence_report": "reports/jel-full-reproduction-result.md",
             }
         )

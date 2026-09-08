@@ -1,6 +1,8 @@
 # PY017: R oracle for the parametric grids. The inherited assertions were
 # "at least one ATT is finite" and "at least one SE is positive", which almost
 # any implementation satisfies.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/py017/inputs"

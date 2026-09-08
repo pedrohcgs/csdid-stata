@@ -29,7 +29,10 @@
 # the half a numeric fixture cannot see: a port that skips the drop still
 # returns a complete, plausible table.
 
-suppressPackageStartupMessages(library(did))
+args <- commandArgs(trailingOnly = FALSE)
+file_arg <- grep("^--file=", args, value = TRUE)
+script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt038/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
 
 root <- Sys.getenv("CSDID_REPO", unset = normalizePath("."))
 out_dir <- file.path(root, "tests", "fixtures", "parity", "rt038")

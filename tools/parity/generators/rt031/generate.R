@@ -6,6 +6,8 @@
 # recover the true effect of 3. Upstream checks that against loose tolerances
 # (.1 against truth, .0001 across specifications). We inherit the scenario but
 # compare Stata against R's own numbers, which is the stronger claim.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 set.seed(20241017)
 n <- 5000

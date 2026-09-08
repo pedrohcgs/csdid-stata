@@ -2,7 +2,7 @@
 * perf-inproc-routes.do -- repeated ESTIMATIONS in one warmed session, split by
 * the route they take, with the engine's own phase clock beside the total.
 *
-*   stata-mp -b do tools/bench/perf-inproc-routes.do <srcroot> <out.csv> <tag> <arm> <round> [nunits]
+*   stata-mp -b do tools/bench/perf-inproc-routes.do <srcroot> <out.csv> <tag> <arm> <round> [nunits] [qr_routes]
 *
 * <srcroot>  directory holding src/ado and src/mata (normally the repo root).
 * <out.csv>  appended: tag,arm,round,cell,route,position,nunits,reps,bucket,seconds.
@@ -10,6 +10,7 @@
 *            one directory and names each tree here.
 * <round>    1-based; decides the cell order and is written into every row.
 * [nunits]   default 400.
+* [qr_routes] 1 adds covariate REG-RC and weighted REG-panel/DR-panel/DR-RC.
 *
 * WHAT IT IS FOR. A claim that one estimation route got slower has to name the
 * route, and a route is not a command line: `method(dr)' with ivar() reaches
@@ -54,12 +55,13 @@ version 15
 clear all
 set more off
 
-args srcroot out tag arm round nunits
+args srcroot out tag arm round nunits qr_routes
 if "`srcroot'" == "" | "`out'" == "" | "`tag'" == "" | "`arm'" == "" | "`round'" == "" {
-    display as error "usage: do perf-inproc-routes.do <srcroot> <out.csv> <tag> <arm> <round> [nunits]"
+    display as error "usage: do perf-inproc-routes.do <srcroot> <out.csv> <tag> <arm> <round> [nunits] [qr_routes]"
     exit 198
 }
 if "`nunits'" == "" local nunits 400
+if !inlist("`qr_routes'", "", "1") exit 198
 
 adopath ++ "`srcroot'/src/ado"
 adopath ++ "`srcroot'/src/mata"
@@ -81,6 +83,7 @@ quietly generate double x1 = 0.1 * mod(id, 7) + 0.01 * time
 quietly generate double x2 = 0.2 * mod(id, 11) - 0.02 * time
 quietly generate double y = 0.5 * x1 - 0.3 * x2 + 0.05 * time ///
     + 0.4 * (g > 0 & time >= g) * (time - g + 1) + 0.001 * mod(id, 97)
+if "`qr_routes'" == "1" quietly generate double w = 0.75 + mod(id, 5) / 4 + time / 100
 
 local panel_opts "ivar(id) time(time) gvar(g) notyet analytical"
 local rc_opts    "time(time) gvar(g) notyet analytical"
@@ -89,6 +92,10 @@ local cmd_reg   "csdid y x1 x2, `panel_opts' method(reg)"
 local cmd_ipw   "csdid y x1 x2, `panel_opts' method(ipw)"
 local cmd_dr    "csdid y x1 x2, `panel_opts' method(dr)"
 local cmd_dr_rc "csdid y x1 x2, `rc_opts' method(dr)"
+local cmd_reg_rc "csdid y x1 x2, `rc_opts' method(reg)"
+local cmd_reg_w "csdid y x1 x2 [iw=w], `panel_opts' method(reg)"
+local cmd_dr_w "csdid y x1 x2 [iw=w], `panel_opts' method(dr)"
+local cmd_dr_rc_w "csdid y x1 x2 [iw=w], `rc_opts' method(dr)"
 
 tempname fh
 file open `fh' using "`out'", write append text
@@ -108,6 +115,8 @@ program define pir_block
     local route "`e(method)'|`e(compute_path)'|`e(panel_mode)'"
     assert "`e(method)'" == "`want_method'"
     assert "`e(panel_mode)'" == "`want_panel'"
+    local want_path = cond("`want_panel'" == "panel", "fast-balanced-panel", "fast-repeated-cross-section")
+    assert "`e(compute_path)'" == "`want_path'"
 
     mata: CSDID_PIR_ACC = J(8, 3, 0)
     timer clear 9
@@ -139,7 +148,9 @@ end
 * Cell order rotates by round and reverses on even rounds, so a machine that
 * drifts during a campaign drifts across the cells rather than into one.
 local cells "reg ipw dr dr_rc"
-local shift = mod(`round' - 1, 4)
+if "`qr_routes'" == "1" local cells "`cells' reg_rc reg_w dr_w dr_rc_w"
+local ncells : word count `cells'
+local shift = mod(`round' - 1, `ncells')
 forvalues s = 1/`shift' {
     gettoken first cells : cells
     local cells "`cells' `first'"
@@ -154,18 +165,9 @@ if mod(`round', 2) == 0 {
 
 local position = 1
 foreach c of local cells {
-    if "`c'" == "dr_rc" {
-        pir_block `fh' `tag' `arm' `round' dr_rc `position' `nunits' `reps' "`cmd_dr_rc'" dr repeated-cross-section
-    }
-    else if "`c'" == "reg" {
-        pir_block `fh' `tag' `arm' `round' reg `position' `nunits' `reps' "`cmd_reg'" reg panel
-    }
-    else if "`c'" == "ipw" {
-        pir_block `fh' `tag' `arm' `round' ipw `position' `nunits' `reps' "`cmd_ipw'" ipw panel
-    }
-    else {
-        pir_block `fh' `tag' `arm' `round' dr `position' `nunits' `reps' "`cmd_dr'" dr panel
-    }
+    gettoken want_method rest : c, parse("_")
+    local want_panel = cond(strpos("`c'", "_rc"), "repeated-cross-section", "panel")
+    pir_block `fh' `tag' `arm' `round' `c' `position' `nunits' `reps' "`cmd_`c''" `want_method' `want_panel'
     local position = `position' + 1
 }
 

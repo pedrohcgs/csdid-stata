@@ -6,17 +6,24 @@ capture log close csdid_install_smoke
 log using "install-smoke.log", replace text name(csdid_install_smoke)
 
 local root "`c(pwd)'"
-confirm file "`root'/install.do"
+confirm file "`root'/csdid.pkg"
 confirm file "`root'/examples/data/mpdta.csv"
 
-local plus "`c(tmpdir)'/csdid-install-plus"
-local personal "`c(tmpdir)'/csdid-install-personal"
-capture mkdir "`plus'"
-capture mkdir "`personal'"
+tempfile install_root
+local plus "`install_root'-plus"
+local personal "`install_root'-personal"
+mkdir "`plus'"
+mkdir "`personal'"
 sysdir set PLUS "`plus'"
 sysdir set PERSONAL "`personal'"
 
-do install.do
+capture confirm file "`root'/install.do"
+if !_rc do "`root'/install.do"
+else net install csdid, from(`"`root'"') replace
+
+* The smoke must exercise the copy just installed, even in a configured session.
+findfile csdid.ado
+assert strpos(`"`r(fn)'"', `"`plus'"') == 1
 
 which csdid
 which csdid_estat
@@ -24,7 +31,6 @@ which csdid_stats
 which csdid_plot
 
 csdid version
-assert "`e(version)'" == "2.0.0"
 
 clear
 set seed 20260708
@@ -40,6 +46,7 @@ generate double treated = first_treat > 0 & year >= first_treat
 generate double y = 1 + .2 * x1 - .1 * x2 + .05 * year + .4 * treated + rnormal()
 
 csdid y x1 x2, id(id) time(year) gvar(first_treat) reps(31) rseed(20260708)
+assert "`e(version)'" == "2.0.0"
 assert "`e(method)'" == "dr"
 assert e(bstrap) == 1
 assert e(cband) == 1

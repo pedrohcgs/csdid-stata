@@ -13,5 +13,5 @@ EOF
     exit 2
 fi
 
-python3 tools/validate-contract.py
+bash tools/release/check-contract.sh
 python3 tools/jel/run-full-reproduction.py "$@"

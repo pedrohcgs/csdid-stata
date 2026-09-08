@@ -31,12 +31,11 @@
 # A Stata run must issue the same four aggregations in the same order after a
 # single seeded estimation to reproduce them.
 
-suppressPackageStartupMessages(library(did))
-suppressPackageStartupMessages(library(jsonlite))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt037/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+suppressPackageStartupMessages(library(jsonlite))
 # tools/parity/generators/<id> is four levels below the repository root; see
 # the note in rt026's generator for what a wrong depth silently does here.
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)

@@ -1,6 +1,8 @@
 # RT025: R oracle for the slow-path/precompute scenarios. The inherited test
 # compares the two internal paths to each other, which both being wrong also
 # satisfies, and checks row-order invariance.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/rt025/inputs"; rows <- list()

@@ -1,0 +1,5 @@
+"scenario","group","time","att","se","sample_n","n_units"
+"varying",2,2,,,40,20
+"universal",2,1,0,,40,20
+"universal",2,2,,,40,20
+"screened",2,2,,,34,17

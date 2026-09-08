@@ -6,6 +6,8 @@
 # max |dATT| 2.2e-15 and max |dSE| 5.8e-16. The seeds and iteration counts below
 # mirror the Stata test exactly, because a bootstrap SE is only reproducible for
 # the same seed and count.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/py015/inputs"

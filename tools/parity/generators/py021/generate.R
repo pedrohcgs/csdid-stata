@@ -10,6 +10,8 @@
 # against the same did the rest of the suite is pinned to. The recipe is the
 # upstream one (r_ref/generate_sim_reference.R): six simulated panels x
 # {nevertreated, notyettreated} x {dr, reg}, xformla = ~X, analytical SEs.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 
 IN  <- "tests/fixtures/parity/py021/inputs"

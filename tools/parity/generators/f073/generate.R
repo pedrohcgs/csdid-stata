@@ -2,10 +2,12 @@
 # F073: a time axis in epoch seconds estimates exactly as any other axis.
 # The coefficient NAMES fall back to att_# (Stata's 32-character limit),
 # but every number matches R, which never names coefficients at all.
-suppressPackageStartupMessages(library(did))
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f073/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(did))
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 fixture <- file.path(root, "tests/fixtures/parity/f073")

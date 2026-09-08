@@ -2,6 +2,8 @@
 # panel x repeated cross sections, never/not-yet-treated controls, three
 # methods, varying/universal base periods. The inherited test proved only that
 # fast equals nofast, which is self-consistency: both could be wrong together.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py009/inputs/sim-fast.csv"); names(d)<-tolower(names(d))

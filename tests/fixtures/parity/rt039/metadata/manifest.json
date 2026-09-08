@@ -1,0 +1,106 @@
+{
+  "matrix_id": "RT039",
+  "fixture_family": "r-dr-rc-outcome-qr",
+  "normative_source": "did 2.5.1 compute.att_gt.R; DRDID 1.3.0 drdid_rc/fastglm_fit: four Gaussian fits use method=0 (column-pivoted QR)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/affine_rc.csv",
+      "sha256": "9ff65a9809261cc0e7ba740e6e5aa2e7127f7659a50031f3c536097fedf97308",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_rc_weighted.csv",
+      "sha256": "9ff65a9809261cc0e7ba740e6e5aa2e7127f7659a50031f3c536097fedf97308",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_unbalanced.csv",
+      "sha256": "b5d1677ce6d9ecf3b9cc03aeb58fb19dfdef123ec15d5808773c4fd14aa6f643",
+      "rows": 78,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_unbalanced_weighted.csv",
+      "sha256": "b5d1677ce6d9ecf3b9cc03aeb58fb19dfdef123ec15d5808773c4fd14aa6f643",
+      "rows": 78,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_rc.csv",
+      "sha256": "beacb335a31c3723d23a727249778d6286f42f0eec2db4a53976c4c0a278b01d",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_unbalanced.csv",
+      "sha256": "7b7fa6a6f08638a87f548ad28d6dbafdb422bad21faa8c183fa6cfd75f7ae0f2",
+      "rows": 78,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_balanced_varying.csv",
+      "sha256": "beacb335a31c3723d23a727249778d6286f42f0eec2db4a53976c4c0a278b01d",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "cdee5d44b6611129e9a3060b0da63be7d67b1d4fb875e8cf19822c0d6ee0c9c3",
+      "rows": 7,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt039/generate.R",
+      "path": "tools/parity/generators/rt039/generate.R",
+      "sha256": "a257ceda467a82a9656dcaa2c73c62fdc7f422ed1bfc70d60be079a9b92fcff8"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0",
+        "fastglm": "0.1.1"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "a47b083309cb3885680d0533b73274748247550c13ab08e8e92b71afca1e6c99"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "full-influence-function",
+      "sha256": "07b490975124fc2784e5e3fc5434c48370efb92a5b546151bf0afbe71b38c335"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata full ATT(g,t), standard errors and sample dimensions",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Every Stata unit influence-function entry",
+      "expected": "expected/r/inffunc.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "unit_index", "group", "time"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Four affine-outcome cases isolate a coefficient-solver defect; three nondegenerate cases cover weighted RC, unbalanced panels, and balanced panels using varying weights, including clustered standard errors. Every cell and every IF entry is compared. No conditioning-specific tolerance is used."
+}

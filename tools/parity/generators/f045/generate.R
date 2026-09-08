@@ -1,5 +1,7 @@
 # F045: R oracle for the legacy-default surface -- the defaults csdid resolves
 # when options are omitted, on balanced and unbalanced weighted designs.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/f045/inputs"; rows <- list()

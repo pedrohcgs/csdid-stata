@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 01sep2026}{...}
+{* *! version 2.0.0 08sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -341,14 +341,16 @@ message saying so.{p_end}
 
 {phang2}
 o {bf:The reference period is drawn at exactly zero.} Under the default
-{helpb csdid##opt_base:base_period(universal)} each cohort's {it:g-1} cell is
-the normalisation the other cells are measured against, not an estimate: it is
+{helpb csdid##opt_base:base_period(universal)} each cohort's base-period cell
+is the normalisation the other cells are measured against, not an estimate
+({it:g-1} on a consecutive calendar without anticipation): it is
 identically 0 and has no standard error, so it appears as a point on zero with
 no interval. It is not a precisely estimated null effect, and no pre-trend
-conclusion should be drawn from it. Under {cmd:base_period(varying)} the
-{it:e = -1} cell is an estimated placebo and does carry an interval. The
-exported dataset shows the same thing: {cmd:estimate} is 0 while
-{cmd:ci_low} and {cmd:ci_high} are missing.{p_end}
+conclusion should be drawn from it. Under {cmd:base_period(varying)} with
+no anticipation, the {it:e = -1} cell is an estimated placebo when the
+required periods exist and does carry an interval. For the universal
+normalization, the exported dataset shows the same thing: {cmd:estimate} is
+0 while {cmd:ci_low} and {cmd:ci_high} are missing.{p_end}
 
 {phang2}
 o {bf:Unknown cohorts} named in {cmd:group()}: when none of the requested

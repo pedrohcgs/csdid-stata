@@ -4,6 +4,8 @@
 # That checks the guard triggers, not that it triggers on the SAME cells R
 # refuses. Exporting R's ATT table for this design pins both: which cells come
 # back missing (refused) and the values of the ones that survive.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/rt022/inputs/overlap-cache.csv"); names(d)<-tolower(names(d))

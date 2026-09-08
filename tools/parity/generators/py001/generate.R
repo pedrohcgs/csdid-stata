@@ -1,5 +1,7 @@
 # PY001: R oracle for the aggregation suite -- ATT(g,t) for the three methods
 # plus every aggregation variant the Stata test exercises.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py001/inputs/aggte-data.csv"); names(d) <- tolower(names(d))

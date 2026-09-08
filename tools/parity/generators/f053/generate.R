@@ -15,11 +15,13 @@
 # back empty the test could pass by writing an empty file, so the generator
 # refuses to write a panel that cannot support all five.
 
-suppressPackageStartupMessages(library(jsonlite))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f053/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(jsonlite))
+
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 

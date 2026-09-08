@@ -3,13 +3,15 @@
 # Record provenance without the maintainer's home directory: these fixtures are
 # published, and an absolute path both leaks the layout and means nothing on
 # another machine.
+args <- commandArgs(trailingOnly = FALSE)
+file_arg <- grep("^--file=", args, value = TRUE)
+script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f040/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
 abbrev_home <- function(p) sub(path.expand("~"), "~", p, fixed = TRUE)
 
 suppressPackageStartupMessages(library(jsonlite))
 
-args <- commandArgs(trailingOnly = FALSE)
-file_arg <- grep("^--file=", args, value = TRUE)
-script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f040/generate.R"
 # tools/parity/generators/<id> is four levels below the repository root, not
 # three. With "../../.." this resolved to tools/, and the dir.exists() guard
 # below then passed because an earlier run had written a stray tools/tests/

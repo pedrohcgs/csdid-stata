@@ -186,7 +186,7 @@ quietly csdid_stats, type(dynamic)
 matrix F049_LEAN_AGG = e(aggte)
 assert rowsof(F049_LEAN_AGG) > 0
 assert f049_seconds <= 5
-assert f049_seconds <= f049_medium_seconds * 1.25
+* The matched repeated-call relative check runs after the absolute budgets below.
 assert f049_memory_mb <= 1200
 post `benchpost' ("medium_panel_fast_lean") (`rows') (f049_cells) (f049_seconds) ///
     (5) (f049_memory_mb) (1200) (f049_seconds <= 5) (f049_memory_mb <= 1200) ///
@@ -237,7 +237,7 @@ quietly csdid_stats, type(dynamic)
 matrix F049_PERF_AUTO_AGG = e(aggte)
 assert rowsof(F049_PERF_AUTO_AGG) > 0
 assert f049_seconds <= 5
-assert f049_seconds <= f049_medium_seconds * 1.25
+* The matched repeated-call relative check runs after the absolute budgets below.
 assert f049_memory_mb <= 1200
 post `benchpost' ("medium_panel_performance_auto") (`rows') (f049_cells) (f049_seconds) ///
     (5) (f049_memory_mb) (1200) (f049_seconds <= 5) (f049_memory_mb <= 1200) ///
@@ -724,5 +724,106 @@ assert passed_time == 1
 assert passed_memory == 1
 assert rows == rows_budget if !missing(rows_budget)
 assert attgt_cells >= attgt_cells_budget if !missing(attgt_cells_budget)
+
+
+* A single early call and the best of three later calls compare different
+* session histories at a ~50ms scale. Match warmups and repeated blocks, as
+* perf-inproc-routes.do does, and rotate both orders before judging the ratio.
+* Keep the 24 workload timings above for their absolute and R-relative budgets.
+capture program drop f049_relative_block
+program define f049_relative_block, rclass
+    version 15
+    args cmd want_fast
+    quietly `cmd'
+    quietly `cmd'
+    timer clear 9
+    timer on 9
+    forvalues repeat = 1/10 {
+        quietly `cmd'
+    }
+    timer off 9
+    quietly timer list 9
+    local seconds = r(t9)
+    assert `seconds' > 0 & `seconds' < .
+    matrix F049_REL_P = e(profile)
+    assert rowsof(F049_REL_P) == 8
+    assert colsof(F049_REL_P) == 3
+    assert F049_REL_P[1, 2] >= 1
+    assert e(fast_requested) == `want_fast'
+    assert e(fast_auto) == (1 - `want_fast')
+    assert e(fast_allowed) == 1
+    assert e(fast_used) == 1
+    assert "`e(fast_mode)'" == cond(`want_fast', "on", "auto")
+    assert "`e(compute_path)'" == "fast-balanced-panel"
+    assert "`e(storage)'" == "lean"
+    assert e(mata_cache) == 1
+    capture confirm matrix e(inffunc)
+    assert _rc != 0
+    capture confirm matrix e(unit_group)
+    assert _rc != 0
+    matrix F049_REL_A = e(attgt)
+    matrix F049_REL_DIFF = F049_MEDIUM_ATTGT - F049_REL_A
+    mata: st_numscalar("f049_attgt_maxdiff", max(abs(st_matrix("F049_REL_DIFF"))))
+    assert f049_attgt_maxdiff <= 1e-10
+    return scalar seconds = `seconds'
+end
+
+import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
+assert _N == 50000
+local rel_default "csdid y, ivar(id) time(time) gvar(g) method(reg) analytical pointwise nevertreated base_period(varying) bal(none)"
+local rel_fast "csdid y, ivar(id) time(time) gvar(g) method(reg) fast analytical nevertreated base_period(varying) bal(none)"
+tempfile relative_results
+tempname relpost
+postfile `relpost' str24 comparison byte pair byte position str9 arm byte calls ///
+    double seconds double seconds_per_call str24 compute_path str8 storage ///
+    using "`relative_results'", replace
+foreach comparison in fast_lean performance_auto {
+    local rel_candidate "`rel_default'"
+    local candidate_fast = ("`comparison'" == "fast_lean")
+    if `candidate_fast' local rel_candidate "`rel_fast'"
+    matrix F049_REL_TIMES = J(6, 2, .)
+    forvalues pair = 1/6 {
+        local order "baseline candidate"
+        if mod(`pair', 2) == 0 local order "candidate baseline"
+        local position 0
+        foreach arm of local order {
+            local ++position
+            local cmd "`rel_default'"
+            local want_fast 0
+            local column 1
+            if "`arm'" == "candidate" {
+                local cmd "`rel_candidate'"
+                local want_fast `candidate_fast'
+                local column 2
+            }
+            f049_relative_block "`cmd'" `want_fast'
+            local block_seconds = r(seconds)
+            matrix F049_REL_TIMES[`pair', `column'] = `block_seconds'
+            post `relpost' ("`comparison'") (`pair') (`position') ("`arm'") ///
+                (10) (`block_seconds') (`block_seconds' / 10) ///
+                ("`e(compute_path)'") ("`e(storage)'")
+        }
+    }
+    mata: f049_sorted_ratios = sort(st_matrix("F049_REL_TIMES")[., 2] :/ st_matrix("F049_REL_TIMES")[., 1], 1)
+    mata: st_numscalar("f049_relative_`comparison'", (f049_sorted_ratios[3] + f049_sorted_ratios[4]) / 2)
+    mata: mata drop f049_sorted_ratios
+}
+postclose `relpost'
+use "`relative_results'", clear
+assert _N == 24
+isid comparison pair arm
+bysort comparison pair: assert _N == 2
+assert calls == 10
+assert seconds > 0 & seconds < .
+assert seconds_per_call == seconds / calls
+assert position == cond(mod(pair, 2), 1, 2) if arm == "baseline"
+assert position == cond(mod(pair, 2), 2, 1) if arm == "candidate"
+format seconds seconds_per_call %21.17g
+export delimited using "`root'/build/f049/relative-results.csv", replace datafmt
+foreach comparison in fast_lean performance_auto {
+    display as text "F049 paired `comparison' median ratio = " %21.17g f049_relative_`comparison' " <= 1.25"
+    assert f049_relative_`comparison' <= 1.25
+}
+program drop f049_relative_block
 
 display as text "test-f049 passed"

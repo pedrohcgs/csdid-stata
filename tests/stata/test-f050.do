@@ -17,7 +17,7 @@ set more off
 local root "`c(pwd)'"
 confirm file "`root'/tests/fixtures/parity/f050/expected/new-stata/install-schema.json"
 
-do "`root'/src/build.do"
+do "`root'/tools/release/build-package.do"
 capture confirm file "`root'/build/csdid.pkg"
 assert _rc != 0
 capture confirm file "`root'/build/stata.toc"

@@ -5,7 +5,7 @@
 * request, and returns the event-study coefficients in one shape:
 *
 *   bench_<pkg>, horizons(#) cluster(varname) [covariates(varlist) mode(string)]
-*     -> r(secs)     wall time for the estimation call alone
+*     -> r(secs)     wall time for estimation and event-study aggregation
 *     -> r(ok)       1 if it produced coefficients
 *     -> r(note)     anything the package refused, dropped, or omitted
 *     -> matrix ES   horizon | estimate | se   (rows = horizons 0..H)
@@ -33,7 +33,7 @@ program define bench_csdid, rclass
     if "`mode'" == "" local mode "pointwise"
     if "`structure'" == "" local structure "balanced"
 
-    local inf "analytical"
+    local inf "analytical pointwise"
     if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
     if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
 

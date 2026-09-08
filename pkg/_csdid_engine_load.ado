@@ -1,4 +1,4 @@
-*! _csdid_engine_load 2.0.0 01sep2026
+*! _csdid_engine_load 2.0.0 08sep2026
 * ---------------------------------------------------------------------------
 * Bringing the Mata engine into the session.
 *
@@ -153,8 +153,18 @@ program define _csdid_engine_load
             local mlib_file `"`c(pwd)'`c(dirsep)'`mlib_file'"'
         }
     }
-    if `"$CSDID_ENGINE_LIBRARY"' != "" {
-        if `"$CSDID_ENGINE_LIBRARY"' != `"`mlib_file'"' {
+    * A source-only installation has no library pathname to distinguish it:
+    * both directories answer "none" above. Resolve the source only after
+    * the fast marker has detected changed settings, and compare its absolute
+    * path with the file actually compiled. This also covers a changed source
+    * beside an unchanged, unreadable library on an older Stata.
+    local source_changed = 0
+    if `"$CSDID_ENGINE_SOURCE"' != "" {
+        quietly _csdid_engine_source_path
+        local source_changed = (`"$CSDID_ENGINE_SOURCE"' != `"`r(fn)'"')
+    }
+    if `"$CSDID_ENGINE_LIBRARY"' != "" | `source_changed' {
+        if `"$CSDID_ENGINE_LIBRARY"' != `"`mlib_file'"' | `source_changed' {
             * the engine namespace is csdid_* (functions, classes) and
             * CSDID_* (the cache instance and its globals), so the teardown
             * is targeted: variables first -- Mata refuses to drop a
@@ -219,15 +229,11 @@ program define _csdid_engine_load
     * source path is the slow one the library exists to remove. A library with
     * no stamp at all predates the stamp, which makes it another csdid's.
     *
-    * Discarding it takes `mata clear', not just a reload: the library's
-    * functions are already in the session, its class definitions with them,
-    * and CSDID_GLOBALS_READY would otherwise tell csdid__globals_init that an
-    * engine built against the discarded definitions is ready to use. Clearing
-    * costs the session its Mata state, which is why it happens only here, on
-    * the one call that discovers the mismatch: the source loaded next defines
-    * the same names, a session resolves its own definitions before any
-    * library's, and every later csdid call in this session stops at the
-    * marker above and says nothing.
+    * Discarding it requires dropping the csdid variables, functions and class
+    * definitions already held in memory. The targeted teardown preserves the
+    * caller's unrelated Mata state; the source loaded next defines the same
+    * csdid names, and a session resolves its own definitions before any
+    * library's. Every later csdid call stops at the marker above.
     *
     * The two refusals are told apart because the user's position differs. A
     * library belonging to another installation of csdid is a leftover, and
@@ -264,6 +270,7 @@ program define _csdid_engine_load
             }
         }
         else if "`mlib_stata'" != "source" {
+            global CSDID_ENGINE_SOURCE
             * -------------------------------------------------------------
             * Where the accepted library sits in Stata's search order.
             *
@@ -363,7 +370,7 @@ end
 * path must not leak strictness into the user's session (see the note at the
 * top of csdid.mata), and the shipped source compiles cleanly either way.
 * ---------------------------------------------------------------------------
-program define _csdid_engine_source
+program define _csdid_engine_source_path, rclass
     version 14
     local mata_source ""
     capture quietly findfile csdid.ado
@@ -384,10 +391,31 @@ program define _csdid_engine_source
     if `"`mata_source'"' == "" {
         capture quietly findfile csdid.mata
         if _rc {
-            display as error "csdid Mata source not found on adopath"
-            exit 499
+            return local fn ""
+            exit
         }
         local mata_source `"`r(fn)'"'
+    }
+    * Relative ado-path entries and `.' must identify the FILE, not the same
+    * relative spelling in two different working directories.
+    if substr(`"`mata_source'"', 1, 1) == "." & ///
+        inlist(substr(`"`mata_source'"', 2, 1), "/", char(92)) {
+        local mata_source = substr(`"`mata_source'"', 3, .)
+    }
+    if !(inlist(substr(`"`mata_source'"', 1, 1), "/", char(92), "~") | ///
+        substr(`"`mata_source'"', 2, 1) == ":") {
+        local mata_source `"`c(pwd)'`c(dirsep)'`mata_source'"'
+    }
+    return local fn `"`mata_source'"'
+end
+
+program define _csdid_engine_source
+    version 14
+    quietly _csdid_engine_source_path
+    local mata_source `"`r(fn)'"'
+    if `"`mata_source'"' == "" {
+        display as error "csdid Mata source not found on adopath"
+        exit 499
     }
     local user_matalnum "`c(matalnum)'"
     local user_mataopt "`c(mataoptimize)'"
@@ -410,4 +438,5 @@ program define _csdid_engine_source
         display as error `"the file `mata_source' is not this csdid's engine source: a file with the same name, from another package or an older installation, is shadowing it on the adopath. Remove or rename that file, or move its directory off the adopath, and run csdid again."'
         exit 499
     }
+    global CSDID_ENGINE_SOURCE `"`mata_source'"'
 end

@@ -29,7 +29,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_weighted.dta", replace
@@ -91,6 +91,13 @@ explicit, so it is never left to the order of your data:
 | `fix_weights(varying)` | use each observation's own weight |
 | `fix_weights(base_period)` | fix every unit's weight at its base-period value |
 | `fix_weights(first_period)` | fix every unit's weight at its first-period value |
+
+The omitted option is a separate default, recorded as an empty `e(fix_weights)`.
+On a balanced panel it uses the earlier of each comparison's two periods,
+which is the base period for post-treatment effects. It is not the same as
+explicit `fix_weights(varying)`. On an unbalanced panel a fixed rule can also
+exclude units whose weight cannot be observed in the required period; the
+command reports that change.
 
 ```stata
 use "jel_weighted.dta", clear

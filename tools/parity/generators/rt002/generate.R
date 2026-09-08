@@ -1,5 +1,7 @@
 # RT002: R oracle for the aggregation scenarios the Stata test exercises.
 # The inherited test asserted only that an aggregate lay within 0.5 of 1.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN  <- "tests/fixtures/parity/rt002/inputs"

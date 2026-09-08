@@ -1,59 +1,79 @@
 # Tests
 
-Everything here is run by `tools/release/preflight.sh`, which is the single
-command for "is this mergeable?". Nothing in this directory is expected to be
-run by hand as part of normal work.
+The repository includes numerical fixtures, Stata tests, installation checks,
+and static checks for package and documentation consistency. Run commands from
+the repository root.
 
-| Directory | What it holds |
+| Directory | Contents |
 | --- | --- |
-| `stata/` | The suite proper: `test-*.do` cover the package's own behaviour, `stata/r/` mirror the tests of the R reference implementation, and `stata/python/` mirror those of the Python one. |
-| `fixtures/` | Frozen inputs and expected outputs. Each fixture directory holds `inputs/`, `expected/` and a `metadata/manifest.json` recording how it was generated and what it is compared against. |
-| `meta/` | Checks that the project describes itself correctly — that a manifest names files that exist, that versions agree, that a ledger row has the evidence it claims. These fail when documentation and reality drift apart, which no amount of estimator testing would catch. |
-| `installation/` | A small check that a distributed copy installs into a clean Stata session and runs. Copied into the release bundle. |
+| `stata/` | Estimation, inference, aggregation, sample, export, and session-state tests; `r/` and `python/` contain inherited regression cases. |
+| `fixtures/` | Inputs, expected results, and metadata naming the reference and regeneration command. |
+| `meta/` | Static and structural checks, including manifest, version, and documentation consistency. |
+| `installation/` | Checks that an extracted distribution installs into an isolated Stata profile and runs. |
 
-## Fixture identifiers
-
-Fixture directories are named `f001`, `rt001`, `py001` and so on. The prefix
-records where the requirement came from — `f` from this package's own feature
-matrix, `rt` from a test of the R implementation, `py` from a test of the Python
-one — and the identifiers are referenced by `inst/spec/feature-matrix.csv`,
-`tools/validate-contract.py` and several `meta/` gates. They are load-bearing,
-not decorative: renaming one means updating every consumer.
-
-## Regenerating expected output
-
-Expected outputs are produced by the generators under `tools/parity/generators/`,
-never edited by hand. Each fixture's `metadata/manifest.json` names the command
-that produces it. Regenerating should be a no-op; a fixture that moves is either
-a real change to mirror or a divergence to record and justify.
-
-## Running
+## Run the checks
 
 ```sh
-bash tools/release/preflight.sh          # everything
-bash tools/release/preflight.sh --fast   # the cheap consistency checks only
-bash tools/release/preflight.sh --list   # what would run, and why
+bash tests/run-smoke.sh                   # Stata suite and its prerequisites
+bash tools/release/preflight.sh --fast    # static consistency checks
+bash tools/release/preflight.sh           # full verification
+bash tools/release/preflight.sh --release # includes release-scale reproductions
+bash tools/release/preflight.sh --list    # check inventory and prerequisites
 ```
 
-`--fast` is a pre-commit convenience and never a merge verdict: it runs the
-spec tier only, and a full run is required before merge.
+The runners discover tests from the tree; a fixed count is not a guarantee that
+all current tests ran. The fast run covers only the static tier. Some meta-gates
+also inspect built artifacts, so build the package before checking an edited
+source tree.
 
-## Reproducing the certification
+Stata batch jobs can return shell status zero after a do-file fails. Inspect
+the log for errors and normal completion. The runners reject failures and
+missing completion; do not interpret a truncated log as a successful test.
 
-The Stata suite and every meta gate run from a clone with nothing but Stata:
+## References and prerequisites
 
-    bash tools/release/preflight.sh
+Full verification needs more than Stata. Static checks require shell tools and
+Python 3 with NumPy and pandas. Install the Python dependencies in the test
+environment with `python3 -m pip install numpy pandas`. The numerical and
+performance comparisons also need the following:
 
-The deepest tiers compare against external references and report BLOCKED --
-never a pass -- when a prerequisite is absent:
+| Comparison | Prerequisite |
+| --- | --- |
+| Package rebuild | Licensed Stata 17, selected by `CSDID_BUILD_STATA_CMD` when the consumer uses another runtime |
+| Prepared website comparison | Jekyll with `kramdown-parser-gfm`, and `CSDID_SITE_ROOT` pointing to a checkout of `pedrohcgs/pedrohcgs.github.io` with the prepared `csdid/` site |
+| R oracle checks and regeneration | R with pinned `did` 2.5.1, `DRDID` 1.3.0, and `digest`; the oracle gate verifies loaded code as well as versions |
+| R source and adversarial cases | `CSDID_DID_UPSTREAM` pointing to the source checkout pinned by the reference lock |
+| Version 1.82 comparison | `CSDID_LEGACY_ROOT` pointing to the legacy source commit pinned by the harness |
+| JEL reproduction | `JEL_DID_REFERENCE` pointing to the pinned JEL-DiD replication materials and their dependencies |
 
-| Tier | Needs | Where |
-| --- | --- | --- |
-| R oracle environment + regeneration | R with the pinned `did` 2.5.1 and `DRDID` 1.3.0 packages (and the `digest` package) | install from CRAN/GitHub; the environment gate verifies both the versions and a content digest of the loaded code before any oracle is trusted |
-| Adversarial R differential | `CSDID_DID_UPSTREAM` pointing at a checkout of the `did` 2.5.1 sources | github.com/bcallaway11/did, tag v2.5.1 |
-| Legacy A/B certification | `CSDID_LEGACY_ROOT` pointing at the frozen Version 1.82 sources at the pinned commit recorded in the harness | any faithful copy of the Version 1.82 release sources |
-| JEL full reproduction | `JEL_DID_REFERENCE` pointing at the JEL-DiD replication materials | github.com/pedrohcgs/JEL-DiD |
+Set `STATA_CMD` to the licensed Stata executable being tested and
+`CSDID_BUILD_STATA_CMD` to the Stata 17 executable that builds the release
+library. For example, a Stata 19.5 consumer still uses Stata 17 for compilation.
+When the build setting is omitted, it defaults to `STATA_CMD`; the build
+refuses a compiler other than Stata 17. Record the consumer's actual version
+and platform. A missing prerequisite is reported as `BLOCKED` or a failure,
+not a pass.
 
-`preflight.sh --release` runs everything, including the tiers above and the
-timing rows, and writes a digest-bound receipt only when every check passed
-and the platform identified itself.
+The website comparison checks the local checkout against freshly built files.
+Deployment and the pages served over HTTP require separate verification.
+
+The JEL smoke check can pass artifact contracts before the full reproduction
+has run. It explicitly reports full reproduction `UNVERIFIED` in that case
+and records `parity_verified=0`. Failed or inconsistent recorded reproduction
+results fail the check. Both smoke runners write their local artifact
+observations to a fresh directory under `build/`, preserving the committed
+JEL snapshot. The full reproduction remains a separate required check in the
+`--release` run.
+
+## Fixtures
+
+Each fixture's `metadata/manifest.json` records its source, generator, and
+comparison. Most statistical references come from R `did`; a fixture for a
+feature it does not expose records its independent derivation. Expected
+outputs are regenerated, never edited by hand. A regenerated value that changes
+requires investigation before it can replace an expected result.
+
+Identifiers such as `f001`, `rt001`, and `py001` connect fixture metadata to
+its tests and reference inventory. Preserve those connections when working
+with the suite. Numerical tests should compare the reported values and their
+influence functions where relevant, including failures and missing values.

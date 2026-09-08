@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Repeat the f049 Stata/R ratio measurement and report its distribution.
 
-tools/bench/run-f049-ratio.py answers one question -- is every cell inside its
-budget right now -- and a budget cannot be set from one answer. This driver
-takes the same two measurements the gate takes, N times in a row, and writes
-every round so the budget can be read off the observed spread rather than off
-the last run that happened to be quiet.
+tools/bench/run-f049-ratio.py applies each unchanged budget to the median
+paired ratio over six complete rounds with alternating process order. This
+exploratory driver retains a configurable number of individual rounds so the
+full spread remains available when assessing a proposed budget.
 
 The one-time steps of the gate (plugin build, src/build.do, fixture generation)
 are NOT repeated: they produce the inputs, not the timings. The two steps that
-ARE repeated are exactly the gate's, in the gate's order, one Stata process and
-one R process per round.
+ARE repeated use the same workloads, one R process followed by one Stata
+process per round. This exploratory driver retains its original fixed order;
+the mandatory gate alternates order to balance which process runs first.
 
     python3 tools/bench/f049-ratio-distribution.py --rounds 8 --tag <t>
 

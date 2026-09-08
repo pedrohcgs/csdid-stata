@@ -12,8 +12,9 @@ the graph stays yours).
 
 ## The data
 
-Let's build the sample once and estimate once (we re-use that run throughout the
-page), since everything below reads the same set of results.
+Build and save the sample once. Each section starts from that sample and
+illustrates a results workflow, including the inference and storage options it
+requires.
 
 ```stata
 import delimited using ///
@@ -24,7 +25,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_results.dta", replace
@@ -102,8 +103,10 @@ display "clusters     : " e(N_clusters)
 display "pre-test W   : " e(wald_stat) "  p = " e(wald_pvalue)
 ```
 
-`e(attgt)` is the estimate matrix, holding cohort, period, the estimate and its
-standard error (in that order):
+`e(attgt)` has ten columns: `group`, `time`, `event_time`, `att`, `se`,
+`n_treat_t`, `n_treat_pre`, `n_control_t`, `n_control_pre`, and `base_time`.
+Use column names when extracting results. `base_time` identifies the period
+used for each comparison, including on gapped calendars or with anticipation:
 
 ```stata
 matrix A = e(attgt)
@@ -140,12 +143,15 @@ when a referee asks for a weighting we have not implemented).
 
 ## Plot-ready data
 
-`csdid_plot` exports what a graph needs instead of drawing one, so the styling
-stays under your control.
+`csdid_plot` draws the current results. Add `saving()` to export the plot
+data for a graph of your own design. First run `estat event` to select the
+event study; directly after `csdid`, the plot shows ATT(g,t) by cohort and
+calendar period.
 
 ```stata
 use "jel_results.dta", clear
 quietly csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
+estat event
 csdid_plot, saving("eventdata.dta") replace
 
 preserve
@@ -160,7 +166,7 @@ restore
 
 The exported columns are `x` (the value on the horizontal axis), `estimate`,
 the bounds `ci_low` and `ci_high`, plus `group`, `time`, `event_time`,
-`series` (Pre/Post), `x_label` and `significant`.
+`series` (Pre/Post), `x_label`, `plot_type`, and `significant`.
 
 <div class="important" markdown="1">
 Note that the estimate column is `estimate` rather than `att`, since
@@ -184,5 +190,8 @@ estat calendar
 estat simple
 ```
 
-Nothing is re-estimated. That is four aggregations from one estimation, and the
-bootstrap ran once.
+The ATT(g,t) estimates and their influence functions are reused. Each
+aggregation runs its own multiplier bootstrap when required for its standard
+errors or simultaneous band. Seeded aggregations continue the stored random
+stream, so reproducing a table requires the same estimation and the same
+sequence of aggregation commands.

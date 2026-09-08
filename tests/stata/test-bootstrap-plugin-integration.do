@@ -16,7 +16,7 @@ clear all
 set more off
 
 local root "`c(pwd)'"
-quietly do "`root'/src/build.do"
+quietly do "`root'/tools/release/build-package.do"
 confirm file "`root'/build/csdid_bootstrap.plugin"
 adopath ++ "`root'/build"
 

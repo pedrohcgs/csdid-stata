@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 01sep2026
+*! csdid_stats 2.0.0 08sep2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -35,7 +35,8 @@ program define csdid_stats, eclass
         * `txn_had' records that the hold actually HAPPENED, not that e()
         * looked restorable. A completed `csdid_stats using' posts e(cmd)
         * with no e(b) (the artifact carries no coefficient vector), and
-        * `_estimates hold' refuses a b-less state with r(301) -- measured:
+        * `_estimates hold' refuses that manually populated state with r(301)
+        * -- measured:
         * the second of two back-to-back using-runs died here, in the front,
         * before the worker ever ran. A b-less state still deserves the
         * same guarantee, so when the hold is refused the front copies every
@@ -47,9 +48,9 @@ program define csdid_stats, eclass
         * without that certification macro), and the copies are stored under
         * INDEXED transaction names, never names derived from the members'
         * own (a legal 32-character result name would overflow a derived
-        * local name). A b-less state cannot carry e(sample) (only `ereturn
-        * post' marks one, and posting requires e(b)), so the copy is
-        * complete for every state the hold refuses.
+        * local name). A state created by `ereturn post' can carry e(sample)
+        * without e(b); hold accepts and protects that state. This fallback
+        * covers results assembled directly from scalars, macros and matrices.
         local txn_sc : e(scalars)
         local txn_mac : e(macros)
         local txn_mat : e(matrices)

@@ -2,6 +2,8 @@
 # checks that rescaling one cohort's outcome leaves other cohorts' ATT
 # unchanged -- an invariance, which is self-referential. This pins the base
 # runs against R.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/rt004/inputs"; rows <- list()

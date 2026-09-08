@@ -11,9 +11,10 @@ import random
 import statistics
 import subprocess
 import textwrap
-import time
 from datetime import date
 from pathlib import Path
+
+from stata_runtime import measure_stata, prepare_build, write_driver
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,30 +65,6 @@ def verify_legacy_root(legacy_root):
     return commit
 
 
-def rss_kb(pid):
-    result = subprocess.run(
-        ["ps", "-o", "rss=", "-p", str(pid)],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0 or not result.stdout.strip():
-        return 0
-    return int(result.stdout.strip().splitlines()[0])
-
-
-def scan_log(log_path):
-    if not log_path.exists():
-        raise RuntimeError(f"Stata did not create {log_path}")
-    failures = []
-    for line_number, line in enumerate(log_path.read_text(errors="replace").splitlines(), 1):
-        stripped = line.strip()
-        if stripped.startswith("r(") and stripped.endswith(");"):
-            failures.append(f"line {line_number}: {stripped}")
-    if failures:
-        raise RuntimeError(f"uncaught Stata error in {log_path}: {failures[-1]}")
-
-
 def run_one(stata, legacy_root, implementation, scenario, inner, trial):
     stem = f"{scenario}-{implementation}-{trial:02d}"
     output = OUTDIR / f"{stem}.csv"
@@ -95,46 +72,32 @@ def run_one(stata, legacy_root, implementation, scenario, inner, trial):
     for path in (output, log_path):
         if path.exists():
             path.unlink()
-    command = [
-        stata,
-        "-b",
-        "do",
-        "tools/bench/legacy-candidate-ab-workload.do",
-        implementation,
-        scenario,
-        str(ROOT),
-        str(legacy_root),
-        str(inner),
-        str(output),
-        str(log_path),
-    ]
-    process = subprocess.Popen(
-        command,
-        cwd=ROOT,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    peak_kb = 0
-    started = time.perf_counter()
-    while process.poll() is None:
-        peak_kb = max(peak_kb, rss_kb(process.pid))
-        time.sleep(0.002)
-    peak_kb = max(peak_kb, rss_kb(process.pid))
-    wall_seconds = time.perf_counter() - started
-    if process.returncode != 0:
-        raise RuntimeError(
-            f"{scenario}/{implementation}/trial {trial}: Stata exited "
-            f"{process.returncode}; inspect {log_path}"
-        )
-    scan_log(log_path)
+    driver = OUTDIR / f"{stem}-driver.do"
+    write_driver(ROOT, driver, "tools/bench/legacy-candidate-ab-workload.do",
+                 (implementation, scenario, ROOT, legacy_root, inner, output, log_path))
+    wall_seconds, peak_mb, samples = measure_stata(
+        ROOT, stata, driver, OUTDIR / f"{stem}-batch.log")
     if not output.exists():
         raise RuntimeError(f"missing result file {output}")
     with output.open(newline="") as handle:
-        row = next(csv.DictReader(handle))
+        rows = list(csv.DictReader(handle))
+    fields = {"implementation", "scenario", "seconds", "observations", "inner",
+              "accelerator", "stata_version", "stata_flavor", "os", "machine_type"}
+    if len(rows) != 1 or set(rows[0]) != fields:
+        raise RuntimeError(f"incomplete or duplicated benchmark observation: {output}")
+    row = rows[0]
+    values = [float(row[name]) for name in ("seconds", "observations", "inner")]
+    if (row["implementation"] != implementation or row["scenario"] != scenario
+            or any(not math.isfinite(value) or value <= 0 for value in values)
+            or values[1] != int(values[1]) or values[2] != inner
+            or any(not row[name].strip() for name in fields)):
+        raise RuntimeError(f"invalid or misattributed benchmark observation: {output}")
     row.update(
         {
             "trial": str(trial),
-            "peak_rss_mb": f"{peak_kb / 1024.0:.6f}",
+            "peak_rss_mb": f"{peak_mb:.6f}",
+            "rss_measure": "ps_rss_kb",
+            "rss_samples": str(samples),
             "wall_seconds": f"{wall_seconds:.6f}",
         }
     )
@@ -231,36 +194,10 @@ def summarize(scenario, config, rows):
         "legacy_median_peak_rss_mb": f"{statistics.median(legacy_rss):.3f}",
         "median_paired_rss_ratio": f"{rss_ratio:.6f}",
         "rss_ratio_upper95": f"{rss_upper:.6f}",
-        # TIME allows a 5% regression before failing. csdid wins by 6-29x, so
-        # the tolerance never engages on a healthy run -- the worst bound sits
-        # around 0.16, nowhere near 1.05. It exists so that a workload which
-        # genuinely reaches parity is not failed by measurement noise, and so a
-        # real regression has to be a REAL regression to trip the gate.
+        # Historical CSV names report compliance with the calibrated median
+        # and upper95 budgets above, not strict time or memory superiority.
         "candidate_faster": str(int(time_ratio <= 1.0 + TIME_TOLERANCE
                                     and time_upper <= 1.0 + TIME_TOLERANCE)),
-        # RSS is judged "not a regression" rather than "provably better".
-        #
-        # The strict rule encoded a claim never intended: that csdid must use
-        # provably LESS memory than legacy on every workload. On the four event
-        # aggregations that is a statistical tie - the aggregation influence
-        # function is inherently comparable in size to legacy's - so the median
-        # sits 1-3% below 1 while the bootstrap upper bound straddles it, and
-        # the same code passed some runs and failed others. Measured across two
-        # certification runs: worst upper95 1.012, worst median 1.001, with the
-        # bound moving ~0.008 between runs. RSS_TOLERANCE of 3% clears the worst
-        # observed value by 0.018, about two run-to-run swings.
-          #
-          # The 1.044 that failed a later run was NOT this effect: it came from a
-          # missing warmup, so legacy's first trial ran with a cold cache and read
-          # 529 MB against 563-624 MB on its other six. Adding the warmup the
-          # report already claimed collapsed legacy's spread from 18% to 1% and
-          # the bound from 1.044 to 0.933. Tolerance untouched.
-        #
-        # This does not blunt the gate. Eleven of fifteen scenarios sit at
-        # upper95 <= 0.97, so the tolerance never engages there, and a genuine
-        # memory regression - materialising an extra n-by-k matrix, say - is
-        # tens of percent, not three. Qualified by seeding a 10% regression and
-        # confirming the gate still fails.
         "candidate_lower_rss": str(int(rss_ratio <= 1.0 + RSS_TOLERANCE
                                        and rss_upper <= 1.0 + RSS_TOLERANCE)),
     }
@@ -282,6 +219,11 @@ def sha256(path):
 
 
 def write_report(summaries, metadata):
+    complete = (len(summaries) == len(SCENARIOS)
+                and {row["scenario"] for row in summaries} == set(SCENARIOS))
+    passed = all(row["candidate_faster"] == "1" and row["candidate_lower_rss"] == "1"
+                 for row in summaries)
+    status = "pass" if complete and passed else "partial" if passed else "fail"
     worst_time = max(summaries, key=lambda row: float(row["time_ratio_upper95"]))
     worst_rss = max(summaries, key=lambda row: float(row["rss_ratio_upper95"]))
     lines = [
@@ -289,7 +231,7 @@ def write_report(summaries, metadata):
         "",
         f"Date: {metadata['generated_date']}",
         "",
-        "Status: `pass` on the recorded platform.",
+        f"Status: `{status}` on the recorded platform.",
         "",
         "## Baseline And Policy",
         "",
@@ -298,10 +240,10 @@ def write_report(summaries, metadata):
         "- Each implementation runs in a fresh Stata process after one warmup.",
         "- Candidate/legacy execution order alternates by trial.",
         "- Estimator time excludes startup and data loading.",
-        "- Peak RSS is sampled from the operating-system process every 2 ms.",
+        "- Peak RSS is observed with `ps` between 2 ms sampling pauses; each",
+        "  observation records the number of positive resident-memory samples.",
         "- A row passes on TIME only when its paired median ratio and the",
-        "  deterministic bootstrap 95% upper bound are both at or below `1.0`:",
-        "  the candidate must be no slower.",
+        f"  deterministic bootstrap 95% upper bound are both at or below `{1 + TIME_TOLERANCE:.2f}`.",
         *textwrap.wrap(
             f"- A row passes on PEAK RSS at the same bound widened to "
             f"`{1 + RSS_TOLERANCE:.2f}`, so the candidate may use up to "
@@ -314,9 +256,8 @@ def write_report(summaries, metadata):
             width=70,
             subsequent_indent="  ",
         ),
-        "- Unbalanced rows are performance comparisons across intentionally",
-        "  different semantics: the candidate performs the R-compatible",
-        "  repeated-cross-section computation and the legacy package does not.",
+        "- Comparison groups, base periods and pair balancing are explicit",
+        "  in the workload commands for both implementations.",
         "",
         "## Results",
         "",
@@ -331,34 +272,33 @@ def write_report(summaries, metadata):
             "{median_paired_rss_ratio} | {rss_ratio_upper95} |".format(**row)
         )
     over_one = [r for r in summaries if float(r["median_paired_rss_ratio"]) > 1.0]
+    rss_sentence = (
+        f"On this platform the candidate's execution time is within the `{TIME_TOLERANCE * 100:.0f}%` "
+        f"allowance and peak RSS is within the `{RSS_TOLERANCE * 100:.0f}%` allowance "
+        "on every frozen workload."
+    )
     if over_one:
         worst_over = max(over_one, key=lambda r: float(r["median_paired_rss_ratio"]))
-        rss_sentence = (
-            "This certifies that the candidate is faster than the pinned public "
-            "legacy package on every frozen workload on this platform, and that "
-            f"peak RSS is within the `{RSS_TOLERANCE * 100:.0f}%` allowance on "
-            f"every one. It is NOT a claim that peak RSS is lower everywhere: "
-            f"`{len(over_one)}` of `{len(summaries)}` scenarios use more, the "
+        rss_sentence += (
+            " Peak RSS is higher in "
+            f"`{len(over_one)}` of `{len(summaries)}` scenarios, the "
             f"largest being `{worst_over['scenario']}` at "
             f"`{worst_over['median_paired_rss_ratio']}`."
-        )
-    else:
-        rss_sentence = (
-            "This certifies that the candidate is faster and uses less peak RSS "
-            "than the pinned public legacy package on every frozen workload on "
-            "this platform."
         )
     lines.extend(
         [
             "",
             "## Decision",
             "",
-            f"All `{len(summaries)}` scenarios pass both gates. The worst time",
+            (f"All `{len(summaries)}` scenarios pass both gates. The worst time"
+             if status == "pass" else
+             f"The `{len(summaries)}` recorded scenarios do not certify the full suite. The worst time"),
             f"upper bound is `{worst_time['time_ratio_upper95']}` for",
             f"`{worst_time['scenario']}`. The worst RSS upper bound is",
             f"`{worst_rss['rss_ratio_upper95']}` for `{worst_rss['scenario']}`.",
             "",
-            *textwrap.wrap(rss_sentence, width=70),
+            *textwrap.wrap(rss_sentence if status == "pass" else
+                           "A full passing run is required before performance certification.", width=70),
             "It is not a universal mathematical claim for every",
             "possible dataset, operating system, or Stata release. Windows and",
             "Linux require their own recorded platform rows before final release.",
@@ -373,9 +313,9 @@ def write_report(summaries, metadata):
             "",
         ]
     )
-    (ROOT / "reports" / "legacy-candidate-performance-certification.md").write_text(
-        "\n".join(lines)
-    )
+    output = ROOT / "reports" / "legacy-candidate-performance-certification.md"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(lines))
 
 
 def parse_args():
@@ -399,21 +339,17 @@ def main():
         with (OUTDIR / "summary.csv").open(newline="") as handle:
             summaries = list(csv.DictReader(handle))
         metadata = json.loads((OUTDIR / "metadata.json").read_text())
-        metadata["generated_date"] = date.today().isoformat()
-        (OUTDIR / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
         write_report(summaries, metadata)
         return
+    OUTDIR.mkdir(parents=True, exist_ok=True)
+    for name in ("runs.csv", "summary.csv", "metadata.json"):
+        (OUTDIR / name).unlink(missing_ok=True)
+    (ROOT / "reports/legacy-candidate-performance-certification.md").unlink(missing_ok=True)
     if args.trials < 3:
         raise SystemExit("at least three trials are required")
     legacy_root = args.legacy_root.resolve()
     legacy_commit = verify_legacy_root(legacy_root)
-    OUTDIR.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        ["bash", "tools/plugin/build-bootstrap-plugin.sh", "auto"],
-        cwd=ROOT,
-        check=True,
-    )
-    subprocess.run([args.stata, "-b", "do", "src/build.do"], cwd=ROOT, check=True)
+    prepare_build(ROOT)
     scenarios = args.scenario or list(SCENARIOS)
     all_rows = []
     for scenario in scenarios:
@@ -470,17 +406,17 @@ def main():
         "machine": platform.machine(),
         "candidate_artifact_sha256": {
             str(path.relative_to(ROOT)): sha256(path)
-            for path in (
+            for path in [
                 ROOT / "build" / "csdid.ado",
                 ROOT / "build" / "csdid.mata",
                 ROOT / "build" / "csdid_stats.ado",
-                ROOT / "build" / "csdid_bootstrap_macosx.plugin",
-            )
+                *sorted((ROOT / "build").glob("csdid_bootstrap_*.plugin")),
+            ]
         },
         "comparison_policy": {
-            "time": "median paired ratio < 1 and bootstrap upper95 <= 1",
-            "rss": "median paired ratio < 1 and bootstrap upper95 <= 1",
-            "semantic_upgrade": "timed and gated despite intentionally different R-compatible work",
+            "time": f"median paired ratio and bootstrap upper95 <= {1 + TIME_TOLERANCE:.2f}",
+            "rss": f"median paired ratio and bootstrap upper95 <= {1 + RSS_TOLERANCE:.2f}",
+            "workload": "explicit comparison group, base period and pair balancing",
         },
     }
     (OUTDIR / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")

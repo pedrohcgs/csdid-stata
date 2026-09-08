@@ -78,6 +78,7 @@ NOT_SHIPPED = (
     "tools/bench/run-archive-ab.py",
     "tools/release/handoff-install.do",
     "tools/release/verify-handoff-install.do",
+    "tools/release/verify-handoff-install.py",
     "tools/release/build-release-payload.sh",
 )
 

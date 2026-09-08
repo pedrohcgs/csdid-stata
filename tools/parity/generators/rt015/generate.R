@@ -1,6 +1,8 @@
 # RT015: R oracle for the inference scenarios the Stata test exercises.
 # The inherited test ran csdid across panel/RCS x methods x clustering but never
 # compared a standard error against R.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN  <- "tests/fixtures/parity/rt015/inputs"

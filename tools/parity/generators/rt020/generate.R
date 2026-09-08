@@ -1,11 +1,13 @@
 #!/usr/bin/env Rscript
 
-suppressPackageStartupMessages(library(did))
-suppressPackageStartupMessages(library(jsonlite))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt020/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(did))
+suppressPackageStartupMessages(library(jsonlite))
+
 # tools/parity/generators/<id> is four levels below the repository root, not
 # three. With "../../.." this resolved to tools/, and the dir.exists() guard
 # below then passed because an earlier run had written a stray tools/tests/

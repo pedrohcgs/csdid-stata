@@ -1,0 +1,15 @@
+"scenario","group","time","event_time","att","se","crit_val","ci_low","ci_high","control_group","base_period","est_method","panel_mode","sample_n","inffunc_col","n_units"
+"affine_rc",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","rcs",80,1,80
+"affine_rc",2,2,0,2,,1.95996398454005,,,"nevertreated","universal","dr","rcs",80,2,80
+"affine_rc_weighted",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","rcs",80,1,80
+"affine_rc_weighted",2,2,0,2,,1.95996398454005,,,"nevertreated","universal","dr","rcs",80,2,80
+"affine_unbalanced",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","unbalanced",78,1,40
+"affine_unbalanced",2,2,0,2,,1.95996398454005,,,"nevertreated","universal","dr","unbalanced",78,2,40
+"affine_unbalanced_weighted",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","unbalanced",78,1,40
+"affine_unbalanced_weighted",2,2,0,2,,1.95996398454005,,,"nevertreated","universal","dr","unbalanced",78,2,40
+"regular_rc",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","rcs",80,1,80
+"regular_rc",2,2,0,4.48111655604528,0.0859416906999217,1.95996398454005,4.31267393750295,4.6495591745876,"nevertreated","universal","dr","rcs",80,2,80
+"regular_unbalanced",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","unbalanced",78,1,40
+"regular_unbalanced",2,2,0,4.36807267235009,0.141079408088312,1.95996398454005,4.09156211353677,4.64458323116341,"nevertreated","universal","dr","unbalanced",78,2,40
+"regular_balanced_varying",2,1,-1,0,,1.95996398454005,,,"nevertreated","universal","dr","panel",80,1,40
+"regular_balanced_varying",2,2,0,4.48111655604528,0.0859416906999217,1.95996398454005,4.31267393750295,4.6495591745876,"nevertreated","universal","dr","panel",80,2,40

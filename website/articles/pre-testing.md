@@ -30,7 +30,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_balanced.dta", replace
@@ -38,8 +38,10 @@ save "jel_balanced.dta", replace
 
 ## The joint pre-test
 
-Every run reports a Wald test of the hypothesis that all pre-treatment ATT(g,t)
-are zero. The test is stored, whether or not you asked for it:
+A run computes a joint Wald test of the estimable pre-treatment ATT(g,t).
+The statistic is missing, with a note explaining why, when the test cannot
+be formed, for example because its covariance is singular or no usable
+pre-treatment cells remain. Its stored results are:
 
 ```stata
 use "jel_balanced.dta", clear
@@ -66,19 +68,21 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
 estat event
 ```
 
-Negative event times are pre-treatment (that is the convention here). Look for
+Negative event times precede nominal treatment. With `anticipation(#)`,
+some may contain allowed responses; the joint test still includes those
+cells. Use the earlier periods to assess the no-anticipation restriction
+(see [Anticipation](anticipation.html)). Without anticipation, look for
 *pattern* rather than for stars. A gentle drift toward zero as treatment
 approaches is more worrying than one isolated period: a drift suggests that the
 two groups were already converging before anything happened to either of them.
 
 <div class="tip" markdown="1">
-`base_period(universal)` is the default. Under it the pre-treatment estimates
-are cumulative and serially correlated, so one bad early period pushes every
-later point away from zero and can look like a systematic trend. With
-`base_period(varying)` each pre-treatment cell is a separate one-period
-comparison, so a violation appears in the period where it happens. Thus we ask
-for `varying` explicitly when pre-testing, and we recommend that you do too.
-See [Base periods](base-periods.html).
+`base_period(universal)` is the default. Its pre-treatment estimates share
+one reference period; a shock in that reference can affect many contrasts.
+With `base_period(varying)`, each pre-treatment cell compares adjacent
+observed periods, which can help locate when groups begin to diverge. The
+contrasts can still be correlated. Inspecting both views can clarify the
+pattern; see [Base periods](base-periods.html).
 </div>
 
 ## Power, and what a clean pre-test does not buy you
@@ -101,8 +105,9 @@ tight standard errors is really evidence about the design.
 ## Conditional parallel trends
 
 If parallel trends is only plausible after conditioning on covariates, then
-condition on them, and say so in the text. The pre-test then applies to the
-conditional assumption you are actually making:
+condition on them, and say so in the text. The estimated pre-treatment
+contrasts then use that adjustment. Their aggregate test provides a diagnostic; it does not test parallel trends at
+every covariate value:
 
 ```stata
 use "jel_balanced.dta", clear

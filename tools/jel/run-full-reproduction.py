@@ -801,6 +801,38 @@ def validate_jel_r_oracle(worktree: Path, summary: dict[str, object]) -> None:
         )
 
 
+def patch_jel_r_oracle_check(worktree: Path, port_root: Path) -> None:
+    """Authenticate the restored namespace in the process that estimates."""
+    master = worktree / "scripts/R/00_master_did_jel.R"
+    text = master.read_text(encoding="utf-8")
+    marker = "# CSDID: authenticate the restored R oracle"
+    end_marker = "# CSDID: end oracle authentication"
+    anchor = "renv::restore(prompt = FALSE)"
+    if text.count(anchor) != 1:
+        raise RuntimeError("JEL master must restore renv exactly once before oracle authentication")
+    gate = json.dumps(str(port_root / "tools/parity/generators/oracle-check.R"))
+    # A checkout override would replace the restored package being certified.
+    # Restore that environment setting before the analysis scripts continue.
+    check = f'''\n{marker}
+local({{
+  upstream <- Sys.getenv("CSDID_DID_UPSTREAM", unset = NA_character_)
+  on.exit(if (is.na(upstream)) Sys.unsetenv("CSDID_DID_UPSTREAM") else
+    Sys.setenv(CSDID_DID_UPSTREAM = upstream))
+  Sys.unsetenv("CSDID_DID_UPSTREAM")
+  source({gate})
+}})
+{end_marker}
+'''
+    if marker in text:
+        text, count = re.subn(re.escape(marker) + r".*?" + re.escape(end_marker),
+                              lambda _: check.strip(), text, flags=re.DOTALL)
+        if count != 1:
+            raise RuntimeError("JEL master has an ambiguous oracle authentication block")
+    else:
+        text = text.replace(anchor, anchor + check, 1)
+    master.write_text(text, encoding="utf-8")
+
+
 def copy_jel_repo(source: Path, dest: Path) -> None:
     if dest.exists():
         shutil.rmtree(dest)
@@ -1641,6 +1673,8 @@ def write_markdown_report(
         f"Date: {summary['finished_at']}",
         f"JEL-DiD commit: `{summary['jel_commit']}`",
         f"Local csdid commit: `{summary['csdid_commit']}`",
+        *([f"Analysis commit: `{summary['analysis_commit']}` (existing execution; masters not rerun)"]
+          if "analysis_commit" in summary else []),
         f"R master exit code: `{summary.get('r_exit_code', 'not-run')}`",
         f"Stata master exit code: `{summary.get('stata_exit_code', 'not-run')}`",
         f"Failure markers: `{len(failure_markers)}`",
@@ -1865,7 +1899,15 @@ def write_markdown_report(
             "hash matched, semantically matched, or dispositioned by a release owner.",
         ]
     )
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def archive_prior_result(path: Path) -> Path | None:
+    if not path.exists() and not path.is_symlink():
+        return None
+    archive = Path(tempfile.mkdtemp(prefix=path.name + ".previous-", dir=path.parent))
+    return path.replace(archive / path.name)
 
 
 def main() -> int:
@@ -1889,12 +1931,14 @@ def main() -> int:
     worktree = work_dir / "worktree"
     logs_dir = work_dir / "logs"
     outputs_dir = work_dir / "outputs"
+    summary_path = outputs_dir / "summary.json"
+    prior_summary = archive_prior_result(summary_path)
+    archive_prior_result(args.report)
     outputs_dir.mkdir(parents=True, exist_ok=True)
     logs_dir.mkdir(parents=True, exist_ok=True)
-    summary_path = outputs_dir / "summary.json"
     previous_summary: dict[str, object] = {}
-    if args.analyze_existing and summary_path.exists():
-        previous_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    if args.analyze_existing and prior_summary is not None:
+        previous_summary = json.loads(prior_summary.read_text(encoding="utf-8"))
 
     if not (jel_repo / ".git").exists():
         raise SystemExit(f"JEL-DiD repo not found or not a git checkout: {jel_repo}")
@@ -1908,6 +1952,17 @@ def main() -> int:
         raise SystemExit(f"JEL-DiD checkout is dirty; refusing to use it as frozen source:\n{dirty}")
 
     csdid_commit = git_output(port_root, "rev-parse", "HEAD")
+    if args.analyze_existing:
+        if (not isinstance(previous_summary.get("csdid_commit"), str)
+                or not re.fullmatch(r"[0-9a-f]{40}", previous_summary["csdid_commit"])
+                or previous_summary.get("jel_commit") != jel_commit):
+            raise SystemExit("existing JEL evidence lacks a valid matching execution identity")
+        for key in ("csdid_repo", "r_command", "stata_command"):
+            value = previous_summary.get(key)
+            if (not isinstance(value, str) or not value.strip()
+                    or value.strip().lower() in {"unknown", "pending", "skipped", "n/a"}
+                    or any(char in value for char in "\r\n")):
+                raise SystemExit(f"existing JEL evidence lacks a valid {key}")
 
     if worktree.exists() and not args.keep_work:
         shutil.rmtree(worktree)
@@ -1916,6 +1971,7 @@ def main() -> int:
     if not args.analyze_existing:
         patch_jel_r_rng_state_exports(worktree)
         patch_jel_stata_event_label_calls(worktree)
+        patch_jel_r_oracle_check(worktree, port_root)
 
     summary: dict[str, object] = {
         "status": "running",
@@ -1930,6 +1986,11 @@ def main() -> int:
         "artifact_comparison_csv": str(outputs_dir / "artifact-comparison.csv"),
         "summary_json": str(summary_path),
     }
+    if args.analyze_existing:
+        summary["analysis_commit"] = csdid_commit
+        summary["analysis_repo"] = str(port_root)
+        for key in ("csdid_commit", "csdid_repo", "r_command", "stata_command"):
+            summary[key] = previous_summary[key]
     if not args.analyze_existing:
         patch_jel_r_oracle_lock(worktree, summary)
 
@@ -1940,7 +2001,7 @@ def main() -> int:
     configure_r_toolchain_env(env)
 
     rscript = find_jel_rscript()
-    r_home_overlay = prepare_r_home_overlay(work_dir)
+    r_home_overlay = None if os.environ.get("CSDID_JEL_RSCRIPT") else prepare_r_home_overlay(work_dir)
     if r_home_overlay is not None:
         r_command = r_home_overlay / "bin" / "R"
         env["R_HOME"] = str(r_home_overlay)
@@ -1956,7 +2017,8 @@ def main() -> int:
         )
     else:
         r_command = rscript
-    summary["r_command"] = str(r_command)
+    if not args.analyze_existing:
+        summary["r_command"] = str(r_command)
     write_r_makevars(work_dir, env)
 
     try:
@@ -1975,6 +2037,16 @@ def main() -> int:
             if "r_log" in previous_summary:
                 summary["r_log"] = previous_summary["r_log"]
 
+        oracle_digest = (port_root / "inst/spec/r-oracle-full-code-digest.txt").read_text().strip()
+        r_log = Path(summary.get("r_log", logs_dir / "r-master.log"))
+        authenticated = re.compile(
+            r"oracle gate: did 2\.5\.1 / DRDID 1\.3\.0 content-verified \([^\n]*"
+            r" R functions " + re.escape(oracle_digest) + r"\) at ")
+        if not re.fullmatch(r"[0-9a-f]{64}", oracle_digest) or not authenticated.search(r_log.read_text()):
+            raise RuntimeError("R master did not authenticate the restored did/DRDID code")
+        summary["r_oracle_code_digest"] = oracle_digest
+
+        stata_batch_log = worktree / "run-stata-master.log"
         if not args.skip_stata:
             stata_wrapper = work_dir / "run-stata-master.do"
             build_stata_wrapper(stata_wrapper, port_root, worktree)
@@ -1985,6 +2057,7 @@ def main() -> int:
             # the caller asked for -- so a release could certify the
             # package on one Stata and exercise this gate on another.
             stata_cmd = os.environ.get("STATA_CMD") or "stata-mp"
+            stata_batch_log.unlink(missing_ok=True)
             proc = run([stata_cmd, "-b", "do", str(stata_wrapper)], cwd=worktree, log_path=stata_log, env=env)
             summary["stata_command"] = stata_cmd
             summary["stata_exit_code"] = proc.returncode
@@ -1995,6 +2068,12 @@ def main() -> int:
             if "stata_log" in previous_summary:
                 summary["stata_log"] = previous_summary["stata_log"]
             summary["stata_batch_log"] = str(worktree / "run-stata-master.log")
+
+        if any(type(summary.get(key)) is not int or summary[key] != 0
+               for key in ("r_exit_code", "stata_exit_code")):
+            raise RuntimeError("full reproduction requires successful R and Stata master execution")
+        subprocess.run(["bash", str(port_root / "tools/release/check-stata-log-tail.sh"),
+                        str(stata_batch_log)], check=True)
 
         manifest_rows, comparison_rows, stata_pdf_semantic_rows = compare_artifacts(jel_repo, worktree)
         write_csv(outputs_dir / "artifact-manifest.csv", manifest_rows, ["artifact", "role", "exists", "bytes", "sha256"])
@@ -2110,7 +2189,7 @@ def main() -> int:
                     "",
                     f"Date: {summary['finished_at']}",
                     f"JEL-DiD commit: `{jel_commit}`",
-                    f"Local csdid commit: `{csdid_commit}`",
+                    f"Local csdid commit: `{summary['csdid_commit']}`",
                     "",
                     "## Error",
                     "",

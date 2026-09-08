@@ -13,6 +13,15 @@ for log in "$@"; do
     failed=1
     continue
   fi
+  # A terminated batch can leave no error marker. Only the outer do-file's
+  # completion at the tail certifies that its final assertions ran.
+  if ! awk '
+      NF && $0 !~ /^[[:space:]]*\.[[:space:]]*$/ { last = $0 }
+      END { exit(last !~ /^[[:space:]]*end of do-file[[:space:]]*$/) }
+    ' "$log"; then
+    echo "incomplete Stata batch log: $log" >&2
+    failed=1
+  fi
   # Robust detection. Two former weaknesses: (a) `if ... | rg -q ...; then`
   # read a MISSING ripgrep (exit 127) as "no failure", so the gate passed when
   # the tool was absent; (b) only the last 40 lines were scanned, so an

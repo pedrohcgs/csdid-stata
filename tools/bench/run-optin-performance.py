@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import csv
+import math
 import os
-import subprocess
 from pathlib import Path
+
+from stata_runtime import prepare_build, run_stata
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -110,19 +113,26 @@ assert passed_memory == 1
 '''
 
 
-def scan_stata_log() -> int:
-    if not LOG.exists():
-        print(f"missing Stata log: {LOG}")
-        return 1
-    bad = []
-    for i, line in enumerate(LOG.read_text(errors="replace").splitlines(), 1):
-        stripped = line.strip()
-        if stripped.startswith("r(") and stripped.endswith(";"):
-            bad.append(f"{LOG}:{i}:{stripped}")
-    if bad:
-        print("Uncaught Stata error:\n" + "\n".join(bad[-20:]))
-        return 1
-    return 0
+def read_results():
+    with (BUILD / "results.csv").open(newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    budgets = {"large_panel": (500000, 900, 6000),
+               "bootstrap_medium": (25000, 180, 2000)}
+    if len(rows) != len(budgets) or {row.get("benchmark") for row in rows} != set(budgets):
+        raise RuntimeError("opt-in benchmark output is incomplete or duplicated")
+    for row in rows:
+        n, seconds_limit, memory_limit = budgets[row["benchmark"]]
+        seconds = float(row["seconds"])
+        memory = float(row["memory_mb"])
+        if (not math.isfinite(seconds) or seconds <= 0 or seconds > seconds_limit
+                or not math.isfinite(memory) or memory < 0 or memory > memory_limit
+                or float(row["rows"]) != n
+                or float(row["max_seconds"]) != seconds_limit
+                or float(row["max_memory_mb"]) != memory_limit
+                or row["passed_time"] != "1" or row["passed_memory"] != "1"
+                or row["memory_measure"] != "stata_c_memory_setting"):
+            raise RuntimeError(f"invalid or failing opt-in observation: {row}")
+    return rows
 
 
 def main() -> int:
@@ -134,19 +144,13 @@ def main() -> int:
         return 0
 
     BUILD.mkdir(parents=True, exist_ok=True)
-    plugin = subprocess.run(
-        ["bash", "tools/plugin/build-bootstrap-plugin.sh", "auto"], cwd=ROOT
-    )
-    if plugin.returncode != 0:
-        return plugin.returncode
-    build = subprocess.run(["stata-mp", "-b", "do", "src/build.do"], cwd=ROOT)
-    if build.returncode != 0:
-        return build.returncode
+    for path in (LOG, BUILD / "results.csv", BUILD / "results.dta"):
+        path.unlink(missing_ok=True)
+    prepare_build(ROOT)
     DOFILE.write_text(STATA_DO.replace("__ROOT__", str(ROOT)))
-    proc = subprocess.run(["stata-mp", "-b", "do", str(DOFILE)], cwd=ROOT)
-    if proc.returncode != 0:
-        return proc.returncode
-    return scan_stata_log()
+    run_stata(ROOT, DOFILE)
+    read_results()
+    return 0
 
 
 if __name__ == "__main__":

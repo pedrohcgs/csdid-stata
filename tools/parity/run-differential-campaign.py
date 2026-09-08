@@ -10,11 +10,9 @@ release gate and stays as it is:
      cluster structure, missingness and unbalancedness are all drawn per trial.
   2. The OPTIONS are randomized across the supported surface rather than being a
      hand-written list of 14 combinations.
-  3. Every CHANNEL is compared, including the ones that gate does not look at:
-     the aggregation critical values and confidence limits (its compare_aggte
-     checks att/se/overall_att/overall_se only, which is why an overall-row band
-     defect could sit under a green gate), the ATT(g,t) critical value, the
-     pre-test, the cell counts, and the failure/refusal behaviour.
+  3. The comparison covers cell estimates and standard errors, aggregation
+     estimates and standard errors, the overall pointwise quantile, the
+     pre-test, panel unit counts, and failure/refusal behaviour.
 
 WHAT AGREEMENT ESTABLISHES: conformance to R did 2.5.1 at the pinned oracle
 commit, on the frozen contract below. It does not establish that either
@@ -33,6 +31,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import base64
+import hashlib
 import json
 import math
 import os
@@ -53,12 +53,10 @@ STATA_CMD = os.environ.get("STATA_CMD", "stata-mp")
 # divergence and must be recorded in the report, not applied silently.
 # ---------------------------------------------------------------------------
 # APPROVED DIVERGENCE (recorded, not silently widened).
-# On a near-singular design matrix, R and csdid solve the same system with
-# equivalent-but-different decompositions, and the last bits differ. csdid
-# deliberately mirrors R/DRDID's choices -- qrsolve for the regression
-# coefficients, cholinv behind an rcond guard for the pscore Hessian
-# (csdid.mata csdid__hessinv_r_parity), luinv as the fallback so Stata computes
-# where R computes -- so this is amplification, not a different algorithm.
+# On a near-singular design matrix, floating-point differences in the nuisance
+# solves can be amplified. This is the established unweighted whole-cell
+# diagnostic bound, not proof of exact equality, nor a condition estimate for
+# each weighted treatment/comparison subgroup's nuisance fit.
 #
 # Measured on the two divergent trials of seed 31415, varying only the
 # collinearity of x2 on x1 and holding everything else fixed:
@@ -68,7 +66,10 @@ STATA_CMD = os.environ.get("STATA_CMD", "stata-mp")
 #     independent  -> max|dATT| 2.0e-10
 # i.e. the gap tracks cond^2 * machine epsilon. Panel mode does not matter.
 # A numeric difference below this bound is classified "ill_conditioned" and
-# reported separately; anything above it stays a divergence.
+# reported separately; anything above it stays a divergence. The design comes
+# from the actual reference fitter. Aggregations and the Wald test use the
+# maximum over contributing cells observed in the reference helpers; neither
+# raw pooled covariates nor reconstructed cell membership are a fallback.
 def conditioning_bound(base: float, cond: float) -> float:
     if cond is None or not math.isfinite(cond):
         return base
@@ -239,10 +240,12 @@ def stata_covars(t: Trial) -> str:
 
 def write_r_script(path: Path, trials: list[Trial], oracle_lib: str = "") -> None:
     load = ('suppressPackageStartupMessages(library(did, lib.loc="%s"))' % oracle_lib
-            if oracle_lib else "suppressPackageStartupMessages(library(did))")
+            if oracle_lib else "")
     lines = [
         load,
-        'cat("oracle did version:", as.character(packageVersion("did")), "\n")',
+        f'source("{ROOT}/tools/parity/generators/oracle-check.R")',
+        'cat("authenticated oracle did:", as.character(packageVersion("did")), find.package("did"), "\n")',
+        f'source("{ROOT}/tools/parity/capture-differential-designs.R")',
         f'build <- "{BUILD}"',
         "ok <- function(expr) tryCatch(expr, error = function(e) e)",
         "sf <- function(x) if (is.null(x) || length(x) == 0) NA_real_ else as.numeric(x)[1]",
@@ -250,17 +253,23 @@ def write_r_script(path: Path, trials: list[Trial], oracle_lib: str = "") -> Non
     ]
     for t in trials:
         n = t.name
+        # A kept build may contain an older refusal or partial result. Each
+        # rerun owns fresh reference evidence for this exact input and spec.
+        for previous in BUILD.glob(f"{n}-r-*"):
+            previous.unlink()
+        spec_json = json.dumps(json.dumps(asdict(t), separators=(",", ":")))
         wt = '"w"' if t.weighted else "NULL"
         cl = 'c("cl")' if t.clustered else "NULL"
         lines += [
+            f'csdid_design_begin("{n}", file.path(build, "{n}-data.csv"), jsonlite::fromJSON({spec_json}))',
             f'd <- read.csv(file.path(build, "{n}-data.csv"))',
             # csdid's rcs mode takes no ivar(), so R must not be handed an
             # idname either: under panel = FALSE a repeated id is a legitimate
             # refusal in did >= 2.5.1.901, and passing one here would compare a
             # Stata run that has no unit identifier against an R run that does.
-            (f'res <- ok(att_gt(yname="y", tname="time", gname="g",'
+            (f'res <- ok(did::att_gt(yname="y", tname="time", gname="g",'
              if t.panel_mode == "rcs" else
-             f'res <- ok(att_gt(yname="y", tname="time", idname="id", gname="g",'),
+             f'res <- ok(did::att_gt(yname="y", tname="time", idname="id", gname="g",'),
             f'    xformla={xformla(t)}, data=d, panel={t.r_panel()},',
             f'    allow_unbalanced_panel={t.r_allow_unbalanced()},',
             f'    control_group="{t.control_group}", anticipation={t.anticipation},',
@@ -280,7 +289,9 @@ def write_r_script(path: Path, trials: list[Trial], oracle_lib: str = "") -> Non
             (f'  aggopts <- list(min_e={t.min_e}, max_e={t.max_e})' if t.agg_opt == "window"
              else (f'  aggopts <- list(balance_e={t.balance_e})' if t.agg_opt == "balance" else "  aggopts <- list()")),
             "  if (length(aggopts) > 0) {",
+            '    csdid_design_agg_begin("dynwin")',
             "    aw <- ok(do.call(aggte, c(list(res, type='dynamic', bstrap=FALSE, cband=FALSE, na.rm=TRUE), aggopts)))",
+            "    csdid_design_agg_end(aw)",
             "    if (inherits(aw, 'error')) {",
             f'      writeLines(conditionMessage(aw), file.path(build, "{n}-r-aggerr-dynwin.txt"))',
             "    } else {",
@@ -294,7 +305,9 @@ def write_r_script(path: Path, trials: list[Trial], oracle_lib: str = "") -> Non
             "    }",
             "  }",
             "  for (ty in c('simple','dynamic','group','calendar')) {",
+            "    csdid_design_agg_begin(ty)",
             "    a <- ok(aggte(res, type=ty, bstrap=FALSE, cband=FALSE, na.rm=TRUE))",
+            "    csdid_design_agg_end(a)",
             "    if (inherits(a, 'error')) {",
             f'      writeLines(conditionMessage(a), file.path(build, paste0("{n}-r-aggerr-", ty, ".txt")))',
             "    } else {",
@@ -312,6 +325,7 @@ def write_r_script(path: Path, trials: list[Trial], oracle_lib: str = "") -> Non
             "  }",
             "}",
             "}, silent=TRUE)",
+            f'csdid_design_write(file.path(build, "{n}-r-designs.json"))',
             "",
         ]
     path.write_text("\n".join(lines))
@@ -439,26 +453,29 @@ def diff(a, b) -> float:
     return abs(a - b)
 
 
-COND = {}
 CELL_COND = {}
+SUPPORT_COND = {}
 COUNTS = {"r_unestimable_only": 0, "agg_option_rows": 0, "ill_conditioned": 0, "trials_compared": 0, "attgt_cells": 0, "agg_rows": 0, "both_refused": 0, "meta_rows": 0}
 
 
-def numeric_gap(t: Trial, kind: str, value: float, cell: tuple | None = None) -> bool:
-    """True if this numeric gap exceeds what conditioning alone can explain.
+def numeric_gap(t: Trial, kind: str, value: float, cell: tuple | None = None,
+                support: str | None = None) -> bool:
+    """Use the unweighted fitted design, or the maximum over actual support.
 
-    The bound belongs to the matrix the CELL was fitted on, not to the pooled
-    frame. A 2x2 comparison runs on one cohort against its comparison group in
-    two periods, which is smaller and worse conditioned than the whole panel --
-    measured on trial226 of seed 90210, pooled cond was 7.08e4 (bound 1.11e-5)
-    while the cell's own was 8.18e4 (bound 1.49e-5), and the observed gap of
-    1.14e-5 sits between them. Using the pooled figure reported a conditioning
-    artifact as a divergence.
+    Aggregation and Wald supports are observed inside the reference, after its
+    missing-cell, calendar and event-window selections. No raw-data proxy is
+    used. Structural normalizations have no fitted design and retain the base
+    tolerance; missing required observations are refused before comparison.
+
+    This unweighted whole-cell condition is the established diagnostic bound,
+    not proof of equality or a condition estimate for weighted subgroup fits.
     """
     base = TOL[kind]
-    cond = CELL_COND.get((t.name, cell)) if cell is not None else None
-    if cond is None:
-        cond = COND.get(t.name)
+    cache = CELL_COND if cell is not None else SUPPORT_COND
+    key = (t.name, cell if cell is not None else support)
+    if key not in cache:
+        raise DesignCaptureError(f"no verified conditioning input for {key}")
+    cond = cache[key]
     bound = conditioning_bound(base, cond)
     if value <= base:
         return False
@@ -468,57 +485,153 @@ def numeric_gap(t: Trial, kind: str, value: float, cell: tuple | None = None) ->
     return True
 
 
-def fill_cell_cond(t: Trial, cells) -> None:
-    """Conditioning of the matrix each 2x2 cell is actually fitted on.
+class DesignCaptureError(ValueError):
+    pass
 
-    Resolves the cell's base period the way both packages do -- universal takes
-    g-1-anticipation on the observed grid, varying takes t-1 for pre-treatment
-    cells and g-1-anticipation from treatment on -- and its comparison group
-    from control_group. A cell whose membership cannot be resolved is left out,
-    and numeric_gap then falls back to the pooled figure rather than inventing
-    a looser bound.
-    """
-    dpath = BUILD / f"{t.name}-data.csv"
-    if not dpath.exists():
-        return
-    d = pd.read_csv(dpath)
-    d = d[~d["y"].isna()]
-    if d.empty:
-        return
-    grid = sorted(int(v) for v in d["time"].unique())
-    pos = {v: i for i, v in enumerate(grid)}
 
-    def prev_on_grid(v):
-        i = pos.get(int(v))
-        return grid[i - 1] if i is not None and i > 0 else None
+def load_design_capture(t: Trial) -> dict:
+    """Read exact reference inputs; never reconstruct a more permissive design."""
+    path = BUILD / f"{t.name}-r-designs.json"
+    try:
+        record = json.loads(path.read_text())
+        digest = hashlib.sha256((BUILD / f"{t.name}-data.csv").read_bytes()).hexdigest()
+        if (record["schema"] != 1 or record["trial"] != t.name
+                or record["input_sha256"] != digest or record["spec"] != asdict(t)):
+            raise ValueError("capture identity differs from the requested trial/input")
+        if record["errors"] != []:
+            raise ValueError(f"reference capture failed: {record['errors']}")
+        cells = {}
+        for entry in record["cells"]:
+            group, time = entry["group"], entry["time"]
+            if (not isinstance(group, (int, float)) or not isinstance(time, (int, float))
+                    or not math.isfinite(group) or not math.isfinite(time)
+                    or int(group) != group or int(time) != time):
+                raise ValueError("noninteger cell key")
+            key = (int(group), int(time))
+            if key in cells or entry["status"] not in ("fitted", "missing", "structural_zero"):
+                raise ValueError("duplicate cell key or unknown fit status")
+            entry["condition"] = None
+            if "X_f64le" in entry:
+                rows, columns = entry["rows"], entry["columns"]
+                if (type(rows) is not int or rows < 0 or type(columns) is not int
+                        or columns != t.n_covars + 1):
+                    raise ValueError("captured design dimensions disagree with fitted covariates")
+                raw = base64.b64decode(entry["X_f64le"], validate=True)
+                if len(raw) != 8 * rows * columns:
+                    raise ValueError("truncated or oversized binary64 design")
+                x = np.frombuffer(raw, dtype="<f8").reshape((rows, columns), order="F")
+                if not np.isfinite(x).all():
+                    raise ValueError("nonfinite design entry")
+                vectors = {name: np.atleast_1d(np.asarray(entry[name], dtype=float))
+                           for name in ("ids", "periods", "D", "weights")}
+                if any(v.ndim != 1 or len(v) != rows or not np.isfinite(v).all()
+                       for v in vectors.values()):
+                    raise ValueError("design row identity/vector length is invalid")
+                if (len(set(zip(vectors["ids"], vectors["periods"]))) != rows
+                        or not np.isin(vectors["D"], [0, 1]).all()
+                        or (vectors["weights"] < 0).any()):
+                    raise ValueError("duplicate design row or invalid treatment/weight")
+                # pre_process_did2.R:331-346 turns allow_unbalanced_panel off
+                # when the observed panel is balanced. The fitted matrix stays
+                # authoritative on either route; the option only permits gaps.
+                routes = {"balanced": ("panel",),
+                          "unbalanced_allowed": ("unbalanced", "panel"),
+                          "rcs": ("rcs",)}[t.panel_mode]
+                if entry["route"] not in routes:
+                    raise ValueError("captured route differs from the trial")
+                if entry["status"] == "fitted":
+                    condition = float(np.linalg.cond(x))
+                    if not math.isfinite(condition) or condition < 1:
+                        raise ValueError("finite fit has no finite design condition")
+                    entry["condition"] = condition
+            elif entry["status"] == "fitted":
+                raise ValueError("finite fitted cell has no design capture")
+            cells[key] = entry
+        record["cells_by_key"] = cells
+        return record
+    except (OSError, KeyError, TypeError, ValueError, OverflowError, np.linalg.LinAlgError) as error:
+        raise DesignCaptureError(f"{path.name}: {error}") from error
 
-    for (g, tt) in cells:
-        g, tt = int(g), int(tt)
-        anchor = g
-        for _ in range(int(t.anticipation)):
-            anchor = prev_on_grid(anchor) if anchor is not None else None
-        base = prev_on_grid(anchor) if anchor is not None else None
-        if t.base_period == "varying" and tt < g:
-            base = prev_on_grid(tt)
-        if base is None or base == tt:
+
+def install_design_conditions(t: Trial, record: dict, r: pd.DataFrame) -> None:
+    """Bind the unchanged bound to captured cell and actual aggregate supports."""
+    for cache in (CELL_COND, SUPPORT_COND):
+        for key in [key for key in cache if key[0] == t.name]:
+            del cache[key]
+    entries = record["cells_by_key"]
+    keys = set(zip(r["group"].astype(int), r["time"].astype(int)))
+    if len(keys) != len(r) or set(entries) != keys:
+        raise DesignCaptureError("captured cell keys differ from reference results")
+    for row in r.itertuples():
+        key = (int(row.group), int(row.time))
+        entry = entries[key]
+        if (entry["status"] == "missing") != math.isnan(num(row.att)):
+            raise DesignCaptureError(f"capture fit status disagrees with ATT: {key}")
+        if entry["status"] == "structural_zero" and num(row.att) != 0:
+            raise DesignCaptureError(f"structural normalization has a nonzero ATT: {key}")
+        CELL_COND[(t.name, key)] = entry["condition"]
+
+    def support_condition(support):
+        if not isinstance(support, list) or len(set(support)) != len(support):
+            raise DesignCaptureError("support is not a list of unique cell keys")
+        values = []
+        by_label = {f"{g}:{tt}": e for (g, tt), e in entries.items()}
+        for key in support:
+            if key not in by_label or by_label[key]["status"] == "missing":
+                raise DesignCaptureError(f"support names an absent or failed cell: {key}")
+            condition = by_label[key]["condition"]
+            if condition is not None:
+                values.append(condition)
+        return max(values) if values else None
+
+    wald = record.get("wald")
+    if not isinstance(wald, dict) or wald.get("status") not in ("missing", "complete"):
+        raise DesignCaptureError("Wald support capture is absent")
+    meta = pd.read_csv(BUILD / f"{t.name}-r-meta.csv")
+    if len(meta) != 1 or (wald["status"] == "complete") != math.isfinite(num(meta["wpval"].iloc[0])):
+        raise DesignCaptureError("Wald support status disagrees with the reported pre-test")
+    if wald["status"] == "complete" and not wald["support"]:
+        raise DesignCaptureError("finite Wald statistic has no contributing cells")
+    SUPPORT_COND[(t.name, "wald")] = support_condition(wald["support"])
+    aggregates = record.get("aggregations")
+    if not isinstance(aggregates, dict):
+        raise DesignCaptureError("aggregation support capture is absent")
+    required = ["simple", "dynamic", "group", "calendar"]
+    if t.agg_opt != "none":
+        required.append("dynwin")
+    if set(aggregates) != set(required):
+        raise DesignCaptureError("aggregation capture keys differ from requested aggregations")
+    for label, aggregate in aggregates.items():
+        if not isinstance(aggregate, dict) or aggregate.get("status") not in ("refused", "complete"):
+            raise DesignCaptureError(f"unknown aggregation capture status: {label}")
+        expected_refusal = (BUILD / f"{t.name}-r-aggerr-{label}.txt").exists()
+        if expected_refusal != (aggregate["status"] == "refused"):
+            raise DesignCaptureError(f"aggregation refusal/capture mismatch: {label}")
+        if expected_refusal:
+            if (BUILD / f"{t.name}-r-agg-{label}.csv").exists():
+                raise DesignCaptureError(f"refused aggregation also has returned estimates: {label}")
             continue
-        later = max(tt, base)
-        if t.control_group == "nevertreated":
-            comp = d["g"] == 0
-        else:
-            comp = (d["g"] == 0) | (d["g"] > later)
-        sel = ((d["g"] == g) | comp) & d["time"].isin([base, tt])
-        cell = d[sel.values]
-        if len(cell) <= 3:
-            continue
-        X = np.column_stack([np.ones(len(cell)), cell["x1"].values, cell["x2"].values])
-        X = X[~np.isnan(X).any(axis=1)]
-        if len(X) <= 3:
-            continue
+        if aggregate.get("errors", []):
+            raise DesignCaptureError(f"returned aggregation has trace errors: {label}")
+        path = BUILD / f"{t.name}-r-agg-{label}.csv"
         try:
-            CELL_COND[(t.name, (g, tt))] = float(np.linalg.cond(X))
-        except Exception:
-            pass
+            results = pd.read_csv(path)
+        except (OSError, ValueError) as error:
+            raise DesignCaptureError(f"missing aggregation result: {path.name}") from error
+        if results.empty or (label != "simple" and results["egt"].duplicated().any()):
+            raise DesignCaptureError(f"empty or duplicate aggregation rows: {label}")
+        supports = aggregate["supports"]
+        labels = {"overall"}
+        if label != "simple":
+            labels |= {f"egt:{v:g}" for v in results["egt"]}
+        if not isinstance(supports, dict) or set(supports) != labels:
+            raise DesignCaptureError(f"aggregation support rows differ from results: {label}")
+        for effect, support in supports.items():
+            finite = (math.isfinite(num(results["overall_att"].iloc[0])) if effect == "overall"
+                      else np.isfinite(results.loc[results["egt"] == float(effect[4:]), "att"]).any())
+            if finite and not support:
+                raise DesignCaptureError(f"finite aggregation has no contributing cells: {label}/{effect}")
+            SUPPORT_COND[(t.name, f"{label}/{effect}")] = support_condition(support)
 
 
 def compare_trial(t: Trial) -> list[dict]:
@@ -528,6 +641,11 @@ def compare_trial(t: Trial) -> list[dict]:
     r_err = (BUILD / f"{n}-r-error.txt").exists()
     rc_path = BUILD / f"{n}-stata-rc.txt"
     st_rc = int(rc_path.read_text().strip()) if rc_path.exists() else -1
+
+    try:
+        capture = load_design_capture(t)
+    except DesignCaptureError as error:
+        return [{"trial": n, "channel": "conditioning_unverified", "detail": str(error)}]
 
     # CHANNEL: failure behaviour
     if r_err and st_rc == 0:
@@ -568,7 +686,10 @@ def compare_trial(t: Trial) -> list[dict]:
         return out
 
     m = r.merge(s, on=["group", "time"], suffixes=("_r", "_s"))
-    fill_cell_cond(t, list(zip(m["group"].astype(int), m["time"].astype(int))))
+    try:
+        install_design_conditions(t, capture, r)
+    except (DesignCaptureError, OSError, KeyError, TypeError, ValueError) as error:
+        return [{"trial": n, "channel": "conditioning_unverified", "detail": str(error)}]
     COUNTS["trials_compared"] += 1
     COUNTS["attgt_cells"] += len(m)
     for _, row in m.iterrows():
@@ -589,7 +710,7 @@ def compare_trial(t: Trial) -> list[dict]:
         smeta = pd.read_csv(sm)
         COUNTS["meta_rows"] += 1
         wd = diff(rmeta["wpval"].iloc[0], smeta["wpval"].iloc[0])
-        if numeric_gap(t, "pval", wd):
+        if numeric_gap(t, "pval", wd, support="wald"):
             out.append({"trial": n, "channel": "wald_pretest",
                         "detail": f"pre-test p-value differs by {wd:.3g} "
                                   f"(R={rmeta['wpval'].iloc[0]}, Stata={smeta['wpval'].iloc[0]})"})
@@ -624,7 +745,7 @@ def compare_trial(t: Trial) -> list[dict]:
         # overall effect and its band
         o_att = diff(ad["overall_att"].iloc[0], sd["overall_att"].iloc[0])
         o_se = diff(ad["overall_se"].iloc[0], sd["overall_se"].iloc[0])
-        if numeric_gap(t, "att", o_att) or numeric_gap(t, "se", o_se):
+        if numeric_gap(t, "att", o_att, support=f"{ty}/overall") or numeric_gap(t, "se", o_se, support=f"{ty}/overall"):
             out.append({"trial": n, "channel": f"agg_overall_{ty}",
                         "detail": f"overall att_diff={o_att:.3g} se_diff={o_se:.3g}"})
         # the pointwise quantile both sides should be using for the overall row
@@ -644,7 +765,7 @@ def compare_trial(t: Trial) -> list[dict]:
             for _, row in key.iterrows():
                 da = diff(row["att_r"], row["att_s"])
                 ds = diff(row["se_r"], row["se_s"])
-                if numeric_gap(t, "att", da) or numeric_gap(t, "se", ds):
+                if numeric_gap(t, "att", da, support=f"{ty}/egt:{row['egt']:g}") or numeric_gap(t, "se", ds, support=f"{ty}/egt:{row['egt']:g}"):
                     out.append({"trial": n, "channel": f"agg_{ty}",
                                 "detail": f"egt={row['egt']} att_diff={da:.3g} se_diff={ds:.3g}"})
     return out
@@ -685,11 +806,9 @@ def main() -> int:
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--keep", action="store_true", help="keep build dir contents")
     ap.add_argument("--oracle-lib", default="",
-                    help="R library holding the did build to compare against "
-                         "(default: the pinned oracle in the system library). Use this to "
-                         "distinguish a csdid defect from a bug in the pinned reference: a "
-                         "divergence that disappears against a NEWER did build is a limitation "
-                         "of the reference, not of csdid.")
+                    help="R library holding a content-authenticated did 2.5.1 installation; "
+                         "CSDID_DID_UPSTREAM takes precedence. Newer did builds require a "
+                         "separately qualified design observer and are not supported here.")
     ap.add_argument("--compare-only", action="store_true",
                     help="re-compare existing outputs without re-running R/Stata (fault injection)")
     args = ap.parse_args()
@@ -713,14 +832,6 @@ def main() -> int:
     if not args.compare_only:
         for t in trials:
             make_data(t).to_csv(BUILD / f"{t.name}-data.csv", index=False)
-    for t in trials:
-        dpath = BUILD / f"{t.name}-data.csv"
-        if dpath.exists():
-            dd = pd.read_csv(dpath)
-            X = np.column_stack([np.ones(len(dd)), dd["x1"].values, dd["x2"].values])
-            X = X[~np.isnan(X).any(axis=1)]
-            COND[t.name] = float(np.linalg.cond(X)) if len(X) > 3 else float("nan")
-
     r_script = BUILD / "campaign.R"
     do_script = BUILD / "campaign.do"
     if not args.compare_only:
@@ -761,7 +872,8 @@ def main() -> int:
     if not all_div:
         print("  no divergence on any compared channel")
     print(f"\nfull record: {BUILD / 'campaign-result.json'}")
-    return 0
+    # A missing observation is a harness failure, not estimator disagreement.
+    return 2 if "conditioning_unverified" in by_channel else 0
 
 
 if __name__ == "__main__":

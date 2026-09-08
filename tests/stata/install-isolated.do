@@ -15,7 +15,7 @@ clear all
 set more off
 
 local root "`c(pwd)'"
-do "`root'/src/build.do"
+do "`root'/tools/release/build-package.do"
 
 local plus "`c(tmpdir)'/csdid-plus"
 local personal "`c(tmpdir)'/csdid-personal"
@@ -133,11 +133,8 @@ if missing(real("`route'")) {
 * and Mata is correct, so the assertion is that a documented status was
 * recorded -- not that a plugin was used.
 * ---------------------------------------------------------------------------
-* The dataset above is perfectly deterministic -- every treated unit 0 then 2,
-* every control constant -- which gives the influence function zero variance
-* and trips a separate, pre-existing bootstrap defect. Add variation so this
-* check is about the
-* installed accelerator and not about that.
+* The deterministic design above has zero influence-function variance. Add
+* slight variation so the installed accelerator processes nondegenerate draws.
 quietly replace y = y + mod(id, 3) / 1000
 quietly csdid y, time(time) gvar(g) nevertreated base_period(varying) bal(none) ///
     wboot(reps(99) rseed(20260807))

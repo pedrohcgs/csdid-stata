@@ -15,11 +15,9 @@ derives, and the same methods are available in Python through
 omitted-option defaults differ deliberately — this package defaults to
 the not-yet-treated comparison group and a universal base period, where `did`
 defaults to never-treated and varying — and both are documented in `NEWS.md`. State those
-two options and the implementations agree to machine precision on every
-supported design; the handful of deliberate behavioral divergences that
-remain (edge-case refusals and tie-breaking at an exact propensity-score
-trim boundary, where the reference implementation's own answer is
-floating-point-indeterminate) are documented, each with its rationale.
+two options explicitly when comparing results. The
+[implementation crosswalk](docs/r-did-crosswalk.md) explains the mapping and
+behavior at boundaries, including missing cells and trimming ties.
 
 It runs in Stata 14 or newer. The estimation engine is written in Mata and
 ships precompiled for Stata 17 and later; earlier Statas read the bundled
@@ -99,7 +97,6 @@ The tag takes the place of `main` in the address; everything else is the same.
 
 ### Troubleshooting
 
-<!-- norun -->
 ```stata
 csdid version        // version, the csdid.ado that answered, and the engine in use
 which csdid, all     // every copy of csdid on the adopath, in search order
@@ -160,7 +157,7 @@ drop if missing(mrate) | population_20_64 <= 0
 * period otherwise. States expanding after this panel ends are never treated
 * *within this sample*, so they join the never-treated comparison group.
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 
 * balanced panel: counties observed in every year
 bysort county_code: generate byte nyears = _N
@@ -168,7 +165,7 @@ keep if nyears == 11
 ```
 
 That leaves 29,667 observations on 2,697 counties over 11 years, with cohorts
-expanding in 2014, 2015 and 2016 against a large never-treated group.
+expanding in 2014, 2015, 2016 and 2019 against a large never-treated group.
 
 ```stata
 * ---- estimate ATT(g,t) ------------------------------------------------------
@@ -200,6 +197,7 @@ under your control:
 
 ```stata
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
+estat event
 csdid_plot, saving(eventdata) replace
 
 preserve
@@ -211,9 +209,9 @@ restore
 
 ## Speed
 
-Measured against **csdid Version 1.82** &mdash; the version SSC distributes today
-&mdash; on the same machine, same data, seven trials per workload with the first
-discarded, on StataNow/MP 19.5.
+Measured against **csdid Version 1.82** &mdash; the SSC release dated 2025-10-05
+&mdash; on 7 August 2026, on the same machine and data, with seven timed
+trials per workload after one discarded warmup, on StataNow/MP 19.5.
 
 | Workload | Version 1.82 | 2.0.0 | |
 | --- | ---: | ---: | ---: |
@@ -236,16 +234,16 @@ discarded, on StataNow/MP 19.5.
 Between **10x and 35x** across these fifteen fixed-size workloads, each run
 with the same options on both versions, and never slower. That is a different
 measurement from the range in the release notes, which varies the size of the
-design on purpose; see *up to 334x* below. Peak memory is
+design on purpose; see *up to 308x* below. Peak memory is
 within 8% of Version 1.82 on every workload and much lower where it matters
-most: on the large panel above, 164MB against 241MB. It is not lower
-everywhere &mdash; 8 of these 15 workloads use slightly more, because at
-this size peak memory is dominated by the Stata interpreter rather than by
-either implementation.
+most: on the large panel above, 156MB against 241MB. The paired-trial memory
+ratio is slightly above one in 8 of these 15 workloads; at this size peak
+memory is dominated by the Stata interpreter rather than by either
+implementation.
 
 Those are fixed-size workloads. The gap widens with the number of periods and
-cohorts, which is what drives the number of ATT(g,t) cells: **up to 334x** on
-a forty-period panel. See
+cohorts, which is what drives the number of ATT(g,t) cells: **up to 308x** on
+a forty-period panel in the 21 August 2026 scaling comparison. See
 [Speed against Version 1.82](https://psantanna.com/csdid/articles/speed-vs-182.html)
 for that comparison, and
 [How csdid compares](https://psantanna.com/csdid/articles/csdid-against-the-field.html)
@@ -332,8 +330,9 @@ path.
 
 `gvar()` must be 0 for never-treated units and 1 or more for treated cohorts,
 and `time()` must be 1 or more: cohorts and periods share one positive
-calendar-time axis. A monotone relabelling of the periods leaves every estimate
-unchanged, so shifting an axis that starts at or below 0 costs nothing.
+calendar-time axis. To shift an axis that starts at or below zero, add the
+same constant to time and treated cohort codes, leaving never-treated codes
+at zero. This preserves calendar distances and event times.
 
 ## Documentation
 
@@ -345,7 +344,7 @@ From inside Stata:
 | `help csdid_postestimation` | what is available after estimation |
 | `help csdid_estat` | `estat attgt`, `estat event`, `estat tidy`, `estat glance` |
 | `help csdid_stats` | aggregation, event-time windows, balanced event samples |
-| `help csdid_plot` | plot-ready data export |
+| `help csdid_plot` | default plots and plot-ready data export |
 | `help csdid_legacy` | utility and deprecated commands carried over from Version 1.82 |
 
 ## How to cite

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 01sep2026}{...}
+{* *! version 2.0.0 08sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -358,9 +358,9 @@ bound does nothing for these two types.
 A dynamic profile computed on the full sample changes composition along the
 x-axis: only early-treated cohorts are observed at long event times, so a
 downward-sloping profile can be composition rather than dynamics.
-{cmd:balance(#)} removes that by keeping only cohorts with at least {it:#}
-post-treatment periods and then truncating the event-time grid to the range
-those cohorts share. Both steps matter: the cohort restriction alone would
+{cmd:balance(#)} keeps cohorts observed through event time {it:#}
+({it:#} periods after initial treatment) and truncates the event-time grid to
+the range those cohorts share. Both steps matter: the cohort restriction alone would
 leave event times that not every retained cohort reaches. The guarantee is
 exact when every retained cohort's cells inside the window were estimated;
 when {opt dropmissing} removes a failed cell at an interior event time, its
@@ -543,7 +543,8 @@ simultaneous, 0 if it is pointwise{p_end}
 {it:(posted under bootstrap inference, and under analytical inference}
 {it:when the simultaneous band was computed)}{p_end}
 {synopt:{cmd:e(point_crit_val)}}the aggregation's own pointwise critical value
-{it:(posted only under bootstrap inference)}{p_end}
+{it:(posted under bootstrap inference, and under analytical inference}
+{it:when the simultaneous band was computed)}{p_end}
 {synopt:{cmd:e(agg_boot_accel_rc)}}return code of the optional bootstrap
 accelerator, 0 when none was needed
 {it:(posted only under bootstrap inference; diagnostic)}{p_end}

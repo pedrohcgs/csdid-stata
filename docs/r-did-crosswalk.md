@@ -148,7 +148,7 @@ postestimation idiom:
 | `estat` call | Equivalent |
 | --- | --- |
 | `estat attgt` | redisplay `e(attgt)` |
-| `estat event [, window(a b) level(#) post]` | `csdid_stats, type(dynamic) na_rm ...`, then post event-study coefficients |
+| `estat event [, window(a b) level(#) post]` | dynamic aggregation and an inference table; `post` additionally replaces the coefficient vector |
 | `estat dynamic \| simple \| group \| calendar [, window() level() post]` | `csdid_stats, type(...)` |
 | `estat tidy, saving(f) [replace]` | a `broom::tidy()`-shaped dataset |
 | `estat glance, saving(f) [replace]` | a `broom::glance()`-shaped dataset |
@@ -172,7 +172,9 @@ calendar, and `ATT` for simple.
 | `se` | `e(attgt)`, column `se` | Bootstrap SE when `bstrap`, analytical otherwise - same rule as R. Under the bootstrap, `e(boot_attgt)` carries both `se_boot` and `se_analytic`. |
 | `c` | `e(crit_val)` | The simultaneous critical value under `cband`, the pointwise one otherwise. `e(point_crit_val)` always holds the normal quantile. |
 | `inffunc` | `e(inffunc)` under `storeall`, or `saverif()` as a dataset | One column per ATT(g,t), one row per unit (per observation for repeated cross sections), as in R. R identifies rows by `rownames`; Stata identifies them by the `id` column of `e(unit_group)`. Stored subject to the storage policy in `docs/stored-results-api.md`. |
-| `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R returns both objects; Stata posts one. |
+| `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R exposes `V_analytical`; Stata posts the covariance aligned with its
+reported standard errors. This row concerns the ATT(g,t) coefficients; the
+aggregation covariance uses the rule below. |
 | `n` | `e(N_units)` | `e(N)` is the number of observations, not units. |
 | `alp` | `e(level)` | `level = 100 * (1 - alp)`. |
 | `W`, `Wpval` | `e(wald_stat)`, `e(wald_pvalue)` | The Wald pre-test of parallel trends on the pre-treatment cells, and its p-value. Stata also stores `e(wald_df)`, the degrees of freedom R computes on the fly. `csdid` emits R's warnings when no usable pre-treatment cells exist. |
@@ -181,7 +183,9 @@ calendar, and `ATT` for simple.
 
 `e(attgt)` columns, in order:
 `group`, `time`, `event_time`, `att`, `se`, `n_treat_t`, `n_treat_pre`,
-`n_control_t`, `n_control_pre`. The last four counts have no R counterpart.
+`n_control_t`, `n_control_pre`, `base_time`. The four count columns have no
+R counterpart; `base_time` records the actual reference period, including on
+gapped calendars and with anticipation.
 
 ### 4.2 `aggte()` / the `AGGTEobj` object
 
@@ -200,6 +204,16 @@ calendar, and `ATT` for simple.
 | `DIDparams` | inherited `e()` macros from the estimation step | `csdid_stats` does not clear them. |
 
 `e(aggte)` columns, in order: `egt`, `att`, `se`, `overall_att`, `overall_se`.
+
+R does not expose an aggregation covariance matrix. When `estat ..., post`
+posts aggregated coefficients, Stata builds `e(V)` from their influence
+functions under both analytical and bootstrap inference, using cluster sums
+when requested and rescaling the diagonal to the reported standard errors.
+The per-effect bootstrap draws are independent across effects and therefore
+do not supply their covariance.
+
+The five `estat` aggregation commands return `r(table)` with or without
+`post`; direct `csdid_stats` returns its table in `e(aggte)`.
 
 ---
 

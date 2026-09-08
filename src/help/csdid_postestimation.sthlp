@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 01sep2026}{...}
+{* *! version 2.0.0 08sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -213,10 +213,11 @@ the cohorts already treated{p_end}
 
 {pstd}
 Two cautions carry over from Callaway and Sant'Anna (2021). Effects at event
-times e < 0 are placebo estimates of a maintained assumption, not treatment
-effects, and the reference cell (e = -1 on a gapless calendar; on a gapped
-one, the true calendar difference to the previous observed period) depends on
-the base period: under the default {helpb csdid##opt_base:base_period(universal)}
+times before the permitted anticipation window are placebo estimates of a
+maintained assumption; negative event times inside that window may include
+anticipation effects. The reference cell (e = -1 on a consecutive calendar
+without anticipation; otherwise the difference to the actual base period)
+depends on the base period: under the default {helpb csdid##opt_base:base_period(universal)}
 it is the normalisation itself -- identically zero, with no standard error --
 while under {cmd:base_period(varying)} it is reported like the others rather
 than being pinned at zero. And a dynamic profile computed on the full sample changes
@@ -286,7 +287,8 @@ reflected in the file. {cmd:estat attgt} accepts only {cmd:saving()} and
 window, re-level or aggregate.
 
 {pstd}
-The event-time coefficient vector includes the reference period (e = -1 when the calendar has no gaps), and no
+The event-time coefficient vector includes the reference period (e = -1
+on a consecutive calendar without anticipation), and no
 coefficient is created for an event time that is absent from the data.
 
 
@@ -358,8 +360,10 @@ headline items are {cmd:e(aggte)} (the aggregation table), {cmd:e(agg_type)},
 {cmd:e(agg_inffunc)}.
 
 {pstd}
-With {cmd:post}, {cmd:e(b)} and {cmd:e(V)} hold the aggregated effects and
-{cmd:r(table)} holds their standard errors, tests, and confidence limits; see
+The {cmd:estat} aggregation commands return {cmd:r(table)} with standard
+errors, tests, and confidence limits, with or without {cmd:post}. With
+{cmd:post}, {cmd:e(b)} and {cmd:e(V)} additionally hold the aggregated
+effects and their covariance matrix; see
 {helpb csdid_estat##results:csdid_estat}. Estimation results, including
 {cmd:e(attgt)}, {cmd:e(group_prob)}, and the estimation macros and scalars,
 survive every postestimation command, so {cmd:estat attgt} always shows the

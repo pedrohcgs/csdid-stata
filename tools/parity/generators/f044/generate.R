@@ -1,14 +1,16 @@
 #!/usr/bin/env Rscript
 
+args <- commandArgs(trailingOnly = FALSE)
+file_arg <- grep("^--file=", args, value = TRUE)
+script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f044/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
 suppressPackageStartupMessages(library(jsonlite))
 # Record provenance without the maintainer's home directory: this fixture is
 # published, and an absolute path both leaks the layout and means nothing on
 # another machine.
 abbrev_home <- function(p) sub(path.expand("~"), "~", p, fixed = TRUE)
 
-args <- commandArgs(trailingOnly = FALSE)
-file_arg <- grep("^--file=", args, value = TRUE)
-script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f044/generate.R"
 # tools/parity/generators/<id> is four levels below the repository root, not
 # three. With "../../.." this resolved to tools/, and the dir.exists() guard
 # below then passed because an earlier run had written a stray tools/tests/
@@ -89,7 +91,7 @@ rows <- data.frame(
     "F043-figure9-dynamic-smoke"
   ),
   release_status = c(
-    rep("full-reproduction-pass", 18)
+    rep("full-reproduction-required", 18)
   ),
   release_blocking = 1,
   stringsAsFactors = FALSE
@@ -112,6 +114,9 @@ rows <- rows[, c(
   "reference_root"
 )]
 
+# These rows specify a release requirement, not an observed run result.
+# Keep them independent of local reports so regeneration cannot turn file
+# existence or an old report into a current full-reproduction certificate.
 evidence <- rows[rows$release_blocking == 1, c(
   "artifact_id",
   "artifact_type",
@@ -144,14 +149,15 @@ manifest <- list(
   ),
   comparison_plan = list(
     list(actual = "JEL reference artifact availability", expected = "expected/contract/jel-artifact-inventory.csv", tolerance_id = "EXACT", key_columns = c("artifact_id")),
-    list(actual = "Full JEL reproduction report", expected = "expected/contract/full-reproduction-evidence.csv", tolerance_id = "EXACT", key_columns = c("artifact_id"))
+    list(actual = "Required full JEL reproduction gate and report destination", expected = "expected/contract/full-reproduction-evidence.csv", tolerance_id = "EXACT", key_columns = c("artifact_id"))
   ),
   full_reproduction_evidence = list(
-    status = "pass",
+    status = "not-assessed",
     report = "reports/jel-full-reproduction-result.md",
-    reason = "F044 is terminal because the opt-in full JEL R/Stata master reproduction gate completes both masters, passes against regenerated R did 2.5.1, and records historical R artifact drift separately for release-owner evidence disposition."
+    required_gate = evidence$full_gate[[1]],
+    reason = "This static inventory records artifact mappings and availability when generated. It does not run either master or inspect a reproduction receipt. A current passing full-reproduction gate remains required for release."
   ),
-  scope_note = "F044 confirms all JEL001-JEL018 artifacts are mapped and present in the reference checkout, records the opt-in full reproduction evidence, and pairs with tests/fixtures/jel artifact audits. Rendered Stata PDF byte/pixel drift is governed by the semantic audit in reports/jel-full-reproduction-result.md."
+  scope_note = "F044 inventories JEL001-JEL018 artifact mappings and reference-file availability at generation time, and records the required full-reproduction command and report destination. Inventory validation does not certify numerical parity, successful master execution, or rendered output. Current full-reproduction evidence and the semantic artifact audit come from the required gate, independently of this static fixture."
 )
 writeLines(
   jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE),

@@ -4,6 +4,8 @@
 # compared directly rather than only through the standard errors it implies.
 # That is the stronger check: the IF drives every SE, every aggregation, and
 # the multiplier bootstrap, so pinning it pins all of them at the source.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/rt008/inputs/input.csv"); names(d) <- tolower(names(d))

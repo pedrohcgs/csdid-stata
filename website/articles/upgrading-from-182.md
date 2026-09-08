@@ -17,7 +17,8 @@ spellings that have been renamed.
 <div class="important" markdown="1">
 Two omitted-option defaults changed, and on unbalanced panels the balancing
 default changed too (see [Unbalanced panels](#unbalanced-panels) below).
-Those are the only changes that alter a number you were already getting.
+They can change point estimates. Inference defaults and the new trimming
+safeguard also require attention before comparing numerical output.
 </div>
 
 | | Version 1.82 | 2.0.0 | To keep the old behavior |
@@ -26,15 +27,16 @@ Those are the only changes that alter a number you were already getting.
 | base period | varying | universal | `base_period(varying)` |
 
 Both are also departures from R `did` 2.5.1, which shares Version 1.82's two
-defaults. State either option explicitly and `csdid` and R agree to machine
-precision, which is a check we run before every release.
+defaults. Set both options explicitly when comparing implementations,
+alongside the same sample, estimator, weights, and inference settings.
 
 <div class="note" markdown="1">
 A third change concerns inference and leaves the estimand alone: standard errors
 are now the multiplier bootstrap with simultaneous confidence bands by default,
 where Version 1.82 reported pointwise analytical standard errors, though the point
-estimates are unaffected by this (the change is in the standard errors alone) and
-`analytical` restores the old ones for anyone who wants them back.
+estimates are unaffected. `analytical` restores analytical standard errors;
+add `pointwise` to request fully analytical pointwise intervals for aggregations
+too. Otherwise their simultaneous critical value is still bootstrapped.
 </div>
 
 To reproduce a Version 1.82 run, state all three options explicitly (none of them
@@ -49,7 +51,7 @@ destring deaths population_20_64 year yaca county_code stfips, replace force
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_upgrade.dta", replace

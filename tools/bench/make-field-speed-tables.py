@@ -376,7 +376,7 @@ def main():
         ("B_rcs", "rcs.md", "Repeated cross sections, seconds per run", "n per period"),
         ("C_periods", "periods.md", "Growing the number of periods, seconds per run", "T"),
         ("D_cohorts", "cohorts.md", "Growing the number of cohorts, seconds per run", "G"),
-        ("E_default", "csdid-only.md", "`csdid` on a balanced panel, seconds to estimate all ATT(g,t)", "n"),
+        ("E_default", "csdid-only.md", "`csdid` on a balanced panel, seconds for estimation and event-study aggregation", "n"),
     ]
 
     shared_note = (
@@ -406,8 +406,9 @@ def main():
     provenance = (
         f"All timings in this section were measured on {args.date} with "
         f"{args.stata} on {args.platform}"
-        + (f", {args.trials} timed runs per cell" if args.trials else "")
-        + ", in a single session, so entries are comparable across tables."
+        + (f", {args.trials} timed runs per cell in the main tiers" if args.trials else "")
+        + ". The main tiers use separate Stata processes; the Version 1.82 "
+          "comparisons use a fresh process per cell and implementation."
     )
     (outdir / "provenance.md").write_text(provenance + "\n", encoding="utf-8")
 

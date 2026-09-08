@@ -8,22 +8,21 @@ STATA_CMD="${STATA_CMD:-stata-mp}"
 
 run_stata_do() {
   local dofile="$1"
-  "$STATA_CMD" -b do "$dofile"
   local log
   log="$(basename "$dofile" .do).log"
-  if [[ -f "$log" ]]; then
-    bash tools/release/check-stata-log-tail.sh "$log"
-  fi
+  rm -f "$log"
+  "$STATA_CMD" -b do "$dofile" || return $?
+  bash tools/release/check-stata-log-tail.sh "$log"
 }
 
-python3 tools/validate-contract.py
+bash tools/release/check-contract.sh
 bash tools/release/lint-website.sh
 for f in tests/meta/*.sh; do
   bash "$f"
 done
 
-bash tools/plugin/build-bootstrap-plugin.sh auto
-run_stata_do src/build.do
+CSDID_PLUGIN_OUTDIR="$ROOT/build" bash tools/plugin/build-bootstrap-plugin.sh auto
+run_stata_do tools/release/build-package.do
 # The release-critical do-files are no longer listed here one by one:
 # run-smoke.sh derives its list from the tree and covers every one of them,
 # so a second explicit pass ran each twice on the release path for nothing.

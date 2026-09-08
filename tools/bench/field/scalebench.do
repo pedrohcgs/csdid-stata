@@ -137,7 +137,7 @@ program define bench_csdidbf, rclass
     syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) METHod(string)]
     if "`mode'" == "" local mode "pointwise"
 
-    local inf "analytical"
+    local inf "analytical pointwise"
     if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
     if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
 
@@ -195,7 +195,7 @@ program define bench_csdidpair, rclass
     syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) METHod(string)]
     if "`mode'" == "" local mode "pointwise"
 
-    local inf "analytical"
+    local inf "analytical pointwise"
     if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
     if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
 

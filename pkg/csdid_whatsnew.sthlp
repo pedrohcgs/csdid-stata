@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 01sep2026}{...}
+{* *! version 2.0.0 08sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -38,10 +38,12 @@ behaviour. See {help csdid##opt_control:comparison-group options}.
 
 {phang}
 {bf:2. The base period is universal.} Version 1.82 measured each cell against
-the period before {it:t}. Version 2.0.0 measures every cell against
-{it:g}{cmd:-1}, which is the layout an event-study plot assumes. Post-treatment
+the preceding observed period for pre-treatment comparisons. Version 2.0.0
+uses one reference per cohort: the last observed period before
+{it:g - anticipation}, or {it:g}{cmd:-1} on a consecutive calendar without
+anticipation. Post-treatment
 effects are the same under either choice; only the pre-treatment cells differ,
-and the universal base period additionally reports the {it:g}{cmd:-1}
+and the universal base period additionally reports its reference-period
 normalisation row. Use {cmd:base_period(varying)} when pre-testing, so that a
 violation shows up in the period where it happens rather than being carried
 into every later cell.

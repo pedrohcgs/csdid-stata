@@ -9,10 +9,9 @@ it is the case we use for most of the examples on this site. The data are the
 county mortality panel from the [JEL-DiD](https://github.com/pedrohcgs/JEL-DiD)
 replication package (US counties, 2009–2019, together with the year each state
 expanded Medicaid under the ACA). It is a convenient example because the adoption
-dates are staggered across a handful of cohorts. The never-adopted comparison
-group is also large, so the individual cohort-period cells are reasonably well
-estimated. That is not guaranteed in smaller panels, and it matters once you get
-to the aggregations and to the bootstrap.
+dates are staggered across a handful of cohorts. The group not treated
+within the sample is also large. Inspect each cohort-period cell's standard
+error; sample size alone does not establish precision or a valid comparison.
 
 ## Prepare
 
@@ -28,14 +27,14 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 ```
 
 That leaves **29,667 observations on 2,697 counties**, with cohorts expanding in
-2014, 2015 and 2016 against a large never-adopted comparison group. States
-expanding after 2016 are never treated *within this sample*, so they join the
+2014, 2015, 2016 and 2019 against a large never-adopted comparison group. States
+expanding after 2019 are never treated *within this sample*, so they join the
 comparison group rather than being dropped. That is a decision about the sample
 and not about the estimator. If you would rather those states played no role at
 all, drop them before estimating.
@@ -75,9 +74,9 @@ impression is that it is the part of the output most often quoted out of context
 usually as evidence *in favor of* parallel trends.
 
 <div class="important" markdown="1">
-A large p-value is weak evidence, and it is not a certificate. The test has low
-power in exactly the samples where parallel trends is most fragile, and it looks
-only at the periods that happen to be in your sample, so it does not speak to the
+A large p-value is weak evidence, and it is not a certificate. The test may have little power
+to detect economically meaningful violations. It looks only at observed
+pre-treatment periods, so it does not directly test the
 post-treatment counterfactual (which is the thing you actually care about). We
 recommend reading it alongside the pre-treatment cells themselves and, when the
 design turns on the assumption, alongside a sensitivity analysis.

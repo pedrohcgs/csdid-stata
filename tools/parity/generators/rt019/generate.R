@@ -1,16 +1,22 @@
 #!/usr/bin/env Rscript
 
-suppressPackageStartupMessages(library(jsonlite))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt019/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(jsonlite))
+
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 
 f011_generator <- file.path(root, "tools/parity/generators/f011/generate.R")
-f011_output <- system2("Rscript", f011_generator, stdout = TRUE, stderr = TRUE)
-invisible(f011_output)
+f011_output <- system2("Rscript", shQuote(f011_generator), stdout = TRUE, stderr = TRUE)
+f011_status <- attr(f011_output, "status")
+if (!is.null(f011_status) && f011_status != 0L) {
+  stop("F011 generator failed with exit status ", f011_status, ":\n",
+       paste(f011_output, collapse = "\n"), call. = FALSE)
+}
 
 fixture <- file.path(root, "tests/fixtures/parity/rt019")
 dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)

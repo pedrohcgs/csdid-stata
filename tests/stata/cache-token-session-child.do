@@ -61,6 +61,8 @@ end
 
 tempname fh
 file open `fh' using "`scratch'/`arm'.csv", write replace text
+file write `fh' "stata_version,`c(stata_version)'" _n
+file write `fh' "stata_edition,`c(edition_real)'" _n
 
 if "`arm'" == "A" {
     * The estimation the second session will restore, saved both ways. Lean is

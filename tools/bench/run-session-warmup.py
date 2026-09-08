@@ -16,9 +16,12 @@ other instrument here can see.
 
 import argparse
 import csv
+import math
 import statistics
 import subprocess
 from pathlib import Path
+
+from stata_runtime import run_stata, write_driver
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,43 +67,41 @@ def run(cmd):
 
 
 def phase(name, *args):
-    """One phase, one process, and the log that process actually wrote.
-
-    stata-mp -b names its batch log after the LAST argument it is handed, not
-    after the do-file, so the name is derived the same way and the file is
-    removed first: a scan that reads a log some earlier run left behind is a
-    scan that cannot fail.
-    """
-    argv = [str(ROOT / "build"), str(OUT), name, *args]
-    log = ROOT / (Path(argv[-1]).stem + ".log")
-    if log.exists():
-        log.unlink()
-    run(["stata-mp", "-b", "do", "tools/bench/session-warmup.do", *argv])
-    scan_log(log)
+    """One requested consumer process and its fresh, attributable batch log."""
+    driver = ROOT / "build" / f"session-warmup-{name}.do"
+    write_driver(ROOT, driver, "tools/bench/session-warmup.do",
+                 [ROOT / "build", OUT, name, *args])
+    run_stata(ROOT, driver)
 
 
-def scan_log(log):
-    """stata-mp -b exits 0 even when the do-file aborts; the log is the truth."""
-    if not log.exists():
-        raise SystemExit(f"missing Stata log: {log}")
-    # Batch Stata exits 0 on an aborted do-file, so the log IS the verdict --
-    # and `r(NNN);' is not the only way a run fails. A failed assert prints
-    # "assertion is false" and stops; scanning only for r() called that a pass.
-    # Same marker set as run-perf-campaign.py, deliberately.
-    bad = [
-        f"{log}:{i}:{line.strip()}"
-        for i, line in enumerate(log.read_text(errors="replace").splitlines(), 1)
-        if (line.strip().startswith("r(") and line.strip().endswith(");"))
-        or line.strip() == "assertion is false"
-    ]
-    if bad:
-        raise SystemExit("Uncaught Stata error:\n" + "\n".join(bad[-20:]))
+def read_timings(out, reps):
+    """Require each fresh session's first run and its two steady runs."""
+    expected = [(phase, label) for _ in range(reps)
+                for phase in BUDGETS for label in ("first", "steady", "steady")]
+    with out.open(newline="") as stream:
+        rows = list(csv.reader(stream))
+    if len(rows) != len(expected):
+        raise SystemExit(f"incomplete warmup output: expected {len(expected)} rows, found {len(rows)}")
+    seconds = {}
+    for row, key in zip(rows, expected):
+        if len(row) != 3 or tuple(row[:2]) != key:
+            raise SystemExit(f"unexpected warmup row: {row}; expected {key}")
+        try:
+            value = float(row[2])
+        except ValueError:
+            raise SystemExit(f"invalid warmup timing: {row}")
+        if not math.isfinite(value) or value <= 0:
+            raise SystemExit(f"invalid warmup timing: {row}")
+        seconds.setdefault(key, []).append(value)
+    return seconds
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--reps", type=int, default=3)
     args = parser.parse_args()
+    if args.reps < 1:
+        parser.error("--reps must be positive")
 
     # The compiled library this instrument benchmarks is built here. `stata-mp
     # -b' exits 0 even when the do-file aborts, and an aborted build leaves the
@@ -110,11 +111,9 @@ def main():
     stale_mlib = ROOT / "build" / "lcsdid_v2.mlib"
     if stale_mlib.exists():
         stale_mlib.unlink()
-    build_log = ROOT / "build.log"
-    if build_log.exists():
-        build_log.unlink()
-    run(["stata-mp", "-b", "do", "src/build.do"])
-    scan_log(build_log)
+    # The shared builder honors CSDID_BUILD_STATA_CMD independently of the
+    # consumer's STATA_CMD and verifies the fresh compiler log before returning.
+    run(["bash", "tools/release/build-package.sh"])
     if not stale_mlib.exists():
         raise SystemExit("src/build.do produced no build/lcsdid_v2.mlib")
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -133,10 +132,7 @@ def main():
         for name in ("cold", "agg", "rif"):
             phase(name, str(RIF))
 
-    seconds = {}
-    with OUT.open(newline="") as f:
-        for name, label, value in csv.reader(f):
-            seconds.setdefault((name, label), []).append(float(value))
+    seconds = read_timings(OUT, args.reps)
 
     failures = []
     for name, budget in BUDGETS.items():

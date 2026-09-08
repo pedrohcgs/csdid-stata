@@ -1,0 +1,452 @@
+{
+  "matrix_id": "RT040",
+  "fixture_family": "r-grid-before-full-balance",
+  "normative_source": "did 2.5.1 pre_process_did.R and pre_process_did2.R: row complete cases, fixed cohort/control grid, then whole-unit balancing",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": ["D026", "approved divergence 6.7"],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/row_absent_varying_notyet.csv",
+      "sha256": "bfe2961236bec558cf4dc9fa948b480ede6a0822cd0b072160aada09f7dbe757",
+      "rows": 150,
+      "columns": 7
+    },
+    {
+      "path": "inputs/row_absent_universal_notyet.csv",
+      "sha256": "bfe2961236bec558cf4dc9fa948b480ede6a0822cd0b072160aada09f7dbe757",
+      "rows": 150,
+      "columns": 7
+    },
+    {
+      "path": "inputs/covariate_missing_varying_notyet.csv",
+      "sha256": "70d93e2b5f8aed79cf2a3fc1bd780e1b1aca2d5e6c7d391e118bae27755bfaa4",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/covariate_missing_universal_notyet.csv",
+      "sha256": "70d93e2b5f8aed79cf2a3fc1bd780e1b1aca2d5e6c7d391e118bae27755bfaa4",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/latest_removed_varying_notyet.csv",
+      "sha256": "41e48872a57dcca62613f8aa13b0aaf12ee50179b0d65d0c563dc193df0012f4",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/latest_removed_universal_notyet.csv",
+      "sha256": "41e48872a57dcca62613f8aa13b0aaf12ee50179b0d65d0c563dc193df0012f4",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_removed_varying_notyet.csv",
+      "sha256": "a142ad2bf2589cb1de673494b3914818d03b34c882625ad1a9ce11460db687b8",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_removed_universal_notyet.csv",
+      "sha256": "a142ad2bf2589cb1de673494b3914818d03b34c882625ad1a9ce11460db687b8",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/all_treated_removed_varying_notyet.csv",
+      "sha256": "081791294a7d0fe94af911e4e1edacadf22c27fd056b8d646a3b1593c2c9f02e",
+      "rows": 170,
+      "columns": 7
+    },
+    {
+      "path": "inputs/all_treated_removed_universal_notyet.csv",
+      "sha256": "081791294a7d0fe94af911e4e1edacadf22c27fd056b8d646a3b1593c2c9f02e",
+      "rows": 170,
+      "columns": 7
+    },
+    {
+      "path": "inputs/effective_never_varying_notyet.csv",
+      "sha256": "85d440d4b2bcf7bb1a1a64baeb40ff1cb0a606ae144fa254fc3a9611d6b786f5",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/effective_never_universal_notyet.csv",
+      "sha256": "85d440d4b2bcf7bb1a1a64baeb40ff1cb0a606ae144fa254fc3a9611d6b786f5",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dead_first_varying_notyet.csv",
+      "sha256": "c93998a27830b77d152263c367222258515958409dfa64da76fd7800dff88b22",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/dead_first_universal_notyet.csv",
+      "sha256": "c93998a27830b77d152263c367222258515958409dfa64da76fd7800dff88b22",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/early_shift_varying_notyet.csv",
+      "sha256": "5bef569987d7bb241980edebffa4e191db26cf54bb0891f1821eead039d1b4dc",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/early_shift_universal_notyet.csv",
+      "sha256": "5bef569987d7bb241980edebffa4e191db26cf54bb0891f1821eead039d1b4dc",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/row_absent_universal_default.csv",
+      "sha256": "bfe2961236bec558cf4dc9fa948b480ede6a0822cd0b072160aada09f7dbe757",
+      "rows": 150,
+      "columns": 7
+    },
+    {
+      "path": "inputs/row_absent_varying_weighted.csv",
+      "sha256": "bfe2961236bec558cf4dc9fa948b480ede6a0822cd0b072160aada09f7dbe757",
+      "rows": 150,
+      "columns": 7
+    },
+    {
+      "path": "inputs/row_absent_varying_never.csv",
+      "sha256": "bfe2961236bec558cf4dc9fa948b480ede6a0822cd0b072160aada09f7dbe757",
+      "rows": 150,
+      "columns": 7
+    },
+    {
+      "path": "inputs/row_absent_universal_never.csv",
+      "sha256": "bfe2961236bec558cf4dc9fa948b480ede6a0822cd0b072160aada09f7dbe757",
+      "rows": 150,
+      "columns": 7
+    },
+    {
+      "path": "inputs/covariate_missing_universal_default.csv",
+      "sha256": "70d93e2b5f8aed79cf2a3fc1bd780e1b1aca2d5e6c7d391e118bae27755bfaa4",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/covariate_missing_varying_weighted.csv",
+      "sha256": "70d93e2b5f8aed79cf2a3fc1bd780e1b1aca2d5e6c7d391e118bae27755bfaa4",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/covariate_missing_varying_never.csv",
+      "sha256": "70d93e2b5f8aed79cf2a3fc1bd780e1b1aca2d5e6c7d391e118bae27755bfaa4",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/covariate_missing_universal_never.csv",
+      "sha256": "70d93e2b5f8aed79cf2a3fc1bd780e1b1aca2d5e6c7d391e118bae27755bfaa4",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/anticipation_varying_notyet.csv",
+      "sha256": "f3d686121d8b13a86a7c814683290b4cf988fa171b736696d5eda3d939fe4575",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/anticipation_universal_notyet.csv",
+      "sha256": "f3d686121d8b13a86a7c814683290b4cf988fa171b736696d5eda3d939fe4575",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_removed_varying_never.csv",
+      "sha256": "a142ad2bf2589cb1de673494b3914818d03b34c882625ad1a9ce11460db687b8",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_removed_universal_never.csv",
+      "sha256": "a142ad2bf2589cb1de673494b3914818d03b34c882625ad1a9ce11460db687b8",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/all_treated_removed_varying_never.csv",
+      "sha256": "081791294a7d0fe94af911e4e1edacadf22c27fd056b8d646a3b1593c2c9f02e",
+      "rows": 170,
+      "columns": 7
+    },
+    {
+      "path": "inputs/all_treated_removed_universal_never.csv",
+      "sha256": "081791294a7d0fe94af911e4e1edacadf22c27fd056b8d646a3b1593c2c9f02e",
+      "rows": 170,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_covariate_missing_varying_notyet.csv",
+      "sha256": "5a64df41b1fffcdb3a5d2879c9340fbc5d3774cec3541623c0696c321464252e",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_covariate_missing_universal_notyet.csv",
+      "sha256": "5a64df41b1fffcdb3a5d2879c9340fbc5d3774cec3541623c0696c321464252e",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_covariate_missing_varying_never.csv",
+      "sha256": "5a64df41b1fffcdb3a5d2879c9340fbc5d3774cec3541623c0696c321464252e",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/treated_covariate_missing_universal_never.csv",
+      "sha256": "5a64df41b1fffcdb3a5d2879c9340fbc5d3774cec3541623c0696c321464252e",
+      "rows": 200,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_treated_removed_varying_notyet.csv",
+      "sha256": "d899ee614da039db4f516802e51ae0984a78ea3157c2cb790af3bc96cf4b75e6",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_treated_removed_universal_notyet.csv",
+      "sha256": "d899ee614da039db4f516802e51ae0984a78ea3157c2cb790af3bc96cf4b75e6",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_treated_removed_varying_never.csv",
+      "sha256": "d899ee614da039db4f516802e51ae0984a78ea3157c2cb790af3bc96cf4b75e6",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_treated_removed_universal_never.csv",
+      "sha256": "d899ee614da039db4f516802e51ae0984a78ea3157c2cb790af3bc96cf4b75e6",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_latest_removed_varying_notyet.csv",
+      "sha256": "e2c64176cfe4bdd18b68a69efdc146496038ef5581359ef4654500b520c93298",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_latest_removed_universal_notyet.csv",
+      "sha256": "e2c64176cfe4bdd18b68a69efdc146496038ef5581359ef4654500b520c93298",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_latest_removed_varying_never.csv",
+      "sha256": "e2c64176cfe4bdd18b68a69efdc146496038ef5581359ef4654500b520c93298",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/never_latest_removed_universal_never.csv",
+      "sha256": "e2c64176cfe4bdd18b68a69efdc146496038ef5581359ef4654500b520c93298",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/effective_never_treated_removed_varying_notyet.csv",
+      "sha256": "dccfefa2495df865967ad93bfd35c6f2dd73e843955c14321194bc97cdb77520",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/effective_never_treated_removed_universal_notyet.csv",
+      "sha256": "dccfefa2495df865967ad93bfd35c6f2dd73e843955c14321194bc97cdb77520",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/effective_never_treated_removed_varying_never.csv",
+      "sha256": "dccfefa2495df865967ad93bfd35c6f2dd73e843955c14321194bc97cdb77520",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/effective_never_treated_removed_universal_never.csv",
+      "sha256": "dccfefa2495df865967ad93bfd35c6f2dd73e843955c14321194bc97cdb77520",
+      "rows": 180,
+      "columns": 7
+    },
+    {
+      "path": "inputs/no_never_treated_removed_varying_notyet.csv",
+      "sha256": "33921f1b9125ad0e1fe1ecd46eb01928c4e2f8164631dc7c457edcf8c3885f28",
+      "rows": 140,
+      "columns": 7
+    },
+    {
+      "path": "inputs/no_never_treated_removed_universal_notyet.csv",
+      "sha256": "33921f1b9125ad0e1fe1ecd46eb01928c4e2f8164631dc7c457edcf8c3885f28",
+      "rows": 140,
+      "columns": 7
+    },
+    {
+      "path": "inputs/no_never_treated_removed_varying_never.csv",
+      "sha256": "33921f1b9125ad0e1fe1ecd46eb01928c4e2f8164631dc7c457edcf8c3885f28",
+      "rows": 140,
+      "columns": 7
+    },
+    {
+      "path": "inputs/no_never_treated_removed_universal_never.csv",
+      "sha256": "33921f1b9125ad0e1fe1ecd46eb01928c4e2f8164631dc7c457edcf8c3885f28",
+      "rows": 140,
+      "columns": 7
+    },
+    {
+      "path": "inputs/first_period_removed_varying_notyet.csv",
+      "sha256": "14ca22f3f8d3ecc10fbd64034e4682444abb40b5f729ba30378df12ad5caf69b",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/first_period_removed_universal_notyet.csv",
+      "sha256": "14ca22f3f8d3ecc10fbd64034e4682444abb40b5f729ba30378df12ad5caf69b",
+      "rows": 190,
+      "columns": 7
+    },
+    {
+      "path": "inputs/surviving_fold_varying_notyet.csv",
+      "sha256": "a0001657f4342d35bec3d3ad8299b894c263b5d66bdb63e0f5f81e8d32d0713c",
+      "rows": 80,
+      "columns": 7
+    },
+    {
+      "path": "inputs/surviving_fold_universal_notyet.csv",
+      "sha256": "a0001657f4342d35bec3d3ad8299b894c263b5d66bdb63e0f5f81e8d32d0713c",
+      "rows": 80,
+      "columns": 7
+    },
+    {
+      "path": "inputs/common_dead_period_varying_notyet.csv",
+      "sha256": "dfbe7e0ee6d3d092b5ba7646361c98a36da333454d0d4eecd7eb109367ef3d4d",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/common_dead_period_universal_notyet.csv",
+      "sha256": "dfbe7e0ee6d3d092b5ba7646361c98a36da333454d0d4eecd7eb109367ef3d4d",
+      "rows": 160,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cutoff_only_cohort_varying_notyet.csv",
+      "sha256": "26b419b707caa799269426db1d6accddd6a13cdb75a48a1ad9308413b366f134",
+      "rows": 120,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cutoff_only_cohort_universal_notyet.csv",
+      "sha256": "26b419b707caa799269426db1d6accddd6a13cdb75a48a1ad9308413b366f134",
+      "rows": 120,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cutoff_only_cohort_varying_never.csv",
+      "sha256": "26b419b707caa799269426db1d6accddd6a13cdb75a48a1ad9308413b366f134",
+      "rows": 120,
+      "columns": 7
+    },
+    {
+      "path": "inputs/cutoff_only_cohort_universal_never.csv",
+      "sha256": "26b419b707caa799269426db1d6accddd6a13cdb75a48a1ad9308413b366f134",
+      "rows": 120,
+      "columns": 7
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "121e42929bcfd7d3b06e9ee502e39774f434e1f978e056f289b3be5a8cf9fd3a",
+      "rows": 60,
+      "columns": 10
+    }
+  ],
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "rows": 269,
+      "sha256": "657b251883e882d830578f774ff10498ab680c3298228129db6a62c943c6096b"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "inffunc",
+      "rows": 8180,
+      "sha256": "8262ac23b8705bff9791d3a5d574f6b89f4eb68dd21b05bc9fb0a28579f63705"
+    },
+    {
+      "path": "expected/r/sample.csv",
+      "schema": "sample",
+      "rows": 3620,
+      "sha256": "ec2d3fd877137a7fa7b60e2e5d428d5bd095a5ec9c9eaa21a283729d305241ae"
+    },
+    {
+      "path": "expected/r/meta.csv",
+      "schema": "meta",
+      "rows": 32,
+      "sha256": "bd25451800b607e3c6ef23ab78a477750aefc45fe6d23189ae709c679a122eb4"
+    },
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte",
+      "rows": 372,
+      "sha256": "42e294976d4f05aaffc17ba0e2d980d82a05c003d0a53e5e5d3413f1feb0a634"
+    },
+    {
+      "path": "expected/r/aggregation_status.csv",
+      "schema": "aggregation_status",
+      "rows": 256,
+      "sha256": "93893538131308405ba3f3e79a07745fc951a6a2aa6051ee155d00920345d3f5"
+    },
+    {
+      "path": "expected/r/estimation_status.csv",
+      "schema": "estimation_status",
+      "rows": 60,
+      "sha256": "c5b2be09df3fe0f50ff5c59a54e3b5f804b90100630611c840958ecfda9357e5"
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt040/generate.R",
+      "path": "tools/parity/generators/rt040/generate.R",
+      "sha256": "37ed65ab283b2f2224a70afcf53287ce12974ef1c63ab2013980d09f5808897a"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "comparison_plan": [
+    {
+      "actual": "Every ATT/SE, unit IF, estimation-sample key, and sample dimension",
+      "expected": ["attgt.csv", "inffunc.csv", "sample.csv", "meta.csv"],
+      "tolerance_ids": ["EXACT", "TOL001", "TOL002"]
+    },
+    {
+      "actual": "All four aggregation types with and without dropmissing: verdicts and every effect/overall ATT/SE",
+      "expected": ["aggregation_status.csv", "aggte.csv"],
+      "tolerance_ids": ["EXACT", "TOL001", "TOL002"]
+    }
+  ],
+  "scope_note": "Normative results and refusals are from the default did 2.5.1 call. Successful grids are cross-checked against its slow path; no slow-only grid is substituted for a default refusal. Coverage includes comparison-unit removal, actual eligible treated-cohort loss under both comparison groups, excluded first-period/latest/future groups, surviving cohorts beyond a shortened horizon, dead periods, anticipation, weights/clustering and defaults. The four declared never-only fallback witnesses use the approved balanced-sample reference. Estimation refusal assertions are recorded in estimation_status.csv."
+}

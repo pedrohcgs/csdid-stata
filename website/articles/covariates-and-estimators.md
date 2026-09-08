@@ -24,7 +24,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 ```
@@ -48,15 +48,19 @@ than you might expect from the length of the command line.
 | `method(reg)` | outcome regression | the outcome model is correct |
 | `method(ipw)` | propensity score | the propensity model is correct |
 
-The three rows differ only in where the covariates are used. The last column is
+These consistency statements also require the identifying assumptions:
+conditional parallel trends, no treatment effects before the specified
+anticipation period, and overlap. The rows describe robustness to nuisance-model
+misspecification within that design. The last column is
 what matters in practice. Two of the three estimators are consistent only when
 the single model they rely on is correctly specified. The doubly robust
 estimator is consistent when either of its two models is correct, and you do not
 have to know in advance which one it will be.
 
 <div class="tip" markdown="1">
-`dr` is the default because it gives you two chances to be right, and because it
-is locally efficient when both models are correct. We keep the default unless
+`dr` is the default because it allows either nuisance model to be correct.
+That robustness applies to the underlying two-period comparison; it is not a
+claim that every staggered-design aggregation attains an efficiency bound. We keep the default unless
 there is a specific reason not to, and we would want that reason written down in
 the paper. It should be a reason about the design, not about the estimates it
 produced.

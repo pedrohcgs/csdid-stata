@@ -2100,16 +2100,14 @@ distribution date; the number in square brackets is what {cmd:ado uninstall}
 takes. Remove the older csdid stanza, then reinstall as above.
 
 {pstd}
-{bf:Pinning a version in a replication package.} Install from a full commit ID
-rather than from {cmd:main}, so that the code is the same on the day the
-referee runs it:
-
-{phang2}{cmd:. net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/7e7ca810ce85939c5fb2eed27db868f667980173") replace}{p_end}
-
-{pmore}
-The commit ID takes the place of {cmd:main} in the address; everything else is
-the same. This example pins version 2.0.0. Record both the full installation
-URL and the version reported by {cmd:csdid version} in your replication package.
+{bf:Pinning a version in a replication package.} A published version tag can
+replace {cmd:main} in the installation address to keep the code unchanged
+when someone re-runs your do-files. Use only a tag that exists on the
+{browse "https://github.com/pedrohcgs/csdid-stata/tags":package's tags page};
+a version number reported by {cmd:csdid version} does not by itself mean that
+a download tag has been published. Record both the full installation URL and
+the reported version in your replication package. Installing from {cmd:main}
+tracks future updates.
 
 {pstd}
 {bf:When something looks wrong, start here.} {cmd:csdid version} is the first

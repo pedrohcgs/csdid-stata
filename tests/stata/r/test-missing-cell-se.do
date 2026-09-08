@@ -144,31 +144,16 @@ assert `n_finite_boot' == 8
 assert `n_boot_differs' > 0
 
 *-----------------------------------------------------------------------------
-* Part 5: panel mode is invariant to the gap -- with id() the balancer drops
-* the incomplete units, so the gap run and the drop-2006 run coincide.
+* Part 5: full balancing cannot silently remove an entire treated cohort
+* from the requested grid. The default reference refuses this shape (RT040).
+* Explicitly excluding that cohort before estimation remains a valid call.
 *-----------------------------------------------------------------------------
 import delimited using "`fixture'/inputs/mpdta-gap.csv", clear asdouble
-csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical
-tempname b_gap se_gap
-matrix `b_gap' = e(b)
-matrix `se_gap' = e(attgt)
+capture quietly csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical
+assert _rc == 459
 
 import delimited using "`fixture'/inputs/mpdta-drop2006.csv", clear asdouble
 csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical
-tempname b_drop se_drop
-matrix `b_drop' = e(b)
-matrix `se_drop' = e(attgt)
-
-assert colsof(`b_gap') == colsof(`b_drop')
-forvalues j = 1/`=colsof(`b_gap')' {
-    assert reldif(`b_gap'[1, `j'], `b_drop'[1, `j']) <= 1e-12
-}
-assert rowsof(`se_gap') == rowsof(`se_drop')
-forvalues i = 1/`=rowsof(`se_gap')' {
-    assert missing(`se_gap'[`i', 5]) == missing(`se_drop'[`i', 5])
-    if `se_gap'[`i', 5] < . {
-        assert reldif(`se_gap'[`i', 5], `se_drop'[`i', 5]) <= 1e-10
-    }
-}
+assert "`e(cmd)'" == "csdid"
 
 display as text "test-missing-cell-se: all assertions passed"

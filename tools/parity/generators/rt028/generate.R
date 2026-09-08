@@ -1,4 +1,6 @@
 # RT028: R oracle for the user-bug-fix regressions that estimate.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/rt028/inputs"; rows <- list()

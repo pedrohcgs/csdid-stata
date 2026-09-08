@@ -26,7 +26,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 ```
@@ -42,8 +42,9 @@ estat simple        // one overall number
 
 All four aggregation commands read the same table of cohort-period estimates.
 They differ only in how they average its rows (one row per cohort and period).
-Note that all four come from one estimation, so you can look at every one without
-paying for the bootstrap again!
+All four reuse one estimation. Each aggregation computes its own inference
+from the stored influence functions, including a new multiplier bootstrap when
+needed for its standard errors or simultaneous band.
 
 | | answers |
 | --- | --- |
@@ -71,13 +72,16 @@ We have two tools for this, and they are not interchangeable.
 
 ```stata
 csdid_stats, type(dynamic) window(-3 3)     // restrict the event-time range
-csdid_stats, type(dynamic) balance(1)       // only cohorts observed 1+ periods post
+csdid_stats, type(dynamic) balance(1)       // cohorts observed through event time 1
 ```
 
 `window()` truncates the range shown; nothing is re-estimated. `balance()` is the
 stronger instrument. It restricts the aggregation to cohorts observed for a
-common number of post-treatment periods, so the composition of the sample is held
-fixed across event time. If the event-study shape changes materially under
+common post-treatment horizon and truncates the event-time window accordingly.
+`balance(1)` requires observation one period after treatment begins, not just
+in the treatment period. If `na_rm` removes an interior cell, its cohort can
+be absent only at that event time, so the command warns that composition may
+still vary. If the event-study shape changes materially under
 `balance()`, the original shape was partly composition. We would then report the
 balanced version alongside the unbalanced one.
 

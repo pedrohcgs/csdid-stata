@@ -73,6 +73,8 @@ mata: mata mlib index
 
 tempname fh
 file open `fh' using "`out'", write replace text
+file write `fh' "config,stata_version,0,0,`c(stata_version)'" _n
+file write `fh' "config,edition,0,0,`c(edition_real)'" _n
 
 * The no-index arm's own record. `matalibs_promoted' below carries the arm's
 * verdict; these two rows say WHY, so a red is readable rather than a bare 0.

@@ -26,6 +26,8 @@ clear all
 set more off
 
 local root "`c(pwd)'"
+local child_stata : environment STATA_CMD
+if `"`child_stata'"' == "" local child_stata "stata-mp"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
@@ -52,10 +54,9 @@ program define mlib_stage_clean
     capture erase "`scratch'/fresh-session.csv"
     capture erase "`scratch'/source-reference.csv"
     capture erase "`scratch'/lcsdid_v2.mlib"
-    * Stata derives the batch log's name from the do-file it is given; this
-    * test does not depend on which form it picks, so both are removed.
-    capture erase "`scratch'/fresh-session.log"
-    capture erase "`scratch'/mlib-session-fresh.log"
+    foreach f in mlib-session-driver.do mlib-session-driver.log child-complete {
+        capture erase "`scratch'/`f'"
+    }
     foreach f in csdid.ado _csdid_post.ado _csdid_engine_load.ado csdid_estat.ado csdid_stats.ado csdid_plot.ado csdid_p.ado {
         capture erase "`scratch'/`f'"
     }
@@ -226,7 +227,18 @@ capture noisily {
     * ---------------------------------------------------------------------------
     * The fresh process.
     * ---------------------------------------------------------------------------
-    shell cd "`scratch'" && stata-mp -b do "`root'/tests/stata/mlib-session-fresh.do" "`scratch'" "`rif'" "`data'" "`childcsv'" > /dev/null 2>&1
+    * No CLI arguments: the batch log has one predictable name. Stata's shell
+    * status is not a child verdict, so require a fresh checked receipt too.
+    tempname driver
+    file open `driver' using "`scratch'/mlib-session-driver.do", write text
+    file write `driver' `"do "`root'/tests/stata/mlib-session-fresh.do" "`scratch'" "`rif'" "`data'" "`childcsv'""' _n
+    file close `driver'
+    shell cd "`scratch'" && "`child_stata'" -b do "`scratch'/mlib-session-driver.do" > /dev/null 2>&1 && bash "`root'/tools/release/check-stata-log-tail.sh" "`scratch'/mlib-session-driver.log" && printf '%s\n' CSDID-CHILD-COMPLETE > "`scratch'/child-complete"
+    capture confirm file "`scratch'/child-complete"
+    if _rc {
+        display as error "the library-only session did not complete; inspect its batch log"
+        exit 9
+    }
     capture confirm file "`childcsv'"
     if _rc {
     display as error "the library-only session wrote no results"
@@ -238,6 +250,11 @@ capture noisily {
     * ---------------------------------------------------------------------------
     import delimited using "`childcsv'", clear varnames(nonames) stringcols(_all)
     rename (v1 v2 v3 v4 v5) (channel item row col value)
+
+    quietly count if channel == "config" & item == "stata_version" & value == "`c(stata_version)'"
+    assert r(N) == 1
+    quietly count if channel == "config" & item == "edition" & value == "`c(edition_real)'"
+    assert r(N) == 1
 
     * The configuration first: a green run against a session that could still see
     * the source would prove nothing at all.
@@ -633,14 +650,12 @@ capture noisily {
     display as text "test-mlib-session passed"
 
 }
-capture cd "`root'"
 local staged_rc = _rc
+capture cd "`root'"
 if `staged_rc' {
     display as error "test-mlib-session: the library-only session's log follows"
-    capture confirm file "`scratch'/fresh-session.log"
-    if _rc == 0 type "`scratch'/fresh-session.log"
-    capture confirm file "`scratch'/mlib-session-fresh.log"
-    if _rc == 0 type "`scratch'/mlib-session-fresh.log"
+    capture confirm file "`scratch'/mlib-session-driver.log"
+    if _rc == 0 type "`scratch'/mlib-session-driver.log"
 }
 mlib_stage_clean "`scratch'"
 if `staged_rc' exit `staged_rc'

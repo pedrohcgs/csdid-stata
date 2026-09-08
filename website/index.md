@@ -10,11 +10,16 @@ title: csdid
 
 </div>
 
-Welcome to the `csdid` Stata page! This is your one-stop shop for Difference-in-Differences (DiD) estimates under staggered (and block) designs. We cover a large family of settings, including balanced panel, unbalanced panel, and repeated cross-section data. All our procedures work with or without covariates. For inference, we enable analytical and bootstrap-based cluster-robust procedures. We also support simultaneous/uniform inference procedures suitable for making inference about the entire event-study path and addressing multiple-testing concerns.
+`csdid` estimates difference-in-differences effects when units begin treatment
+at different times. It supports balanced and unbalanced panels, repeated cross
+sections, covariates, and sampling weights.
 
-The engine of `csdid` is [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001). All our procedures embrace treatment effect heterogeneity across covariate subgroups, groups/cohorts, and time periods. We also discuss how we can aggregate group-time average treatment effects, ATT(g,t), into more aggregated summary measures such as event studies (and other functionals).
-
-<!-- We also highlight that we accommodate different estimation procedures when covariates are available and used to strengthen the plausibility of the parallel trends assumption. More specifically, we implement regression-adjusted, inverse probability weighted (IPW), and doubly robust (augmented IPW) estimators for ATT(g,t)'s and their aggregations. Our default method is a doubly-robust DiD procedure that is more resilient against model misspecifications than the other alternatives. -->
+Following [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001),
+it estimates an average treatment effect for each treatment cohort and period,
+then combines those effects into event studies, cohort averages, calendar-time
+averages, or one overall summary. Effects may differ across cohorts and over
+time. Inference uses a multiplier bootstrap with simultaneous confidence bands
+by default; analytical and clustered inference are also available.
 
 ## How to install
 
@@ -43,21 +48,39 @@ ssc install csdid, replace
 
 ## What it is built for
 
-Our `csdid` DiD package is tailored to researchers who are comfortable with Stata and want an easy-to-use, fast, and reliable implementation of the staggered DiD methods in [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001). All the procedures we implement first estimate the building block ATT(g,t)'s and then aggregate them using well-understood and explicitly defined weights. We built the package to **make the methods accessible** to a broader audience, without requiring them to worry about technical implementation details.
+The package is for researchers who want to estimate and report staggered
+adoption designs in Stata. Choose doubly robust estimation (the default),
+outcome regression, or inverse probability weighting. Each aggregation has
+explicit weights, so its interpretation follows the question being asked.
 
-One important aspect of `csdid` is that all our causal target parameters are well-defined with explicit weights as discussed in [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001), and that these causal parameters do not vary with the type of sampling process you have (e.g., the causal target parameter does not depend on whether the data is a balanced or unbalanced panel).
+Sample choices matter. The default `bal(full)` retains units observed in every
+period; `bal(none)` uses the available observations. If missingness changes
+which units remain, the population represented by an estimate may change.
+The [unbalanced-panel guide](articles/unbalanced-panels.html) explains these
+choices.
 
-We caveat that one should be careful when comparing `csdid` estimates with DiD estimates from other packages, as they do not always target the same causal parameters. We discuss this in more detail [here](articles/csdid-against-the-field.html).
+Other DiD commands can target different causal parameters. Our
+[comparison guide](articles/csdid-against-the-field.html) shows when estimates
+coincide, when they differ, and how the comparison depends on the design.
 
 ## Speed
 
-This version of `csdid` is substantially faster than versions 1.XX (including Version 1.82 and the `csdid2` variant). It can sometimes be 300x faster than Version 1.82, for example. We have documented these speed gains [here](articles/speed-vs-182.html). Our understanding is that, so far, we are the fastest implementation of staggered DiD in Stata. That is, we have a strong package, with a lot of options and strong statistical guarantees, that is also fast!
+Version 2.0.0 takes advantage of the shared structure across cohort-period
+comparisons. In the published comparisons with Version 1.82, the speedup ranges
+from 10x to 308x as the design's size, periods, and cohorts vary. See
+[Speed against Version 1.82](articles/speed-vs-182.html) for the timings,
+machine, matched settings, and runnable code. The
+[comparison with other commands](articles/csdid-against-the-field.html)
+reports both runtime and differences in what each command estimates.
 
 ## Also in R and Python
 
 The same estimators, from the same team, are available as [`did` for R](https://bcallaway11.github.io/did/) and [`csdid` for Python](https://d2cml-ai.github.io/csdid/index.html) (`pip install csdid`).
 
-The three implementations agree to machine precision once the same options are set. We hope this facilitates conversations between researchers who have different software preferences.
+When comparing implementations, set the same sample, comparison group, base
+period, estimator, and inference options explicitly. This Stata package
+defaults to not-yet-treated controls and a universal base period; the R
+package defaults to never-treated controls and a varying base period.
 
 If you find any discrepancy, please raise an [issue](https://github.com/pedrohcgs/csdid-stata/issues), and we will address it. But also make sure you are using the same options!
 
@@ -71,7 +94,10 @@ estat event                                     // the event study, uniform band
 estat group                                     // one effect per group/cohort
 ```
 
-The syntax is as simple as described above. Covariates go right after the outcome, and the default estimation method is a doubly robust DiD estimator; you set `method(reg)` or `method(ipw)` options to use regression-adjusted or (normalized/Hajek-based) IPW DiD estimators. The default comparison group is not-yet-treated units (if you use the `nevertreated` option, the comparison group becomes the never-treated units). The default inference procedure is based on a multiplier bootstrap procedure paired with simultaneous bands, so we address head-on the issues of multiple hypothesis tests; if you want analytical standard errors, use the `analytical` option (add `pointwise` for pointwise intervals; otherwise the aggregation's simultaneous band is still bootstrapped, with a note). By default, all standard errors are clustered at the `id` level, though you can also use alternative clustering options, e.g., `cluster(state)` to cluster at a state level.
+The syntax is as simple as described above. Covariates go right after the outcome, and the default estimation method is a doubly robust DiD estimator; you set `method(reg)` or `method(ipw)` options to use regression-adjusted or (normalized/Hajek-based) IPW DiD estimators. The default comparison group is not-yet-treated units (if you use the `nevertreated` option, the comparison group becomes the never-treated units). The default inference procedure is based on a multiplier bootstrap procedure paired with simultaneous bands, so we address head-on the issues of multiple hypothesis tests; if you want analytical standard errors, use the `analytical` option (add `pointwise` for pointwise intervals; otherwise the aggregation's simultaneous band is still bootstrapped, with a note). For panel data, inference accounts for repeated observations of each unit.
+Use `cluster(state)`, for example, when dependence extends across units within
+states. In repeated cross sections each observation is a separate unit unless
+you specify clustering.
 
 ## Guides
 

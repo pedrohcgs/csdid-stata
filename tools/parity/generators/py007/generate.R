@@ -1,5 +1,7 @@
 # PY007: R oracle for the Python-map edge cases, across methods where the test
 # sweeps them.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/py007/inputs"

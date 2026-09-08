@@ -11,6 +11,8 @@
 # the did the rest of the suite is pinned to. Recipes follow the upstream
 # scripts: generate_reference.R, generate_fixweights_reference.R,
 # generate_factor_reference.R and generate_gaps_reference.R.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 
 IN  <- "tests/fixtures/parity/py019/inputs"

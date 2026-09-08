@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 01sep2026}{...}
+{* *! version 2.0.0 08sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -130,7 +130,8 @@ inference commands, and exports them to datasets.
 
 {pstd}
 {cmd:estat event} reports the event study as a coefficient table: one row per
-event time present in the data, including the e = -1 reference period, plus
+event time present in the data, including the reference period (e = -1 on a
+consecutive calendar without anticipation), plus
 {cmd:Post_avg}, the average of the post-treatment event-time effects. Each row
 shows the estimate, its standard error, z and p-value, and confidence limits.
 The event-time rows use the aggregation's own critical value -- the
@@ -362,8 +363,9 @@ and it is the same under bootstrap and analytical inference. {cmd:group}
 aggregations are not affected, and {cmd:simple} posts a single coefficient.
 
 {pstd}
-The event-time coefficient vector includes the e = -1 reference period, and what
-that row holds depends on the base period. Under the default
+On a consecutive calendar without anticipation, the event-time coefficient
+vector includes the e = -1 reference period. What that row holds depends on
+the base-period option; gaps and anticipation can place the reference elsewhere. Under the default
 {helpb csdid##opt_base:base_period(universal)} it is the normalisation itself:
 identically zero, with no standard error. Under {cmd:base_period(varying)} it is
 an estimated placebo, with a standard error of its own. The posted covariance

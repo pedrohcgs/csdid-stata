@@ -2,6 +2,8 @@
 # Valid only because csdid reproduces R's random-number stream draw for draw;
 # verified at max |dSE| 5.8e-16 before this oracle was written. Seeds and
 # iteration counts mirror the Stata calls exactly.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py005/inputs/clustered-data.csv"); names(d)<-tolower(names(d))

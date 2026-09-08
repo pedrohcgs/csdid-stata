@@ -21,7 +21,7 @@ workload is a doubly robust event study with clustered standard errors
 throughout (the same specification in every table below). Timings depend
 on the machine they were taken on, so the ratios travel better than the
 seconds do. All the timings on this page were measured on 21 August 2026 with
-StataNow/MP 19.5 on a 10-core Apple M1 Max, in the same session as the
+StataNow/MP 19.5 on a 10-core Apple M1 Max, in the same measurement campaign as the
 [main speed tables](csdid-against-the-field.html#speed).
 
 <div class="note" markdown="1">
@@ -92,7 +92,7 @@ periods, which are the two extremes across all four tables.
 
 The per-workload comparison at fixed size (analytical, bootstrap,
 weighted, clustered, and event-study variants, 10x to 35x) ships in the
-package README with per-trial records, and it was produced by a
+package README, and it was produced by a
 seven-trial A/B harness run against an installed copy of Version 1.82 at
 its released commit. This page extends that comparison across sizes and
 designs, and it does not replace those numbers or restate them. Neither

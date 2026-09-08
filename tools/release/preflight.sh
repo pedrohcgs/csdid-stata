@@ -48,7 +48,18 @@ done
 
 STATA="${STATA_CMD:-stata-mp}"
 LOGDIR="${PREFLIGHT_LOGDIR:-build/preflight}"
-mkdir -p "$LOGDIR"
+mkdir -p "$LOGDIR" || exit 1
+LOGDIR="$(cd "$LOGDIR" && pwd)" || exit 1
+
+# A failed new full run must not leave the prior success at the current path.
+# The archived bytes remain available only as evidence for the reuse decision.
+PRIOR_RECEIPT="$LOGDIR/receipts"
+if [ "$FAST" != "1" ] && [ "$LIST" != "1" ] && [ -e "$LOGDIR/receipt.json" ]; then
+  mkdir -p "$LOGDIR/receipts" || exit 1
+  archived_receipt="$(mktemp "$LOGDIR/receipts/receipt.XXXXXXXX")" || exit 1
+  mv "$LOGDIR/receipt.json" "$archived_receipt" || exit 1
+  echo "previous receipt archived: $archived_receipt"
+fi
 
 PASS=0; FAIL=0; BLOCKED=0; SKIPPED=0
 declare -a RESULTS=()
@@ -128,18 +139,41 @@ have() { command -v "$1" >/dev/null 2>&1; }
 stata_do() {
   local dofile="$1"
   local base; base="$(basename "$dofile" .do)"
-  "$STATA" -b do "$dofile" >/dev/null 2>&1
+  rm -f "${base}.log" || return $?
+  "$STATA" -b do "$dofile" >/dev/null 2>&1 || return $?
   # stata-mp exits 0 even when a do-file aborts, so the log is authoritative
   [ -f "${base}.log" ] || return 1
-  mv -f "${base}.log" "$LOGDIR/${base}.log"
+  mv -f "${base}.log" "$LOGDIR/${base}.log" || return $?
   # a session killed mid-do-file leaves a truncated log with no r(N) in it,
   # which the error grep alone scored as PASS (in-house review, gates lens:
   # SIGKILL during the do-file -> PASS with the trailing assert never run).
   # Completion is therefore required, not just absence of errors: a batch
   # log ends with Stata's own end-of-do-file sentinel, checked at the TAIL
   # so an inner do-file's sentinel cannot vouch for a killed outer one.
-  tail -n 3 "$LOGDIR/${base}.log" | grep -q 'end of do-file' || return 1
-  ! grep -qE '^r\([0-9]+\);' "$LOGDIR/${base}.log"
+  bash tools/release/check-stata-log-tail.sh "$LOGDIR/${base}.log"
+}
+
+# Use a no-argument driver so Stata's batch log has one predictable basename.
+# Completion and launch status are checked before reading the identity fields.
+probe_platform() {
+  local text="$LOGDIR/platform.txt"
+  local driver="$LOGDIR/_preflight-platform.do"
+  rm -f "$text" || return $?
+  python3 - "$text" "$driver" <<'PLATEOF'
+from pathlib import Path
+import sys
+path, driver = sys.argv[1:]
+if any(char in path for char in ('"', '`', '$', '\n', '\r')):
+    raise SystemExit("platform identity path contains unsupported Stata quoting")
+Path(driver).write_text('version 15\nfile open ph using "' + path + '", write replace text\n'
+    + ''.join('file write ph "' + key + "=`c(" + expression + ")'\" _n\n"
+              for key, expression in (("stata_version", "stata_version"),
+                  ("edition", "edition_real"), ("os", "os"), ("machine_type", "machine_type")))
+    + 'file close ph\n')
+PLATEOF
+  [ "$?" = "0" ] || return 1
+  stata_do "$driver" || return $?
+  PLATFORM_RUNTIME="$(python3 tools/release/preflight-evidence.py runtime "$text" "$STATA")" || return $?
 }
 
 # The same do-file, run in a session where variable abbreviation is OFF.
@@ -173,12 +207,13 @@ stata_do_varabbrev_off() {
     printf '    exit 9\n'
     printf '}\n'
     printf 'display "VARABBREV-OFF-HELD"\n'
-  } > "$wrapper"
+  } > "$wrapper" || return $?
   local wbase; wbase="$(basename "$wrapper" .do)"
-  "$STATA" -b do "$wrapper" >/dev/null 2>&1
+  rm -f "${wbase}.log" || return $?
+  "$STATA" -b do "$wrapper" >/dev/null 2>&1 || return $?
   [ -f "${wbase}.log" ] || return 1
-  mv -f "${wbase}.log" "$LOGDIR/${wbase}.log"
-  grep -qE '^r\([0-9]+\);' "$LOGDIR/${wbase}.log" && return 1
+  mv -f "${wbase}.log" "$LOGDIR/${wbase}.log" || return $?
+  bash tools/release/check-stata-log-tail.sh "$LOGDIR/${wbase}.log" || return $?
   # The setting has to be in force at BOTH ends, not merely written into a
   # wrapper: a `clear all` or a `version` statement that put it back would
   # leave this tier certifying the default configuration under another name.
@@ -190,8 +225,8 @@ stata_do_varabbrev_off() {
 # Cheap, no external tooling. These catch the class of defect where the project
 # misdescribes itself: a manifest naming untracked files, a ledger row claiming
 # evidence it does not have, a version that disagrees with itself.
-if [ -f tools/validate-contract.py ]; then
-  run spec "contract schema (validate-contract)" python3 tools/validate-contract.py
+if [ -f tools/validate-contract.py ] || [ -f tools/release/build-release-payload.sh ]; then
+  run spec "contract schema (validate-contract)" bash tools/release/check-contract.sh
 else
   approved_skip spec "contract schema (validate-contract)" \
     "dev-only tool, stripped from the shipped payload by design"
@@ -218,7 +253,12 @@ done
 
 # --------------------------------------------------------------- tier: build
 if have "$STATA"; then
-  run build "mata library builds" stata_do src/build.do
+  # The native-plugin tests consume the platform-neutral build alias. It is
+  # ignored by git, so a clean checkout must create it before those tests.
+  # Keep native test binaries out of the install manifest on other platforms.
+  run build "native bootstrap plugin builds" env CSDID_PLUGIN_OUTDIR="$ROOT/build" \
+      bash tools/plugin/build-bootstrap-plugin.sh auto
+  run build "mata library builds" stata_do tools/release/build-package.do
 else
   block build "mata library builds" "$STATA not on PATH (set STATA_CMD)"
 fi
@@ -287,7 +327,7 @@ fi
 # rather than assumed. It re-runs the unit tier, so a full preflight pays for
 # the unit tier twice; that is the honest price of being able to say which of
 # the two configurations a green run certified, and it is charged against the
-# tier that is not the ninety-minute one.
+# unit tier rather than the separate legacy A/B tier.
 VARABBREV_RAN=0
 if have "$STATA" && [ "$FAST" != "1" ] && [ "${#UNIT_TESTS[@]}" -gt 0 ]; then
   VARABBREV_RAN=1
@@ -316,24 +356,21 @@ fi
 # merely documented.
 run docs "version-naming convention" python3 tools/docs/check-version-convention.py
 
-# Does the live site actually serve what this source says?
-#
-# Every other website check reads the markdown in website/. None of them can
-# see psantanna.com/csdid, which is served from a different repository, so a
-# figure corrected in the source leaves the live page serving the superseded
-# one until it is republished, with every gate green throughout.
+# Does the local site checkout contain the intended built website payload?
+# This is a file comparison, not a deployment or HTTP check. Publication and
+# verification of the served pages remain separate release steps.
 #
 # BLOCKED rather than PASS when the site checkout or Jekyll is missing: the
 # checker exits 2 for "could not run", which is not the same as agreement.
 SITE_ROOT="${CSDID_SITE_ROOT:-$HOME/Documents/GitHub/pedrohcgs.github.io}"
 if [ ! -d "$SITE_ROOT/.git" ]; then
-  block docs "published site matches source" \
+  block docs "site checkout matches built source" \
     "no site checkout at $SITE_ROOT (set CSDID_SITE_ROOT)"
 elif ! have jekyll; then
-  block docs "published site matches source" \
+  block docs "site checkout matches built source" \
     "jekyll not on PATH, so website/ cannot be built for comparison"
 else
-  run docs "published site matches source" \
+  run docs "site checkout matches built source" \
     env CSDID_SITE_ROOT="$SITE_ROOT" python3 tools/release/check-published-site.py
 fi
 
@@ -422,33 +459,29 @@ fi
 LEGACY_REF="${CSDID_LEGACY_ROOT:-${CSDID_LEGACY_REFERENCE:-$(cd "$ROOT/.." && pwd)/GitHub/csdid-stata}}"
 export CSDID_LEGACY_ROOT="$LEGACY_REF"
 
-# The A/B measures the shipping code against Version 1.82 and nothing else. It
-# is also 90 of preflight's 105 minutes. So it runs when the code it measures
-# has changed, and is recorded as UNCHANGED when it has not -- justified by a
-# digest over src/, pkg/, csdid.pkg and stata.toc, compared against the digest
-# the last successful A/B actually certified. Tests, fixtures, tools and
-# documents can all change a preflight verdict without changing a number; none
-# of them can change a timing.
-#
-# --release always runs it: a release claims the performance numbers, so it
-# measures them rather than inheriting them. --ab forces it on demand.
-PROD_DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh" --production)"
+# A/B reuse requires identical shipping code, measured runtime, instrumentation
+# and clean pinned legacy source. --release and --ab always measure it afresh.
+PROD_DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh" --production)" || exit 1
 AB_LAST=""
-if [ -f "$LOGDIR/receipt.json" ]; then
-  AB_LAST="$(python3 -c "
-import json
-try:
-    d = json.load(open('$LOGDIR/receipt.json'))
-    print(d.get('ab_production_digest', '') if d.get('fail', 1) == 0 else '')
-except Exception:
-    print('')
-" 2>/dev/null)"
+AB_INPUTS=""
+AB_RUNTIME=""
+PLATFORM_RUNTIME=""
+if [ "$FAST" != "1" ] && [ "$LIST" != "1" ] && have "$STATA"; then
+  if probe_platform; then
+    AB_RUNTIME="$PLATFORM_RUNTIME"
+    AB_INPUTS="$(python3 tools/release/preflight-evidence.py ab-inputs "$ROOT" "$LEGACY_REF")" || AB_INPUTS=""
+    if [ -n "$PRIOR_RECEIPT" ] && [ -n "$AB_INPUTS" ]; then
+      AB_LAST="$(python3 tools/release/preflight-evidence.py reuse "$PRIOR_RECEIPT" "$PROD_DIGEST" "$AB_RUNTIME" "$AB_INPUTS")" || AB_LAST=""
+    fi
+  fi
 fi
 if [ ! -d "$LEGACY_REF/codes" ] || ! have "$STATA"; then
   block deep "legacy A/B certification" "no legacy checkout with codes/ at $LEGACY_REF (set CSDID_LEGACY_ROOT)"
+elif [ "$FAST" != "1" ] && [ "$LIST" != "1" ] && { [ -z "$AB_RUNTIME" ] || [ -z "$AB_INPUTS" ]; }; then
+  block deep "legacy A/B certification" "runtime or benchmark input identity could not be verified"
 elif [ "$FORCE_AB" != "1" ] && [ "$RELEASE" != "1" ] && [ -n "$AB_LAST" ] && [ "$AB_LAST" = "$PROD_DIGEST" ]; then
   unchanged deep "legacy A/B certification" \
-    "production code identical to the run that certified it (${PROD_DIGEST:0:12}); --ab forces it"
+    "production, measured runtime and benchmark inputs identical to the prior certificate (${PROD_DIGEST:0:12}); --ab forces it"
   AB_CERTIFIED="$AB_LAST"
   AB_UNCHANGED=1
 else
@@ -468,7 +501,7 @@ fi
 # test-bootstrap-plugin.do asserts a plugin-versus-Mata ordering in elapsed
 # seconds and test-f049.do asserts absolute second budgets. Both used to run in
 # the middle of the unit tier, inside the same serial script as the adversarial
-# differential and the ninety-minute A/B -- so a busy machine could turn the
+# differential and the legacy A/B -- so a busy machine could turn the
 # correctness suite red for a reason that has nothing to do with correctness,
 # and the lesson a reviewer learns from that is to re-run a red preflight.
 #
@@ -514,7 +547,7 @@ if [ "$FAIL" -gt 0 ] || [ "$BLOCKED" -gt 0 ]; then
 fi
 MODE="full"
 [ "$RELEASE" = "1" ] && MODE="release"
-DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh")"
+DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh")" || exit 1
 
 # ------------------------------------------------------------ what it ran on
 # A green certificate that cannot name the machine it was green on is
@@ -524,43 +557,20 @@ DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh")"
 # the operating system and the machine type -- the same vocabulary
 # tools/release/write-platform-row.do already emits for the release rows,
 # which nothing joined to the merge receipt.
-STATA_VERSION="unknown"; STATA_EDITION="unknown"
-STATA_OS="unknown"; STATA_MACHINE="unknown"
-if have "$STATA"; then
-  PLATFORM_TXT="$LOGDIR/platform.txt"
-  rm -f "$PLATFORM_TXT"
-  cat > "$LOGDIR/_preflight-platform.do" <<'PLATEOF'
-version 15
-file open ph using "`1'", write replace text
-file write ph "stata_version=`c(stata_version)'" _n
-file write ph "edition=`c(edition_real)'" _n
-file write ph "os=`c(os)'" _n
-file write ph "machine_type=`c(machine_type)'" _n
-file close ph
-PLATEOF
-  "$STATA" -b do "$LOGDIR/_preflight-platform.do" "$PLATFORM_TXT" >/dev/null 2>&1
-  [ -f _preflight-platform.log ] && mv -f _preflight-platform.log "$LOGDIR/_preflight-platform.log"
-  # The receipt's identity fields FAIL CLOSED (cold-audit round 5, F2): a
-  # probe that could not run -- or ran and wrote nothing -- must sink the
-  # verdict, not sail through as "unknown" on a green certificate. The
-  # probe's `version 15' matches the suite floor, a standing owner ruling
-  # (the PACKAGE floor of 14 is certified on real hardware, separately).
-  # The check tiers already exited nonzero above on any FAIL/BLOCKED, so
-  # this probe cannot ride the counters -- it refuses directly, and no
-  # receipt is written at all.
-  if [ ! -f "$PLATFORM_TXT" ]; then
-    echo "platform identity probe FAILED (see $LOGDIR/_preflight-platform.log): a green receipt that cannot name the Stata it ran on is unattributable evidence, so none is written" >&2
-    exit 1
-  fi
-  STATA_VERSION="$(sed -n 's/^stata_version=//p' "$PLATFORM_TXT" | head -1)"
-  STATA_EDITION="$(sed -n 's/^edition=//p' "$PLATFORM_TXT" | head -1)"
-  STATA_OS="$(sed -n 's/^os=//p' "$PLATFORM_TXT" | head -1)"
-  STATA_MACHINE="$(sed -n 's/^machine_type=//p' "$PLATFORM_TXT" | head -1)"
-  if [ -z "$STATA_VERSION" ] || [ -z "$STATA_EDITION" ] || [ -z "$STATA_OS" ] || [ -z "$STATA_MACHINE" ]; then
-    echo "platform identity probe wrote an incomplete identity ($PLATFORM_TXT); no receipt is written" >&2
-    exit 1
-  fi
+if ! probe_platform; then
+  echo "platform identity probe FAILED; no receipt is written" >&2
+  exit 1
 fi
+FINAL_AB_INPUTS="$(python3 tools/release/preflight-evidence.py ab-inputs "$ROOT" "$LEGACY_REF")" || exit 1
+FINAL_PROD_DIGEST="$(bash "$ROOT/tools/release/preflight-digest.sh" --production)" || exit 1
+if [ "$PLATFORM_RUNTIME" != "$AB_RUNTIME" ] || [ "$FINAL_AB_INPUTS" != "$AB_INPUTS" ] || [ "$FINAL_PROD_DIGEST" != "$AB_CERTIFIED" ]; then
+  echo "runtime, production or benchmark inputs changed during preflight; no receipt is written" >&2
+  exit 1
+fi
+STATA_VERSION="$(sed -n 's/^stata_version=//p' "$LOGDIR/platform.txt")"
+STATA_EDITION="$(sed -n 's/^edition=//p' "$LOGDIR/platform.txt")"
+STATA_OS="$(sed -n 's/^os=//p' "$LOGDIR/platform.txt")"
+STATA_MACHINE="$(sed -n 's/^machine_type=//p' "$LOGDIR/platform.txt")"
 
 # Which compiled library the suite ran against. src/build.do stamps the built
 # copy with the Stata that built it (`2.0.0|<version>`); the source fallback
@@ -579,11 +589,11 @@ python3 - "$LOGDIR/receipt.json" "$MODE" "$PASS" "$FAIL" "$BLOCKED" "$DIGEST" \
   "$(git rev-parse HEAD 2>/dev/null || echo unknown)" \
   "$SKIPPED" "$UNCHANGED" "$AB_CERTIFIED" "$AB_UNCHANGED" \
   "$STATA_VERSION" "$STATA_EDITION" "$STATA_OS" "$STATA_MACHINE" \
-  "$MLIB_STAMP" "$VARABBREV_FIELD" <<'PYEOF'
+  "$MLIB_STAMP" "$VARABBREV_FIELD" "$AB_RUNTIME" "$AB_INPUTS" <<'PYEOF'
 import json, sys, datetime
 (path, mode, npass, nfail, nblocked, digest, commit,
  nskipped, nunchanged, ab_digest, ab_unchanged,
- stata_version, edition, os_, machine_type, mlib_stamp, varabbrev) = sys.argv[1:18]
+ stata_version, edition, os_, machine_type, mlib_stamp, varabbrev, ab_runtime, ab_inputs) = sys.argv[1:20]
 json.dump({
     "mode": mode, "pass": int(npass), "fail": int(nfail), "blocked": int(nblocked),
     "skipped_approved": int(nskipped), "unchanged": int(nunchanged),
@@ -593,6 +603,7 @@ json.dump({
     # believed" pointed at a field that did not exist.
     "ab_production_digest": ab_digest,
     "ab_unchanged": int(ab_unchanged),
+    "ab_runtime": json.loads(ab_runtime), "ab_inputs": json.loads(ab_inputs),
     "digest": digest, "commit": commit,
     "stata_version": stata_version, "edition": edition,
     "os": os_, "machine_type": machine_type,
@@ -602,6 +613,7 @@ json.dump({
 }, open(path, "w"), indent=2, sort_keys=True)
 open(path, "a").write("\n")
 PYEOF
+[ "$?" = "0" ] || exit 1
 VERDICT="all preflight checks passed"
 if [ "$SKIPPED" -gt 0 ]; then
   VERDICT="passed ($SKIPPED approved skip"

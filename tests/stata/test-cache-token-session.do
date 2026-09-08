@@ -35,6 +35,8 @@ clear all
 set more off
 
 local root "`c(pwd)'"
+local stata_cmd : environment STATA_CMD
+if `"`stata_cmd'"' == "" local stata_cmd "stata-mp"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
@@ -51,7 +53,8 @@ program define ct_stage_clean
     version 15
     args scratch
 
-    foreach f in A.csv B.csv lean.ster full.ster cache-token-session-child.log {
+    foreach f in A.csv B.csv lean.ster full.ster ///
+        ct-A-driver.do ct-B-driver.do ct-A-driver.log ct-B-driver.log ct-A.ok ct-B.ok {
         capture erase "`scratch'/`f'"
     }
     capture rmdir "`scratch'"
@@ -131,17 +134,26 @@ capture noisily {
     * ARM 1 and ARM 4 -- two processes, one .ster.
     * -----------------------------------------------------------------------
     local child "`root'/tests/stata/cache-token-session-child.do"
-    shell cd "`scratch'" && stata-mp -b do "`child'" "`root'" A "`data'" "`scratch'" > /dev/null 2>&1
-    capture confirm file "`scratch'/A.csv"
-    if _rc {
-        display as error "the saving session wrote no results"
-        exit 9
-    }
-    shell cd "`scratch'" && stata-mp -b do "`child'" "`root'" B "`data'" "`scratch'" > /dev/null 2>&1
-    capture confirm file "`scratch'/B.csv"
-    if _rc {
-        display as error "the restoring session wrote no results"
-        exit 9
+    foreach arm in A B {
+        foreach f in `arm'.csv ct-`arm'-driver.log ct-`arm'.ok {
+            capture erase "`scratch'/`f'"
+            confirm new file "`scratch'/`f'"
+        }
+        tempname driver
+        file open `driver' using "`scratch'/ct-`arm'-driver.do", write replace text
+        file write `driver' `"do "`child'" "`root'" "`arm'" "`data'" "`scratch'""' _n
+        file close `driver'
+        * shell's Stata return code is not the child's process status. The
+        * fresh receipt exists only after process success and checked completion.
+        shell cd "`scratch'" && "`stata_cmd'" -b do "ct-`arm'-driver.do" > /dev/null 2>&1 ///
+            && bash "`root'/tools/release/check-stata-log-tail.sh" "`scratch'/ct-`arm'-driver.log" > /dev/null 2>&1 ///
+            && echo complete > "`scratch'/ct-`arm'.ok"
+        capture confirm file "`scratch'/ct-`arm'.ok"
+        if _rc {
+            display as error "cache-token session `arm' did not finish a checked child process"
+            exit 9
+        }
+        confirm file "`scratch'/`arm'.csv"
     }
 
     import delimited using "`scratch'/A.csv", clear varnames(nonames) stringcols(_all)
@@ -153,6 +165,14 @@ capture noisily {
     rename (v1 v2) (key value)
     generate str1 arm = "B"
     append using "`Adta'"
+
+    foreach arm in A B {
+        ct_value, arm(`arm') key(stata_version)
+        display as text "cache-token child `arm': Stata " r(num) "; parent " c(stata_version)
+        assert r(num) == c(stata_version)
+        ct_value, arm(`arm') key(stata_edition)
+        assert `"`r(txt)'"' == "`c(edition_real)'"
+    }
 
     ct_value, arm(A) key(lean_est_rc)
     assert r(num) == 0

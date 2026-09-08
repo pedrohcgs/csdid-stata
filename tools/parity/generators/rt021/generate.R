@@ -1,4 +1,6 @@
 # RT021: R oracle for the not-yet-treated runs across the three methods.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/rt021/inputs/output-methods.csv"); names(d)<-tolower(names(d))

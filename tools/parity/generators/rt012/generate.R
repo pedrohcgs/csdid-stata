@@ -1,5 +1,7 @@
 # RT012: R oracle for the fast/nofast scenarios. The inherited test proves the
 # two kernels agree with each other, which both being wrong would also satisfy.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/rt012/inputs"

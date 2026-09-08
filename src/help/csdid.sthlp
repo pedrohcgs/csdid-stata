@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 01sep2026}{...}
+{* *! version 2.0.0 08sep2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -267,9 +267,10 @@ required. Periods need not be consecutive integers, but they must be ordered
 sensibly on the number line, and every value must be {bf:1 or more}. A time
 axis starting at 0 -- the common {cmd:0, 1, 2, ...} coding -- is refused with
 return code 198, because {cmd:gvar() == 0} is reserved to mean never treated
-and a period 0 would be indistinguishable from it. Shift both axes so they
-start at 1; a monotone relabelling of the periods leaves every estimate
-unchanged.
+and a period 0 would be indistinguishable from it. Add the same constant to
+time and treated cohort codes so the time axis starts at 1 or later, leaving
+never-treated cohort codes at 0. This preserves
+calendar distances, event times, and the anticipation setting.
 
 {pmore}
 The period and cohort {it:values} are pasted into the ATT(g,t) coefficient
@@ -422,9 +423,12 @@ are reported and how an event study lines up.
 
 {phang}
 {opt anticipation(#)} allows units to respond up to {it:#} periods before
-their nominal treatment date. It shifts every base period back by {it:#}
-periods, so the no-anticipation assumption is only required from
-{it:g - #} onward. {it:#} must be a nonnegative integer; the default is
+their nominal treatment date. The no-anticipation restriction then applies
+only to periods {it:t < g - #}; responses are allowed from {it:g - #}
+onward. Post-treatment comparisons and every comparison under
+{cmd:base_period(universal)} use the last observed period before that boundary
+as their base. Varying-base pre-treatment comparisons still use the
+preceding observed period. {it:#} must be a nonnegative integer; the default is
 {cmd:anticipation(0)}. Cohorts left without a usable base period, that is
 cohorts with {it:g - # } at or before the first period in the sample, are
 dropped with a message.
@@ -630,16 +634,29 @@ accepted modes are:
 
 {p2colset 9 24 26 2}{...}
 {p2col:{cmd:bal(full)}}drop every unit not observed in all periods, so that a
-single balanced panel is used for all comparisons. This is the default. When
-there are no never-treated units the late periods that carry no comparison
-group are removed first, so a unit is judged complete over the periods that are
-actually estimated on, not over the raw calendar.{p_end}
+single balanced panel is used for all comparisons. This is the default. If
+there are no never-treated units after removing rows with missing values,
+late periods with no comparison group are removed before balancing. A unit
+is judged complete over that reduced calendar.{p_end}
 {p2col:{cmd:bal(pair)}}balance each 2x2 comparison separately, keeping the
 units observed in both of that comparison's periods. Every unit stays in the
 sample; what varies is which units each individual comparison can use.{p_end}
 {p2col:{cmd:bal(none)}}keep every unit and use the repeated-cross-section
 computation with the matching standard-error accounting.{p_end}
 {p2colreset}{...}
+
+{phang2}
+With {cmd:notyet}, the usable calendar is chosen before whole-unit balancing.
+If all never-treated units disappear only during balancing, surviving treated
+cohorts keep their eligible pre-treatment comparisons, including those of the
+latest cohort. Comparisons with no eligible controls are reported missing.
+If {cmd:nevertreated} finds no never-treated units in the balanced sample,
+it instead announces a fallback to the latest cohort and its shorter horizon.
+
+{phang2}
+If balancing removes every unit from an eligible treated cohort, estimation
+stops and names that cohort. Correct the missing observations or use
+{cmd:bal(none)} to estimate on the unbalanced panel.
 
 {phang2}
 Whenever a mode discards observations, {cmd:csdid} reports how many units and
@@ -806,8 +823,10 @@ you.
 
 {pstd}
 Cells with {it:t >= g} are post-treatment effects. Cells with {it:t < g} are
-pre-treatment: under the identifying assumptions they estimate zero, so they
-are the placebo evidence on which the design rests, not causal effects.
+pre-treatment. Without anticipation they estimate zero under the identifying
+assumptions and provide placebo evidence. When {cmd:anticipation(#)} allows
+early responses, cells inside that anticipation window may contain effects;
+only earlier periods provide evidence for the no-anticipation restriction.
 
 {marker remarks_assumptions}{...}
 {title:Identifying assumptions}
@@ -824,9 +843,9 @@ what {cmd:csdid} identifies.
 treatment equal untreated potential outcomes:
 {it:E[Y_t(g) | G = g] = E[Y_t(0) | G = g]} for {it:t < g}. If units respond in
 advance, for example because the policy was announced early, use
-{cmd:anticipation(#)} to require the assumption only from {it:g - #} onward.
-That is not free: it costs you the {it:#} periods immediately before treatment
-as usable base periods and as placebo tests.
+{cmd:anticipation(#)} to require the assumption only for {it:t < g - #}.
+The {it:#} periods immediately before treatment may then contain responses
+and cannot be used as unaffected reference periods.
 
 {pstd}
 {bf:3. Parallel trends, conditional on covariates.} For every cohort {it:g}
@@ -851,8 +870,9 @@ this assumption, and {cmd:csdid} reports a joint test of them; see
 treated: the propensity score of being in cohort {it:g} rather than in the
 comparison group must be bounded away from one. Without it the reweighting is
 driven by a handful of observations with extreme weights.
-{cmd:pscoretrim()} enforces a hard bound as a safeguard. Frequent trimming is
-a symptom, not a fix; inspect the covariate distributions instead.
+{cmd:pscoretrim()} removes comparison observations at or above the chosen
+score threshold; it does not establish population overlap. Frequent trimming
+is a symptom, not a fix; inspect the covariate distributions instead.
 
 {pstd}
 {bf:5. Sampling.} Units are independently and identically drawn from the
@@ -1156,9 +1176,11 @@ unit (or per cluster) per iteration, recombine the influence functions, and
 take the empirical distribution of the resulting estimates. It is fast,
 because no re-estimation happens, and it supports simultaneous confidence
 bands: a single critical value, reported in {cmd:e(crit_val)}, is chosen so
-that the bands cover all ATT(g,t) at once with the nominal probability. That
-critical value exceeds the pointwise 1.96 (at 95%) and by how much depends on
-the correlation structure of the estimates.
+that the bands target simultaneous coverage of all ATT(g,t) at the nominal
+level. The critical value is usually larger than the pointwise 1.96 (at
+95%), depending on the number and correlation of the estimates. The finite
+bootstrap quantile for ATT(g,t) is not bounded below by 1.96; aggregation
+bands do impose the corresponding pointwise lower bound.
 
 {pstd}
 Report the simultaneous bands when you display the whole table or an event
@@ -1371,9 +1393,10 @@ o {bf:Period or cohort codes below 1.} {cmd:csdid} refuses them, because
 {cmd:gvar() == 0} is reserved for never-treated units, so a period 0 would be
 indistinguishable from that reservation. This covers negative values and
 {it:also} an exactly-0 period, which the common {cmd:0, 1, 2, ...} time coding
-produces. Shift the axes so that {bf:both start at 1} -- making them merely
-nonnegative is not enough; a monotone relabelling of the periods leaves the
-estimates unchanged.{p_end}
+produces. Add the same constant to time and treated cohort codes so the time
+axis starts at 1 or later; leave never-treated cohort codes at 0. Making the time
+axis merely nonnegative is not enough. This shift preserves calendar
+distances and event times.{p_end}
 
 {phang2}
 o {bf:Very large period or cohort codes.} Values so large that the literal
@@ -1734,11 +1757,13 @@ Those are documented in {helpb csdid_stats} and
 {helpb csdid_postestimation:csdid postestimation}.
 
 {pstd}
-{cmd:csdid} itself stores nothing in {cmd:r()}: the {cmd:r(table)} that
-scripts read after an estimation command is produced here by the aggregation
-routes, {helpb csdid_estat} and {helpb csdid_stats}, and is documented at
-{help csdid_estat##results:help csdid_estat}. A {cmd:r(table)} reference
-straight after a bare {cmd:csdid} finds no such matrix.
+{cmd:r(table)} is returned by {cmd:estat event}, {cmd:estat dynamic},
+{cmd:estat simple}, {cmd:estat group}, and {cmd:estat calendar}, with or
+without {cmd:post}, and by {cmd:csdid, agg(event)}. See
+{help csdid_estat##results:help csdid_estat}. Bare {cmd:csdid} and direct
+{cmd:csdid_stats} do not return an inference table in {cmd:r(table)}; use
+{cmd:e(attgt)} or {cmd:e(aggte)}, respectively, or the corresponding
+{cmd:estat} command.
 
 {pstd}
 Stability policy: every result above that is not marked {it:(diagnostic)} is
@@ -1888,9 +1913,9 @@ posted cell whose standard error is missing has its row and column of
 with {it:t < g}, and let {it:V} be the analytical influence-function covariance
 matrix of the ATT(g,t) estimates, {it:V = (1/n) sum_i psi(W_i) psi(W_i)'},
 formed from cluster sums under {cmd:cluster()}. Cells whose implied standard
-error {it:sqrt(V_jj / n)} is missing or below the square root of machine
-epsilon are dropped from {it:P}. With {it:q} cells left and
-{it:a} the vector of their estimates,
+error {it:sqrt(V_jj / n)} is missing or no greater than ten times the square
+root of machine epsilon (about 1.49e-7) are dropped from {it:P}. With {it:q}
+cells left and {it:a} the vector of their estimates,
 
 {p 12 12 2}
 W = n a' inv(V_PP) a,
@@ -1902,7 +1927,11 @@ null that all pre-treatment ATT(g,t) are zero. {cmd:e(wald_pvalue)} is
 note is printed instead, when {it:q = 0}, when {it:V_PP} contains missing
 values, or when {it:V_PP} is numerically singular. {it:V} here is always the
 analytical matrix, never the bootstrap one, so the pre-test is the same under
-{cmd:analytical} and under the default bootstrap.
+{cmd:analytical} and under the default bootstrap. With {cmd:anticipation(#)},
+the test still selects cells by {it:t < g}; it does not restrict itself to
+{it:t < g - #}. A rejection can therefore involve responses allowed inside
+the anticipation window. Inspect the earlier cells when assessing the
+no-anticipation restriction.
 
 {pstd}
 {bf:Random numbers.} Seeded runs draw the multipliers from a Mersenne-Twister

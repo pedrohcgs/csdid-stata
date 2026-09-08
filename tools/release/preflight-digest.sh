@@ -16,18 +16,22 @@ cd "$ROOT"
 # packaging/ and NEWS.md are in scope because preflight tiers READ them:
 # tests/meta/test-gate-qualification.sh reads the gate-qualification register under docs/,
 # tools/docs/check-doc-examples.py executes the Stata blocks in
-# packaging/README.md and website/**/*.md, test-news-help-agreement.sh reads
+# packaging/README.md (README.md in the public payload) and website/**/*.md,
+# test-news-help-agreement.sh reads
 # NEWS.md, and the website speed gates read website/ (in-house review, gates
 # lens: seeding red into any of them left the release receipt's digest
 # byte-identical, so the receipt validated a tree whose gates fail).
-PATHS=(src inst/spec tests tools csdid.pkg stata.toc pkg docs website packaging NEWS.md)
+# Examples execute in the unit tier; the builder copies LICENSE; prose checks
+# read PROVENANCE.md; productization reads .github; .gitignore controls the
+# platform runner's discovery of untracked inputs.
+PATHS=(src inst/spec tests tools csdid.pkg stata.toc pkg docs website packaging examples README.md NEWS.md LICENSE PROVENANCE.md .github .gitignore)
 
-# --production digests ONLY the code that ships and computes. Nothing here is a
-# test, a fixture, a document or a tool: if none of it moved, no estimate can
-# have moved, and the legacy A/B -- which is 90 of preflight's 105 minutes and
-# measures nothing but this code against Version 1.82 -- has nothing new to
-# measure. Everything else in PATHS can change a verdict without changing a
-# number, which is why the two digests are separate.
+# --production covers the source, install payload and manifests, including
+# their bundled help. It excludes tests, fixtures, external documentation and
+# tools. Unchanged production bytes cannot change an estimate; benchmark reuse
+# additionally checks runtime and instrumentation in preflight-evidence.py.
+# The broader PATHS can change a verdict without changing an estimate, which
+# is why the two digests are separate.
 if [ "${1:-}" = "--production" ]; then
   PATHS=(src pkg csdid.pkg stata.toc)
 fi

@@ -21,18 +21,19 @@ do examples/06_mpdta_workflow.do
 ## Files
 
 - `01_balanced_panel.do`: balanced panel with covariates, default doubly robust
-  estimation, event replay, and simple aggregation.
+  estimation, event aggregation, and a simple summary.
 - `02_unbalanced_weighted_clustered.do`: unbalanced panel with covariates,
-  weights, clustered analytical standard errors, event aggregation, and plot
-  data export.
+  weights, clustered bootstrap inference, default whole-panel balancing,
+  event aggregation, and plot-data export.
 - `03_repeated_cross_section.do`: repeated cross-section workflow with weights
   and IPW.
 - `04_postestimation_exports.do`: saved RIF workflow, `estat event`, tidy and
-  glance exports, and plot data export.
+  glance exports, and plot-data export. The saved-RIF aggregation uses
+  analytical inference even when the original estimation used the bootstrap.
 - `05_legacy_migration.do`: modern replacements for legacy unbalanced-panel,
   universal-base event-study, and full-storage workflows.
 - `06_mpdta_workflow.do`: MPDTA applied-data workflow with default estimation,
-  event replay, simple/group/calendar/event aggregation, and plot-data export.
+  simple/group/calendar/event aggregation and plot-data export.
 
 These examples are smoke workflows, not a substitute for the test suite
 under tests/.

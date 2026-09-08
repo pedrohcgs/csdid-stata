@@ -6,11 +6,13 @@
 # originalgroup). csdid's raw-calendar keeper once kept one of two post
 # cells R keeps (cold-audit round 4, F1).
 
-suppressPackageStartupMessages(library(did))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f071/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(did))
+
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 

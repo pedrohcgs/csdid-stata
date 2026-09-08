@@ -34,7 +34,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_twfe.dta", replace
@@ -67,13 +67,13 @@ single overall effect), so it is the natural thing to compare with the regressio
 above. That is one command and one line of output.
 
 <div class="important" markdown="1">
-If the two are close, TWFE was not badly contaminated here, which is useful to
-know, though it is a fact about this dataset (and this outcome) rather than a
-general license. If they
-differ, the difference is the contamination, and no amount of clustering or extra
-fixed effects will remove it, because it comes from *which comparisons* the
-estimator makes and not from how the standard errors are computed (clustering, in
-particular, changes the standard error and leaves the point estimate alone).
+A similar pair of estimates does not establish that TWFE's comparisons are
+valid: different weights and biases can offset. A difference can reflect the
+comparisons and aggregation weights as well as sampling variation, so it is
+not itself an estimate of contamination. Inspect which units are used as
+controls and which effects each summary weights. Clustering addresses
+dependence in the standard errors; it does not change those comparisons or
+the point estimate.
 </div>
 
 ## Where the single number came from
@@ -95,7 +95,7 @@ estat group
 ```
 
 `estat event` shows how the effect evolves with time since treatment, period by
-period. `estat group` shows whether the 2014, 2015 and 2016 expanders responded
+period. `estat group` shows whether the 2014, 2015, 2016 and 2019 expanders responded
 differently. A TWFE coefficient averages all of that into one number, using
 weights that you did not choose and cannot inspect. Note that if the event study
 is flat and the cohorts agree, the average is a fair summary of what happened. If

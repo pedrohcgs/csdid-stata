@@ -1,6 +1,8 @@
 # RT024: R oracle for the estimable robustness-guard designs. Several inputs
 # exist to trigger refusals (duplicate rows, negative weights); those stay
 # behavioral. The ones that estimate are pinned here.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/rt024/inputs"; rows <- list()

@@ -1,4 +1,4 @@
-*! csdid_rif 2.0.0 01sep2026
+*! csdid_rif 2.0.0 08sep2026
 * Corrects Aggregation when data is missing
 
 * v1 csdid_rif
@@ -393,4 +393,3 @@ end
 	Display, level(`level')
 	
 end
- 

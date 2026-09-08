@@ -1,4 +1,6 @@
 # PY023: R oracle for the Python-map user-bug-fix regressions.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/py023/inputs"; rows <- list()

@@ -15,7 +15,7 @@
 *
 *   1.82  csdid y x, ivar(id) time(time) gvar(gvar) method(dripw)
 *                    cluster(cl) agg(event)
-*   2.0   csdid y x, ivar(id) time(time) gvar(gvar) method(dr) analytical
+*   2.0   csdid y x, ivar(id) time(time) gvar(gvar) method(dr) analytical pointwise
 *                    cluster(cl) agg(event) nevertreated base_period(varying)
 *
 * The pinning matters: 1.82's defaults are never-treated controls and a
@@ -117,14 +117,14 @@ program define bench_c200, rclass
     timer clear 99
     timer on 99
     capture noisily csdid y `covariates', ivar(id) time(time) gvar(gvar) ///
-        method(dr) analytical cluster(`cluster') agg(event) `cpin'
+        method(dr) analytical pointwise cluster(`cluster') agg(event) `cpin'
     local rc = _rc
     timer off 99
     quietly timer list 99
     return scalar secs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "2.0 method(dr) analytical agg(event) clustered; pinned `cpin'"
-    if `rc' return local note "2.0 method(dr) analytical agg(event) clustered; pinned `cpin'; FAILED rc=`rc'"
+    return local note "2.0 method(dr) analytical pointwise agg(event) clustered; pinned `cpin'"
+    if `rc' return local note "2.0 method(dr) analytical pointwise agg(event) clustered; pinned `cpin'; FAILED rc=`rc'"
 end
 
 * ---- one CSV row, same schema as scalebench.do

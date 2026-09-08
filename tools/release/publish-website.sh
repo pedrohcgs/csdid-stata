@@ -93,18 +93,18 @@ fi
 mkdir -p "$SITE_DIR"
 rsync -a --delete website/_site/ "$SITE_DIR/"
 
-echo "== changes to the live site"
+echo "== changes to the site checkout"
 git -C "$SITE_ROOT" --no-pager diff --stat -- csdid | sed 's/^/   /'
 CHANGED="$(git -C "$SITE_ROOT" diff --name-only -- csdid | wc -l | tr -d ' ')"
 if [ "$CHANGED" = "0" ]; then
-  echo "   nothing changed; the live site already matches this source"
+  echo "   nothing changed; the site checkout already matches this source"
   exit 0
 fi
 
 if [ "$PUSH" = "0" ]; then
   echo
   echo "staged in $SITE_DIR, nothing committed or pushed."
-  echo "review, then re-run with --push."
+  echo "review the prepared files before committing and publishing the site."
   exit 0
 fi
 
@@ -113,4 +113,4 @@ git -C "$SITE_ROOT" add csdid
 git -C "$SITE_ROOT" commit -q -m "csdid: publish site @$SRC_COMMIT"
 BRANCH="$(git -C "$SITE_ROOT" rev-parse --abbrev-ref HEAD)"
 git -C "$SITE_ROOT" push origin "$BRANCH"
-echo "published: $CHANGED file(s) from $SRC_COMMIT to $BRANCH"
+echo "pushed: $CHANGED file(s) from $SRC_COMMIT to $BRANCH; verify deployment and served pages separately"

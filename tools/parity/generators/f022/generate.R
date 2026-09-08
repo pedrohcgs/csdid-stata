@@ -1,11 +1,13 @@
 #!/usr/bin/env Rscript
 
-suppressPackageStartupMessages(library(did))
-suppressPackageStartupMessages(library(jsonlite))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/f022/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(did))
+suppressPackageStartupMessages(library(jsonlite))
+
 # tools/parity/generators/<id> is four levels below the repository root, not
 # three. With "../../.." this resolved to tools/, and the dir.exists() guard
 # below then passed because an earlier run had written a stray tools/tests/
@@ -91,7 +93,7 @@ events <- data.frame(
   return_code = 198,
   event_type = "error",
   offending_option = "gvar(g)",
-  message_normalized = "gvar() negative values are not supported; gvar() must be 0 for never-treated units and 1 or more for treated cohorts. Shift the cohort and time axes so both start at 1 (for example, replace g = g - min_period + 1 for treated units and t = t - min_period + 1); a monotone relabelling of the periods leaves the estimates unchanged.",
+  message_normalized = "gvar() negative values are not supported; gvar() must be 0 for never-treated units and 1 or more for treated cohorts. Add the same constant to time() and all treated gvar() values so both axes are positive; keep never-treated gvar() values at 0. This shift preserves period distances and estimates.",
   stringsAsFactors = FALSE
 )
 write.csv(events, file.path(fixture, "expected/r/events.csv"), row.names = FALSE, na = "")

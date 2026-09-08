@@ -4,6 +4,8 @@
 # weakest: DGP-implied targets with loose tolerances, plus fast-versus-nofast
 # self-consistency. The fix_weights block is the most valuable piece, because
 # fix_weights has a direct R counterpart and nothing compared it.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/py003/inputs"; rows <- list()

@@ -4,20 +4,22 @@ title: Comparison groups
 
 # Comparison groups: never-treated or not-yet-treated
 
-Every ATT(g,t) compares cohort *g* against units that are untreated at time *t*.
-Which units those are is your choice. It is one of the few options on this site
-that can change both what you estimate and whether you can estimate it at all.
+Every ATT(g,t) compares cohort *g* against units eligible as untreated
+comparisons in that cell. Which units those are is your choice. It can
+change both what you estimate and whether you can estimate it at all.
 
-- **Not-yet-treated** (the default) uses every unit not yet treated at *t*,
-  which includes cohorts treated later.
+- **Not-yet-treated** (the default) includes never-treated units and eligible
+  later-treated cohorts. A comparison unit must remain untreated through
+  both the target and base period, allowing for `anticipation(#)`; the
+  cohort being estimated never serves as its own comparison.
 - **`nevertreated`** uses only units never treated anywhere in the sample.
 
 <div class="note" markdown="1">
-Not-yet-treated is the default because it uses more of the data, usually gives
-tighter standard errors, and does not depend on a never-treated group existing
-or being large enough to trust. We depart from R `did` and Stata `csdid`
-Version 1.82 here; both of those default to never-treated, the older
-convention. Type `nevertreated` and you get their behavior back exactly.
+Not-yet-treated can draw on a larger comparison pool and does not require
+a never-treated group. The additional comparisons can improve precision,
+although a larger pool does not guarantee smaller standard errors. We depart
+from R `did` and Stata `csdid` Version 1.82 here; both of those default to never-treated, the older
+convention. Type `nevertreated` to use their comparison-group convention.
 </div>
 
 ## The data
@@ -34,7 +36,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_balanced.dta", replace
@@ -70,9 +72,10 @@ estat event
 display "comparison group: " e(control_group)
 ```
 
-The two runs usually give similar answers when the never-treated group is large
-and comparable, as it is here. They diverge when it is not. We would check either
-way, since the second run costs nothing once the data are already in memory.
+Compare the estimates and their uncertainty, and explain why parallel
+trends is credible for each proposed comparison group. Similar answers do
+not establish that either group is valid, and differences can reflect both
+identifying assumptions and sampling variation.
 
 ## When you have no never-treated units
 
@@ -89,8 +92,10 @@ display "return code: " _rc
 estat event
 ```
 
-The return code is zero. The event study prints as usual, with no error and no
-warning.
+The run can estimate earlier cohorts while later cohorts remain eligible
+comparisons. Once the final cohort enters treatment, no untreated comparison
+remains: that cohort has no ATT of its own, and those final periods are
+excluded. With anticipation, the usable horizon ends earlier.
 
 Ask the same data for `nevertreated` and there is nothing to honor the request
 with. `csdid` does not stop. It says what it is doing and falls back to the
@@ -105,7 +110,9 @@ display "comparison group: " e(control_group)
 
 <div class="important" markdown="1">
 Read that warning. The run succeeded with a different comparison group from the
-one you asked for, and the number it returns is a not-yet-treated estimate. If
+one you asked for: it uses the latest cohort as the fixed comparison group
+over the remaining horizon. This is narrower than the default
+not-yet-treated pool, which can include other later-treated cohorts. If
 your design has no never-treated units, we would say `notyet` and mean it.
 </div>
 
@@ -113,12 +120,27 @@ The last-treated cohort now serves as the comparison group for the earlier ones.
 It gets no ATT of its own; there is nothing left to compare it against. It is
 absent from the results table and still contributing as a control.
 
+An unbalanced panel needs one further distinction. Under `bal(full)`, a
+not-yet-treated run chooses its usable calendar after removing rows with
+missing values and before dropping incomplete units. If all never-treated
+units disappear only during that balancing step, surviving treated cohorts
+keep their eligible pre-treatment comparisons, including those of the latest
+cohort; comparisons with no eligible controls are missing. A `nevertreated`
+run instead applies its announced latest-cohort fallback when no never-treated
+units remain in the balanced sample. Read the sample and comparison-group
+messages together when choosing between these options.
+
+If balancing removes every unit from an eligible treated cohort, estimation
+stops and names that cohort. Correct the missing observations or use
+`bal(none)` to estimate on the unbalanced panel. Cohorts already excluded by
+the usable-calendar rules do not trigger this refusal.
+
 ## Which to use
 
 <div class="tip" markdown="1">
 Keep the default, **not-yet-treated**, unless you have a reason not to, and in
 our view that reason should be about the design rather than about the standard
-errors. It uses more data and often gives tighter standard errors. The cost is
+errors. It can enlarge the comparison pool. The cost is
 that parallel trends now has to hold against later-treated cohorts as well, over
 periods in which those cohorts may already be anticipating treatment. If
 anticipation is a concern, see [Anticipation](anticipation.html).
@@ -127,12 +149,14 @@ anticipation is a concern, see [Anticipation](anticipation.html).
 Prefer **`nevertreated`** when you have a large never-treated group that you are
 willing to defend as comparable, and when you would rather rest on one fixed
 comparison group whose identifying assumption is easy to state and to argue
-about. Those are real advantages. It is also what you want when you are
-reproducing a result computed with R `did` or with `csdid` Version 1.82.
+about. Use it when reproducing a specification that used never-treated
+comparisons,
+including the default in R `did` or `csdid` Version 1.82. Match the other
+options as well.
 
 Under `nevertreated`, a never-treated group that is too small is refused, and
 `csdid` stops when it is smaller than `#covariates + 5`. Note that the guard
 changes whether the command runs and never changes an estimate. The remedy it
 recommends is `notyet`, which is one of the reasons that group is the default.
-If you meet that message, the guard is telling you to use a different comparison
-group, and loosening it would only hide the problem.
+Before changing groups in response, assess whether parallel trends is
+credible for the additional comparison cohorts.

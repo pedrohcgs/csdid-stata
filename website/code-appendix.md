@@ -3497,7 +3497,7 @@ end</code></pre>
 * request, and returns the event-study coefficients in one shape:
 *
 *   bench_&lt;pkg&gt;, horizons(#) cluster(varname) [covariates(varlist) mode(string)]
-*     -&gt; r(secs)     wall time for the estimation call alone
+*     -&gt; r(secs)     wall time for estimation and event-study aggregation
 *     -&gt; r(ok)       1 if it produced coefficients
 *     -&gt; r(note)     anything the package refused, dropped, or omitted
 *     -&gt; matrix ES   horizon | estimate | se   (rows = horizons 0..H)
@@ -3525,7 +3525,7 @@ program define bench_csdid, rclass
     if "`mode'" == "" local mode "pointwise"
     if "`structure'" == "" local structure "balanced"
 
-    local inf "analytical"
+    local inf "analytical pointwise"
     if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
     if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
 
@@ -4243,7 +4243,7 @@ program define bench_csdidbf, rclass
     syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) METHod(string)]
     if "`mode'" == "" local mode "pointwise"
 
-    local inf "analytical"
+    local inf "analytical pointwise"
     if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
     if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
 
@@ -4301,7 +4301,7 @@ program define bench_csdidpair, rclass
     syntax , HORizons(integer) CLuster(varname) [COVariates(varlist) MODE(string) STRUCTure(string) METHod(string)]
     if "`mode'" == "" local mode "pointwise"
 
-    local inf "analytical"
+    local inf "analytical pointwise"
     if "`mode'" == "bootstrap" local inf "wboot(reps(999) rseed(20260729)) pointwise"
     if "`mode'" == "bands"     local inf "wboot(reps(999) rseed(20260729))"
 
@@ -4727,7 +4727,7 @@ display as text "SB DONE tier=`tier' smoke=`issmoke'"
 *
 *   1.82  csdid y x, ivar(id) time(time) gvar(gvar) method(dripw)
 *                    cluster(cl) agg(event)
-*   2.0   csdid y x, ivar(id) time(time) gvar(gvar) method(dr) analytical
+*   2.0   csdid y x, ivar(id) time(time) gvar(gvar) method(dr) analytical pointwise
 *                    cluster(cl) agg(event) nevertreated base_period(varying)
 *
 * The pinning matters: 1.82's defaults are never-treated controls and a
@@ -4829,14 +4829,14 @@ program define bench_c200, rclass
     timer clear 99
     timer on 99
     capture noisily csdid y `covariates', ivar(id) time(time) gvar(gvar) ///
-        method(dr) analytical cluster(`cluster') agg(event) `cpin'
+        method(dr) analytical pointwise cluster(`cluster') agg(event) `cpin'
     local rc = _rc
     timer off 99
     quietly timer list 99
     return scalar secs = r(t99)
     return scalar ok = (`rc' == 0)
-    return local note "2.0 method(dr) analytical agg(event) clustered; pinned `cpin'"
-    if `rc' return local note "2.0 method(dr) analytical agg(event) clustered; pinned `cpin'; FAILED rc=`rc'"
+    return local note "2.0 method(dr) analytical pointwise agg(event) clustered; pinned `cpin'"
+    if `rc' return local note "2.0 method(dr) analytical pointwise agg(event) clustered; pinned `cpin'; FAILED rc=`rc'"
 end
 
 * ---- one CSV row, same schema as scalebench.do
@@ -4911,7 +4911,8 @@ local note "H=`h'; G_real=`greal'; nevertreated=`nevpct'%; scheme=`structure'; c
 
 f_write, scan(`scan') n(`n') t(`t') g(`g') rows(`rows') pkg(`impl') ///
     med(`medstr') trials(`trials') ok(`ok') note(`note')
-display as text "F ROW `scan' `impl' n=`n' T=`t' G=`g' rows=`rows' med=`medstr' ok=`ok' trials=`trials'"</code></pre>
+display as text "F ROW `scan' `impl' n=`n' T=`t' G=`g' rows=`rows' med=`medstr' ok=`ok' trials=`trials'"
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -5708,15 +5709,14 @@ ggsave(file.path(outdir, "field-hero-varmiss.png"), combo,
 <pre><code>#------------------------------------------------------------------------------
 # Speed figure for the csdid-against-the-field guide
 #
-# Two log-log panels drawn from the published Speed-section tables:
+# Two log-log panels drawn from the recorded inputs to the Speed tables:
 #   A. seconds vs rows       (unbalanced-panel table: n x {1k,10k,100k}, T=10)
 #   B. seconds vs periods T  (T-scaling table: T x {5,10,20,40}, n=10,000)
-# The numbers below are exactly the numbers printed in those tables; the
-# timing protocol (median of 10 runs, event study plus clustered standard
-# errors) is described in the Speed section.
+# Timings include estimation and event-study aggregation with clustered
+# standard errors. The recorded trial count and date label the figure.
 #
-# Output : &lt;outdir&gt;/field-speed.png
-# Usage  : Rscript fig_speed.R [outdir]
+# Outputs: &lt;outdir&gt;/field-speed.png and field-speed.provenance.json
+# Usage  : Rscript fig_speed.R [outdir] [resultsdir]
 #------------------------------------------------------------------------------
 rm(list = ls())
 
@@ -5724,13 +5724,28 @@ library(ggplot2)
 library(ggtext)
 library(cowplot)
 library(dplyr)
-library(tibble)
 
 #------------------------------------------------------------------------------
 # Set parameters
 #------------------------------------------------------------------------------
 args   &lt;- commandArgs(trailingOnly = TRUE)
 outdir &lt;- ifelse(length(args) &gt;= 1, args[1], ".")
+script &lt;- sub("^--file=", "", grep("^--file=", commandArgs(), value = TRUE))
+if (length(script) != 1) stop("Run this figure with Rscript.")
+resultsdir &lt;- if (length(args) &gt;= 2) args[2] else
+  file.path(dirname(normalizePath(script)), "results")
+raw &lt;- read.csv(file.path(resultsdir, "scalebench-results.csv"),
+                stringsAsFactors = FALSE, na.strings = c("NA", ".", ""))
+meta &lt;- jsonlite::fromJSON(file.path(resultsdir, "metadata.json"))
+required &lt;- c("scan", "n_units", "T", "cohorts", "rows", "pkg",
+              "median_seconds", "trials", "ok")
+if (!all(required %in% names(raw))) stop("Incomplete speed-results schema.")
+if (length(meta$trials) != 1 || !is.numeric(meta$trials) ||
+    !is.finite(meta$trials) || meta$trials &lt; 1 || meta$trials != floor(meta$trials))
+  stop("Missing or invalid recorded trial count.")
+if (length(meta$date) != 1 || is.na(as.Date(meta$date)) ||
+    format(as.Date(meta$date), "%Y-%m-%d") != meta$date)
+  stop("Missing or invalid benchmark date.")
 
 navy &lt;- "#012169"
 gray &lt;- "#525252"
@@ -5739,22 +5754,43 @@ cols &lt;- c("csdid"          = "#1e40af",
           "did_imputation" = "#b91c1c",
           "lpdid"          = "#6b7280")
 
-# Speed section, "Unbalanced panels" table (csdid at bal(none), T=10, G=4)
-size_tab &lt;- tribble(
-  ~rows,   ~csdid, ~jwdid, ~lpdid, ~did_imputation,
-  8500,     0.10,   0.20,   0.32,   0.57,
-  85000,    0.69,   0.70,   0.85,   3.85,
-  850000,   3.79,   6.28,   5.83,   38.0
-)
+# A complete grid is required: a missing or duplicated measurement must not
+# silently change a line, endpoint label or the bootstrap-cost annotation.
+select_cells &lt;- function(scan_name, units, periods, packages) {
+  keep &lt;- with(raw, scan == scan_name &amp; n_units %in% units &amp; T %in% periods &amp;
+                     cohorts == 4 &amp; pkg %in% packages)
+  dat &lt;- raw[which(keep), ]
+  grid &lt;- expand.grid(n_units = units, T = periods, pkg = packages)
+  key &lt;- function(x) sprintf("%d/%d/%s", x$n_units, x$T, x$pkg)
+  if (nrow(dat) != nrow(grid) || anyDuplicated(key(dat)) ||
+      !setequal(key(dat), key(grid)))
+    stop("Incomplete or duplicated speed grid: ", scan_name)
+  if (anyNA(dat[required]) || any(dat$ok != 1) ||
+      any(dat$trials != meta$trials) ||
+      any(!is.finite(dat$median_seconds) | dat$median_seconds &lt;= 0) ||
+      any(!is.finite(dat$rows) | dat$rows &lt;= 0 | dat$rows != floor(dat$rows)))
+    stop("Invalid or unsuccessful speed measurement: ", scan_name)
+  row_counts &lt;- split(dat$rows, paste(dat$n_units, dat$T))
+  if (any(vapply(row_counts, function(x) length(unique(x)) != 1, logical(1))))
+    stop("Commands have different input row counts: ", scan_name)
+  dat$cmd &lt;- ifelse(grepl("^csdid", dat$pkg), "csdid", dat$pkg)
+  dat$sec &lt;- dat$median_seconds
+  dat
+}
 
-# Speed section, T-scaling table (balanced panel, n=10,000, G=4)
-T_tab &lt;- tribble(
-  ~T,  ~csdid, ~jwdid, ~lpdid, ~did_imputation,
-  5,    0.13,   0.26,   0.55,   1.44,
-  10,   0.26,   0.67,   1.05,   3.44,
-  20,   0.52,   2.76,   1.92,   8.99,
-  40,   1.07,  12.1,    3.66,  20.0
-)
+rivals &lt;- c("jwdid", "lpdid", "did_imputation")
+size_tab &lt;- select_cells("A_unbal", c(1000, 10000, 100000), 10,
+                         c("csdid_balnone", rivals))
+T_tab &lt;- select_cells("C_periods", 10000, c(5, 10, 20, 40),
+                      c("csdid", rivals))
+default_tab &lt;- select_cells("E_default", 100000, 10,
+                            c("csdid_analytical", "csdid_boot999"))
+if (any(T_tab$rows != T_tab$n_units * T_tab$T) ||
+    any(default_tab$rows != 1000000))
+  stop("Recorded balanced-panel dimensions do not match the figure.")
+analytical &lt;- default_tab$sec[default_tab$pkg == "csdid_analytical"]
+bootstrap &lt;- default_tab$sec[default_tab$pkg == "csdid_boot999"]
+size_rows &lt;- sort(unique(size_tab$rows))
 
 #------------------------------------------------------------------------------
 # Theme
@@ -5779,23 +5815,19 @@ theme_fig &lt;- function(base_size = 13) {
 #------------------------------------------------------------------------------
 # One workhorse for both panels: log-log lines with end labels
 #------------------------------------------------------------------------------
-speed_panel &lt;- function(tab, xvar, title, subtitle, xlab, xbreaks, xlabels,
-                        vj = NULL) {
+speed_panel &lt;- function(tab, xvar, title, subtitle, xlab, xbreaks, xlabels) {
   long &lt;- tab %&gt;%
-    tidyr::pivot_longer(-dplyr::all_of(xvar), names_to = "cmd",
-                        values_to = "sec") %&gt;%
     mutate(cmd = factor(cmd, levels = names(cols)))
   ends &lt;- long %&gt;%
     group_by(cmd) %&gt;% slice_max(.data[[xvar]], n = 1) %&gt;% ungroup() %&gt;%
-    mutate(lab = paste0("**", cmd, "** ", sec, "s"),
-           vjust = if (is.null(vj)) 0.5
-                   else dplyr::coalesce(vj[as.character(cmd)], 0.5))
+    mutate(lab = paste0("**", cmd, ":** ",
+                        trimws(formatC(sec, format = "fg", digits = 3)), " s"))
 
   ggplot(long, aes(x = .data[[xvar]], y = sec, colour = cmd)) +
     geom_line(linewidth = 1.1) +
     geom_point(size = 2.4) +
     ggtext::geom_richtext(
-      data = ends, aes(label = lab, vjust = vjust), hjust = 0,
+      data = ends, aes(label = lab), hjust = 0, vjust = 0.5,
       nudge_x = 0.045, fill = NA, label.color = NA, size = 3.6,
       show.legend = FALSE) +
     scale_colour_manual(values = cols) +
@@ -5809,10 +5841,9 @@ speed_panel &lt;- function(tab, xvar, title, subtitle, xlab, xbreaks, xlabels,
 
 pA &lt;- speed_panel(size_tab, "rows",
   "More data",
-  "Unbalanced panel (15% of rows deleted), T=10, four cohorts",
+  "Unbalanced panel (15% random row deletion), T=10, four cohorts",
   "rows in the panel",
-  c(8500, 85000, 850000), c("8,500", "85,000", "850,000"),
-  vj = c(jwdid = -0.3, lpdid = 0.5, csdid = 1.3))
+  size_rows, format(size_rows, big.mark = ",", scientific = FALSE, trim = TRUE))
 
 pB &lt;- speed_panel(T_tab, "T",
   "More periods",
@@ -5831,20 +5862,32 @@ title_grob &lt;- cowplot::ggdraw() +
     x = 0.012, y = 0.76, hjust = 0, vjust = 0.5, color = navy,
     fontface = "bold", size = 19) +
   cowplot::draw_label(
-    "Run time of one event-study estimation with clustered standard errors; median of 10 runs. Both axes on log scale.",
+    sprintf("Estimation plus event-study aggregation with clustered standard errors; median of %d runs. Both axes on log scale.",
+            meta$trials),
     x = 0.012, y = 0.22, hjust = 0, vjust = 0.5, color = gray, size = 12)
 
 foot_grob &lt;- cowplot::ggdraw() +
   cowplot::draw_label(
-    paste0("Numbers from the Speed section tables. csdid timed at bal(none), the common-sample choice, with analytical inference;\n",
-           "999 bootstrap draws plus uniform bands (the shipped default is 1,000) add about a third of a second at one million rows."),
+    paste0("Recorded ", meta$date, ". Plotted csdid curves: analytical pointwise, bal(none). Options and horizons follow the Speed tables.\n",
+           sprintf("At one million balanced rows: analytical %.2f s; 999 bootstrap draws plus uniform bands %.2f s (%.3f s extra), including event aggregation.",
+                   analytical, bootstrap, bootstrap - analytical)),
     x = 0.012, y = 0.5, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
     lineheight = 1.2)
 
 combo &lt;- cowplot::plot_grid(title_grob, panels, foot_grob, ncol = 1,
                             rel_heights = c(0.16, 1, 0.11))
 
-ggsave(file.path(outdir, "field-speed.png"), combo,
+image_file &lt;- file.path(outdir, "field-speed.png")
+ggsave(image_file, combo,
        width = 13, height = 5.6, dpi = 200, bg = "white")
+
+files &lt;- c(r_source_sha256 = script,
+           results_sha256 = file.path(resultsdir, "scalebench-results.csv"),
+           metadata_sha256 = file.path(resultsdir, "metadata.json"),
+           image_sha256 = image_file)
+provenance &lt;- as.list(vapply(files, function(path)
+  digest::digest(file = path, algo = "sha256", serialize = FALSE), character(1)))
+jsonlite::write_json(provenance, file.path(outdir, "field-speed.provenance.json"),
+                     auto_unbox = TRUE, pretty = TRUE)
 </code></pre>
 </details>

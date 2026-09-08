@@ -1,0 +1,130 @@
+{
+  "matrix_id": "RT041",
+  "fixture_family": "r-outcome-qr",
+  "normative_source": "did 2.5.1 compute.att_gt.R; DRDID 1.3.0 reg_did_panel, reg_did_rc, drdid_panel and fastglm_fit: Gaussian outcome fits use method=0 (column-pivoted QR)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/affine_panel_reg.csv",
+      "sha256": "048adda660200deaea367a23b93a25ef8aacc9627e306ff7b1459758c2cd2c70",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_panel_reg_weighted.csv",
+      "sha256": "048adda660200deaea367a23b93a25ef8aacc9627e306ff7b1459758c2cd2c70",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_panel_dr.csv",
+      "sha256": "ec0564833c6f19e11db2737d6e303bd5458aa3b0a12cf8ae042f2db5b2bc5edb",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_panel_dr_weighted.csv",
+      "sha256": "048adda660200deaea367a23b93a25ef8aacc9627e306ff7b1459758c2cd2c70",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_rc_reg.csv",
+      "sha256": "9ff65a9809261cc0e7ba740e6e5aa2e7127f7659a50031f3c536097fedf97308",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/affine_rc_reg_weighted.csv",
+      "sha256": "9ff65a9809261cc0e7ba740e6e5aa2e7127f7659a50031f3c536097fedf97308",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_panel_reg.csv",
+      "sha256": "8c79bed853bfd6e329e367b021dab14700126ef658f0cf7eee87cb66aa707a27",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_panel_dr.csv",
+      "sha256": "8c79bed853bfd6e329e367b021dab14700126ef658f0cf7eee87cb66aa707a27",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_rc_reg.csv",
+      "sha256": "beacb335a31c3723d23a727249778d6286f42f0eec2db4a53976c4c0a278b01d",
+      "rows": 80,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_unbalanced_reg.csv",
+      "sha256": "e0b4ed6d5c7cd828f4da8bdb39846d525c7d133ecb3666a7fefc09cbcaf0e0a0",
+      "rows": 118,
+      "columns": 8
+    },
+    {
+      "path": "inputs/regular_balanced_reg_varying.csv",
+      "sha256": "8c79bed853bfd6e329e367b021dab14700126ef658f0cf7eee87cb66aa707a27",
+      "rows": 120,
+      "columns": 8
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "f36bb18def3f976bde6c64985ef45f0bd7f7bdde54bd06e80b04338555c1391a",
+      "rows": 11,
+      "columns": 9
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt041/generate.R",
+      "path": "tools/parity/generators/rt041/generate.R",
+      "sha256": "009850b05e6361fdb280ed30049afd1b0bab1f043096a517b675d870f76e6dbe"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0",
+        "fastglm": "0.1.1"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "047ce6430612f6a970d439ffd7864f164557dd6bdca4aceaa23cac92c499194c"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "full-influence-function",
+      "sha256": "bb014eee8574f18edf63ebf5396173d22fe2cde210751a1876da5ecdcdb9f20c"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata full ATT(g,t), standard errors and sample dimensions",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Every Stata unit influence-function entry",
+      "expected": "expected/r/inffunc.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "unit_index", "group", "time"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Six affine cases qualify three distinct coefficient kernels, weighted and unweighted; five ordinary cases cover nondegenerate influence functions, clustering, unbalanced panels, and varying weights. Three-period panels exercise DR cache reuse. All cells and full IF entries are compared without conditioning-specific tolerance."
+}

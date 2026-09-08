@@ -236,7 +236,7 @@ file write result ///
     "implementation,scenario,seconds,observations,inner,accelerator,stata_version,stata_flavor,os,machine_type" _n
 file write result ///
     "`implementation',`scenario'," %21.15g (csdid_ab_seconds) "," %21.0g (_N) ///
-    ",`inner',`accelerator',`c(stata_version)',`c(flavor)',`c(os)',`c(machine_type)'" _n
+    ",`inner',`accelerator',`c(stata_version)',`c(edition_real)',`c(os)',`c(machine_type)'" _n
 file close result
 
 log close csdid_ab

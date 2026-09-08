@@ -1,5 +1,7 @@
 # PY020: R oracle for the review-fix scenarios, including factor covariates
 # (Stata i.cat_code == R factor(cat_code)) and a seeded clustered bootstrap.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/py020/inputs"; rows <- list()

@@ -1,6 +1,8 @@
 # PY002: R oracle for the clustered ANALYTICAL scenario.
 # The inherited test asserted that clustered SEs were positive and differed from
 # iid SEs, never that they equalled R's.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py002/inputs/clustered-data.csv")

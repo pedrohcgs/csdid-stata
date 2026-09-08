@@ -24,7 +24,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 ```
@@ -33,23 +33,23 @@ keep if nyears == 11
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
 ```
 
-That single run carries the whole inference apparatus with it (the bootstrap
-draws, the critical value, the pre-test). Nothing else on this page needs a fresh
-estimation of the model.
+That run computes inference for the ATT(g,t) cells and the pre-test. The
+examples below rerun the model to illustrate alternative inference settings;
+postestimation aggregations reuse its influence functions and compute their
+own standard errors and bands.
 
 ## Simultaneous versus pointwise
 
 <div class="important" markdown="1">
-This matters more than it looks. A pointwise 95% interval is correct for *one*
-cell considered alone. Read a table or a plot of fifteen cells, ask whether
-anything in it is significant, and pointwise intervals will mislead you.
-Roughly one in twenty cells will exclude zero by chance.
+A pointwise 95% interval targets coverage for one pre-specified cell. When
+a cell's true effect is zero, a corresponding nominal 5% test can still
+reject by chance. Scanning many cells increases the chance of at least one
+false rejection; the increase depends on their dependence.
 </div>
 
-Simultaneous bands cover the whole family at once, so you can scan the table
-without doing any adjustment in your head. However, they are wider. That extra
-width is what it costs to look at the whole table when you did not pick one cell
-in advance.
+Simultaneous bands target coverage of the whole family at once. They are
+usually wider because they account for looking across multiple cells.
+Read the family of effects and the reported critical value together.
 
 ```stata
 csdid mrate, ivar(county_code) time(year) gvar(gvar) pointwise    // one at a time
@@ -64,7 +64,9 @@ summary effect — `Post_avg` on an event study, `Overall` by cohort or period,
 effects all lie inside their intervals at once, and a single summary number is
 not a set, so it is reported at the normal quantile (`e(point_crit_val)`). One
 `estat event` table can therefore show both kinds of interval, and it says so
-underneath. The reference implementation bands its overall effect the same way.
+underneath. Read the per-column `crit` row of `r(table)` after `estat event`
+when reconstructing its intervals. `e(agg_cband)` describes the aggregation
+effects; `e(cband)` describes the original ATT(g,t) band request.
 
 ## Analytical standard errors
 
@@ -77,23 +79,24 @@ These are faster, noticeably so on large panels. The standard errors are
 analytical; an aggregation of an analytical fit still carries a simultaneous
 band -- its critical value is bootstrapped, and `csdid_stats` says so in a
 note -- unless you add `pointwise`. We use `analytical pointwise` while
-iterating on a specification -- the estimates do not change, only the
-standard errors -- and we report the bootstrap.
+iterating on a specification and the bootstrap for reported inference. The
+point estimates stay the same; the standard errors and confidence bands can
+change.
 </div>
 
 ## Reproducibility
 
-An unseeded bootstrap moves by a few percent between otherwise identical runs.
-The results header warns you. Seed it:
+An unseeded bootstrap can change standard errors and confidence bands between
+otherwise identical runs. The results header warns you. Seed it:
 
 ```stata
 csdid mrate, ivar(county_code) time(year) gvar(gvar) wboot(reps(1000) rseed(20250101))
 ```
 
-`reps()` must exceed 20. A handful of draws cannot support a standard error, and
-the empirical quantile behind a simultaneous critical value cannot be resolved at
-all, so `csdid` refuses the request. We seed every run on this site for that
-reason, and we would seed the runs behind a published table as well.
+`reps()` must exceed 20. Very small bootstrap samples can give unstable standard
+errors and tail quantiles, so `csdid` refuses those requests. For reproducible
+bootstrap results, specify `rseed()` and record the seed and number of draws
+with published tables.
 
 ## Clustering
 
@@ -111,8 +114,9 @@ cluster variable by looking at the standard errors it produced.
 
 ## The parallel-trends pre-test
 
-When pre-treatment cells exist, `csdid` reports a joint Wald test that all of
-them are zero, automatically, on every run. The test is built from the analytical
+When pre-treatment cells exist, `csdid` reports a joint Wald test that the estimable pre-treatment
+effects are zero. It is unavailable when those effects or their covariance
+cannot support the test; the output explains why. The test is built from the analytical
 influence-function covariance, so it does not depend on whether the bootstrap
 ran.
 

@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 01sep2026
+*! csdid_stats 2.0.0 08sep2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -35,7 +35,8 @@ program define csdid_stats, eclass
         * `txn_had' records that the hold actually HAPPENED, not that e()
         * looked restorable. A completed `csdid_stats using' posts e(cmd)
         * with no e(b) (the artifact carries no coefficient vector), and
-        * `_estimates hold' refuses a b-less state with r(301) -- measured:
+        * `_estimates hold' refuses that manually populated state with r(301)
+        * -- measured:
         * the second of two back-to-back using-runs died here, in the front,
         * before the worker ever ran. A b-less state still deserves the
         * same guarantee, so when the hold is refused the front copies every
@@ -47,9 +48,9 @@ program define csdid_stats, eclass
         * without that certification macro), and the copies are stored under
         * INDEXED transaction names, never names derived from the members'
         * own (a legal 32-character result name would overflow a derived
-        * local name). A b-less state cannot carry e(sample) (only `ereturn
-        * post' marks one, and posting requires e(b)), so the copy is
-        * complete for every state the hold refuses.
+        * local name). A state created by `ereturn post' can carry e(sample)
+        * without e(b); hold accepts and protects that state. This fallback
+        * covers results assembled directly from scalars, macros and matrices.
         local txn_sc : e(scalars)
         local txn_mac : e(macros)
         local txn_mat : e(matrices)
@@ -790,9 +791,9 @@ program define _csdid_stats_main, eclass
                 * Sibling of the resolved csdid.ado by trailing substr, never
                 * substring replacement -- same rule and reasons as the
                 * estimation stage's binding block in csdid.ado, which also
-                * documents why a plugin handle's aliveness check is the
-                * recorded rc-0 bind (program list cannot see plugins) and
-                * why rc 110 is never accepted as a load.
+                * documents why the recorded path is not a live-handle
+                * check (program list cannot see plugins) and why only a
+                * fresh rc-0 bind can recover a missing handle below.
                 local _ap_len = strlen("`agg_csdid_path'")
                 local agg_plugin_dir ""
                 if `_ap_len' > 9 & substr("`agg_csdid_path'", `_ap_len' - 8, .) == "csdid.ado" {
@@ -873,6 +874,22 @@ program define _csdid_stats_main, eclass
                         `agg_plugin_common' `boot_rng_state'
                     local agg_plugin_rc = _rc
                     if `agg_plugin_rc' == 1 exit 1
+                    if `agg_plugin_rc' == 199 {
+                        * As in csdid: bind without dropping the name. Only
+                        * rc 0 proves the failed call had no live handle;
+                        * rc 110 leaves recovery to the RNG-safe fallback.
+                        capture program __csdid_agg_boot_plugin, plugin using("`agg_plugin_path'")
+                        local agg_bind_rc = _rc
+                        if `agg_bind_rc' == 1 exit 1
+                        if !`agg_bind_rc' {
+                            capture plugin call __csdid_agg_boot_plugin `agg_plugin_if_vars' in 1/`agg_plugin_nc_value', ///
+                                bootstrap_agg_vars `biters' `agg_plugin_nc_value' `cband' ///
+                                `agg_plugin_independent' ///
+                                `agg_plugin_common' `boot_rng_state'
+                            local agg_plugin_rc = _rc
+                            if `agg_plugin_rc' == 1 exit 1
+                        }
+                    }
                 }
                 if !`agg_plugin_rc' & `agg_simple' {
                     * The duplicate rule, applied to the plugin's output: the

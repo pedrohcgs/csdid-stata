@@ -30,7 +30,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_overlap.dta", replace
@@ -50,14 +50,16 @@ csdid mrate unemp_rate poverty_rate, ivar(county_code) time(year) gvar(gvar) ///
 estat event
 ```
 
-No warning here means overlap held in every cell for these covariates. This is
-good news! However, add enough covariates and it will not hold. The more you
-condition on, the easier it becomes to predict cohort membership perfectly.
+A warning identifies a fitted propensity problem; its absence does not prove
+population overlap. Inspect whether comparison observations cover the treated
+units' covariate values. A richer specification can make cohort membership
+easier to predict and expose comparisons with little support.
 
 ## Trimming
 
-`pscoretrim()` caps how extreme a propensity score may get, and the default is a
-deliberately mild `.995`:
+`pscoretrim()` drops comparison observations whose fitted score is at or
+above the threshold; it does not cap their scores. Treated observations are
+retained. The default threshold is `.995`:
 
 ```stata
 use "jel_overlap.dta", clear
@@ -78,8 +80,8 @@ display "trim: " e(pscoretrim)
 estat simple
 ```
 
-Turn it off with `pscoretrim(1)`, which permits any score (including scores that
-ought to worry you):
+Turn trimming off with `pscoretrim(1)`. The separate overlap checks still
+apply, so this does not force a failed cell to be estimated:
 
 ```stata
 use "jel_overlap.dta", clear
@@ -107,10 +109,11 @@ counterparts in the comparison group, and that a different trimming rule would
 have given a different answer.
 
 <div class="important" markdown="1">
-Trimming changes the estimand slightly. It reweights toward the region of common
-support, the region where comparison units actually exist. That is usually
-preferable to an estimate dominated by units with no real comparison. It is
-still a choice, so state the value you used.
+Trimming removes comparison observations and can change the result
+substantially. It does not automatically identify an ATT for a new
+common-support population, because treated observations are retained. A binding
+threshold calls for investigating the design, not just reporting a smoother
+estimate. State the threshold and the comparisons affected.
 </div>
 
 ## Avoiding the problem
@@ -124,17 +127,17 @@ so we think about it when choosing the specification.
   predict (that is what a propensity score is for), so include what parallel
   trends plausibly needs, which is usually fewer covariates than the dataset
   happens to contain.
-- **Outcome regression.** We prefer `method(reg)` when overlap is genuinely
-  poor. It does not weight by a propensity score, so it cannot blow up on
-  extreme scores, and it relies instead on the outcome model being right.
-- **A larger comparison pool.** `notyet` makes extreme scores less likely (it is
-  the default, as it happens), simply because there are more units available to
-  compare against. See
+- **Outcome regression.** `method(reg)` avoids inverse propensity weights,
+  but with poor overlap it extrapolates the outcome model beyond the comparison
+  data. A finite regression estimate does not resolve absent support.
+- **A larger comparison pool.** `notyet` can expand the available comparison
+  pool by using eligible later-treated cohorts. More observations do not
+  guarantee better overlap; inspect support under the chosen specification. See
   [Comparison groups](comparison-groups.html).
 
 `method(dr)`, the default, is doubly robust: it is consistent if *either* the
 outcome model or the propensity model is correct. That is why we made it the
-default, and it is the reason overlap matters less here than it does for plain
-`ipw`. Double robustness still needs overlap, though, and we would read the
+default. Double robustness still needs overlap and does not protect against
+extreme weights or missing support. Read the
 warnings before trusting any individual cell. See
 [Covariates and estimators](covariates-and-estimators.html).

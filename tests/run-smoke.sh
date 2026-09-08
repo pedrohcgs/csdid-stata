@@ -16,6 +16,10 @@ STATA_CMD="${STATA_CMD:-stata-mp}"
 LOGDIR="build/logs"
 mkdir -p "$LOGDIR"
 
+# Native test binaries are build prerequisites, not files a clone can carry.
+# The override leaves the platform-specific release payload untouched.
+CSDID_PLUGIN_OUTDIR="$(pwd)/build" bash tools/plugin/build-bootstrap-plugin.sh auto
+
 run_stata() {
     local dofile="$1"
     local logfile
@@ -30,23 +34,13 @@ run_stata() {
         echo "Stata log not found for $dofile: $logfile" >&2
         exit 1
     fi
-    local grep_status=0
-    grep -nE '^r\([0-9]+\);$' "$logfile" >&2 || grep_status=$?
-    if [[ "$grep_status" -eq 0 ]]; then
-        echo "Uncaught Stata error in $logfile" >&2
-        tail -80 "$logfile" >&2
-        exit 1
-    fi
-    if [[ "$grep_status" -ne 1 ]]; then
-        echo "Could not scan $logfile for Stata errors (grep exit $grep_status); refusing to report success" >&2
-        exit 1
-    fi
+    bash tools/release/check-stata-log-tail.sh "$logfile"
     # Only after every inspection above: batch Stata drops its log in the
     # working directory, and the root stays clean.
     mv -f "$logfile" "$LOGDIR/$logfile"
 }
 
-python3 tools/validate-contract.py
+bash tools/release/check-contract.sh
 Rscript tools/parity/generators/f001/generate.R
 Rscript tools/parity/generators/f002/generate.R
 Rscript tools/parity/generators/f003/generate.R
@@ -116,6 +110,11 @@ Rscript tools/parity/generators/f038/generate.R
 Rscript tools/parity/generators/f039/generate.R
 Rscript tools/parity/generators/f041/generate.R
 Rscript tools/parity/generators/f040/generate.R
+# Observe the current full-run status without rewriting frozen JEL evidence.
+# Export the fresh directory so every Stata reader uses this invocation's view.
+mkdir -p build
+CSDID_JEL_FIXTURE_ROOT="$(mktemp -d "$(pwd)/build/jel-artifact-contract.XXXXXXXX")"
+export CSDID_JEL_FIXTURE_ROOT
 python3 tools/parity/generators/jel/generate.py
 Rscript tools/parity/generators/f045/generate.R
 Rscript tools/parity/generators/f046/generate.R

@@ -16,11 +16,16 @@ number: the post-treatment effects are identical under either setting.
 - **`varying`** compares each pre-treatment period with the one immediately
   before it, and each post-treatment period with *g-1*.
 
+Here *g-1* means the last observed period before treatment, with no
+anticipation. With `anticipation(#)`, the reference is the last observed
+period before *g - anticipation*; it need not be exactly *g-1* on a gapped
+calendar. `e(attgt)` records each cell's reference in `base_time`.
+
 Universal is the default because it is the layout an event-study plot assumes,
 and event studies are how these results are almost always presented. R `did`
 and Stata `csdid` Version 1.82 both default to `varying` instead, so this is a
 deliberate departure from both, and `base_period(varying)` restores their
-behavior exactly.
+base-period convention.
 
 ## The data
 
@@ -36,7 +41,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_balanced.dta", replace
@@ -78,11 +83,12 @@ what you want when the question is *where* a violation happened rather than
 Two things change between the two runs. One of them is cosmetic and the other is
 not, and both are worth seeing.
 
-**Cell counts.** Universal reports the base period itself, which is zero by
-construction, so each cohort contributes one extra row. `e(N_attgt)` therefore
-shrank when the varying run above dropped those rows. The difference is
-bookkeeping, and it is still the first thing people notice when they switch
-between the two specifications.
+**Cell counts.** Universal includes the first observed period, comparing it
+with the cohort's common base. Varying omits that first period because there
+is no preceding observation to compare it with, so it has one fewer row per
+cohort here. The universal base-period row is zero by construction; under
+varying, that same period is an estimated comparison with the preceding
+period. Switching to varying does not simply delete the normalized rows.
 
 **Which cells agree.** Both specifications measure post-treatment periods against
 *g-1*, so those cells agree exactly, while the pre-treatment cells differ because
@@ -124,20 +130,21 @@ compare unrelated cells.
 ## Which to use
 
 <div class="tip" markdown="1">
-Use **`varying`** to pre-test parallel trends (this is our main use for it). Each pre-treatment cell is its own
-one-period test, so a violation shows up in the period where it happens instead
-of being carried forward into every later cell. See
+Use **`varying`** to examine changes between adjacent observed periods. This
+can help locate when groups begin to diverge. These comparisons can still be
+correlated, and a temporary shock can affect both the change into that period
+and the change out of it. See
 [Pre-testing](pre-testing.html).
 </div>
 
 <div class="important" markdown="1">
 Use **`universal`** when you want a conventional event-study plot with a single
 normalized reference period, or when you are presenting cumulative pre-trends.
-Pre-treatment estimates are then serially correlated by construction. A single
-early deviation shifts every subsequent point, so a long run of "significant"
-pre-treatment coefficients may trace back to one bad period.
+The estimates share a reference period, so a shock in that reference can
+affect many contrasts. Read the full pattern and its uncertainty rather than
+counting significant coefficients.
 </div>
 
-Whichever you pick, the post-treatment conclusions do not depend on the choice.
-We would treat this option as a decision about how to display and pre-test the
-design, and not as a decision about what the design estimates.
+Whichever you pick, the post-treatment point estimates target the same
+effects. The pre-treatment comparisons and the set of cells entering a joint
+test or simultaneous band change, so the inference need not be identical.

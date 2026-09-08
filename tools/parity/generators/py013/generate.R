@@ -1,5 +1,7 @@
 # PY013: R oracle for the integration scenarios (three methods analytical, plus
 # not-yet-treated controls).
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py013/inputs/panel-data.csv"); names(d)<-tolower(names(d))

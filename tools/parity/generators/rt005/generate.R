@@ -1,16 +1,22 @@
 #!/usr/bin/env Rscript
 
-suppressPackageStartupMessages(library(jsonlite))
-
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt005/generate.R"
+source(file.path(dirname(script_path), "../oracle-check.R"))
+
+suppressPackageStartupMessages(library(jsonlite))
+
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 
 py003_generator <- file.path(root, "tools/parity/generators/py003/generate.py")
-py003_output <- system2("python3", py003_generator, stdout = TRUE, stderr = TRUE)
-invisible(py003_output)
+py003_output <- system2("python3", shQuote(py003_generator), stdout = TRUE, stderr = TRUE)
+py003_status <- attr(py003_output, "status")
+if (!is.null(py003_status) && py003_status != 0L) {
+  stop("PY003 generator failed with exit status ", py003_status, ":\n",
+       paste(py003_output, collapse = "\n"), call. = FALSE)
+}
 
 fixture <- file.path(root, "tests/fixtures/parity/rt005")
 dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)

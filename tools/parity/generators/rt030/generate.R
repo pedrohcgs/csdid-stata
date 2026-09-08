@@ -4,6 +4,8 @@
 # was within 0.75 of 1 -- a sanity check a badly wrong implementation would
 # pass. This produces R's actual ATT and SE for every scenario the Stata test
 # runs, so the comparison can be tight.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN  <- "tests/fixtures/parity/rt030/inputs"

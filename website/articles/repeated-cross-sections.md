@@ -29,7 +29,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 ```
@@ -76,8 +76,8 @@ and `e(idvar)` comes back empty while `e(panel_mode)` reads
 implementation validates the identifier and then replaces it with a row number
 (the same convention, arrived at for the same reason).
 
-The identifier is not wasted here. It is exactly what you pass to `cluster()`
-if observations sharing it are correlated:
+When observations within a state may be correlated, pass the state
+identifier to `cluster()`:
 
 ```stata
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rcs ///
@@ -103,13 +103,14 @@ year.
 **Unit counts.** Every row is its own cross-sectional unit. `e(N_units)` equals
 the number of observations (not the number of counties), and the standard errors
 are scaled accordingly.
-There is no within-unit differencing to remove fixed unobserved heterogeneity, so
-the identifying assumption is doing more work here than it does in a panel. Be
-careful about the covariates you condition on and about the comparison group you
-choose.
+The estimator compares group-period means rather than changes within the
+same unit. The waves must represent the same underlying population: changes
+in who is sampled can otherwise look like outcome trends.
 
-**Covariates.** They matter more in this setting, not less. Without differencing,
-the composition changes between waves are absorbed only by the covariate model,
-and we would think hard about which covariates go into it.
+**Covariates.** Use covariates when they make conditional parallel trends
+credible, and avoid covariates affected by treatment. Adding a covariate
+model does not by itself repair changing population composition or selective
+sampling across waves. Explain how the survey or sampling design supports
+comparable repeated cross sections.
 
 Next: [inference](inference.html).

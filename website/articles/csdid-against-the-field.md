@@ -233,8 +233,23 @@ sampling scheme.
 
 We all like fast commands, that is for sure. All else equal, faster is always better. So, for a moment, let's ignore everything else and focus *exclusively* on speed to see how things currently are in the Stata DiD space. First, the good news: at the sample sizes used in many applications, all the Stata commands we discuss here are fast. Some are faster than others, but the differences, especially with balanced panel data, are not material. They can matter if you are doing bootstrap, repeating over many specifications, or in the larger and richer designs we discuss below. But again, we want to commend all researchers behind these commands: it is not common to have this many options, running this fast!
 
-Now, let's talk about speed! And that should start with how we time these commands. Every speed entry we report is the median of 10 timed runs, after excluding one warmup run that loads libraries and plugins. What sits inside the timer is the estimation call with clustered standard errors, and what that call actually does differs across commands in two ways that are worth knowing before reading any number. First, `csdid` and `jwdid` estimate and then aggregate, so their `estat` step happens after the clock stops; every other command returns the event study from the single timed call. Second, `csdid`, `jwdid`, and `eventstudyinteract` estimate every underlying cell &mdash; all the ATT(g,t)'s, or the full saturated set of cohort-by-relative-time interactions &mdash; while `lpdid`, `did_multiplegt_dyn`, and `did_imputation` estimate only the horizons we ask for. We did not impose either difference; it is how the commands are built. But it explains a good part of what you will see below as the number of periods and cohorts grows, so it is only fair to say it up front. We report the number of units (n), periods (T), cohorts (G), and
-the resulting number of rows, as these levers impact speed directly. We separately discuss balanced panels, unbalanced panels, and repeated cross-sections. All the timings in this section were measured on 21 August 2026 with StataNow/MP 19.5 on a 10-core Apple M1 Max, in a single session, so entries are comparable across tables.
+Every speed entry in this section is the median of 10 timed runs, after one
+discarded warmup that loads libraries and plugins. The reported times include
+estimation and event-study aggregation with clustered standard errors.
+For `csdid`, `jwdid`, `xthdidregress` and `hdidregress`, the estimation and
+`estat` calls are timed separately and summed; commands that return the event
+study directly are timed in one call. The amount of work still differs:
+`csdid`, `jwdid`, and `eventstudyinteract` estimate every underlying cell
+&mdash; all ATT(g,t)'s, or the full set of cohort-by-relative-time interactions
+&mdash; while `lpdid`, `did_multiplegt_dyn`, and `did_imputation` estimate only
+the horizons requested. This difference helps explain the timings as the
+number of periods and cohorts grows. We report the number of units (n),
+periods (T), cohorts (G), and
+the resulting number of rows, as these levers impact speed directly. We
+separately discuss balanced panels, unbalanced panels, and repeated cross-sections.
+All timings in this section were measured on 21 August 2026 with StataNow/MP
+19.5 on a 10-core Apple M1 Max, using a separate Stata process for each
+benchmark tier and a discarded warmup for each package and dataset.
 
 ### Balanced panel: analytical and default inference
 
@@ -242,7 +257,7 @@ We start delving into the balanced panel data case. The first thing we highlight
 
 To clear this bar, our first comparison is within `csdid` only. We compare speeds using analytical standard errors with uniform confidence bands turned off (`analytical pointwise`) against 999 multiplier-bootstrap-based procedures, allowing for uniform confidence bands.
 
-<p class="table-title" markdown="span">`csdid` on a balanced panel, seconds to estimate all ATT(g,t)</p>
+<p class="table-title" markdown="span">`csdid` on a balanced panel, seconds for estimation and event-study aggregation</p>
 
 | n (T=10, G=4) | rows | `csdid` | `csdid` default |
 | --- | ---: | ---: | ---: |

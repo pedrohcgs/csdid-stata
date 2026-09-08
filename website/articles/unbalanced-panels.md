@@ -35,7 +35,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_unbal_base.dta", replace
@@ -113,17 +113,17 @@ available for everyone, so the estimator pools observations from both periods
 instead (this is the repeated-cross-section computation). Two consequences are
 worth knowing:
 
-- it is *slower* than `bal(full)` by roughly 4–6× at these sizes (and roughly
-  2× slower than `bal(pair)`), because each cell fits more regressions on
-  more rows
+- it can take longer than `bal(full)` or `bal(pair)`, because each cell
+  uses a different computation and can retain more rows; the difference
+  depends on the sample and estimator
 - the guard on small cohorts is *stricter*, because cohort size is measured as
   observations divided by periods, which on an unbalanced panel is smaller than
   the distinct-unit count
 
 <div class="tip" markdown="1">
-If a run refuses with "the never-treated group is too small", `notyet` enlarges
-the comparison group and is usually the fix. It is also the default, so you'll
-only meet that refusal if you asked for `nevertreated`. See
+If a run refuses with "the never-treated group is too small", consider `notyet`,
+which can expand the comparison pool. It is also the default, so you'll only
+meet that refusal if you asked for `nevertreated`. See
 [comparison groups](comparison-groups.html).
 </div>
 

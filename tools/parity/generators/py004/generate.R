@@ -1,5 +1,7 @@
 # PY004: R oracle for the clustered ANALYTICAL scenarios across methods and
 # both panel and repeated-cross-section layouts.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 rows <- list()

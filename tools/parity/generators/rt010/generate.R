@@ -2,6 +2,8 @@
 # no never-treated group, non-consecutive time and cohort codes, balanced and
 # unbalanced, a single post period. These are exactly the shapes where an
 # implementation is most likely to differ, and none was compared against R.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 IN <- "tests/fixtures/parity/rt010/inputs"

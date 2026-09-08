@@ -1,5 +1,7 @@
 # F035: R oracle for the seeded wild-bootstrap spellings. The test proves the
 # four option spellings agree with each other; this pins the value against R.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/f035/inputs/input.csv"); names(d)<-tolower(names(d))

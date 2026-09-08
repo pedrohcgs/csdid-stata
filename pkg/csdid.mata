@@ -1,4 +1,4 @@
-*! csdid 2.0.0 01sep2026
+*! csdid 2.0.0 08sep2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -385,6 +385,14 @@ class csdid__Engine {
     string scalar  fix_weights
     real scalar    anticipation
     real scalar    trim_level
+    real scalar    use_prebalance_grid
+
+    // R fixes the cohort grid and no-never cutoff before whole-unit balance.
+    // These are populated only when that first scan removes a unit, and
+    // consumed only by an explicitly flagged full-panel not-yet-treated run.
+    real scalar    prebalance_fold
+    real scalar    prebalance_latest
+    real rowvector prebalance_glevels
 
     // ---- csdid__prescan's measurements ----
     // The scan publishes these to the ado through named Stata scalars and
@@ -465,6 +473,10 @@ void csdid__Engine::new()
     fix_weights     = ""
     anticipation    = .
     trim_level      = .
+    use_prebalance_grid = 0
+    prebalance_fold = .
+    prebalance_latest = .
+    prebalance_glevels = J(1, 0, .)
 
     ps_tmin         = .
     ps_tmax         = .
@@ -1127,7 +1139,7 @@ real colvector csdid__reg_panel_fit(
     real colvector dy, w, beta, out_delta, w_treat, w_cont
     real colvector reg_att_treat, reg_att_cont, weights_ols
     real colvector inf_treat, inf_cont_1, inf_cont_2, inf_control, inf
-    real colvector m1, gamma_ols, ols_resid
+    real colvector m1, gamma_ols, ols_resid, m_control, wls_root
 
     n = rows(d)
     dy = y1 :- y0
@@ -1146,7 +1158,13 @@ real colvector csdid__reg_panel_fit(
     xtwx = quadcross(x, weights_ols, x)
     xtwx_inv = csdid__inv_r_parity(xtwx)  // F-005: R-parity inverse
     if (!csdid__valid_inverse(xtwx_inv)) return(. \ J(n, 1, .) \ 2)
-    beta = xtwx_inv * quadcross(x, weights_ols :* dy)
+    // DRDID::reg_did_panel uses fastglm's method 0 (pivoted QR) for
+    // coefficients. The normal-matrix inverse above belongs to the IF;
+    // reusing it for coefficients amplifies rounding on affine outcomes.
+    m_control = (d :== 0)
+    wls_root = sqrt(select(w, m_control))
+    beta = qrsolve(select(x, m_control) :* wls_root,
+        select(dy, m_control) :* wls_root)
     out_delta = x * beta
 
     w_treat = w :* d
@@ -1325,7 +1343,6 @@ real colvector csdid__dr_panel_fit_precomputed(
     real colvector xgamma_cont_ols,
     real scalar mw_treat,
     real scalar mw_cont,
-    real matrix xtwx_inv,
     real matrix h,
     real colvector weights_ols)
 {
@@ -1333,11 +1350,16 @@ real colvector csdid__dr_panel_fit_precomputed(
     real colvector dy, beta_or, out_delta, dr_treat, dr_cont, ols_resid
     real colvector inf_treat_1, inf_treat_2, inf_treat
     real colvector inf_cont_1, inf_cont_2, inf_cont_3, inf_control, inf
-    real colvector m2, gamma_ps
+    real colvector m2, gamma_ps, m_control, wls_root
 
     n = rows(d)
     dy = y1 :- y0
-    beta_or = xtwx_inv * quadcross(x, weights_ols :* dy)
+    // DRDID::drdid_panel uses pivoted QR for the outcome coefficients;
+    // the cached normal inverse is used only by the IF derivatives.
+    m_control = (d :== 0)
+    wls_root = sqrt(select(weights_ols, m_control))
+    beta_or = qrsolve(select(x, m_control) :* wls_root,
+        select(dy, m_control) :* wls_root)
     out_delta = x * beta_or
 
     dr_treat = w_treat :* (dy :- out_delta)
@@ -1379,7 +1401,7 @@ real colvector csdid__reg_rc_fit(
     real colvector inf_treat_pre, inf_treat_post, inf_treat
     real colvector inf_cont_1, inf_cont_2_pre, inf_cont_2_post, inf_control, inf
     real colvector m1, gamma_ols, ols_resid_pre, ols_resid_post
-    real colvector m_cont_pre, m_cont_post
+    real colvector m_cont_pre, m_cont_post, wls_root
 
     n = rows(d)
     w = csdid__normalize_weights(wraw)
@@ -1409,8 +1431,12 @@ real colvector csdid__reg_rc_fit(
     xtwx_inv_pre = csdid__inv_r_parity(xtwx_pre)  // F-005: R-parity inverse
     xtwx_inv_post = csdid__inv_r_parity(xtwx_post)  // F-005: R-parity inverse
     if (!csdid__valid_inverse(xtwx_inv_pre) | !csdid__valid_inverse(xtwx_inv_post)) return(. \ J(n, 1, .) \ 2)
-    beta_pre = xtwx_inv_pre * quadcross(xpre, select(w :* y, m_cont_pre))
-    beta_post = xtwx_inv_post * quadcross(xpost, select(w :* y, m_cont_post))
+    // DRDID::reg_did_rc uses fastglm's method 0 (pivoted QR) for both
+    // outcome fits; the normal inverses remain the IF's separate inputs.
+    wls_root = sqrt(select(w, m_cont_pre))
+    beta_pre = qrsolve(xpre :* wls_root, select(y, m_cont_pre) :* wls_root)
+    wls_root = sqrt(select(w, m_cont_post))
+    beta_post = qrsolve(xpost :* wls_root, select(y, m_cont_post) :* wls_root)
     out_pre = x * beta_pre
     out_post = x * beta_post
 
@@ -1595,7 +1621,7 @@ real colvector csdid__dr_rc_fit(
     real matrix xtwx_c_pre, xtwx_c_post, xtwx_t_pre, xtwx_t_post
     real matrix xtwx_inv_c_pre, xtwx_inv_c_post, xtwx_inv_t_pre, xtwx_inv_t_post
     real matrix xpx_inv_pre, xpx_inv_post, xpx_inv_pre_treat, xpx_inv_post_treat
-    real colvector w, beta_ps, ps, W, trim, post0, d0, wd, wc, wy, psratio
+    real colvector w, beta_ps, ps, W, trim, post0, d0, wd, wc, wls_root, psratio
     real colvector m_c_pre, m_c_post, m_t_pre, m_t_post
     real colvector beta_c_pre, beta_c_post, beta_t_pre, beta_t_post
     real colvector out_c_pre, out_c_post, out_c, out_t_pre, out_t_post
@@ -1719,14 +1745,21 @@ real colvector csdid__dr_rc_fit(
     // delegation: none of the guards above reads them, and the intercept-only
     // case never uses them. The guard ORDER is untouched -- the four inverse
     // guards still fire before the mean-weight guard, exactly as before.
-    // `wy' and `W' come with them: the weighted outcome feeds only these four
-    // regressions, and the score weight feeds only the hessian further down.
-    wy = w :* y
-    W = ps :* (1 :- ps) :* w
-    beta_c_pre = xtwx_inv_c_pre * quadcross(xcp, select(wy, m_c_pre))
-    beta_c_post = xtwx_inv_c_post * quadcross(xct, select(wy, m_c_post))
-    beta_t_pre = xtwx_inv_t_pre * quadcross(xtp, select(wy, m_t_pre))
-    beta_t_post = xtwx_inv_t_post * quadcross(xtt, select(wy, m_t_post))
+    // DRDID::drdid_rc fits these coefficients with fastglm_fit's default
+    // method 0: column-pivoted QR of sqrt(w) * X, not an inverse of X'WX.
+    // The inverse matrices above belong to the influence function. Reusing
+    // them for coefficients squares the design's condition number: an exact
+    // affine outcome then produces an ATT error of 5.6e-9 and influence
+    // values up to 5.4e-6, where the reference's residuals are at roundoff
+    // (RT039). Keep the existing inverse guards and their refusal order.
+    wls_root = sqrt(select(w, m_c_pre))
+    beta_c_pre = qrsolve(xcp :* wls_root, select(y, m_c_pre) :* wls_root)
+    wls_root = sqrt(select(w, m_c_post))
+    beta_c_post = qrsolve(xct :* wls_root, select(y, m_c_post) :* wls_root)
+    wls_root = sqrt(select(w, m_t_pre))
+    beta_t_pre = qrsolve(xtp :* wls_root, select(y, m_t_pre) :* wls_root)
+    wls_root = sqrt(select(w, m_t_post))
+    beta_t_post = qrsolve(xtt :* wls_root, select(y, m_t_post) :* wls_root)
 
     out_c_pre = x * beta_c_pre
     out_c_post = x * beta_c_post
@@ -1769,6 +1802,7 @@ real colvector csdid__dr_rc_fit(
     xpx_inv_post_treat = n * xtwx_inv_t_post
     ols_res_post_treat = weights_ols_post_treat :* (y :- out_t_post)
 
+    W = ps :* (1 :- ps) :* w
     h = quadcross(x, W, x)
     h = csdid__hessinv_r_parity(h, n)  // F-005: R chol2inv(chol()) after the rcond guard
     if (sum(h :>= .) > 0) return(. \ J(n, 1, .) \ 2)  // F-013: singular ps design -> fit_status 2 (R rcond stop), not overlap
@@ -2277,6 +2311,40 @@ void csdid__prescan(
     st_numscalar("__csdid_ps_balunits", bal_units)
     st_numscalar("__csdid_ps_balobs", bal_obs)
 
+    // pre_process_did2.R:247-315 fixes these decisions before balancing at
+    // :356-384 and retains glist at :468-470. Re-deciding after balance can
+    // delete finite latest-cohort placebo effects or erase failed cells.
+    st_local("__csdid_ps_lostgroups", "")
+    st_local("__csdid_ps_prebalance_groups", "")
+    if (want_balance & inc_units > 0) {
+        CSDID_ENGINE.prebalance_fold = cutoff
+        CSDID_ENGINE.prebalance_latest = .
+        CSDID_ENGINE.prebalance_glevels = select(glev, glev :> tmin + anticipation)'
+        if (never_ct == 0 & rows(glev) > 0) {
+            CSDID_ENGINE.prebalance_latest = max(glev)
+            // R recomputes glist after the period filter: a cohort observed
+            // only beyond this cutoff is already absent before balancing.
+            gsmall = uniqrows(sort(select(gv, okrow), 1))
+            CSDID_ENGINE.prebalance_glevels = select(gsmall,
+                (gsmall :> tmin + anticipation) :& (gsmall :< max(glev)))'
+        }
+        glist = ""
+        for (i = 1; i <= cols(CSDID_ENGINE.prebalance_glevels); i++) {
+            glist = glist + (i > 1 ? " " : "") + strofreal(CSDID_ENGINE.prebalance_glevels[i], "%21.0g")
+        }
+        st_local("__csdid_ps_prebalance_groups", glist)
+        // The default reference refuses a missing treated identity. Compare
+        // its eligible grid with raw cohort identities surviving this exact
+        // balance mask: a surviving cohort folded by a later cutoff is not lost.
+        gsmall = uniqrows(sort(select(gv, st_data(rowsel, dropmarkname) :!= 1), 1))
+        glist = ""
+        for (i = 1; i <= cols(CSDID_ENGINE.prebalance_glevels); i++) {
+            if (!any(gsmall :== CSDID_ENGINE.prebalance_glevels[i])) {
+                glist = glist + (glist != "" ? " " : "") + strofreal(CSDID_ENGINE.prebalance_glevels[i], "%21.0g")
+            }
+        }
+        st_local("__csdid_ps_lostgroups", glist)
+    }
 
     // The same measurements, on the object. The named Stata scalars above are
     // the ado's contract and stay exactly as they are -- csdid.ado reads and
@@ -2715,7 +2783,7 @@ void csdid__settle_sample(
     real scalar first_t)
 {
     real colvector touse, drop_ids
-    real scalar max_t, has_never, latest_g, cutoff_t, exclude_latest_g
+    real scalar fold_cutoff, has_never, latest_g, cutoff_t, exclude_latest_g
     real scalar anticipation
     string scalar notyet
 
@@ -2759,14 +2827,19 @@ void csdid__settle_sample(
 
     use = touse
     tlevels = uniqrows(select(tt, use :!= 0))'
-    max_t = max(tlevels)
+    fold_cutoff = max(tlevels) + anticipation
     first_t = min(tlevels)
-    geff = gg :- ((use :!= 0) :& (gg :> max_t + anticipation)) :* gg
+    if (eng->use_prebalance_grid) fold_cutoff = eng->prebalance_fold
+    geff = gg :- ((use :!= 0) :& (gg :> fold_cutoff)) :* gg
     has_never = (sum((use :!= 0) :& (geff :== 0)) > 0)
     drop_ids = select(geff, (use :!= 0) :& (geff :> 0))
     latest_g = .
     if (rows(drop_ids) > 0) latest_g = max(drop_ids)
     exclude_latest_g = .
+    if (eng->use_prebalance_grid) {
+        latest_g = eng->prebalance_latest
+        has_never = (latest_g >= .)
+    }
     if (!has_never & latest_g < .) {
         cutoff_t = latest_g - anticipation
         // Both sweeps below only ever CLEAR bits, so the `use[r] == 0'
@@ -2855,6 +2928,7 @@ void csdid__settle_sample(
     // post-drop floor and refuses with "No valid groups" first.
     glevels = select(glevels, glevels :> first_t + anticipation)
     if (exclude_latest_g < .) glevels = select(glevels, glevels :< exclude_latest_g)
+    if (eng->use_prebalance_grid) glevels = eng->prebalance_glevels
 }
 
 // ---------------------------------------------------------------------------
@@ -3938,7 +4012,6 @@ void csdid__cells_panel(
                         eng->dr_score_ps, eng->dr_xgamma_treat,
                         eng->dr_xgamma_cont,
                         eng->dr_mw_treat, eng->dr_mw_cont,
-                        eng->dr_xtwx_inv,
                         eng->dr_h, eng->dr_weights_ols)
                 }
             }
@@ -4583,7 +4656,8 @@ void csdid_basic_attgt(
     string scalar gprobname,
     string scalar unitgroupname,
     string scalar cachetokenname,
-    string scalar usemarkname)
+    string scalar usemarkname,
+    | real scalar use_prebalance_grid)
 {
     external class csdid__Engine scalar CSDID_ENGINE
     pointer(class csdid__Engine scalar) scalar eng
@@ -4621,6 +4695,7 @@ void csdid_basic_attgt(
     eng->fix_weights  = fix_weights
     eng->anticipation = anticipation
     eng->trim_level   = trim_level
+    eng->use_prebalance_grid = (args() >= 28 ? use_prebalance_grid : 0)
 
     csdid__profile_reset()
     prof_t0 = csdid__profile_start()
@@ -8990,11 +9065,18 @@ void csdid__outcome_is_constant(
     string scalar yname,
     string scalar tousename,
     string scalar flagname,
-    string scalar minname)
+    string scalar minname,
+    | string scalar excludename)
 {
     real colvector yv
     real scalar lo, hi
     yv = st_data(., yname, tousename)
+    // D026 judges covariate-complete units before generic balancing. The
+    // exclusion preserves that refusal's sample while touse itself follows
+    // R's row-complete-case screen (RT040).
+    if (args() >= 5) {
+        if (excludename != "") yv = select(yv, st_data(., excludename, tousename) :!= 1)
+    }
     if (rows(yv) == 0) {
         st_numscalar(flagname, 0)
         st_numscalar(minname, .)

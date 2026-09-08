@@ -1,4 +1,4 @@
-*! csdid 2.0.0 01sep2026
+*! csdid 2.0.0 08sep2026
 program define csdid, eclass sortpreserve
     local csdid_zero_entry `"`0'"'
     * this guard used to sit BELOW `version 14', where it
@@ -43,7 +43,7 @@ program define csdid, eclass sortpreserve
             display as text "  engine: not loaded yet (loads on the first estimation of a session)"
         }
         if `"$CSDID_BOOT_PLUGIN_PATH"' != "" {
-            display as text `"  bootstrap accelerator: bound to $CSDID_BOOT_PLUGIN_PATH"'
+            display as text `"  bootstrap accelerator: last bound to $CSDID_BOOT_PLUGIN_PATH"'
         }
         display as text `"  (a stray older csdid can shadow this one: {stata which csdid, all} lists every copy on the adopath)"'
         exit
@@ -59,6 +59,11 @@ program define csdid, eclass sortpreserve
         capture program drop __csdid_agg_boot_plugin
         capture macro drop CSDID_*
         capture mata: mata drop CSDID_*
+        * The decision cannot be renewed while functions from the departed
+        * source still answer its probes. Variables go first so class
+        * definitions can be dropped; unrelated Mata state survives.
+        capture mata: mata drop csdid_*
+        capture mata: mata drop csdid_*()
         display as text "csdid reset: the engine decision, plugin bindings and estimation cache are cleared; the next csdid command re-decides from the current adopath."
         display as text "(a plugin binary replaced at the SAME path may still be served from memory by the operating system; restart Stata to be certain a re-installed accelerator is the one that runs)"
         exit
@@ -931,10 +936,9 @@ program define csdid, eclass sortpreserve
     * confirmed to exist and to be numeric, and rows missing it have been
     * excluded, which is what R's validate_column_name() plus complete-case
     * filtering achieve. From here on it must not be visible, because every
-    * downstream branch reads a non-empty ivar as "this is a panel" -- the
-    * covariate listwise deletion immediately below drops a whole unit when any
-    * period is missing, which is right for a panel and wrong for cross
-    * sections. Clearing it here routes the run down the identical path an
+    * downstream branch reads a non-empty ivar as "this is a panel", including
+    * whole-unit balancing after the covariate screen. Clearing it here routes
+    * the run down the identical path an
     * ivar()-less repeated cross section already takes, so rcs inherits that
     * path's verification rather than opening a second one.
     * -----------------------------------------------------------------------
@@ -1056,49 +1060,21 @@ program define csdid, eclass sortpreserve
                         quietly replace `xmiss' = . if `time' == `tv'
                     }
                 }
-                if inlist("`balance_mode'", "pair", "none") {
-                    * Under bal(pair) and bal(none) a row with a missing
-                    * covariate is treated as an UNOBSERVED row: only that
-                    * row leaves the sample, and the per-pair presence
-                    * machinery these modes already run does the rest --
-                    * exactly R's allowed-unbalanced route (complete-case
-                    * rows, then per-2x2 availability). Propagating the miss
-                    * to the whole unit here silently shrank those samples:
-                    * measured (cold-audit round 6, F1), a covariate missing
-                    * only at t=3 changed ATT(2,2) from R's 1.1667 to 1.0
-                    * by deleting the unit's clean t=1,2 rows. The whole-unit
-                    * drop below remains the bal(full) rule, where R's own
-                    * balancing removes the now-incomplete unit identically.
-                    quietly replace `touse' = 0 if `xmiss' == 1
-                }
-                else {
+                if "`balance_mode'" == "full" {
+                    * D026's constant-outcome refusal judges covariate-complete
+                    * units before generic balancing. Keep its exclusion mark
+                    * solely for that guard; it does not settle the sample.
                     quietly bysort `ivar': egen byte `xmiss_unit' = max(`xmiss') if `touse'
-                    * R reaches the same estimation sample by a different
-                    * route -- complete-case ROWS first, then balancing --
-                    * so a unit removed whole here, if it still had complete
-                    * rows, is a unit R counts in its balance announcement.
-                    * Record those units and their complete rows now; the
-                    * balance warning below adds them so its count is R's
-                    * (in-house review: R announced 1 and 3 units where the
-                    * balance scan alone announced 0 and 2).
-                    tempvar xtag
-                    quietly egen byte `xtag' = tag(`ivar') if `touse' & `xmiss_unit' == 1 & `xmiss' == 0
-                    quietly count if `xtag' == 1
-                    local xdrop_bal_units = r(N)
-                    quietly count if `touse' & `xmiss_unit' == 1 & `xmiss' == 0
-                    local xdrop_bal_obs = r(N)
-                    quietly replace `touse' = 0 if `xmiss_unit' == 1
+                    local yflat_exclude "`xmiss_unit'"
                 }
-                * on the panel path a unit is dropped whole
-                * when ANY of its covariate cells is missing, so a covariate
-                * that is missing for one entire period annihilates every unit
-                * and the run died with a bare r(2000) "no observations" on a
-                * dataset with hundreds of usable rows. Diagnose that shape and
-                * name the covariate and the period instead. (R's did drops the
-                * offending period and estimates on the rest; matching that is a
-                * numeric-behaviour change and is recorded as a follow-up owner
-                * decision, not implemented here.)
+                * R screens incomplete ROWS before its cohort/control check,
+                * then balances whole units. Dropping units here instead loses
+                * finite not-yet-treated placebo cells when all never-treated
+                * units are incomplete (RT040). The one balance scan below owns
+                * the whole-unit reduction and its announcement counts.
+                quietly replace `touse' = 0 if `xmiss' == 1
                 quietly count if `touse'
+                if "`yflat_exclude'" != "" quietly count if `touse' & `xmiss_unit' != 1
                 if r(N) == 0 & inlist("`balance_mode'", "pair", "none") {
                     display as error "every observation is missing a value of the covariates (`xvars'), so no estimation sample remains. Supply the missing covariate values, drop the covariate, or restrict the sample."
                     exit 459
@@ -1141,21 +1117,8 @@ program define csdid, eclass sortpreserve
     quietly count if `touse_initial' & !`touse'
     local n_screened = r(N)
     if r(N) > 0 {
-        * Split the count: rows dropped for their OWN missing or non-finite
-        * data, and rows that only left because their unit was removed whole
-        * (the bal(full) covariate propagation). Counting companions as
-        * missing-data rows overstated the data problem (cold-audit round 8,
-        * F6: one missing cell in a two-period unit announced as two).
-        tempvar own_ok
-        quietly mark `own_ok' `if' `in'
-        quietly markout `own_ok' `yname' `time' `gvar'
-        if "`wvar'" != "" quietly markout `own_ok' `wvar'
-        if "`ivar'" != "" quietly markout `own_ok' `ivar'
-        if "`cluster'" != "" quietly markout `own_ok' `cluster'
-        if `"`xvars_expanded'"' != "" quietly markout `own_ok' `xvars_expanded'
-        quietly count if `touse_initial' & !`touse' & !`own_ok'
-        local miss_dropped = r(N)
-        local unit_dropped = `n_screened' - `miss_dropped'
+        * Only incomplete rows have left so far. Whole-unit companions leave
+        * in the generic balance step and are counted in its announcement.
         * `as error' is a DISPLAY STYLE here, not an error. It is the only
         * channel Stata does not suppress under `quietly csdid ...', and the
         * rule this file states at the bal() drop below -- a warning that
@@ -1166,12 +1129,7 @@ program define csdid, eclass sortpreserve
         *
         * The count is APPENDED rather than interpolated so the sentence
         * itself stays the frozen substring four tests grep for.
-        if `miss_dropped' > 0 {
-            display as error "warning: dropped observations with missing or non-finite data (`miss_dropped' observation(s))"
-        }
-        if `unit_dropped' > 0 {
-            display as error "warning: dropped `unit_dropped' further observation(s) whose units left the sample whole (a unit with any missing covariate cell is dropped entirely on this route)"
-        }
+        display as error "warning: dropped observations with missing or non-finite data (`n_screened' observation(s))"
     }
     * csdid indexes cohorts and periods on a positive calendar-time axis:
     * time() runs from 1 upward, gvar() is the period in which a unit is first
@@ -1200,14 +1158,14 @@ program define csdid, eclass sortpreserve
     * closed.
     quietly count if `touse' & `gvar' < 0
     if r(N) > 0 {
-        display as error "gvar() negative values are not supported; gvar() must be 0 for never-treated units and 1 or more for treated cohorts. Shift the cohort and time axes so both start at 1 (for example, replace g = g - min_period + 1 for treated units and t = t - min_period + 1); a monotone relabelling of the periods leaves the estimates unchanged."
+        display as error "gvar() negative values are not supported; gvar() must be 0 for never-treated units and 1 or more for treated cohorts. Add the same constant to time() and all treated gvar() values so both axes are positive; keep never-treated gvar() values at 0. This shift preserves period distances and estimates."
         exit 198
     }
     quietly count if `touse' & `time' < 1
     if r(N) > 0 {
         quietly summarize `time' if `touse', meanonly
         local tmin = r(min)
-        display as error "time() must be 1 or more; the smallest value found is `tmin'. csdid indexes periods on a positive calendar-time axis, and gvar() == 0 is reserved for never-treated units. Shift the axis so it starts at 1 (for example, replace t = t - `tmin' + 1, and the same shift on gvar() for treated units); a monotone relabelling of the periods leaves the estimates unchanged."
+        display as error "time() must be 1 or more; the smallest value found is `tmin'. gvar() == 0 is reserved for never-treated units. Add 1 - `tmin' to time() and every treated gvar() value; keep never-treated gvar() values at 0. This common shift makes the time axis positive and preserves period distances and estimates."
         exit 198
     }
     if "`wvar'" != "" {
@@ -1270,6 +1228,13 @@ program define csdid, eclass sortpreserve
         local prescan_rc = _rc
         display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
         exit `prescan_rc'
+    }
+    local balance_lostgroups "`__csdid_ps_lostgroups'"
+    local use_prebalance_grid = (`want_bal' & "`notyet'" != "" & __csdid_ps_incunits > 0)
+    if `use_prebalance_grid' {
+        local prebalance_min_time = __csdid_ps_tmin
+        local prebalance_never = __csdid_ps_never
+        local prebalance_glevels "`__csdid_ps_prebalance_groups'"
     }
     * The three data-shape violations R refuses -- an irreversible-treatment
     * breach, a duplicate (id, time) row and a time-varying cluster variable --
@@ -1397,7 +1362,7 @@ program define csdid, eclass sortpreserve
     * limit. One Mata read of the same column, on the rows touse already
     * marks, costs a fraction of that.
     tempname yflat ymin
-    mata: csdid__outcome_is_constant("`yname'", "`touse'", "`yflat'", "`ymin'")
+    mata: csdid__outcome_is_constant("`yname'", "`touse'", "`yflat'", "`ymin'", "`yflat_exclude'")
     if scalar(`yflat') == 1 {
         display as error "`yname' takes the same value (`=scalar(`ymin')') in every observation of the estimation sample, so there is nothing to estimate: every ATT(g,t) would be exactly 0 with no standard error. Check that the outcome variable is the one you meant and that if/in has not reduced it to a constant."
         exit 459
@@ -1409,17 +1374,6 @@ program define csdid, eclass sortpreserve
         * then :437-446), so a unit missing only a deleted period is kept.
         local bal_T = __csdid_ps_baltime
         local balance_dropped_units = __csdid_ps_incunits
-        if "`xdrop_bal_units'" == "" local xdrop_bal_units 0
-        if "`xdrop_bal_obs'" == "" local xdrop_bal_obs 0
-        * Units the covariate screen removed whole never reach the balance
-        * scan, but R counts them in ITS balance message when they still had
-        * complete rows -- so they join the announcement here, and the
-        * announcement fires even when the scan itself found nothing left to
-        * drop. The drop mechanics below still run only on the scan's count.
-        if `balance_dropped_units' == 0 & `xdrop_bal_units' > 0 {
-            local xdrop_bal_all = `xdrop_bal_units'
-            display as error "warning: `xdrop_bal_all' unit(s) are not observed in all `bal_T' periods; the panel is being balanced by dropping them (`xdrop_bal_obs' observation(s)). Use bal(none) to keep every unit, or bal(pair) to balance each 2×2 separately."
-        }
         if `balance_dropped_units' > 0 {
             * The announced count is not the marked count. A unit whose every
             * row lies at or beyond the cutoff is removed by R's period filter
@@ -1427,8 +1381,8 @@ program define csdid, eclass sortpreserve
             * :437-446), so R never announces it as a balance drop; csdid still
             * marks it, which the kernel's own cutoff makes numerically
             * irrelevant. Say what R says.
-            local balance_announced_units = __csdid_ps_balunits + `xdrop_bal_units'
-            local balance_dropped_obs = __csdid_ps_balobs + `xdrop_bal_obs'
+            local balance_announced_units = __csdid_ps_balunits
+            local balance_dropped_obs = __csdid_ps_balobs
             * "as error" is a DISPLAY STYLE here, not an error: it is the only
             * channel Stata does not suppress under `quietly csdid ...'.
             * Verified: `noisily display' inside a program does NOT survive a
@@ -1667,6 +1621,14 @@ program define csdid, eclass sortpreserve
     * shapes are covered: all-one-cohort (S4757) and anticipation-eats-every-
     * base-period (S192 family).
     local __treated_levels "`__csdid_ps_glevels'"
+    if `use_prebalance_grid' {
+        * R retains its pre-balance grid. Re-deriving it after losing
+        * comparison units can erase finite latest-cohort placebo effects;
+        * a vanished treated cohort is refused separately below.
+        local __treated_levels "`prebalance_glevels'"
+        local min_time = `prebalance_min_time'
+        local never_count = `prebalance_never'
+    }
     local __n_treated : word count `__treated_levels'
     local __n_usable 0
     local __gmax_usable 0
@@ -1676,13 +1638,13 @@ program define csdid, eclass sortpreserve
             local __gmax_usable = `__gv'
         }
     }
-    if `never_count' == 0 & `__n_usable' > 0 {
+    if !`use_prebalance_grid' & `never_count' == 0 & `__n_usable' > 0 {
         local __glast : word `__n_treated' of `__treated_levels'
         if `__glast' == `__gmax_usable' {
             local __n_usable = `__n_usable' - 1
         }
     }
-    if `__n_usable' <= 0 {
+    if `__n_usable' <= 0 & "`balance_lostgroups'" == "" {
         display as error "No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings."
         * Pre-kernel refusal: nothing has been estimated, so whatever
         * estimation results were already in memory stay posted -- the
@@ -1740,6 +1702,14 @@ program define csdid, eclass sortpreserve
         display as error "The never-treated group is too small to serve as a reliable comparison group. Try specifying notyet to include not-yet-treated units in the comparison group."
         * Pre-kernel refusal: as at the No-valid-groups stop above, whatever
         * estimation results were already in memory stay posted.
+        exit 459
+    }
+    * did's default balanced-panel route refuses a treated identity lost
+    * after the cohort grid is fixed (compute.att_gt2.R:40-43). The first
+    * scan's actual balance mask identifies loss without confusing a surviving
+    * cohort's later recoding with removal. Entry refusals preserve the old fit.
+    if "`balance_lostgroups'" != "" {
+        display as error "bal(full) removed every unit from treated cohort(s) `balance_lostgroups'. The requested cohort comparisons cannot be estimated. Resolve the missing observations or use bal(none) to keep the unbalanced panel."
         exit 459
     }
     * Both of these announce a change to the SAMPLE or the ESTIMAND, so they
@@ -1812,7 +1782,13 @@ program define csdid, eclass sortpreserve
     * the marker and e(N_units) describe one sample instead of three.
     tempvar use_mark
     quietly generate byte `use_mark' = 0
-    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `reqsize', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'")
+    * Entry refusals preserve the previous fit; estimation failures clear it.
+    * Clear at that boundary, before the cache changes, so Break and an
+    * uncaptured downstream error follow the same rule as captured failures.
+    * if/in (including e(sample)) has already been resolved into touse, and
+    * every input to the engine and poster is a local, temporary or cache value.
+    ereturn clear
+    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `reqsize', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'", `use_prebalance_grid')
     local csdid_rc = _rc
     if `csdid_rc' {
         ereturn clear
@@ -1919,16 +1895,15 @@ program define csdid, eclass sortpreserve
                 }
                 if !_rc {
                     * A plugin handle is not observable: `program list' on a
-                    * bound plugin reports not-found (measured, r(111) always),
-                    * so the record of the last successful bind -- the path
-                    * global, set only on a bind that returned 0 -- IS the
-                    * aliveness check, and `csdid reset' is what clears it. A
-                    * bind against a handle that already exists returns rc 110
-                    * WITHOUT re-reading the file, so 110 is never accepted as
-                    * a load: on a fresh bind it is a failure to report, and
-                    * on a moved installation it means the session holds an
-                    * image it cannot release, which is said in e() rather
-                    * than guessed around -- results still arrive, from Mata.
+                    * bound plugin reports not-found (measured, r(111) always).
+                    * The path global records the last successful bind, not
+                    * whether its handle survived `clear all' or program drop.
+                    * Reuse the path here; the call below recovers a missing
+                    * handle only after a fresh bind returns 0. A bind against
+                    * an existing handle returns 110 WITHOUT re-reading the
+                    * file, so 110 never establishes a new load: a moved
+                    * installation may still hold the earlier image, which
+                    * is reported in e() and uses the Mata fallback.
                     * A binary REPLACED at the same path in a live session is
                     * not detectable here at all; `csdid reset' names the
                     * restart that makes it certain.
@@ -2038,6 +2013,20 @@ program define csdid, eclass sortpreserve
                 capture plugin call `bootstrap_plugin_program' `plugin_if_vars' in 1/`plugin_nc_value', bootstrap_vars `biters' `plugin_nc_value' `plugin_draws' `boot_rng_state'
                 local plugin_rc = _rc
                 if `plugin_rc' == 1 exit 1
+                if `plugin_rc' == 199 {
+                    * Do not drop the name: bind 0 proves the prior call had
+                    * no handle and could not advance RNG or write draws.
+                    * A live plugin returning 199 still binds as 110 and
+                    * follows the existing transaction-restoring fallback.
+                    capture program `bootstrap_plugin_program', plugin using("`bootstrap_plugin_path'")
+                    local plugin_bind_rc = _rc
+                    if `plugin_bind_rc' == 1 exit 1
+                    if !`plugin_bind_rc' {
+                        capture plugin call `bootstrap_plugin_program' `plugin_if_vars' in 1/`plugin_nc_value', bootstrap_vars `biters' `plugin_nc_value' `plugin_draws' `boot_rng_state'
+                        local plugin_rc = _rc
+                        if `plugin_rc' == 1 exit 1
+                    }
+                }
             }
             if !`plugin_rc' {
                 capture mata: csdid_boot_plugin_record("`plugin_started'", st_numscalar("`plugin_nc'"), `biters')
@@ -2473,21 +2462,18 @@ program define csdid, eclass sortpreserve
         matrix colnames `post_V' = `post_names'
         matrix rownames `post_V' = `post_names'
     }
-    * F-009: the panel's FIRST time period, which csdid_aggte needs to apply R
-    * compute.aggte's balance_e event-time truncation. `min_time' is already
-    * exactly it (summarize of time over touse, above), and it is captured here
-    * because `ereturn clear' is about to wipe the estimation locals' only sink.
+    * F-009: the panel's first time period, needed for balance_e event-time
+    * truncation. min_time already describes the settled estimation sample.
     local time_first = `min_time'
-    ereturn clear
+    * A failed ATT grid still has an estimation sample. Post its marker even
+    * when there is no b/V to post; otherwise e(N)>0 accompanies e(sample)==0.
+    * esample() consumes its variable, so pass a copy of touse.
+    tempvar esmp
+    quietly generate byte `esmp' = `touse'
     if `post_k' > 0 {
-        * e(sample) marks the estimation sample, as every official estimation
-        * command does; `summarize ... if e(sample)' and `estat summarize'
-        * work off it. esample() consumes the variable it is handed, so it
-        * gets a copy of touse rather than touse itself.
-        tempvar esmp
-        quietly generate byte `esmp' = `touse'
         ereturn post `post_b' `post_V', obs(`sample_N') esample(`esmp')
     }
+    else ereturn post, obs(`sample_N') esample(`esmp')
     ereturn matrix attgt = `attgt'
     if `store_large' ereturn matrix inffunc = `inffunc'
     ereturn matrix group_prob = `group_prob'
@@ -2561,14 +2547,14 @@ program define csdid, eclass sortpreserve
     * weight variable in from e(wexp) -- signing before it was posted hashed
     * a different variable set than the check read, and every weighted run
     * refused r(459) on untouched data.
-    if `post_k' > 0 {
-        local sign_covs ""
-        if `"`xvars'"' != "" {
-            capture fvrevar `xvars', list
-            if !_rc local sign_covs "`r(varlist)'"
-        }
-        quietly signestimationsample `ivar' `ivar_declared' `time' `gvar' `yname' `sign_covs' `cluster'
+    * An explicit varlist makes estat summarize usable without e(b), so a
+    * failed ATT grid needs the same data-mutation guard as a finite fit.
+    local sign_covs ""
+    if `"`xvars'"' != "" {
+        capture fvrevar `xvars', list
+        if !_rc local sign_covs "`r(varlist)'"
     }
+    quietly signestimationsample `ivar' `ivar_declared' `time' `gvar' `yname' `sign_covs' `cluster'
     ereturn local weightvar "`wvar'"
     ereturn local base_period "`base_period'"
     ereturn local fix_weights "`fix_weights'"

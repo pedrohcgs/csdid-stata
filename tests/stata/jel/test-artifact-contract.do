@@ -3,14 +3,17 @@ clear all
 set more off
 
 local root "`c(pwd)'"
+local fixture : environment CSDID_JEL_FIXTURE_ROOT
+if `"`fixture'"' == "" local fixture "`root'/tests/fixtures/jel"
 
-confirm file "`root'/tests/fixtures/jel/expected/contract/jel-artifact-rollup.csv"
-confirm file "`root'/tests/fixtures/jel/metadata/manifest.json"
+confirm file "`fixture'/expected/contract/jel-artifact-rollup.csv"
+confirm file "`fixture'/metadata/manifest.json"
 
-import delimited using "`root'/tests/fixtures/jel/expected/contract/jel-artifact-rollup.csv", clear varnames(1) stringcols(_all)
+import delimited using "`fixture'/expected/contract/jel-artifact-rollup.csv", clear varnames(1) stringcols(_all)
 assert _N == 18
 assert audit_status == "recorded"
-assert parity_verified == "1"
+assert inlist(parity_verified, "0", "1")
+assert parity_verified == parity_verified[1]
 assert evidence_report == "reports/jel-full-reproduction-result.md"
 assert stata_test_file == "tests/stata/jel/test-artifact-contract.do"
 tempfile rollup
@@ -27,13 +30,14 @@ assert r(N) == 9
 
 forvalues i = 1/18 {
     local aid = lower(artifact_id[`i'])
-    confirm file "`root'/tests/fixtures/jel/`aid'/expected/contract/artifact-audit.csv"
-    confirm file "`root'/tests/fixtures/jel/`aid'/expected/contract/full-reproduction-evidence.csv"
-    confirm file "`root'/tests/fixtures/jel/`aid'/expected/contract/full-reproduction-evidence.json"
-    confirm file "`root'/tests/fixtures/jel/`aid'/metadata/manifest.json"
+    local parity_recorded = parity_verified[`i']
+    confirm file "`fixture'/`aid'/expected/contract/artifact-audit.csv"
+    confirm file "`fixture'/`aid'/expected/contract/full-reproduction-evidence.csv"
+    confirm file "`fixture'/`aid'/expected/contract/full-reproduction-evidence.json"
+    confirm file "`fixture'/`aid'/metadata/manifest.json"
 
     preserve
-    import delimited using "`root'/tests/fixtures/jel/`aid'/expected/contract/artifact-audit.csv", clear varnames(1) stringcols(_all)
+    import delimited using "`fixture'/`aid'/expected/contract/artifact-audit.csv", clear varnames(1) stringcols(_all)
     assert _N >= 1
     assert exists == "1"
     destring bytes, replace
@@ -42,10 +46,11 @@ forvalues i = 1/18 {
     restore
 
     preserve
-    import delimited using "`root'/tests/fixtures/jel/`aid'/expected/contract/full-reproduction-evidence.csv", clear varnames(1) stringcols(_all)
+    import delimited using "`fixture'/`aid'/expected/contract/full-reproduction-evidence.csv", clear varnames(1) stringcols(_all)
     assert _N == 1
     assert artifact_id == upper("`aid'")
-    assert status == "pass"
+    assert inlist(status, "pass", "not-run")
+    assert "`parity_recorded'" == cond(status == "pass", "1", "0")
     assert report == "reports/jel-full-reproduction-result.md"
     assert full_gate == "CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh"
     restore
@@ -55,9 +60,9 @@ use "`rollup'", clear
 keep if artifact_type == "table"
 forvalues i = 1/`=_N' {
     local aid = lower(artifact_id[`i'])
-    confirm file "`root'/tests/fixtures/jel/`aid'/expected/contract/table-token-summary.csv"
+    confirm file "`fixture'/`aid'/expected/contract/table-token-summary.csv"
     preserve
-    import delimited using "`root'/tests/fixtures/jel/`aid'/expected/contract/table-token-summary.csv", clear varnames(1) stringcols(_all)
+    import delimited using "`fixture'/`aid'/expected/contract/table-token-summary.csv", clear varnames(1) stringcols(_all)
     assert _N == 2
     assert inlist(role, "r", "stata")
     destring numeric_token_count, replace
@@ -69,13 +74,23 @@ use "`rollup'", clear
 keep if artifact_type == "figure"
 forvalues i = 1/`=_N' {
     local aid = lower(artifact_id[`i'])
-    confirm file "`root'/tests/fixtures/jel/`aid'/expected/contract/figure-pdf-audit.csv"
+    confirm file "`fixture'/`aid'/expected/contract/figure-pdf-audit.csv"
     preserve
-    import delimited using "`root'/tests/fixtures/jel/`aid'/expected/contract/figure-pdf-audit.csv", clear varnames(1) stringcols(_all)
+    import delimited using "`fixture'/`aid'/expected/contract/figure-pdf-audit.csv", clear varnames(1) stringcols(_all)
     assert _N == 2
     assert inlist(role, "r", "stata")
     assert pdf_header == "%PDF-"
     destring bytes, replace
     assert bytes > 0
     restore
+}
+
+use "`rollup'", clear
+quietly count if parity_verified == "0"
+if r(N) > 0 {
+    display as text "JEL artifact-contract pass only: full reproduction UNVERIFIED (not run on this checkout)."
+    display as text "Run CSDID_RUN_JEL_FULL=1 tests/run-jel-full-reproduction.sh for full reproduction evidence."
+}
+else {
+    display as text "JEL artifact-contract pass; recorded full-reproduction evidence is consistent."
 }

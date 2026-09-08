@@ -1,19 +1,11 @@
 #!/usr/bin/env python3
 # ---------------------------------------------------------------------------
-# Does the live site match this source?
+# Does the local site checkout match this source?
 #
-# Every website gate here reads the markdown in website/. None of them reads
-# what psantanna.com/csdid actually serves, and those are different
-# repositories. Correcting a figure in the source therefore does nothing to the
-# live page until someone republishes it, and every gate stays green in the
-# interval -- none of them can see the published page. The interval is however
-# long it takes to notice, which is the same failure as a shipped binary that
-# lags its own source: an artifact nothing exercises.
-#
-# Compares the BUILT html, file by file, against what the site repository holds.
-# Not a numbers-only spot check: a stale page usually differs in prose too, and
-# a comparison that looks only where it expects trouble finds only the trouble
-# it expected.
+# Compares built HTML and assets, file by file, with the csdid/ directory in
+# the local website repository. This detects a stale prepared payload. It
+# does not inspect a deployment, a remote Git revision, or HTTP responses.
+# Publishing and checking the served site are separate release steps.
 #
 # Usage:
 #   python3 tools/release/check-published-site.py
@@ -78,19 +70,19 @@ def main():
         differ = sorted(k for k in set(built) & set(live)
                         if digest(built[k]) != digest(live[k]))
 
-        print(f"built {len(built)} files, live has {len(live)}")
+        print(f"built {len(built)} files, site checkout has {len(live)}")
         if not (missing or extra or differ):
-            print("the live site matches this source")
+            print("the site checkout matches the built source; deployment and HTTP are not checked")
             return 0
 
-        print("\nthe live site does NOT match this source:", file=sys.stderr)
+        print("\nthe site checkout does NOT match the built source:", file=sys.stderr)
         for k in missing:
-            print(f"   built here but not live: {k}", file=sys.stderr)
+            print(f"   built here but missing from site checkout: {k}", file=sys.stderr)
         for k in extra:
-            print(f"   live but not built here: {k}", file=sys.stderr)
+            print(f"   in site checkout but not built here: {k}", file=sys.stderr)
         for k in differ:
             print(f"   differs: {k}", file=sys.stderr)
-        print("\n   republish with: bash tools/release/publish-website.sh --push",
+        print("\n   prepare the site checkout with: bash tools/release/publish-website.sh",
               file=sys.stderr)
         return 1
 

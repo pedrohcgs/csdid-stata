@@ -1,6 +1,8 @@
 # PY016: R oracle for the not-yet-treated control scenario.
 # The inherited test checked structural facts about which cohorts appear in
 # e(group_prob) and e(unit_group), but never compared an estimate to R.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py016/inputs/notyettreated.csv")

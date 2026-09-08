@@ -49,7 +49,7 @@ generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
@@ -67,11 +67,11 @@ the whole estimation.
 
 <div class="important" markdown="1">
 `gvar()` is `0` for never-treated units and the first treated period otherwise;
-`time()` is 1 or more. Cohorts and periods share one positive calendar-time
-axis, and `0` is reserved for "never treated". A zero or negative cohort code
-has no consistent reading. If your data start at or below zero, shift both by
-the same amount. A monotone relabeling of the periods leaves every estimate
-unchanged.
+`time()` is 1 or more. Use the same calendar-time units for both variables,
+and reserve `gvar() == 0` for never-treated units. If your time axis starts
+at or below zero, add the same constant to `time()` and to treated cohorts
+only, leaving never-treated codes at zero. This preserves calendar distances,
+event times, and the anticipation setting.
 </div>
 
 Next: [balanced panels](articles/balanced-panel.html).

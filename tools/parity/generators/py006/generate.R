@@ -1,6 +1,8 @@
 # PY006: R oracle for the influence function, compared value by value.
 # att_gt exports the influence function on the MP object, so the check does not
 # have to stop at its shape.
+source("tools/parity/generators/oracle-check.R")
+
 suppressMessages(library(did))
 q <- function(e) suppressWarnings(suppressMessages(e))
 d <- read.csv("tests/fixtures/parity/py006/inputs/sample-data.csv"); names(d) <- tolower(names(d))

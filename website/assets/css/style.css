@@ -33,7 +33,7 @@ body {
 }
 .site-nav .links a {
   margin-left: 1.1rem; color: var(--navy-light); text-decoration: none; font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 600; white-space: nowrap;
 }
 .site-nav .links a:hover { color: var(--navy); }
 .content { max-width: var(--maxw); margin: 0 auto; padding: 2.2rem 1.25rem 3rem; }
@@ -60,11 +60,23 @@ pre {
   padding: 0.9rem 1rem; overflow-x: auto; line-height: 1.5;
 }
 pre code { background: none; color: inherit; padding: 0; font-size: 1rem; }
+/* Keep wide display equations scrollable without widening the page. Auto
+   margins center equations that fit and preserve the left edge of long ones. */
+.content mjx-container[jax="CHTML"][display="true"] {
+  max-width: 100%; overflow-x: auto;
+}
+.content mjx-container[jax="CHTML"][display="true"] > mjx-math {
+  display: block; width: max-content;
+  /* MathJax writes inline zero margins; override them to center fitting math. */
+  margin-left: auto !important; margin-right: auto !important;
+}
 table {
   border-collapse: separate; border-spacing: 0; margin: 1.2rem 0;
   font-size: 1rem; width: 100%;
   border: 1px solid var(--rule); border-radius: 8px;
 }
+/* Wide result tables scroll within the reading column at every viewport. */
+.content table { display: block; overflow-x: auto; }
 .table-title { font-weight: 600; margin: 1.2rem 0 0; }
 .table-title + table { margin-top: 0.45rem; }
 .table-note { font-size: 0.92rem; color: var(--muted); margin: -0.7rem 0 1.2rem; }
@@ -188,7 +200,7 @@ details.code-fold > pre code { font-size: 0.78rem; }
 /* Everything shares the one content column: prose, hero, tables, code, cards. */
 @media (max-width: 700px) {
   .content { padding: 1.4rem 1rem 2.2rem; }
-  table { display: block; overflow-x: auto; white-space: nowrap; }
+  .content table { white-space: nowrap; }
   .hero h1 { font-size: 2rem; }
   .site-nav { flex-direction: column; gap: 0.3rem; }
   .site-nav .links a { margin-left: 0; margin-right: 0.9rem; }

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import math
 import os
 import subprocess
@@ -204,6 +205,7 @@ def make_data(seed: int, scenario: Scenario) -> pd.DataFrame:
 
 def write_r_script(path: Path, scenarios: list[Scenario]) -> None:
     lines = [
+        f"source({json.dumps(str(ROOT / 'tools/parity/generators/oracle-check.R'))})",
         "suppressPackageStartupMessages(library(did))",
         "args <- commandArgs(trailingOnly = TRUE)",
         "build <- args[[1]]",
@@ -632,22 +634,16 @@ def main() -> int:
     stata_script = BUILD / "run-stata.do"
     write_r_script(r_script, SCENARIOS)
     write_stata_script(stata_script, SCENARIOS)
+    stata_log = ROOT / f"{stata_script.stem}.log"
+    stata_log.unlink(missing_ok=True)
     run(["Rscript", str(r_script), str(BUILD)])
     run([STATA_CMD, "-b", "do", str(stata_script)])
     # stata -b exits 0 even when the do-file aborts (the repository's cardinal
     # rule), so the batch log is authoritative: it must exist, END with the
     # end-of-do-file sentinel (a killed session truncates before it), and
     # contain no r(N) error lines.
-    stata_log = ROOT / f"{stata_script.stem}.log"
-    if not stata_log.exists():
-        raise SystemExit(f"adversarial differential: {stata_log} was not written; the Stata half did not run")
-    log_text = stata_log.read_text(errors="replace")
+    run(["bash", str(ROOT / "tools/release/check-stata-log-tail.sh"), str(stata_log)])
     stata_log.replace(BUILD / stata_log.name)
-    if "end of do-file" not in "\n".join(log_text.splitlines()[-3:]):
-        raise SystemExit("adversarial differential: the Stata half did not reach the end of its do-file; see build/adversarial-differential/run-stata.log")
-    errs = [ln for ln in log_text.splitlines() if ln.startswith("r(") and ln.endswith(");")]
-    if errs:
-        raise SystemExit(f"adversarial differential: the Stata half raised {errs[0]}; see build/adversarial-differential/run-stata.log")
     compare_outputs(SCENARIOS)
     print(f"adversarial differential gate passed; see {BUILD / 'comparison.csv'}")
     return 0

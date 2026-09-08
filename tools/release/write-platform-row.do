@@ -1,5 +1,5 @@
 version 15
-args outfile release_gates_status
+args outfile release_gates_status repository_commit production_digest
 
 if `"`outfile'"' == "" {
     local outfile "reports/platform-matrix-local.csv"
@@ -8,13 +8,18 @@ if `"`outfile'"' == "" {
 if `"`release_gates_status'"' == "" {
     local release_gates_status "unverified"
 }
+if "`release_gates_status'" == "pass" & ///
+    (strlen("`repository_commit'") != 40 | strlen("`production_digest'") != 64) {
+    display as error "a passing platform row requires the tested repository commit and production digest"
+    exit 198
+}
 
 capture mkdir "reports"
 
 tempname fh
 file open `fh' using `"`outfile'"', write replace text
-file write `fh' "date,stata_version,edition,os,machine_type,byteorder,release_gates_status" _n
-local row "`c(current_date)',`c(stata_version)',`c(edition_real)',`c(os)',`c(machine_type)',`c(byteorder)',`release_gates_status'"
+file write `fh' "date,stata_version,edition,os,machine_type,byteorder,release_gates_status,repository_commit,production_digest" _n
+local row "`c(current_date)',`c(stata_version)',`c(edition_real)',`c(os)',`c(machine_type)',`c(byteorder)',`release_gates_status',`repository_commit',`production_digest'"
 file write `fh' "`row'" _n
 file close `fh'
 

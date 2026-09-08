@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Refuse to proceed unless a FULL preflight passed on exactly this code.
 #
-# There is no CI for this project: Stata is licence-locked, so a GitHub-hosted
-# runner cannot execute the unit, deep or JEL tiers. That leaves local
+# Hosted CI runs static checks and native plugin builds. Its runners have no
+# licensed Stata runtime for the unit, deep or JEL tiers. Those need local
 # enforcement, and "I ran the tests" is a claim rather than evidence. This
 # checks a receipt that preflight writes only on a complete, fully green run,
 # and that is pinned to a digest of the code that was actually exercised.

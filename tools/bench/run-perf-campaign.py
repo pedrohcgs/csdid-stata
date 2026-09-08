@@ -13,10 +13,10 @@ reading means anything, and all three are arrangement rather than arithmetic:
   launched the campaign, so it is byte-identical on every arm. Two checkouts
   side by side would differ in path length and in what the filesystem cached.
 
-  ROTATION. Arm order rotates by round and reverses on even rounds, so each arm
-  runs first, in the middle and last in equal measure over each block of
-  len(arms) rounds -- so a campaign should run a MULTIPLE of len(arms) rounds
-  for the balance to hold exactly. A machine that warms up,
+  ROTATION. Arm order rotates by round and reverses on alternate blocks of
+  len(arms) rounds. Each arm occupies every position once per block, so a
+  campaign should run a MULTIPLE of len(arms) rounds for the balance to hold
+  exactly. A machine that warms up,
   throttles, or picks up somebody else's job during the campaign then drifts
   ACROSS the arms rather than into one of them.
 
@@ -40,6 +40,7 @@ position. That cost is real and belongs to run-session-warmup.py.
 
 import argparse
 import csv
+import math
 import shutil
 import statistics
 import subprocess
@@ -64,6 +65,10 @@ INSTRUMENTS = {
         "bucket": "bucket",
     },
 }
+ROUTE_CELLS = ["reg", "ipw", "dr", "dr_rc"]
+QR_CELLS = ["reg_rc", "reg_w", "dr_w", "dr_rc_w"]
+BUCKETS = ["setup", "cell_extract", "model_fit", "if_assembly", "cache_post",
+           "cluster", "bootstrap", "aggregation", "unprofiled", "total"]
 
 
 def sh(cmd, **kw):
@@ -109,6 +114,7 @@ def scan_log(workdir):
         raise SystemExit(f"no Stata log written in {workdir}")
     bad = []
     for log in logs:
+        sh(["bash", str(ROOT / "tools/release/check-stata-log-tail.sh"), str(log)])
         for i, line in enumerate(log.read_text(errors="replace").splitlines(), 1):
             s = line.strip()
             if (s.startswith("r(") and s.endswith(");")) or s == "assertion is false":
@@ -121,8 +127,56 @@ def rows_of(out, spec):
     with out.open(newline="") as f:
         for rec in csv.reader(f):
             if len(rec) != len(spec["cols"]):
-                continue
+                raise SystemExit(f"malformed timing row in {out}: {rec}")
             yield dict(zip(spec["cols"], rec))
+
+
+def validate_output(out, instrument, tag, arms, rounds, nunits, qr_routes=False):
+    """Every prescribed cell/block/bucket must occur exactly once per arm/round."""
+    expected = {}
+    for r in range(rounds + 1):
+        if instrument == "perf-inproc-routes":
+            cells = ROUTE_CELLS + (QR_CELLS if qr_routes else [])
+            shift = (r - 1) % len(cells)
+            cells = cells[shift:] + cells[:shift]
+            if r % 2 == 0:
+                cells.reverse()
+        else:
+            cells = ["agg_simple", "agg_group", "agg_dynamic", "agg_calendar"]
+            shift = (r - 1) % len(cells)
+            cells = cells[shift:] + cells[:shift]
+            cells = (["agg_storeall"] + cells) if r % 2 == 0 else (cells + ["agg_storeall"])
+        for arm in arms:
+            for position, cell in enumerate(cells, 1):
+                for part in BUCKETS if instrument == "perf-inproc-routes" else ("1", "2", "3"):
+                    expected[(arm, str(r), cell, part)] = position
+    seen = set()
+    for rec in rows_of(out, INSTRUMENTS[instrument]):
+        part = rec.get("bucket", rec.get("block"))
+        key = (rec["arm"], rec["round"], rec["cell"], part)
+        if key not in expected or key in seen:
+            raise SystemExit(f"unexpected or duplicate timing key: {key}")
+        seen.add(key)
+        cell = rec["cell"]
+        want_reps = 50 if instrument == "perf-inproc-routes" else 6 if cell == "agg_storeall" else 25
+        if (rec["tag"] != tag or rec["position"] != str(expected[key])
+                or rec["nunits"] != str(nunits) or rec["reps"] != str(want_reps)):
+            raise SystemExit(f"timing metadata disagrees with requested run: {key}")
+        if instrument == "perf-inproc-routes":
+            method = cell.split("_")[0]
+            panel = "repeated-cross-section" if "_rc" in cell else "panel"
+            path = "fast-repeated-cross-section" if "_rc" in cell else "fast-balanced-panel"
+            if rec["route"] != f"{method}|{path}|{panel}":
+                raise SystemExit(f"timed route disagrees with requested cell: {key}")
+        try:
+            seconds = float(rec["seconds"])
+        except ValueError:
+            raise SystemExit(f"invalid timing value: {key}")
+        if (not math.isfinite(seconds) or (part != "unprofiled" and seconds < 0)
+                or (part == "total" or instrument == "perf-agg-warm") and seconds <= 0):
+            raise SystemExit(f"invalid timing value: {key}")
+    if seen != set(expected):
+        raise SystemExit(f"incomplete timing output: missing {len(set(expected) - seen)} of {len(expected)} keys")
 
 
 def report(out, spec, arms):
@@ -191,10 +245,19 @@ def main():
                    help="name=rev-or-directory, comma separated; the first is the subject")
     p.add_argument("--rounds", type=int, default=12)
     p.add_argument("--nunits", default="")
+    p.add_argument("--include-qr-routes", action="store_true",
+                   help="include REG-RC and weighted panel/RC coefficient routes")
     p.add_argument("--workdir", default="")
     p.add_argument("--report-only", action="store_true",
                    help="re-read an existing csv and print the report again")
     args = p.parse_args()
+    if args.rounds < 1:
+        p.error("--rounds must be positive")
+    if args.include_qr_routes and args.instrument != "perf-inproc-routes":
+        p.error("--include-qr-routes requires perf-inproc-routes")
+    nunits = int(args.nunits or (400 if args.instrument == "perf-inproc-routes" else 5000))
+    if nunits < 1:
+        p.error("--nunits must be positive")
 
     spec = INSTRUMENTS[args.instrument]
     arms = []
@@ -203,11 +266,14 @@ def main():
         if not ref:
             raise SystemExit(f"arm must be name=rev-or-directory: {item}")
         arms.append((name.strip(), ref.strip()))
+    if len({name for name, _ in arms}) != len(arms) or any(not name for name, _ in arms):
+        p.error("arm names must be nonempty and unique")
 
     OUTDIR.mkdir(parents=True, exist_ok=True)
     out = OUTDIR / f"{args.tag}.csv"
 
     if args.report_only:
+        validate_output(out, args.instrument, args.tag, [n for n, _ in arms], args.rounds, nunits, args.include_qr_routes)
         report(out, spec, [n for n, _ in arms])
         return
 
@@ -235,8 +301,10 @@ def main():
         print(f"  arm {name:<8} {ref}  ->  {origins[name]}")
     print("  statistic: per-round paired % difference, median over rounds, "
           "count of rounds the subject is slower")
-    print("  rotation: arm order rotates by round and reverses on even rounds")
+    print(f"  rotation: arm order rotates by round and reverses on alternate blocks of {len(arms)} rounds")
     print("  round 0 is a settle round: run, written to the csv, excluded from the statistic")
+    if args.include_qr_routes:
+        print("  extended coefficient routes: " + ", ".join(QR_CELLS))
     sys.stdout.flush()
 
     for r in range(0, args.rounds + 1):
@@ -261,14 +329,16 @@ def main():
             for stale in workdir.glob("*.log"):
                 stale.unlink()
             argv = [str(workdir), str(out), args.tag, name, str(r)]
-            if args.nunits:
-                argv.append(str(args.nunits))
+            argv.append(str(nunits))
+            if args.include_qr_routes:
+                argv.append("1")
             sh(["stata-mp", "-b", "do", f"tools/bench/{dofile}", *argv], cwd=workdir)
             scan_log(workdir)
         label = "settle" if r == 0 else f"{r}/{args.rounds}"
         print(f"  round {label} done ({', '.join(n for n, _ in order)})")
         sys.stdout.flush()
 
+    validate_output(out, args.instrument, args.tag, [n for n, _ in arms], args.rounds, nunits, args.include_qr_routes)
     report(out, spec, [n for n, _ in arms])
     print(f"\nraw rounds: {out.relative_to(ROOT)}")
 

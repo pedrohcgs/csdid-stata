@@ -31,7 +31,7 @@ destring deaths population_20_64 year yaca county_code stfips unemp_rate poverty
 generate double mrate = 100000 * deaths / population_20_64
 drop if missing(mrate) | population_20_64 <= 0
 generate int gvar = yaca
-replace gvar = 0 if missing(gvar) | gvar > 2016
+replace gvar = 0 if missing(gvar) | gvar > 2019
 bysort county_code: generate byte nyears = _N
 keep if nyears == 11
 save "jel_balanced.dta", replace
@@ -66,10 +66,12 @@ comparison is drawn from a period the cohort could not yet have responded to. Th
 period immediately before treatment is no longer reported as a pre-treatment
 placebo. It is now part of the response.
 
-Compare the event-study output from the two runs (the cell counts differ as
-well). Under `anticipation(1)` the
-effect at event time −1 is gone, because that period is no longer assumed to be
-clean.
+Compare the event-study output from the two runs. On this consecutive
+calendar, the universal normalization moves from event time −1 to −2. The
+effect at −1 remains in the table and may reflect anticipation; it is no
+longer an unaffected reference. These cohorts all retain a clean base period,
+so the number of ATT(g,t) cells does not change. Cohorts too near the start of
+a shorter sample can instead be dropped.
 
 ## Choosing the value
 
@@ -109,6 +111,11 @@ use "jel_balanced.dta", clear
 csdid mrate, ivar(county_code) time(year) gvar(gvar) notyet anticipation(1) analytical
 estat event
 ```
+
+The reported joint Wald pre-test still tests estimable cells before the
+nominal treatment date, including those inside the anticipation window. It
+is not a test restricted to the periods before anticipation begins. Inspect
+those earlier cells when assessing the no-anticipation assumption.
 
 See [Comparison groups](comparison-groups.html) for the choice itself, and
 [Pre-testing](pre-testing.html) for reading the pre-treatment cells that remain.

@@ -1,0 +1,75 @@
+{
+  "matrix_id": "RT042",
+  "fixture_family": "r-empty-coefficient-sample",
+  "normative_source": "did 2.5.1 att_gt and its settled DIDparams$data; singular control covariate design",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/varying.csv",
+      "sha256": "b29a602d51e1b4fdeb458e2eaaf22ac034a03ca1b557236819b617abb10009cd",
+      "rows": 40,
+      "columns": 5
+    },
+    {
+      "path": "inputs/universal.csv",
+      "sha256": "b29a602d51e1b4fdeb458e2eaaf22ac034a03ca1b557236819b617abb10009cd",
+      "rows": 40,
+      "columns": 5
+    },
+    {
+      "path": "inputs/screened.csv",
+      "sha256": "9b4e2bb3de576b066685ae1e717f96358d070b06cd85a2f25bf8f3644a5368cf",
+      "rows": 40,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt042/generate.R",
+      "path": "tools/parity/generators/rt042/generate.R",
+      "sha256": "fc58fbc72582dca762239331cd69c9968ea1a42d75934c639cfb4af74a3f8a25"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "0c1f977c3794f798b4e4c25301929a39813e21531ce99835646d031cca71842e"
+    },
+    {
+      "path": "expected/r/sample.csv",
+      "schema": "estimation-sample",
+      "sha256": "62cf2d4ed3560fa9db5e325c1ef854adfdab9c119ef4f6781e0d20413b2e3e2e"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Every Stata ATT/SE missing pattern and sample count",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "group", "time"]
+    },
+    {
+      "actual": "Every Stata e(sample) marker",
+      "expected": "expected/r/sample.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "id", "t"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "A singular control design leaves no postable coefficient; universal normalization also cannot be posted. The sample marker still identifies settled data, including if-screening and full balancing after a missing outcome."
+}

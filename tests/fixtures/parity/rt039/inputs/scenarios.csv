@@ -1,0 +1,8 @@
+"scenario","panel","unbalanced","weighted","cluster","regular","fix_weights"
+"affine_rc",FALSE,FALSE,FALSE,FALSE,FALSE,""
+"affine_rc_weighted",FALSE,FALSE,TRUE,FALSE,FALSE,""
+"affine_unbalanced",TRUE,TRUE,FALSE,FALSE,FALSE,""
+"affine_unbalanced_weighted",TRUE,TRUE,TRUE,TRUE,FALSE,""
+"regular_rc",FALSE,FALSE,TRUE,TRUE,TRUE,""
+"regular_unbalanced",TRUE,TRUE,TRUE,TRUE,TRUE,""
+"regular_balanced_varying",TRUE,FALSE,TRUE,TRUE,TRUE,"varying"

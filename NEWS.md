@@ -201,6 +201,10 @@ as Stata matrices, and `saverif()` writes the durable dataset that
 Version 2.0.0 is a rewritten engine, and speed at scale was a design goal
 alongside accurate estimation and inference.
 
+**Bootstrap acceleration after `clear all`.** Seeded estimation and aggregation
+continue to use available acceleration without restarting Stata, avoiding an
+unintended slower fallback after clearing the session.
+
 **Against Version 1.82, on identical data with 2.0.0 pinned to that
 version's own defaults so both versions compute the same numbers: gains range
 from 10x to 308x**, depending

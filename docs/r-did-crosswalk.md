@@ -172,9 +172,7 @@ calendar, and `ATT` for simple.
 | `se` | `e(attgt)`, column `se` | Bootstrap SE when `bstrap`, analytical otherwise - same rule as R. Under the bootstrap, `e(boot_attgt)` carries both `se_boot` and `se_analytic`. |
 | `c` | `e(crit_val)` | The simultaneous critical value under `cband`, the pointwise one otherwise. `e(point_crit_val)` always holds the normal quantile. |
 | `inffunc` | `e(inffunc)` under `storeall`, or `saverif()` as a dataset | One column per ATT(g,t), one row per unit (per observation for repeated cross sections), as in R. R identifies rows by `rownames`; Stata identifies them by the `id` column of `e(unit_group)`. Stored subject to the storage policy in `docs/stored-results-api.md`. |
-| `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R exposes `V_analytical`; Stata posts the covariance aligned with its
-reported standard errors. This row concerns the ATT(g,t) coefficients; the
-aggregation covariance uses the rule below. |
+| `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R exposes `V_analytical`; Stata posts the covariance aligned with its reported standard errors. This row concerns the ATT(g,t) coefficients; the aggregation covariance uses the rule below. |
 | `n` | `e(N_units)` | `e(N)` is the number of observations, not units. |
 | `alp` | `e(level)` | `level = 100 * (1 - alp)`. |
 | `W`, `Wpval` | `e(wald_stat)`, `e(wald_pvalue)` | The Wald pre-test of parallel trends on the pre-treatment cells, and its p-value. Stata also stores `e(wald_df)`, the degrees of freedom R computes on the fly. `csdid` emits R's warnings when no usable pre-treatment cells exist. |

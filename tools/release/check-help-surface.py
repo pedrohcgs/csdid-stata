@@ -37,7 +37,8 @@ R3  FACTUAL CLAIMS.  Free prose cannot be checked mechanically and this does
          than the one the help promises, or matched literally in the
          catch-all alias block;
       b. every `e(name)' mentioned anywhere in the help is posted by some ado;
-      c. every return code the help quotes is raised by the source;
+      c. every return code the help quotes is raised by the source, or is on
+         the short list of codes only Stata raises (STATA_OWN_RETURN_CODES);
       d. every matrix whose columns the help enumerates carries exactly those
          column names in `matrix colnames'.
 
@@ -300,11 +301,12 @@ SIGNED_RESULTS = ["datasignature", "datasignaturevars"]
 # and the gate says so.
 ABSENT_BY_DESIGN = ["ll"]
 
-# Return codes Stata itself raises: 111 (a name Stata cannot resolve, quoted in
-# the note about what a bare _b[] used to produce) and 322 (margins refusing on
-# e(marginsnotok)). The checker asserts the source raises neither, so if csdid
-# ever starts raising one, this entry has to be revisited.
-STATA_OWN_RETURN_CODES = ["111", "322"]
+# Return codes the help quotes that only Stata raises: 322 (margins refusing on
+# e(marginsnotok)). The help's r(111) (what predict would do without csdid_p)
+# is Stata's too, but it cannot be listed: csdid itself raises 111 for a
+# cluster name it cannot resolve, and the checker refuses any listed code the
+# source raises. If those refusals ever change code, 111 has to come back here.
+STATA_OWN_RETURN_CODES = ["322"]
 
 
 def read(path):
@@ -470,7 +472,9 @@ def declared_options(program_text):
         for token in DECLARED.findall(block):
             if token.lower() in NOT_AN_OPTION:
                 continue
-            lead = re.match(r"[A-Z0-9_]*", token).group(0)
+            # Stata accepts the capitalized lead without its trailing
+            # underscore: BASE_period is abbreviable to base (measured).
+            lead = re.match(r"[A-Z0-9_]*", token).group(0).rstrip("_")
             minlen = len(lead) if lead else len(token)
             full = token.lower()
             out[full] = min(out.get(full, minlen), minlen)

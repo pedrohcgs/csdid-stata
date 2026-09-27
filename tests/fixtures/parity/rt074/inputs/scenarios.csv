@@ -1,0 +1,5 @@
+"scenario","method","outcome"
+"varying_dr","dr","y"
+"varying_reg","reg","y"
+"varying_ipw","ipw","y"
+"flat_varying_dr","dr","yflat"

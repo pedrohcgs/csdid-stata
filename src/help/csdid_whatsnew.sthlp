@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -16,22 +16,25 @@
 {p2colreset}{...}
 
 {pstd}
-This is what changed for someone upgrading from csdid Version 1.82, the
-version SSC distributes. The command surface is deliberately the same, so most
-existing do-files run unchanged; the entries below are the places where they do
-not, and the things that are new. {helpb csdid} documents everything in full.
+This is what changed for someone upgrading from csdid Version 1.82, the last
+revision of the 1.8x line; {cmd:ssc install csdid} installs Version 1.81,
+whose two further differences are listed in {helpb csdid}. The command surface
+is deliberately the same, so most existing do-files run unchanged. The entries
+below summarize where they do not, and the things that are new;
+{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82} in
+{helpb csdid} lists every change with what replaces it.
 
 
 {marker v200}{...}
-{hline 8} {hi:csdid 2.0.0, released August 2026} {hline}
+{hline 8} {hi:csdid 2.0.0} {hline}
 
 {pstd}
-{bf:Three defaults moved. Read these first: they change numbers.}
+{bf:Five defaults moved. Read these first: they change numbers.}
 
 {phang}
 {bf:1. Not-yet-treated is the default comparison group.} Version 1.82 compared
-each treated cohort with the never-treated units. Version 2.0.0 uses every unit
-not yet treated at period {it:t}. It uses more of the data, usually gives
+each treated cohort with the never-treated units. Version 2.0.0 also uses every
+unit not yet treated in either period of the comparison. It uses more of the data, usually gives
 tighter standard errors, and does not depend on a never-treated group existing
 or being large enough to trust. {cmd:nevertreated} asks for the older
 behaviour. See {help csdid##opt_control:comparison-group options}.
@@ -62,70 +65,99 @@ per-effect rows still
 carry a simultaneous band, its critical value bootstrapped with a note,
 unless {cmd:pointwise} is added), and
 {cmd:pointwise} gives pointwise intervals from the bootstrap. Point estimates
-are unaffected by either.
+are unaffected by either. The bootstrap draws Rademacher multipliers only;
+Version 1.82's {cmd:wboot} drew Mammen multipliers unless told otherwise.
 
 {phang}
-{bf:4. Unbalanced panels are balanced once, and csdid says so.} Version 1.82
-dropped, without comment, the units not observed in both periods of each
-comparison. Version 2.0.0 makes the choice explicit: {cmd:bal(full)}, the
-default, drops units not observed in every period, once, for all comparisons;
-{cmd:bal(pair)} balances each 2x2 separately, which is what Version 1.82 did
-silently; {cmd:bal(none)} keeps every unit. Whenever a mode discards
-observations, {cmd:csdid} reports how many, and {cmd:e(panel_mode)} records the
-layout it resolved to.
+{bf:4. Propensity scores are trimmed at .995.} Under {cmd:method(dr)} and
+{cmd:method(ipw)}, comparison observations whose estimated propensity score is
+.995 or more are dropped, without a message. Version 1.82 did not trim.
+{cmd:pscoretrim(1)} turns trimming off.
+
+{phang}
+{bf:5. Unbalanced panels are balanced once, and csdid says so.} Version 1.82
+balanced each comparison separately: it said the panel was unbalanced, but not
+which or how many units each comparison dropped. Version 2.0.0 makes the
+choice explicit: {cmd:bal(full)}, the default, drops units not observed in
+every period, once, for all comparisons; {cmd:bal(pair)} balances each 2x2
+separately, which is what Version 1.82 did; {cmd:bal(none)} keeps every unit.
+Whenever a mode discards observations, {cmd:csdid} reports how many, and
+{cmd:e(panel_mode)} records the layout it resolved to.
+
+{pstd}
+{bf:Three more changes move numbers, and no option undoes them.}
+
+{phang}
+{bf:6. notyet pre-treatment cells follow Version 1.82's asinr rule.} A
+comparison unit must be untreated in both periods of the comparison, as under
+Version 1.82's {cmd:notyet asinr}; Version 1.82's plain {cmd:notyet} used only
+the cohorts treated after {it:g} in pre-treatment cells. Under
+{cmd:notyet base_period(varying)}, pre-treatment cells and the pre-test move;
+post-treatment cells do not.
+
+{phang}
+{bf:7. long reverses the sign of Version 1.82's long pre-treatment cells.}
+{cmd:long} and {cmd:long2} both give Version 1.82's {cmd:long2} cells, so after
+{cmd:long} each pre-treatment cell and each pre-period event-study coefficient
+changes sign, and the coefficients move one event time earlier.
+
+{phang}
+{bf:8. The overall standard error of estat group} differs from Version 1.82's.
+The cohort effects, their standard errors and the overall effect are
+unchanged.
 
 {pstd}
 {bf:New in 2.0.0}
 
 {phang}
-{bf:5. No external dependencies.} Version 1.82 required {cmd:drdid} from SSC.
+{bf:9. No external dependencies.} Version 1.82 required {cmd:drdid} from SSC.
 Version 2.0.0 requires nothing beyond Stata itself: the estimation engine is
-Mata, ships precompiled, and behaves identically on Windows, macOS, and Linux.
+Mata, ships precompiled, and runs on Windows, macOS, and Linux.
 
 {phang}
-{bf:6. A rewritten engine.} On the same data, with 2.0.0 asked for Version
-1.82's own defaults so that both compute the same numbers, 2.0.0 runs between
-17 and 334 times faster, with the gap widening as the number of cohorts and
-periods -- and so the number of ATT(g,t) cells -- grows.
+{bf:10. A rewritten engine.} On the same data, with 2.0.0 asked for
+Version 1.82's own defaults so that both compute the same numbers, 2.0.0 runs between
+10 and 308 times faster in the published comparisons, with the gap widening as
+the number of cohorts and periods -- and so the number of ATT(g,t) cells --
+grows.
 
 {phang}
-{bf:7. Postestimation in the conventional forms.} {cmd:estat event},
-{cmd:estat group}, {cmd:estat calendar}, {cmd:estat simple},
-{cmd:estat dynamic} and {cmd:estat attgt} aggregate the stored results, and
-every one of them takes {cmd:saving()}, so any aggregation can be written to a
-dataset without a separate export command. {cmd:estat tidy} and
-{cmd:estat glance} export the table and the header. {helpb csdid_plot} draws
-the figure -- also reachable as {cmd:estat plot} -- and
-{cmd:csdid_plot, saving()} exports the numbers behind it --
-estimates, band bounds, axis values -- to draw with {helpb twoway} exactly as
-you want it. See {helpb csdid_estat} and {helpb csdid_plot}.
+{bf:11. Postestimation in the conventional forms.} {cmd:estat event},
+{cmd:estat group}, {cmd:estat calendar}, {cmd:estat simple} and
+{cmd:estat attgt} are joined by {cmd:estat dynamic}, and every one of them
+takes {cmd:saving()}, so any aggregation can be written to a dataset without a
+separate export command. {cmd:estat tidy} and {cmd:estat glance} export the
+table and the header. {helpb csdid_plot} draws the figure -- also reachable as
+{cmd:estat plot} -- and {cmd:csdid_plot, saving()} exports the numbers behind
+it -- estimates, band bounds, axis values -- to draw with {helpb twoway}
+exactly as you want it. See {helpb csdid_estat} and {helpb csdid_plot}.
 
 {phang}
-{bf:8. Redisplay, and two diagnostics.} A bare {cmd:csdid} after an estimation
-redisplays the results, as official estimation commands do.
-{cmd:csdid version} reports the version, the copy of {cmd:csdid.ado} that
-answered, and the engine the session is using, and changes nothing.
-{cmd:csdid reset} clears the session's engine decision and estimation cache, so
-that a csdid installed or replaced mid-session is the one that runs next. See
+{bf:12. Two diagnostics.} {cmd:csdid version} reports the version, the copy of
+{cmd:csdid.ado} that answered, and the engine the session is using, and
+changes nothing. {cmd:csdid reset} clears the session's engine decision and
+estimation cache, so that a csdid installed or replaced mid-session is the one
+that runs next. See
 {help csdid##support:Installation, upgrading and diagnostics}.
 
 {phang}
-{bf:9. A bootstrap accelerator on macOS.} The package installs a small
+{bf:13. A bootstrap accelerator on macOS.} The package installs a small
 compiled accelerator, a universal binary covering Intel and Apple-silicon
-machines, used for explicitly seeded Rademacher draws. Its results are
-identical to the Mata path, including the random-number state. Everywhere else
--- and on macOS whenever it cannot load -- the bootstrap runs through Mata,
-and {cmd:e(bootstrap_accelerator)} and
-{cmd:e(bootstrap_accelerator_status)} report which path ran.
+machines, used for explicitly seeded Rademacher draws. It draws the same
+multipliers as the Mata path, leaves the same random-number state, and agrees
+with it to floating-point rounding. Unseeded draws, every other platform, and
+a Mac where it cannot load use the Mata path, and
+{cmd:e(bootstrap_accelerator)} and {cmd:e(bootstrap_accelerator_status)}
+report which path ran.
 
 {phang}
-{bf:10. Repeated cross sections, declared.} {cmd:rcs} says that the data are
+{bf:14. Repeated cross sections, declared.} {cmd:rcs} says that the data are
 repeated cross sections while keeping an identifier variable, which
 {cmd:cluster()} can then use. Omitting {cmd:ivar()} still works and means the
 same thing.
 
 {phang}
-{bf:11. More is refused instead of being accepted quietly.} A panel whose
+{bf:15. More is refused instead of being accepted quietly.} A panel whose
 shape contradicts the design is refused with a message naming the variable at
 fault: a unit appearing twice in a period, a {cmd:gvar()} that changes within a
 unit, a {cmd:cluster()} that changes within a unit. Options that Version 1.82
@@ -137,9 +169,10 @@ settings you did not ask for. See
 {bf:Migrating}
 
 {phang}
-Legacy spellings still run, each with a message saying what it resolved to;
-{cmd:from()} and a handful of others are refused by name with the replacement
-in the message. The option-by-option list is at
+Six legacy spellings still run, each with a message saying what it resolved
+to. Version 1.82 options and postestimation forms that are gone, such as
+{cmd:method(drimp)}, {cmd:estat pretrend} and {cmd:estore()}, are refused. The
+option-by-option list, with what replaces each, is at
 {help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82} in
 {helpb csdid}, and installation and upgrading are covered at
 {help csdid##support:Installation, upgrading and diagnostics}.

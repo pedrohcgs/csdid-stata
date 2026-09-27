@@ -52,6 +52,20 @@ assert _rc == 0
 assert "`e(agg_type)'" == "dynamic"
 assert abs(`e(agg_level)' - 98.33) < 1e-10
 
+* -- 3b. two-decimal levels whose binary value is not round(x, .01) -------
+* 90.1 and 99.99 are legal cilevel values that a float comparison with
+* round(level, 0.01) refused; csdid accepts them at entry, so the aggregation
+* must too, on both routes.
+foreach lv in 90.1 99.99 10.7 +95 +90.10 {
+    quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical
+    capture noisily csdid_stats, type(dynamic) level(`lv')
+    assert _rc == 0
+    assert abs(`e(agg_level)' - `lv') < 1e-10
+    quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical
+    capture noisily estat event, level(`lv')
+    assert _rc == 0
+}
+
 * -- 4. and the range check still fires, on its own message --------------
 quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical
 capture noisily csdid_stats, type(dynamic) level(150)

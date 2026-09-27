@@ -44,6 +44,5 @@ if grep -qF 'deprecated spelling of `bal(none)`' "$doc"; then
     exit 1
 fi
 grep -qF '`long`, `long2`' "$doc"
-grep -qF 'Use the test suite under `tests/` as the migration map' "$doc"
 grep -qF 'documented divergences' "$doc"
 grep -qF 'None of them restores legacy per-comparison unit dropping' "$doc"

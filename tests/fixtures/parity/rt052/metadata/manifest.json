@@ -1,0 +1,70 @@
+{
+  "matrix_id": "RT052",
+  "fixture_family": "r-regression-design-rcond-guards",
+  "normative_source": "DRDID 1.3.0 reg_did_panel and drdid_panel (rcond(XpX) < eps, XpX weighted), reg_did_rc and drdid_rc (rcond of each pre/post block < eps); did 2.5.1 compute.att_gt2.R:590-596 (slow path compute.att_gt.R:678/944) (the stop becomes an NA cell with a warning)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/rc_spre1.csv",
+      "sha256": "d4fc76f092263fa67ab6cba3bb030277315d20ceb8bcbc14a4e2185a282097b2",
+      "rows": 600,
+      "columns": 4
+    },
+    {
+      "path": "inputs/rc_spre3.csv",
+      "sha256": "a441ad4731846cb116672a8515c171a4a537779b2df52f3d98e8fe28659fb2a9",
+      "rows": 600,
+      "columns": 4
+    },
+    {
+      "path": "inputs/panel_weighted.csv",
+      "sha256": "815069556dc37ab51e66b05b2de432ca22f20c5127428a85bd4ac0b05f52b3e5",
+      "rows": 800,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt052/generate.R",
+      "path": "tools/parity/generators/rt052/generate.R",
+      "sha256": "1b0b5260eb2862296b1c6ba990d3f7ee7130f96750f81a07522924d8fad46055"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "5af43e711b90a87b3a1b66c4aa2de822820ee876edaef40598609a81f723348f"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata ATT(2,2) and SE where R estimates; a missing cell where R reports NA",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "method"]
+    },
+    {
+      "actual": "the refusal names R's reason (r_reason)",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "method"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Repeated cross sections (600 rows, one covariate) at two pre-period scales, reg, dr and ipw; a two-period weighted panel (400 units) with reg and dr. Cohort 2 against never-treated units, universal base, analytical inference."
+}

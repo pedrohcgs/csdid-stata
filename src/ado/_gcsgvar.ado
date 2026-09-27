@@ -1,4 +1,4 @@
-*! _gcsgvar 2.0.0 08sep2026
+*! _gcsgvar 2.0.0 27sep2026
 * Cohort ("gvar") variable from a binary treatment indicator.
 *
 * This file holds the single implementation. `_g<name>' is Stata's egen entry
@@ -10,6 +10,12 @@
 program _gcsgvar, sortpreserve
 	version 14
 	syntax newvarname =/exp [if] [in], tvar(varname) ivar(varname)
+	* a string period fell through to egen's bare "type mismatch"
+	capture confirm numeric variable `tvar'
+	if _rc {
+		display as error "tvar() must be a numeric time variable; `tvar' is a string. Convert it first, for example with destring or a date function."
+		exit 109
+	}
 	* `csg_shown' is display text only and never reaches a computation.
 	* csgvar.ado forwards even a bare variable as `= (treated)', so one wrapping
 	* layer has to come back off before the messages and the variable label can

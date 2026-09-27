@@ -1,0 +1,4 @@
+"scenario","axis","missing","dead_period"
+"float_dead","float","period",2
+"computed_dead","computed","period",2
+"float_onemissing","float","one",

@@ -50,10 +50,12 @@ about reading its output.
 
 Read the output in three parts:
 
-- the **header** tells you the estimator, the comparison group, the base-period
-  rule, and whether inference is bootstrap or analytical
+- the **header** tells you whether inference is bootstrap or analytical, and
+  with what settings; `e(method)`, `e(control_group)` and `e(base_period)`
+  record the estimator, the comparison group and the base-period rule
 - the **ATT(g,t) table** is one row per cohort-period cell
-- the **pre-test** is a joint test that all pre-treatment cells are zero
+- the **pre-test**, printed below the table, is a joint test that all
+  pre-treatment cells are zero
 
 The table of cohort-period cells is the object that everything else on this site
 is built from. The aggregations you eventually report (by length of exposure, by
@@ -69,7 +71,7 @@ unseeded run says so in the header (so you will not be misled by accident).
 
 ## Read the pre-test carefully
 
-The joint pre-test printed in the header is easy to over-read. Indeed, our
+The joint pre-test printed below the table is easy to over-read. Indeed, our
 impression is that it is the part of the output most often quoted out of context,
 usually as evidence *in favor of* parallel trends.
 

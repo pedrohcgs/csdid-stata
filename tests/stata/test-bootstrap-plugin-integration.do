@@ -1,6 +1,9 @@
 * ---------------------------------------------------------------------------
 * The compiled bootstrap accelerator is an optimization, not a second method:
-* on the same seed it must reproduce the Mata path bit-for-bit. Each pair of
+* on the same seed it must draw the same multipliers -- e(boot_rng_state)
+* matches EXACTLY -- and reproduce the Mata path to floating-point rounding
+* (the two accumulate draw-by-influence products in different orders, so the
+* last bits of an SE or a critical value can differ). Each pair of
 * runs below is identical except for CSDID_BOOT_PLUGIN_DISABLE, and every
 * channel the bootstrap posts -- e(attgt), e(boot_attgt), e(boot_draws),
 * e(V), and the aggregate e(aggte)/e(boot_aggte)/e(agg_boot_draws) -- is
@@ -117,6 +120,8 @@ global CSDID_BOOT_PLUGIN_DISABLE
 quietly csdid y, ivar(id) time(time) gvar(g) method(reg) reps(31) pointwise nevertreated base_period(varying) bal(none)
 assert "`e(bootstrap_accelerator)'" == "mata"
 assert "`e(bootstrap_accelerator_status)'" == "mata-unseeded"
+quietly csdid_stats, type(dynamic) na_rm
+assert "`e(agg_boot_accel_status)'" == "mata-unseeded"
 
 global CSDID_BOOT_PLUGIN_DISABLE 0
 import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
@@ -219,5 +224,53 @@ forvalues lifecycle_pass = 1/3 {
 }
 display "LIFECYCLE-COVERAGE-COMPLETE"
 * LIFECYCLE-COVERAGE-END
+
+* csdid reset cannot unload a resident accelerator (its handle is a
+* subprogram of csdid.ado, and discard would clear the user's e()), so the
+* next seeded run uses the Mata path. It must say so as a stale binding, not
+* as a plugin that failed to load, and its numbers must still agree. This
+* holds because nothing between the two runs lets Stata drop csdid.ado from
+* memory; once it does, the next run binds afresh (plugin-active).
+global CSDID_BOOT_PLUGIN_DISABLE
+import delimited using "`root'/tests/fixtures/parity/f049/inputs/medium-panel.csv", clear asdouble
+quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) ///
+    reps(199) rseed(20260709) bal(none)
+assert "`e(bootstrap_accelerator_status)'" == "plugin-active"
+matrix RESET_BEFORE = e(boot_attgt)
+csdid reset
+quietly csdid y x1 x2 [iw=wt], ivar(id) time(time) gvar(g) method(dr) ///
+    reps(199) rseed(20260709) bal(none)
+display "RESET-FIT: `e(bootstrap_accelerator)'|`e(bootstrap_accelerator_status)'|" e(bootstrap_accelerator_rc)
+assert "`e(bootstrap_accelerator)'" == "mata"
+assert "`e(bootstrap_accelerator_status)'" == "mata-stale-plugin-binding"
+* a seeded aggregation of that fit runs on Mata for the same reason, and says
+* so rather than calling itself unseeded
+quietly csdid_stats, type(dynamic) na_rm
+display "RESET-AGG: `e(agg_boot_accelerator)'|`e(agg_boot_accel_status)'"
+assert "`e(agg_boot_accelerator)'" == "mata"
+assert "`e(agg_boot_accel_status)'" == "mata-stale-plugin-binding"
+* inline: the lifecycle passes above ran clear all, which dropped the helper
+mata: _rb = st_matrix("RESET_BEFORE"); _ra = st_matrix("e(boot_attgt)"); ///
+    assert(rows(_rb) == rows(_ra) & cols(_rb) == cols(_ra)); ///
+    assert(sum(vec((_rb :>= .) :!= (_ra :>= .))) == 0); ///
+    _rf = selectindex(vec((_rb :< .) :& (_ra :< .))); ///
+    assert(max(abs(vec(_rb)[_rf] :- vec(_ra)[_rf])) <= 1e-10)
+* a second reset still says the handle may be resident: the flag behind the
+* caveat is not one of the globals reset clears
+tempfile rlog
+log using "`rlog'", text replace name(rlg)
+csdid reset
+log close rlg
+tempname rfh
+local rbody ""
+file open `rfh' using "`rlog'", read text
+file read `rfh' line
+while r(eof) == 0 {
+    local rbody `"`rbody' `line'"'
+    file read `rfh' line
+}
+file close `rfh'
+assert strpos(`"`rbody'"', "can stay in memory") > 0
+display "RESET-COVERAGE-COMPLETE"
 
 exit 0

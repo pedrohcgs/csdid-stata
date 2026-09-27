@@ -237,4 +237,44 @@ _tb_cell
 assert reldif(r(att), 0.49775000000000919) <= 1e-7
 assert reldif(r(se), 0.01580132510266152) <= 1e-7
 
+*-----------------------------------------------------------------------------
+* Part 6: a trim that binds on some comparison units leaves the cell's counts
+* alone. The count columns of e(attgt) are the cell's sample before the trim,
+* which is DRDID's sample too: std_ipw_did_panel and drdid_panel keep a trimmed
+* control in n with zero weight. 500 treated and 500 never-treated units,
+* treatment likelier with x; five controls have a fitted score at or above
+* .95, so pscoretrim(.95) moves the estimate and not the counts, on the panel
+* and on the repeated cross-section route.
+*-----------------------------------------------------------------------------
+clear
+quietly set obs 1000
+generate long id = _n
+generate double x = (id - 500.5)/200
+generate byte g = cond(mod(id*0.6180339887498949, 1) < invlogit(2*x), 2, 0)
+quietly logit g x
+tempvar ps
+quietly predict double `ps'
+quietly count if g == 0 & `ps' >= .95
+assert r(N) == 5
+quietly expand 2
+quietly bysort id: generate byte t = _n
+generate double y = x + 0.5*t + 0.5*(g == 2 & t == 2) + (t == 2)*mod(id, 7)/8
+
+tempname A
+foreach m in ipw dr {
+    foreach structure in "ivar(id)" "" {
+        local att1 .
+        foreach tl in 1 .95 {
+            quietly csdid y x, `structure' time(t) gvar(g) method(`m') ///
+                base_period(varying) analytical pscoretrim(`tl')
+            matrix `A' = e(attgt)
+            assert `A'[1, 6] == 500 & `A'[1, 7] == 500
+            assert `A'[1, 8] == 500 & `A'[1, 9] == 500
+            if `tl' == 1 local att1 = `A'[1, 4]
+        }
+        * the trim did bind
+        assert abs(`A'[1, 4] - `att1') > .05
+    }
+}
+
 display as text "test-pscoretrim-binding passed"

@@ -4,7 +4,8 @@ title: "Speed against Version 1.82"
 
 # Speed against Version 1.82
 
-Version 1.82 is the `csdid` that SSC distributes today. The
+Version 1.82 is the last `csdid` before 2.0.0 (November 2025); SSC
+distributes Version 1.81. The
 [upgrading guide](upgrading-from-182.html) covers what changed in the
 estimates; this page reports how long each version takes to produce them.
 Our protocol is the median of 7 timed trials for 2.0.0 with one discarded
@@ -93,8 +94,7 @@ periods, which are the two extremes across all four tables.
 The per-workload comparison at fixed size (analytical, bootstrap,
 weighted, clustered, and event-study variants, 10x to 35x) ships in the
 package README, and it was produced by a
-seven-trial A/B harness run against an installed copy of Version 1.82 at
-its released commit. This page extends that comparison across sizes and
+seven-trial A/B harness run against an installed copy of Version 1.82. This page extends that comparison across sizes and
 designs, and it does not replace those numbers or restate them. Neither
 set of timings says anything about which version is more accurate, since
 both compute the same estimates here.

@@ -1,0 +1,17 @@
+"scenario","group","time","att","se"
+"rcs",3,1,0,0.191991440570445
+"rcs",3,2,0,
+"rcs",3,3,1,0.236707146992861
+"rcs",3,4,1.5,0.200819357512795
+"rcs",4,1,,
+"rcs",4,2,,
+"rcs",4,3,0,
+"rcs",4,4,,
+"unbalanced",3,1,0,0.117486116447308
+"unbalanced",3,2,0,
+"unbalanced",3,3,1,0.152160012062412
+"unbalanced",3,4,1.5,0.105888546402617
+"unbalanced",4,1,,
+"unbalanced",4,2,,
+"unbalanced",4,3,0,
+"unbalanced",4,4,,

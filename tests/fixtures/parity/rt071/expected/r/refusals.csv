@@ -1,0 +1,3 @@
+"case","message"
+"group_maxe1_narm","No valid att_gt() estimates found for this aggregation. This may happen if all estimates for a particular group or time period are NA."
+"group_maxe1","Missing values found in att_gt() estimates. To remove them, set `na.rm = TRUE`."

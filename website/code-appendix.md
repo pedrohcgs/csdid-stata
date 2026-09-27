@@ -19,7 +19,7 @@ published tables.
 
 The Version 1.82 comparison needs one thing this folder cannot carry: a
 checkout of Version 1.82 itself, which `scalebench_f_cell.do` expects at
-`../csdid-182` (the released commit `fdbae255`), and which requires `drdid`
+`../csdid-182` (commit `fdbae255` of the csdid-stata repository), and which requires `drdid`
 1.91 or later on the adopath. That script checks for both and stops rather
 than installing anything.
 

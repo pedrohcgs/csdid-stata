@@ -1,4 +1,4 @@
-*! csdid_plot 2.0.0 08sep2026
+*! csdid_plot 2.0.0 27sep2026
 program define csdid_plot
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -7,6 +7,22 @@ program define csdid_plot
     }
     syntax [, SAVing(string) REPLACE GROUP(numlist) *]
     if `"`options'"' != "" {
+        * a documented option syntax could not take lands here too: given
+        * twice, or with a value its type refuses
+        local opt_rest `"`options'"'
+        while `"`opt_rest'"' != "" {
+            gettoken opt opt_rest : opt_rest, bind
+            local opt_name = lower(regexr(`"`opt'"', "\(.*$", ""))
+            foreach opt_decl in sav:saving replace:replace group:group {
+                gettoken opt_min opt_full : opt_decl, parse(":")
+                local opt_full = substr(`"`opt_full'"', 2, .)
+                if strlen(`"`opt_name'"') >= strlen("`opt_min'") & ///
+                    `"`opt_name'"' == substr("`opt_full'", 1, strlen(`"`opt_name'"')) {
+                    display as error `"option `opt_full'() is given more than once or with a value it does not take: `opt'"'
+                    exit 198
+                }
+            }
+        }
         * D-1: compound quotes. A quoted option VALUE (e.g.
         * title("Cohort 2004")) puts a double quote inside `options', and the
         * plain-quoted display then breaks the string, producing a garbled
@@ -103,7 +119,12 @@ program define _csdid_plot_attgt
         generate str24 plot_type = "attgt"
         generate str8 series = cond(time >= group, "Post", "Pre")
         generate double x = time
-        generate str32 x_label = strtrim(strofreal(time, "%21.0g"))
+        * the value as the coefficient names write it: the shortest of
+        * %16.0g ... %21.0g that reads back as x (1.2, not 1.199999999999999956)
+        generate str32 x_label = strtrim(strofreal(x, "%16.0g"))
+        foreach w in 17 18 19 20 21 {
+            replace x_label = strtrim(strofreal(x, "%`w'.0g")) if real(x_label) != x | strpos(x_label, "e")
+        }
         rename att estimate
         * The ATT(g,t) band, from the matrix an aggregation cannot touch:
         * every bootstrap aggregation overwrites e(crit_val) with its OWN
@@ -127,16 +148,21 @@ program define _csdid_plot_attgt
         generate byte significant = ((ci_low > 0 & ci_low < .) | (ci_high < 0 & ci_high < .))
 
         if `"`group'"' != "" {
+            * R's rule (ggdid.R:100-104): if ANY requested cohort is absent,
+            * warn and report every cohort. Mata, not -count-: see the note in
+            * _csdid_plot_draw; this export path is r()-transparent.
             generate byte _csdid_keep = 0
+            tempname ghit
+            local gabsent ""
             foreach g of numlist `group' {
                 replace _csdid_keep = 1 if group == `g'
+                mata: st_numscalar("`ghit'", any(st_data(., "group") :== `g'))
+                if !scalar(`ghit') local gabsent `gabsent' `g'
             }
-            * Mata, not -count-: see the note in _csdid_plot_draw. This export
-            * path is r()-transparent for the same reason.
-            tempname nkeep
-            mata: st_numscalar("`nkeep'", sum(st_data(., "_csdid_keep")))
-            if scalar(`nkeep') == 0 {
+            if "`gabsent'" != "" {
                 noisily display as text "Some of the specified groups do not exist in the data. Reporting all available groups."
+                local gabsent : list uniq gabsent
+                noisily display as text "(no cohort `gabsent' among the estimated ATT(g,t) cells)"
                 replace _csdid_keep = 1
             }
             keep if _csdid_keep
@@ -190,15 +216,19 @@ program define _csdid_plot_aggte
     * F-053: same cohort filter and same absent-cohort fallback note as the
     * attgt branch, applied to the group-type aggregation rows (egt = cohort).
     if `"`group'"' != "" {
+        * the attgt branch's rule: any absent cohort reports them all
         generate byte _csdid_keep = 0
+        tempname ghit
+        local gabsent ""
         foreach g of numlist `group' {
             replace _csdid_keep = 1 if egt == `g'
+            mata: st_numscalar("`ghit'", any(st_data(., "egt") :== `g'))
+            if !scalar(`ghit') local gabsent `gabsent' `g'
         }
-        * Mata, not -count-: see the note in _csdid_plot_draw.
-        tempname nkeep
-        mata: st_numscalar("`nkeep'", sum(st_data(., "_csdid_keep")))
-        if scalar(`nkeep') == 0 {
+        if "`gabsent'" != "" {
             noisily display as text "Some of the specified groups do not exist in the data. Reporting all available groups."
+            local gabsent : list uniq gabsent
+            noisily display as text "(no cohort `gabsent' among the aggregated effects)"
             replace _csdid_keep = 1
         }
         keep if _csdid_keep
@@ -207,7 +237,11 @@ program define _csdid_plot_aggte
     generate str24 plot_type = "aggte_" + "`e(agg_type)'"
     generate str8 series = cond(egt >= 0, "Post", "Pre")
     generate double x = egt
-    generate str32 x_label = strtrim(strofreal(egt, "%21.0g"))
+    * written as in _csdid_plot_attgt
+    generate str32 x_label = strtrim(strofreal(x, "%16.0g"))
+    foreach w in 17 18 19 20 21 {
+        replace x_label = strtrim(strofreal(x, "%`w'.0g")) if real(x_label) != x | strpos(x_label, "e")
+    }
     rename att estimate
     capture confirm scalar e(agg_level)
     if _rc local agg_level = e(level)
@@ -300,15 +334,29 @@ program define _csdid_plot_draw
     if `"`plots'"' == "" {
         * Same class as the two refusals above: the diagnosis was accurate and
         * silent about what to do next. Every estimate missing means the 2x2
-        * comparisons failed, which csdid's own estimation-time warning already
-        * names causes for; point at the same place rather than leaving the
-        * user with an empty graph window and a return code.
+        * comparisons failed; point at what the estimation left behind -- the
+        * warnings it printed and the counts in e(attgt), since a cell with no
+        * treated or no comparison unit in either period is blanked without a
+        * warning -- rather than leaving the user with an empty graph window
+        * and a return code.
         display as error "nothing to plot: every estimate is missing"
-        display as error "The ATT(g,t) cells this plot draws from could not be estimated, so there is nothing to draw. The per-cell warnings from the csdid run name the cause; the usual ones are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim that empties a comparison group, or too few comparison units. Check e(attgt), then re-run csdid with a different covariate list or method(reg)."
+        display as error "The ATT(g,t) cells this plot draws from could not be estimated, so there is nothing to draw. The usual causes are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim that empties a comparison group, or too few treated or comparison units; the warnings printed during estimation name any cause csdid detected. Check the counts in e(attgt), then re-run csdid with a different covariate list or method(reg)."
         restore
         exit 498
     }
-    twoway `plots', yline(0, lpattern(dash) lcolor(gs8)) ///
+    * yline() does not extend the axis, so when every band lies on one side
+    * of zero the promised zero line fell outside the plot region. An
+    * invisible series at zero puts 0 inside the data range, and the scheme's
+    * own ticks then span it; it is not in the legend order.
+    quietly generate byte _csdid_zero = 0
+    local plots `"`plots' (scatter _csdid_zero x, msymbol(none))"'
+    * Ticks at the periods, event times or cohorts themselves: the scheme's
+    * own ticks fell between them (3.5 on a yearly calendar, 2005 on a cohort
+    * axis). Past 20 values the scheme's spacing reads better, so it keeps it.
+    local xlab ""
+    mata: st_local("xlev", invtokens(strofreal(uniqrows(select(st_data(., "x"), st_data(., "x") :< .))', "%21.0g")))
+    if `: word count `xlev'' <= 20 local xlab "xlabel(`xlev')"
+    twoway `plots', yline(0, lpattern(dash) lcolor(gs8)) `xlab' ///
         xtitle("`xt'") ytitle("`yt'") legend(order(`legorder')) `byopt'
     restore
 end

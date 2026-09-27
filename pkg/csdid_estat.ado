@@ -1,4 +1,4 @@
-*! csdid_estat 2.0.0 08sep2026
+*! csdid_estat 2.0.0 27sep2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -56,7 +56,27 @@ program define csdid_estat, eclass
             * own, so the check is applied only where a signature exists.
             if "`csdid_peek'" == substr("summarize", 1, max(2, `csdid_peek_n')) ///
                 & `"`e(datasignaturevars)'"' != "" {
-                checkestimationsample
+                * a signed variable that is gone is a changed sample too:
+                * checkestimationsample says r(111), the help promises 459
+                capture checkestimationsample
+                if _rc {
+                    display as error "the data in memory are not the estimation sample (a variable the estimation used has changed or is gone), so estat summarize would describe a different sample"
+                    exit 459
+                }
+                * With no varlist, estat_summ lists the names in e(b) as
+                * variables, and csdid's coefficients are ATT(g,t) cells, so
+                * every row read <not found>. The estimation's own variables
+                * -- the outcome first, then the rest of the signed list --
+                * are what it should describe.
+                gettoken csdid_sub csdid_rest : 0, parse(" ,")
+                local csdid_rest = strtrim(`"`csdid_rest'"')
+                if `"`csdid_rest'"' == "" | substr(`"`csdid_rest'"', 1, 1) == "," {
+                    local csdid_sig `e(datasignaturevars)'
+                    local csdid_dep `e(depvar)'
+                    local csdid_sig : list csdid_sig - csdid_dep
+                    estat_default summarize `csdid_dep' `csdid_sig' `csdid_rest'
+                    exit
+                }
             }
             estat_default `0'
             exit
@@ -69,7 +89,7 @@ program define csdid_estat, eclass
     * `estat dynamic, dropmissing' died with "unsupported option(s)" while
     * `estat event' silently hardcoded the opposite.
     syntax [anything(name=subcmd)] [, SAVing(string) REPLACE WINDOW(string) ///
-        POST Level(string) DROPMissing FROM(string) *]
+        POST Level(string) DROPMissing FROM(string) ESTORE(string) ESAVE(string) *]
     local subcmd = lower(strtrim(`"`subcmd'"'))
     * from() is unsupported by design; legacy accepted it on estat simple, group
     * and calendar. Refused BEFORE the leftover-options block so that a repeated
@@ -78,6 +98,15 @@ program define csdid_estat, eclass
     * must mirror only the SUPPORTED declarations, needs no change.
     if `"`from'"' != "" {
         display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which is now fixed at event time 0 -- the legacy default from(0) already was. Use window(# #) on estat event for event-time windows."
+        exit 198
+    }
+    * estore() and esave() are Version 1.82 options that stored or saved the
+    * aggregation under a name. Refused by name, before the leftover-options
+    * block for the reason from() is, with the two-step route that replaces
+    * them. Typed in full only, as Version 1.82 declared them.
+    if `"`estore'`esave'"' != "" {
+        local legacy_opt = cond(`"`estore'"' != "", "estore()", "esave()")
+        display as error "`legacy_opt' is not an option of estat; add post, then name the posted aggregation with estimates store or estimates save, as in estat event, post followed by estimates store myevent"
         exit 198
     }
     * The standard saving idiom -- saving(filename, replace) -- is parsed here
@@ -158,6 +187,21 @@ program define csdid_estat, eclass
     if `"`subcmd'"' == `""' {
         display as error "csdid_estat requires a subcommand; supported subcommands are attgt, event, dynamic, simple, group, calendar, tidy, glance, and plot; the standard estat subcommands vce, summarize, ic and bootstrap are also accepted"
         exit 198
+    }
+    * Version 1.82 subcommands with nothing of the same name here: say what
+    * replaces each, not only what is supported. Same return code as any
+    * other unknown subcommand.
+    if `"`subcmd'"' == "pretrend" {
+        display as error "estat pretrend is not a subcommand; csdid prints the pre-test of parallel trends below the ATT(g,t) table and stores it in e(wald_stat), e(wald_df) and e(wald_pvalue)"
+        exit 498
+    }
+    if `"`subcmd'"' == "cevent" {
+        display as error "estat cevent is not a subcommand and has no equivalent; estat event, window(# #) reports the event-time effects inside a window"
+        exit 498
+    }
+    if `"`subcmd'"' == "all" {
+        display as error "estat all is not a subcommand; run estat simple, estat group, estat calendar and estat event one at a time"
+        exit 498
     }
     if `"`subcmd'"' == `"attgt"' {
         * attgt builds no r(table), and csdid_estat is eclass, so
@@ -319,15 +363,9 @@ program define csdid_estat, eclass
         if `"`level'"' != "" local remedy_opts `"`remedy_opts' level(`level')"'
         if "`window'" != "" local remedy_opts `"`remedy_opts' window(`window')"'
         local stat_opts `"`stat_opts' remedy(estat `subcmd', `remedy_opts')"'
-        * csdid_stats reports two things on the TEXT channel that the
-        * `quietly' below suppresses, so the estat route printed neither:
-        *   - "window() is ignored for type(calendar)", so
-        *     `estat calendar, window(0 2)' returned the FULL unwindowed
-        *     calendar aggregation, rc 0, with no indication at all;
-        *   - the note explaining that every standard error in the
-        *     aggregation is missing, leaving the user a column of dots with
-        *     the explanation removed.
-        * Both are emitted here instead, outside the `quietly'. The window is
+        * csdid_stats' note explaining that every standard error in the
+        * aggregation is missing is on the TEXT channel, which the `quietly'
+        * below suppresses, so it is restated here, outside it. The window is
         * still FORWARDED and still warn-and-ignored rather than refused:
         * warn-and-return-unrestricted is the documented behaviour and is
         * pinned as an upstream contract, and csdid_estat's help promises
@@ -342,18 +380,9 @@ program define csdid_estat, eclass
             display as error "replace has no effect without saving(); specify saving(filename) or drop replace"
             exit 198
         }
-        * Error-styled, not text-styled: -quietly- suppresses text but not
-        * error, and this warning says the aggregation you get is NOT the one
-        * you asked for. On the text channel `quietly estat calendar,
-        * window(0 2) post' returned rc 0, printed nothing, and posted the
-        * FULL unwindowed calendar aggregation into e(b) -- the silent
-        * substitution this warning exists to prevent, restored in full by the
-        * one idiom (quietly + post) users reach for to script an aggregation.
-        * The tidy exports in this file already use the error channel for
-        * exactly this reason.
-        if "`agg_type'" == "calendar" & `"`window'"' != "" {
-            display as error "warning: window() is ignored for type(calendar); the full calendar aggregation is reported"
-        }
+        * The calendar window warning is csdid_stats' own: it is error-styled
+        * there, so it survives the -quietly- below, and printing it here too
+        * showed it twice.
         _csdid_estat_rclear
         quietly csdid_stats, `stat_opts'
         * Restated on this route: csdid_stats' own note is inside the
@@ -374,7 +403,7 @@ program define csdid_estat, eclass
                 * caller's -quietly- must not be able to remove the sentence
                 * that says so.
                 if `agg_se_allmiss' {
-                    display as error "note: every standard error in this type(`agg_type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance. The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
+                    display as error "note: every standard error in this type(`agg_type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome measured on a very small scale: a standard error of 1.49e-7 or less is reported as missing, so rescale the outcome (for example, multiply it by 1e6). The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
                 }
             }
         }

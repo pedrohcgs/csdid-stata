@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -146,7 +146,8 @@ filename in front of it.
 {phang}
 {opt replace} permits {cmd:csdid_plot} to overwrite an existing
 {it:filename}. Without it, writing over an existing file fails with the usual
-"file already exists" error, return code 602.
+"file already exists" error, return code 602. On its own, without
+{cmd:saving()}, it means nothing and is refused with return code 198.
 
 {marker opt_group}{...}
 {dlgtab:Selection}
@@ -155,7 +156,11 @@ filename in front of it.
 {opt group(numlist)} restricts the plotted rows to the listed treatment
 cohorts, that is, to the listed values of the {cmd:gvar()} variable. It is
 useful when a design has many cohorts and you want one figure per subset. It
-applies to the drawn graph and to the {opt sav:ing()} export alike.
+applies to the drawn graph and to the {opt sav:ing()} export alike. A cohort
+must match exactly, and a {it:numlist} holds 13 significant digits, so a
+cohort that does not fit in 13 digits, such as a monthly date stored as
+2000 + 7/12, cannot be selected; write the plot data with {opt sav:ing()}
+and select those rows there.
 
 {phang2}
 On the ATT(g,t) plot, {cmd:group()} keeps the rows whose {cmd:group} value is
@@ -174,14 +179,15 @@ left - and {cmd:csdid_plot} says so out loud:
 {it:group() applies to group-type aggregations; ignored for the dynamic aggregation plot.}
 
 {phang2}
-If none of the requested cohorts exists in the results, {cmd:csdid_plot} does
-not fail and does not produce an empty figure or an empty dataset. It reports
+If any of the requested cohorts does not exist in the results, {cmd:csdid_plot}
+does not fail and does not produce a partial or empty figure. It reports
 
 {pmore2}
 {it:Some of the specified groups do not exist in the data. Reporting all available groups.}
 
 {pmore}
-and falls back to every available cohort.
+names the missing cohorts on a second line, and falls back to every available
+cohort.
 
 
 {marker remarks}{...}
@@ -223,7 +229,8 @@ reverse-engineering a graph.
 {p2col :{it:inference requested}}{it:the critical value c}{p_end}
 {p2line}
 {p2col :bootstrap with bands (default)}{cmd:e(crit_val)}, the simultaneous
-(uniform) critical value{p_end}
+(uniform) critical value, or the normal quantile when the band falls back
+({cmd:e(cband_fallback)} = 1){p_end}
 {p2col :bootstrap with {cmd:pointwise}}{cmd:e(crit_val)}, which under
 {cmd:pointwise} is the normal quantile{p_end}
 {p2col :{cmd:analytical} (aggregations)}{cmd:e(crit_val)}, the simultaneous
@@ -353,10 +360,10 @@ normalization, the exported dataset shows the same thing: {cmd:estimate} is
 0 while {cmd:ci_low} and {cmd:ci_high} are missing.{p_end}
 
 {phang2}
-o {bf:Unknown cohorts} named in {cmd:group()}: when none of the requested
-cohorts exists, they are reported and {cmd:csdid_plot} falls back to every
-available cohort; when the request mixes known and unknown cohorts, the known
-ones are plotted.{p_end}
+o {bf:Unknown cohorts} named in {cmd:group()}: when any requested cohort does
+not exist, it is reported and {cmd:csdid_plot} falls back to every available
+cohort, so a range such as {cmd:group(2004/2007)} that spans a year with no
+cohort plots them all.{p_end}
 
 {phang2}
 o {cmd:group()} is honored on {cmd:type(group)} aggregation plots as well as
@@ -385,7 +392,11 @@ draws every cohort, and after {cmd:estat event} it draws the event study.
 
 {pstd}
 For styling, the migration is mechanical - export the data, then pass your old
-styling options to {cmd:twoway}. Instead of
+styling options to {cmd:twoway}. One thing changes on the way: Version 1.82's
+{cmd:group()} plot put periods to treatment on the x axis, and this version's
+cohort panels use the calendar period. The exported data carry both, so to keep
+the Version 1.82 axis, plot against {cmd:event_time} rather than {cmd:x}.
+Instead of
 
 {phang2}{cmd:. csdid_plot, group(2004) title("Cohort 2004")}{p_end}
 
@@ -394,7 +405,7 @@ write
 
 {phang2}{cmd:. csdid_plot, saving(pd) replace group(2004)}{p_end}
 {phang2}{cmd:. use pd, clear}{p_end}
-{phang2}{cmd:. twoway (rcap ci_high ci_low x) (scatter estimate x), title("Cohort 2004")}{p_end}
+{phang2}{cmd:. twoway (rcap ci_high ci_low event_time) (scatter estimate event_time), title("Cohort 2004")}{p_end}
 
 {pstd}
 {cmd:group()} keeps its legacy meaning (select treatment cohorts) and, unlike in
@@ -503,6 +514,8 @@ documented in {help csdid_plot##schema:Plot-data schema} above.
 {it:saving() accepts only the replace sub-option; cannot parse: ...}{p_end}
 {p2col :{cmd:198}}{cmd:saving()} has a comma but no filename before it:
 {it:saving() requires a filename before the comma, as in saving(myfile, replace)}{p_end}
+{p2col :{cmd:198}}{cmd:replace} was given without {cmd:saving()}:
+{it:replace has no effect without saving(); specify saving(filename) or drop replace}{p_end}
 {p2col :{cmd:498}}The active aggregation is {cmd:type(simple)}, which is one
 overall effect and so has no axis to plot against:
 {it:Plot method not available for this type of aggregation}. Plot a
@@ -518,7 +531,7 @@ check in the {cmd:csdid} run that produced them{p_end}
 {pstd}
 Two messages are notes, not errors: the {cmd:group()}-is-ignored note on
 dynamic and calendar aggregation plots, and the fall-back-to-all-cohorts note
-when no requested cohort exists. Both are described under
+when a requested cohort does not exist. Both are described under
 {help csdid_plot##opt_group:group()}.
 
 {pstd}

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the article in preferred-citation."
+message: "If you use this software, please cite both the article in preferred-citation and the software."
 title: "csdid: Difference-in-Differences with Multiple Time Periods in Stata"
 abstract: >-
   Stata package for group-time average treatment effects in
@@ -9,8 +9,7 @@ abstract: >-
   plotting.
 type: software
 version: 2.0.0
-# tools/release/stamp-version.py moves this to the actual release date.
-date-released: "2026-08-23"
+date-released: "2026-09-27"
 license: MIT
 repository-code: "https://github.com/pedrohcgs/csdid-stata"
 authors:
@@ -32,7 +31,7 @@ keywords:
   - Stata
 preferred-citation:
   type: article
-  title: "Difference-in-Differences with multiple time periods"
+  title: "Difference-in-Differences with Multiple Time Periods"
   authors:
     - family-names: "Callaway"
       given-names: "Brantly"

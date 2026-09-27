@@ -1,0 +1,52 @@
+{
+  "matrix_id": "RT053",
+  "fixture_family": "r-overlap-knife-edge-no-covariates",
+  "normative_source": "did 2.5.1 utility_functions.R:87-94 (overlap_check_fail defers to a fit inside the 1e-6 band); DRDID 1.3.0 std_ipw_did_panel and drdid_panel (trim.level)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/knife_edge_share.csv",
+      "sha256": "c6a8873db1a3efb69768023765d9e69ee9c3de6ff07e229b1d44ffdde2967e5f",
+      "rows": 9998,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt053/generate.R",
+      "path": "tools/parity/generators/rt053/generate.R",
+      "sha256": "ec3fea157c82aa64e910c5e10a6e6aa543b5ccf56bd2679bc14debac6e977784"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "b3c6df745b9dc2c1a9c03f298e0f1b955eb7444840491ca7884cd9651c2fc751"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "method(ipw) and method(dr) without covariates: the cell is not refused as an overlap violation; at the default trim it is missing, with pscoretrim(1) it equals DRDID at trim.level = 1",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["route", "method"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Two-period balanced panel of 4999 units, 4994 in cohort 2 and 5 never treated, no covariates, universal base, analytical inference. At the default trim csdid announces the empty comparison mass where DRDID returns NA silently (the registered no-effective-mass announcement)."
+}

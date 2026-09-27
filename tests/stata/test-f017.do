@@ -114,7 +114,7 @@ assert e(N) == 57
 assert e(N_time) == 4
 matrix Default = e(attgt)
 
-local long_msg "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+local long_msg "warning: long and long2 select base_period(universal), whose pre-treatment cells are the ones Version 1.82 reported under long2: against Version 1.82's long, every pre-treatment estimate changes sign and moves one event time. Specify base_period(universal) in new code; long and long2 will be removed in a future release."
 local asinr_msg "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
 tempfile evlog
 

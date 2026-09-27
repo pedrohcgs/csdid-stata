@@ -12,7 +12,7 @@ what to do. `csdid` reports the one it took:
 | --- | --- |
 | `bal(full)` | drop units not observed in every period, once, for all comparisons. **The default**, matching R `did`. |
 | `bal(none)` | keep every unit and use the repeated-cross-section computation, with the standard-error accounting that goes with it. |
-| `bal(pair)` | balance each 2×2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did silently. |
+| `bal(pair)` | balance each 2×2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did, announcing that the panel was unbalanced but not what each comparison dropped. |
 
 <div class="important" markdown="1">
 Dropping units changes the estimand, so `bal(full)` reports how many units and

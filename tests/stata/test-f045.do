@@ -182,7 +182,7 @@ foreach key in balance_full_is_default legacy_long_alias legacy_long2_alias ///
     assert r(N) == 1
 }
 
-local long_msg "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+local long_msg "warning: long and long2 select base_period(universal), whose pre-treatment cells are the ones Version 1.82 reported under long2: against Version 1.82's long, every pre-treatment estimate changes sign and moves one event time. Specify base_period(universal) in new code; long and long2 will be removed in a future release."
 local dryrun_msg "dryrun is an internal legacy option and is unsupported"
 
 import delimited using "`root'/tests/fixtures/parity/f045/inputs/balanced.csv", clear asdouble

@@ -1,0 +1,4 @@
+"axis","message"
+"onedecimal","Some groups in your dataset have very few observations, which may cause estimation problems.
+  Check groups: 2.7."
+"onedecimal","Not returning pre-test Wald statistic due to singular covariance matrix"

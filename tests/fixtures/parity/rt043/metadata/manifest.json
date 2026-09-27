@@ -1,0 +1,58 @@
+{
+  "matrix_id": "RT043",
+  "fixture_family": "r-anticipation-base-period",
+  "normative_source": "did 2.5.1 compute.att_gt2.R:705 (idx <- which((time_periods + dp2$anticipation) < dp2$treated_groups[g]); slow path compute.att_gt.R:301); pre_process_did2.R:279 (glist > first_period + anticipation)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/decimal_axis.csv",
+      "sha256": "540a33829b7d9be74a6d52ee4a73d55c8e1d8ef9cc5a1b4cec820008d4a5491c",
+      "rows": 450,
+      "columns": 5
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "b09ebee17d8b5f2631a6f1204397ce9e44275cc28a82e55d0afa429aaa4a592a",
+      "rows": 3,
+      "columns": 3
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt043/generate.R",
+      "path": "tools/parity/generators/rt043/generate.R",
+      "sha256": "73785ed1bae7621464a438e8787cd3feaa186bcfad5b69f546d7fcc69bc13421"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "09df55c27afa41c6a84d141a4cea53b312289d2a8d69a96b31dbf9a945fb34e8"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata ATT(g,t), standard errors and unit count",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "group", "time"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "A five-period decimal axis where t + 1 < g and t < g - 1 disagree in binary floating point for cohort 2.2 and period 1.2. Universal and varying bases, reg and dr with a covariate; every cell is compared."
+}

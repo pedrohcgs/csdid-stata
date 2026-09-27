@@ -399,4 +399,38 @@ log close es10
 es_log_has using "`lg10'", message("its interval is pointwise, while the event-time effects use the simultaneous band")
 assert r(found)
 
+* -----------------------------------------------------------------------
+* 11. The Version 1.82 subcommands and options that have no counterpart here
+*     are refused by name, and the refusal says what replaces each. The
+*     generic "not supported" list left a migrating do-file with no way
+*     forward. A refusal posts nothing: the estimation stays active.
+* -----------------------------------------------------------------------
+use "`root'/src/data/mpdta.dta", clear
+quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical
+local n_before = e(N_attgt)
+local i 0
+foreach case in ///
+    "pretrend|498|stores it in e(wald_stat), e(wald_df) and e(wald_pvalue)" ///
+    "pretrend, window(-2 -1)|498|stores it in e(wald_stat), e(wald_df) and e(wald_pvalue)" ///
+    "cevent, window(0 2)|498|estat event, window(# #) reports the event-time effects" ///
+    "all|498|run estat simple, estat group, estat calendar and estat event" ///
+    "event, estore(ev1)|198|then name the posted aggregation with estimates store or estimates save" ///
+    "group, esave(g1) replace|198|then name the posted aggregation with estimates store or estimates save" {
+    local ++i
+    gettoken call rest : case, parse("|")
+    gettoken bar rest : rest, parse("|")
+    gettoken want rest : rest, parse("|")
+    gettoken bar message : rest, parse("|")
+    tempfile lg11
+    log using "`lg11'", text replace name(es11)
+    capture noisily estat `call'
+    local rc11 = _rc
+    log close es11
+    display as text "case `i' [estat `call'] rc=`rc11'"
+    assert `rc11' == `want'
+    es_log_has using "`lg11'", message("`message'")
+    assert r(found)
+    assert "`e(cmd)'" == "csdid" & e(N_attgt) == `n_before'
+}
+
 display as text "test-estat-surface: estat display, post display, and estat plot forwarding OK"

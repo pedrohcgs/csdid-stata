@@ -50,9 +50,8 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
 estat event
 ```
 
-`e(control_group)` records what was used. A run says which group it had, in the
-header and in the stored results. You never have to infer it from the options
-you happened to type:
+`e(control_group)` records which comparison-group rule was used, so you never
+have to infer it from the options you happened to type:
 
 ```stata
 display "comparison group: " e(control_group)

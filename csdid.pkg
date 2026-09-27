@@ -22,8 +22,8 @@ d
 d On macOS, explicitly seeded rademacher multiplier bootstraps use a
 d compiled accelerator plugin (universal binary, Intel and Apple silicon).
 d On other platforms, for unseeded draws, or if the plugin cannot load,
-d csdid falls back to the Mata implementation automatically; results are
-d identical either way.
+d csdid uses the Mata implementation automatically; the two draw the same
+d multipliers and agree to floating-point rounding.
 d
 d KW: difference in differences
 d KW: DID
@@ -48,7 +48,7 @@ d Support: email pedro.santanna@emory.edu
 d
 d Version: 2.0.0
 d
-d Distribution-Date: 20260908
+d Distribution-Date: 20260927
 d
 f pkg/csdid.ado
 f pkg/_csdid_post.ado
@@ -81,5 +81,5 @@ f pkg/csdid_table.sthlp
 f pkg/dipt.sthlp
 f pkg/tsvmat.sthlp
 f pkg/csdid_whatsnew.sthlp
-F pkg/LICENSE
+F pkg/csdid_license.txt
 f pkg/mpdta.dta

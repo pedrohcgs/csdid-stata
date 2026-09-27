@@ -93,6 +93,7 @@ try:
     field = read("website/articles/csdid-against-the-field.md")
     index = section(read("website/index.md"), "## Speed", "## Also in R and Python")
     guides = read("website/guides.md")
+    upgrading = read("website/articles/upgrading-from-182.md")
     readme_path = "packaging/README.md" if (root / "packaging").is_dir() else "README.md"
     readme = section(read(readme_path), "## Speed", "## Unbalanced panels")
     tables = {key: table(ladder, "## By " + heading) for key, heading in [
@@ -105,7 +106,8 @@ try:
         raise ValueError("fewer than eight measured ladder gains")
     bounds = (min(gains), max(gains))
     range_pattern = rf"from {number}x to {number}x"
-    for label, body in [("field cross-reference", field), ("guides", guides), ("homepage", index)]:
+    for label, body in [("field cross-reference", field), ("guides", guides), ("homepage", index),
+                        ("upgrading guide", upgrading)]:
         expect(range_pattern, body, bounds, label)
     expect(rf"{number}x there against {number}x at forty periods", ladder, bounds, "ladder extrema")
     expect(rf"up to {number}x", readme, [bounds[1]], "README ladder ceiling", minimum=2)
@@ -114,6 +116,10 @@ try:
         raise ValueError("README fixed-size table must retain its fifteen measured gains")
     expect(rf"Between {number}x and {number}x", readme,
            [min(fixed_gains), max(fixed_gains)], "README separate fixed-size range")
+    # The upgrading guide quotes both ranges; it once carried figures from an
+    # earlier measurement that neither table supported.
+    expect(rf"between {number}x and {number}x", upgrading,
+           [min(fixed_gains), max(fixed_gains)], "upgrading guide fixed-size range")
     if "seven timed trials per workload after one discarded warmup" not in plain(readme):
         raise ValueError("README must distinguish seven timed trials from the discarded warmup")
     if "7 August 2026" not in readme:

@@ -1,8 +1,9 @@
-*! csdid_p 2.0.0 08sep2026
+*! csdid_p 2.0.0 27sep2026
 *
-* predict has no meaning after csdid: e(b) holds ATT(g,t)
-* treatment effects, not coefficients on regressors, so there is no linear
-* index to score and no covariate profile to form a fitted value from.
+* predict has no meaning after csdid: e(b) holds treatment effects --
+* ATT(g,t), or an aggregation after estat ..., post -- not coefficients on
+* regressors, so there is no linear index to score and no covariate profile
+* to form a fitted value from.
 *
 * Before this program existed, csdid set no e(predict), so Stata's default
 * predict fell through to `matrix score' and aborted with
@@ -40,7 +41,7 @@ program define csdid_p
     if r(N) > 0 {
         local p_sample "; e(sample) does mark the estimation sample, so {cmd:summarize ... if e(sample)} and {cmd:estat summarize} describe exactly the observations the estimation used"
     }
-    display as error `"{p 4 4 2}e(b) holds ATT(g,t) treatment effects, not coefficients on regressors, so there is no linear index to predict from`p_sample'.{p_end}"'
-    display as error "{p 4 4 2}Use test, lincom or nlcom on the ATT(g,t) coefficient names, csdid_estat or csdid_stats for aggregations, or csdid_plot to export plot data; see {help csdid_postestimation}.{p_end}"
+    display as error `"{p 4 4 2}e(b) holds treatment effects, not coefficients on regressors, so there is no linear index to predict from`p_sample'.{p_end}"'
+    display as error "{p 4 4 2}Use test, lincom or nlcom on the posted coefficient names, csdid_estat or csdid_stats for aggregations, or csdid_plot to export plot data; see {help csdid_postestimation}.{p_end}"
     exit 198
 end

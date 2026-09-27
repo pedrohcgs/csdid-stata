@@ -91,4 +91,14 @@ rt020_assert_no_prescan_residue
 quietly csdid y, ivar(id) time(t) gvar(g) analytical bal(none)
 rt020_assert_no_prescan_residue
 
+* a refusal raised after the scan leaves nothing either: every unit treated
+* in the first period is "No valid groups", refused after the scalars exist
+preserve
+quietly summarize t, meanonly
+replace g = r(min)
+capture noisily csdid y, ivar(id) time(t) gvar(g) analytical
+assert _rc == 459
+rt020_assert_no_prescan_residue
+restore
+
 display as text "test-mutation-safety: all assertions passed"

@@ -160,3 +160,55 @@ if strpos(lower("`c(machine_type)'"), "mac") > 0 {
     confirm file "`instdir'csdid_bootstrap_macosx.plugin"
     display as text "installed plugin present alongside csdid.ado"
 }
+
+* ---------------------------------------------------------------------------
+* What csdid version and the loader say about the engine must be true.
+*   - After clear all the engine is gone from memory while the session's
+*     decision global remains; csdid version said "precompiled library".
+*   - A damaged compiled library (an interrupted download) was announced as
+*     "most often built by a newer Stata ... Nothing needs to be done", which
+*     is right only on a Stata older than the build Stata.
+* ---------------------------------------------------------------------------
+tempfile vlg
+clear all
+program define ii_log_has, rclass
+    version 15
+    syntax using/, MESSAGE(string)
+    tempname fh
+    local body ""
+    file open `fh' using `"`using'"', read text
+    file read `fh' line
+    while r(eof) == 0 {
+        local clean = strtrim(`"`line'"')
+        if substr(`"`clean'"', 1, 2) == "> " local clean = strtrim(substr(`"`clean'"', 3, .))
+        local body `"`body' `clean'"'
+        file read `fh' line
+    }
+    file close `fh'
+    return scalar has = strpos(`"`body'"', `"`message'"') > 0
+end
+log using "`vlg'", text replace name(iiv)
+csdid version
+log close iiv
+ii_log_has using "`vlg'", message("engine: not in memory")
+assert r(has) == 1
+
+findfile lcsdid_v2.mlib
+local lib "`r(fn)'"
+copy "`lib'" "`lib'.good", replace
+* a truncated file: the first 3,000 bytes of the real library
+mata: fh = fopen(st_local("lib") + ".good", "r"); b = fread(fh, 3000); fclose(fh); ///
+    unlink(st_local("lib")); fh = fopen(st_local("lib"), "w"); fwrite(fh, b); fclose(fh)
+csdid reset
+use "`root'/src/data/mpdta.dta", clear
+log using "`vlg'", text replace name(iiv)
+* noisily: the loader's notes are text-channel
+csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical
+log close iiv
+if c(stata_version) >= 17 {
+    ii_log_has using "`vlg'", message("probably damaged")
+    assert r(has) == 1
+}
+copy "`lib'.good" "`lib'", replace
+erase "`lib'.good"
+csdid reset

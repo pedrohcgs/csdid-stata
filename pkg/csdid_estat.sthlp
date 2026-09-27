@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -35,14 +35,14 @@ Display the event-study coefficients
 
 {p 8 16 2}
 {cmd:estat} {cmd:event} [{cmd:,} {opt window(min max)} {opt post}
-{opt l:evel(#)} {opt dropm:issing}]
+{opt l:evel(#)} {opt dropm:issing} {opt sav:ing(filename)} {opt replace}]
 
 {pstd}
 Compute and display an aggregation
 
 {p 8 16 2}
 {cmd:estat} {it:aggregation} [{cmd:,} {opt window(min max)} {opt post}
-{opt l:evel(#)} {opt dropm:issing}]
+{opt l:evel(#)} {opt dropm:issing} {opt sav:ing(filename)} {opt replace}]
 
 {pstd}
 Export a results dataset
@@ -125,8 +125,8 @@ is refused with return code 498 and a list of the supported ones.{p_end}
 inference commands, and exports them to datasets.
 
 {pstd}
-{cmd:estat attgt} redisplays the group-time ATT(g,t) table exactly as
-{cmd:csdid} produced it.
+{cmd:estat attgt} displays the group-time ATT(g,t) table {cmd:csdid} stored in
+{cmd:e(attgt)}.
 
 {pstd}
 {cmd:estat event} reports the event study as a coefficient table: one row per
@@ -268,7 +268,10 @@ inference could otherwise be answered with a band computed at some earlier
 level, and {cmd:window()}, which {cmd:csdid_stats} does not record in
 {cmd:e()} and which therefore cannot be detected as stale. The price is one
 aggregation per command; the guarantee is that {cmd:estat event} and
-{cmd:estat dynamic} can never disagree.
+{cmd:estat dynamic} compute the same aggregation from the same options, with
+the same point estimates. Where multiplier draws are involved, each request
+consumes further draws (next paragraph), so the bootstrap standard errors and
+critical values of two requests differ by simulation noise.
 
 {phang}
 Recomputing draws from the live multiplier stream. The draws start from the
@@ -283,9 +286,8 @@ numbers.
 {phang}
 Each one replaces the active aggregation in {cmd:e()}. Running
 {cmd:estat group} and then {cmd:estat event} leaves the dynamic aggregation
-active, and {cmd:e(agg_type)} says which one it is. {cmd:e(attgt)} and the
-estimation results are never disturbed, so {cmd:estat attgt} always shows the
-ATT(g,t) table.
+active, and {cmd:e(agg_type)} says which one it is. {cmd:e(attgt)} is never
+disturbed, so {cmd:estat attgt} always shows the ATT(g,t) table.
 
 {phang}
 Missing ATT(g,t) cells stop every one of them, {cmd:estat event} included. If
@@ -303,7 +305,11 @@ accept {cmd:dropmissing}; specify it on the aggregation before exporting.
 {opt from(#)} was a lower bound on event time in Stata {cmd:csdid} Version
 1.82. It is rejected with return code 198 and a message naming the
 replacement; see {helpb csdid_stats}. Use {cmd:window(}{it:# #}{cmd:)} on
-{cmd:estat event} instead.
+{cmd:estat event} instead. The Version 1.82 options {cmd:estore()} and
+{cmd:esave()} are rejected the same way; add {cmd:post} and name the posted
+aggregation with {cmd:estimates store} or {cmd:estimates save}. The Version
+1.82 subcommands {cmd:pretrend}, {cmd:cevent} and {cmd:all} are refused with
+return code 498 and a message naming what replaces each.
 
 {marker window}{...}
 {title:Event windows}
@@ -325,7 +331,7 @@ given a zero variance to fill a gap in the grid.
 A window that leaves no event time at all, or that contains only
 pre-treatment event times, is refused with return code 498; a reversed window
 is caught earlier, at parse time, with return code 198. In the example
-below, whose event times run from -3 to 3, both
+below, whose event times run from -4 to 3, both
 {cmd:estat event, window(5 8)} and {cmd:estat event, window(-3 -1)} stop with a
 message naming the empty window rather than reporting an average of nothing.
 
@@ -346,8 +352,12 @@ for event time {it:#}, and {cmd:Post_avg}{p_end}
 {p2colreset}{...}
 
 {pstd}
-{it:#} is the event time, cohort or period itself, with a decimal point written
-as an underscore ({cmd:Tm0_25} for event time -0.25). An effect whose name
+{it:#} is the event time, cohort or period itself, in the shortest form that
+reads back as the stored value, with a decimal point written as an underscore
+({cmd:Tm0_25} for event time -0.25). An event time is computed as t - g, so on
+a decimal axis it can differ from the round number in its last binary digit:
+3.1 - 2.2 is 0.8999999999999999, and its effect is {cmd:Tp0_8999999999999999}.
+{cmd:matrix list e(b)} shows every name. An effect whose name
 would pass Stata's 32-character limit, or would repeat a name already in use,
 is named {cmd:eff_}{it:#} instead and the run reports how many were affected;
 {cmd:e(aggte)} always reports the event time, cohort or period of every row.
@@ -403,7 +413,8 @@ the aggregation after.
 {pstd}
 A row with no standard error -- the normalised base period under
 {helpb csdid##opt_base:base_period(universal)}, or an effect whose influence
-function is degenerate -- reports a missing standard error, z, p-value and
+function is degenerate, which includes a standard error of 1.49e-7 or less --
+reports a missing standard error, z, p-value and
 confidence limits, exactly as the displayed table does. {cmd:e(V)} carries a
 zero row and column there, which is Stata's convention for a coefficient with
 no estimated variance, so {cmd:test} and {cmd:lincom} treat that term as known.
@@ -430,19 +441,12 @@ seeded estimation, {cmd:estat event, level(90)} and then
 {cmd:estat event, level(99)} report two different critical values, each the
 one its own level implies. Because every bootstrap aggregation consumes
 further multiplier draws from the live stream (see
-{helpb csdid##remarks:Random numbers} in {helpb csdid}), repeating a request
+{helpb csdid##random:Random numbers} in {helpb csdid}), repeating a request
 after other aggregation calls uses later draws and reports a slightly
 different bootstrap critical value; to reproduce a particular value, re-run
 the seeded estimation and repeat the same sequence of requests. A narrower
 or wider {cmd:window()} likewise recomputes the band over the event times that
 survive it.
-
-{pstd}
-Re-levelling is exact rather than approximate because the recomputation redraws
-from the multiplier state {cmd:csdid} stored at estimation time, not from a
-fresh random-number stream. The band you get by re-levelling is therefore the
-band you would have got by estimating again at that level, not an approximation
-to it.
 
 {pstd}
 One consequence is worth stating because it is what users check: everything that
@@ -477,8 +481,8 @@ therefore equal, while the per-effect rows differ.
 {pstd}
 {cmd:estat tidy} and {cmd:estat glance} describe the active result. If an
 aggregation is active they export the aggregation; otherwise they export the
-ATT(g,t) estimates. To export ATT(g,t) after having computed an aggregation,
-re-run {cmd:csdid}.
+ATT(g,t) estimates. To export ATT(g,t) after an aggregation, use
+{cmd:estat attgt, saving()}.
 
 {pstd}
 {cmd:estat tidy} after estimation writes one row per ATT(g,t) cell with
@@ -486,7 +490,8 @@ re-run {cmd:csdid}.
 {cmd:time}, {cmd:estimate}, {cmd:std_error}, {cmd:statistic}, {cmd:p_value},
 {cmd:conf_low}, {cmd:conf_high}, {cmd:point_conf_low}, and
 {cmd:point_conf_high}. The {cmd:conf_*} columns use the reported critical value
--- simultaneous under the default bootstrap -- and the {cmd:point_conf_*}
+-- simultaneous under the default bootstrap, unless the band falls back
+({cmd:e(cband_fallback)} = 1) -- and the {cmd:point_conf_*}
 columns use the pointwise one, so both bands are available without recomputing.
 
 {pstd}
@@ -503,7 +508,7 @@ the bands are the normal quantile at the level stored in the artifact.
 with a leading {cmd:type} column naming the aggregation and the same estimate
 columns. The row identifier follows the aggregation: {cmd:event_time} for
 {cmd:dynamic}, {cmd:time} for {cmd:calendar}, {cmd:group} for {cmd:group}, and
-{cmd:term} alone for {cmd:simple}. The {cmd:group} export adds a final
+{cmd:term} alone for {cmd:simple}. The {cmd:group} export adds an
 {cmd:ATT(Average)} row, sorted first, holding the overall effect.
 
 {pstd}
@@ -547,8 +552,10 @@ Stata's {helpb bootstrap} prefix and leaves none of its results{p_end}
 {p2colreset}{...}
 
 {pstd}
-The two refusals are Stata's own, not a csdid restriction, and they name the
-result that is absent. A subcommand that is neither one of these nor one of
+The two refusals are Stata's own, not a csdid restriction: {cmd:estat ic}
+says the likelihood information is not found, and {cmd:estat bootstrap}
+answers with Stata's generic {it:last estimates not found}, return code
+301. A subcommand that is neither one of these nor one of
 {cmd:csdid}'s is refused with return code 498 and a list of the supported
 subcommands, rather than with Stata's generic "not valid" message.
 
@@ -568,10 +575,10 @@ names the real fault instead of telling you to remove a supported option. A bare
 {pstd}
 The examples use {cmd:mpdta.dta}, the county-level teen-employment panel of
 Callaway and Sant'Anna (2021), which ships with the package as an ancillary
-file: {cmd:net get csdid} copies it into the current directory.
+file; the first Setup line copies it into the current directory.
 
 {pstd}{bf:Setup}{p_end}
-{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. net get csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main")}{p_end}
 {phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 
@@ -630,14 +637,15 @@ file: {cmd:net get csdid} copies it into the current directory.
 {helpb csdid_stats} and therefore store everything
 {helpb csdid_stats##results:csdid_stats} stores, including {cmd:e(aggte)},
 {cmd:e(agg_type)}, {cmd:e(agg_level)}, {cmd:e(crit_val)},
-{cmd:e(point_crit_val)}, and, under {cmd:storeall}, {cmd:e(agg_inffunc)}. In addition, they store the
-following in {cmd:e()}:
+{cmd:e(point_crit_val)}, and {cmd:e(agg_inffunc)} when the influence functions
+are in {cmd:e()}. In addition, they store the following in {cmd:e()}:
 
 {synoptset 26 tabbed}{...}
 {p2col 5 26 29 2: Matrices}{p_end}
 {synopt:{cmd:e(b)}}aggregated effects, only when {cmd:post} is specified{p_end}
-{synopt:{cmd:e(V)}}covariance matrix of the aggregated effects, from their
-influence functions or from the bootstrap draws{p_end}
+{synopt:{cmd:e(V)}}covariance matrix of the aggregated effects, only when
+{cmd:post} is specified; see
+{help csdid_estat##post:Posting the aggregation}{p_end}
 {p2colreset}{...}
 
 {pstd}
@@ -656,11 +664,13 @@ immediately, because the next command that returns in {cmd:r()} -- including
 
 {pstd}
 {cmd:e(cmd)} remains {cmd:csdid} and {cmd:e(attgt)}, {cmd:e(group_prob)} and
-the estimation macros and scalars are preserved across posting, so aggregation
-and estimation results can be read from the same {cmd:e()}. {cmd:e(inffunc)} is
-preserved too when it is there at all, which is only when the estimation was
-run with {cmd:storeall}; otherwise the influence functions stay internal and
-{cmd:e(inffunc)} does not exist before or after posting.
+the estimation macros and scalars other than the critical values
+{cmd:e(crit_val)} and {cmd:e(point_crit_val)} are preserved across posting, so
+aggregation and estimation results can be read from the same {cmd:e()}.
+{cmd:e(inffunc)} is preserved too when it is there at all -- under
+{cmd:storeall}, or after {helpb csdid_stats:csdid_stats using}; otherwise the
+influence functions stay internal and {cmd:e(inffunc)} does not exist before
+or after posting.
 
 {pstd}
 {cmd:estat tidy} and {cmd:estat glance} store nothing; they write the dataset

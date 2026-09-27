@@ -142,6 +142,20 @@ rt013_compare_plot_data, ///
     expected("`root'/tests/fixtures/parity/rt013/expected/r/plot-data-attgt.csv") ///
     key("plot_type group time")
 
+* A request mixing a known and an unknown cohort: R warns and plots every
+* cohort (ggdid.R:100-104, any(!(group %in% g))), the same rows as above.
+capture log close rt013event
+log using "`evlog'", text replace name(rt013event)
+capture noisily csdid_plot, saving("`plotdata'") replace group(`first_group' 9999)
+local actual_rc = _rc
+log close rt013event
+assert `actual_rc' == 0
+rt013_assert_log_contains using "`evlog'", message("Some of the specified groups do not exist")
+rt013_compare_plot_data, ///
+    actual("`plotdata'") ///
+    expected("`root'/tests/fixtures/parity/rt013/expected/r/plot-data-attgt.csv") ///
+    key("plot_type group time")
+
 foreach agg_type in dynamic group calendar {
     import delimited using "`root'/tests/fixtures/parity/rt013/inputs/sim-ggdid.csv", clear asdouble
     csdid y x, ivar(id) time(period) gvar(g) method(dr) analytical pointwise nevertreated base_period(varying) bal(none)

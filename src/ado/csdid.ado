@@ -1,6 +1,5 @@
-*! csdid 2.0.0 08sep2026
+*! csdid 2.0.0 27sep2026
 program define csdid, eclass sortpreserve
-    local csdid_zero_entry `"`0'"'
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
     * first with Stata's own generic message. Hoisting it above `version 14'
@@ -25,6 +24,14 @@ program define csdid, eclass sortpreserve
         capture quietly findfile csdid.ado
         if !_rc display as text `"  csdid.ado resolved to: `r(fn)'"'
         local vmarker `"$CSDID_ENGINE_RESOLVED"'
+        * the marker is the session's last decision; clear all drops the
+        * engine from memory and keeps the global, so ask for the engine too
+        capture quietly mata: mata describe csdid_mlib_version()
+        if _rc & `"`vmarker'"' != "" {
+            display as text "  engine: not in memory (cleared since it was loaded; it loads again on the next estimation)"
+            local vmarker ""
+            local vcleared 1
+        }
         if `"`vmarker'"' != "" {
             local vsemi = strpos(`"`vmarker'"', ";")
             if `vsemi' > 1 {
@@ -39,7 +46,7 @@ program define csdid, eclass sortpreserve
                 }
             }
         }
-        else {
+        else if "`vcleared'" == "" {
             display as text "  engine: not loaded yet (loads on the first estimation of a session)"
         }
         if `"$CSDID_BOOT_PLUGIN_PATH"' != "" {
@@ -55,18 +62,39 @@ program define csdid, eclass sortpreserve
         * engine decision short of `macro drop _all', which also destroys the
         * user's own globals -- and it is what makes a re-installed csdid
         * usable in a live session.
+        * CSDID_BOOT_PLUGIN_EVER outlives reset on purpose: a second reset
+        * must say the same thing while a bound handle may still be resident
+        local reset_had_plugin = (`"$CSDID_BOOT_PLUGIN_PATH$CSDID_AGG_BOOT_PLUGIN_PATH$CSDID_BOOT_PLUGIN_EVER"' != "")
         capture program drop __csdid_bootstrap_plugin
         capture program drop __csdid_agg_boot_plugin
-        capture macro drop CSDID_*
-        capture mata: mata drop CSDID_*
+        * csdid's own session globals, by name: a pattern drop would take a
+        * user's global that merely shares the prefix, and the user's
+        * CSDID_BOOT_PLUGIN_DISABLE switch is theirs to keep
+        foreach reset_g in CSDID_ENGINE_RESOLVED CSDID_ENGINE_LIBRARY CSDID_ENGINE_SOURCE ///
+            CSDID_BOOT_PLUGIN_PATH CSDID_AGG_BOOT_PLUGIN_PATH CSDID_AGG_BAL_DRIFT_LIST ///
+            CSDID_AGG_BAL_VANISH_LIST {
+            capture macro drop `reset_g'
+        }
         * The decision cannot be renewed while functions from the departed
-        * source still answer its probes. Variables go first so class
-        * definitions can be dropped; unrelated Mata state survives.
-        capture mata: mata drop csdid_*
-        capture mata: mata drop csdid_*()
+        * source still answer its probes; the loader's teardown drops them
+        * without touching other packages' Mata.
+        _csdid_engine_load teardown
         display as text "csdid reset: the engine decision, plugin bindings and estimation cache are cleared; the next csdid command re-decides from the current adopath."
-        display as text "(a plugin binary replaced at the SAME path may still be served from memory by the operating system; restart Stata to be certain a re-installed accelerator is the one that runs)"
+        * The accelerator's handle is a subprogram of csdid.ado
+        * (csdid.__csdid_bootstrap_plugin), so the unqualified drop above is
+        * rc 111 and the handle leaves memory only with csdid.ado itself --
+        * which this running program cannot drop, and discard would also clear
+        * the user's e() and r(). So say what may happen next.
+        if `reset_had_plugin' {
+            display as text "(a bootstrap accelerator loaded in this session can stay in memory, and reset cannot unload it: while it does, seeded bootstraps run on the Mata path, which draws the same multipliers and agrees to floating-point rounding; e(bootstrap_accelerator_status) reports which path ran. Restart Stata to be certain a re-installed accelerator is the one that runs.)"
+        }
         exit
+    }
+    * Version 1.82 read its version as an option; the replay parser below
+    * would answer only "option version not allowed"
+    if ustrregexm(`"`0'"', "^\s*,\s*version\s*$") {
+        display as error "csdid, version is Version 1.82's form; type csdid version, without the comma"
+        exit 198
     }
     * Replay: a bare `csdid' (or `csdid, level()') after estimation redisplays
     * the results, as every official estimation command does, and `estimates
@@ -110,6 +138,15 @@ program define csdid, eclass sortpreserve
     * can reach the match. Each pass strictly shortens the string, so both
     * loops terminate.
     local nofast_raw = 0
+    * The bare-empty option scan below reads its own copy, each quoted string
+    * replaced by a letter: a filename such as saverif("x reps() y") cannot
+    * trip it, and a quoted value, rseed("1"), does not read as rseed( ).
+    * Quoted and blank empties are caught on the parsed values instead
+    * (_csdid_typed_empty, _csdid_parse_wboot).
+    local opt_noquotes = lower(`"`raw_call'"')
+    while regexm(`"`opt_noquotes'"', `""[^"]*""') {
+        local opt_noquotes = regexr(`"`opt_noquotes'"', `""[^"]*""', "q")
+    }
     local opt_skeleton = lower(`"`raw_call'"')
     while regexm(`"`opt_skeleton'"', `""[^"]*""') {
         local opt_skeleton = regexr(`"`opt_skeleton'"', `""[^"]*""', " ")
@@ -160,7 +197,13 @@ program define csdid, eclass sortpreserve
     local rseed_top = strtrim(`"`rseed'"')
     if `"`options'"' != "" {
         local options_clean ""
-        foreach opt of local options {
+        * gettoken with bind keeps a parenthesised group whole: a blank-split
+        * foreach turned baseperiod( varying ) into three tokens, refused it,
+        * and consumed the inner word as the bare varying alias
+        local opt_rest `"`options'"'
+        while `"`opt_rest'"' != "" {
+            gettoken opt opt_rest : opt_rest, bind
+            if `"`opt'"' == "" continue
             local opt_l = lower(`"`opt'"')
             * Synonyms of bal(none), typed as written -- no abbreviations,
             * matching the balance_e() rule on the aggregation side.
@@ -211,9 +254,12 @@ program define csdid, eclass sortpreserve
                 * as the reference implementation's match.arg is, so
                 * baseperiod(Universal) must refuse the way
                 * base_period(Universal) does (in-house review, entry lens).
-                local opt_val = strtrim(substr(`"`opt'"', strpos(`"`opt'"', "(") + 1, .))
-                local base_period_value = substr(`"`opt_val'"', 1, strlen(`"`opt_val'"') - 1)
-                local base_period_value = strtrim(`"`base_period_value'"')
+                * syntax strips one enclosing pair of plain or compound quotes
+                * and the blanks around the value of the primary spelling; this
+                * catch-all does the same, in Mata, where a quote character in
+                * the value cannot break an expression
+                _csdid_synonym_value, token(`opt')
+                local base_period_value `"`r(value)'"'
                 if `"`base_period_alias'"' != "" & `"`base_period_alias'"' != `"`base_period_value'"' {
                     display as error "baseperiod() aliases universal and varying cannot be combined"
                     exit 198
@@ -232,9 +278,8 @@ program define csdid, eclass sortpreserve
                 }
                 local ++fix_weights_alias_n
                 * original token, same strict-value rule as baseperiod() above
-                local opt_val = strtrim(substr(`"`opt'"', strpos(`"`opt'"', "(") + 1, .))
-                local fix_weights_alias = substr(`"`opt_val'"', 1, strlen(`"`opt_val'"') - 1)
-                local fix_weights_alias = strtrim(`"`fix_weights_alias'"')
+                _csdid_synonym_value, token(`opt')
+                local fix_weights_alias `"`r(value)'"'
             }
             else {
                 local options_clean `"`options_clean' `opt'"'
@@ -247,6 +292,39 @@ program define csdid, eclass sortpreserve
         * title("Cohort 2004")) puts a double quote inside `options', and the
         * plain-quoted display then breaks the string, producing a garbled
         * message and r(111) instead of the documented r(198).
+        * A declared option lands here only when syntax could not take it:
+        * given twice, or with a value its type refuses (anticipation(1.5)).
+        * Name that, not "unsupported", for the options the help documents.
+        local opt_rest `"`options'"'
+        while `"`opt_rest'"' != "" {
+            gettoken opt opt_rest : opt_rest, bind
+            * case-sensitive, as syntax is: METHOD(dr) is not method()
+            local opt_name = regexr(`"`opt'"', "\(.*$", "")
+            foreach opt_flag in point:pointwise analyt:analytical rcs:rcs fast:fast ///
+                nofast:nofast long:long long2:long2 asinr:asinr never:never ///
+                notyet:notyet dropm:dropmissing replace:replace dryrun:dryrun {
+                gettoken opt_min opt_full : opt_flag, parse(":")
+                local opt_full = substr(`"`opt_full'"', 2, .)
+                if strlen(`"`opt_name'"') >= strlen("`opt_min'") & ///
+                    `"`opt_name'"' == substr("`opt_full'", 1, strlen(`"`opt_name'"')) {
+                    display as error `"option `opt_full' is given more than once or with a value it does not take: `opt'"'
+                    exit 198
+                }
+            }
+            foreach opt_decl in time:time gvar:gvar ivar:ivar id:id method:method ///
+                base:base_period fix:fix_weights anticip:anticipation l:level ///
+                agg:agg cl:cluster vce:vce reps:reps biters:biters seed:seed ///
+                pscoretrim:pscoretrim rseed:rseed saverif:saverif bal:balance ///
+                wboot:wboot from:from {
+                gettoken opt_min opt_full : opt_decl, parse(":")
+                local opt_full = substr(`"`opt_full'"', 2, .)
+                if strlen(`"`opt_name'"') >= strlen("`opt_min'") & ///
+                    `"`opt_name'"' == substr("`opt_full'", 1, strlen(`"`opt_name'"')) {
+                    display as error `"option `opt_full'() is given more than once or with a value it does not take: `opt'"'
+                    exit 198
+                }
+            }
+        }
         display as error `"unsupported option(s): `options'"'
         exit 198
     }
@@ -258,7 +336,7 @@ program define csdid, eclass sortpreserve
         local ivar "`id'"
     }
     if `"`base_period_alias'"' != "" {
-        if `"`base_period'"' != "" & strtrim(`"`base_period'"') != `"`base_period_alias'"' {
+        if strtrim(`"`base_period'"') != "" & strtrim(`"`base_period'"') != `"`base_period_alias'"' {
             display as error "baseperiod() cannot be combined with a different base-period value"
             exit 198
         }
@@ -266,7 +344,15 @@ program define csdid, eclass sortpreserve
         local base_period `"`base_period_alias'"'
     }
     if `"`fix_weights_alias'"' != "" {
-        if `"`fix_weights'"' != "" & strtrim(`"`fix_weights'"') != `"`fix_weights_alias'"' {
+        * the same rule spelled two ways is one rule: base, baseperiod and
+        * base_period, and first, firstperiod and first_period
+        local fw_a = strtrim(`"`fix_weights'"')
+        local fw_b `"`fix_weights_alias'"'
+        foreach fw in fw_a fw_b {
+            if inlist(`"``fw''"', "base", "baseperiod") local `fw' "base_period"
+            if inlist(`"``fw''"', "first", "firstperiod") local `fw' "first_period"
+        }
+        if `"`fw_a'"' != "" & `"`fw_a'"' != `"`fw_b'"' {
             display as error "fixweights() cannot be combined with a different fixed-weight value"
             exit 198
         }
@@ -401,7 +487,9 @@ program define csdid, eclass sortpreserve
         display as text "csdid legacy compatibility: never is accepted as a request for the never-treated comparison group, which is no longer the default"
     }
     if "`long'`long2'" != "" {
-        display as text "warning: long/long2 are legacy event-study aliases slated for removal; do not use them in new code. Specify baseperiod(universal) explicitly for legacy event-study layout"
+        * error-styled: against Version 1.82's long, every pre-treatment
+        * number this run reports differs, which -quietly- must not hide
+        display as error "warning: long and long2 select base_period(universal), whose pre-treatment cells are the ones Version 1.82 reported under long2: against Version 1.82's long, every pre-treatment estimate changes sign and moves one event time. Specify base_period(universal) in new code; long and long2 will be removed in a future release."
     }
     if "`asinr'" != "" {
         display as text "csdid legacy compatibility: asinr is accepted and ignored; use notyet to select the not-yet-treated comparison group."
@@ -454,13 +542,19 @@ program define csdid, eclass sortpreserve
             }
             local analytical "analytical"
         }
-        else if "`vce_type'" == "cluster" & `vce_words' == 2 {
+        else if strlen("`vce_type'") >= 2 & "`vce_type'" == substr("cluster", 1, strlen("`vce_type'")) & `vce_words' == 2 {
             local vce_cluster : word 2 of `vce_clean'
             * resolve the abbreviation BEFORE comparing: cluster() arrives
             * syntax-expanded while vce() keeps the typed text, so the same
             * variable spelled two legal ways read as two variables
-            * (in-house review, entry lens).
-            capture unab vce_cluster : `vce_cluster'
+            * (in-house review, entry lens). A name that resolves to no
+            * variable, or to more than one, is refused as cluster() refuses it.
+            capture unab vce_cluster_full : `vce_cluster', max(1)
+            if _rc {
+                display as error "vce(cluster `vce_cluster'): variable `vce_cluster' not found, or an ambiguous abbreviation"
+                exit 111
+            }
+            local vce_cluster "`vce_cluster_full'"
             if "`cluster'" != "" & "`cluster'" != "`vce_cluster'" {
                 display as error "vce(cluster `vce_cluster') and cluster(`cluster') name different variables. Specify only one, or give both the same variable."
                 exit 198
@@ -509,7 +603,15 @@ program define csdid, eclass sortpreserve
         * saving() had the identical defect and this is its parser: replace is
         * the only sub-option, anything else refuses by name.
         mata: st_local("_sr_comma", strofreal(strpos(st_local("saverif"), ",")))
-        if `_sr_comma' {
+        * syntax strips the quotes of a leading quoted string whether or not
+        * more follows, so saverif("a, b.dta") and saverif("a", b.dta) arrive
+        * alike. When the raw argument is ONE quoted string -- the closing
+        * quote followed directly by the parenthesis -- a comma inside it is
+        * part of the filename.
+        mata: st_local("_sr_wholeq", strofreal( ///
+            regexm(st_local("raw_call"), "saverif\( *" + char(34) + "[^" + char(34) + "]*" + char(34) + " *\)") | ///
+            regexm(st_local("raw_call"), "saverif\( *" + char(96) + char(34) + "[^" + char(39) + "]*" + char(34) + char(39) + " *\)")))
+        if `_sr_comma' & !`_sr_wholeq' {
             local _sr_outer_replace `"`replace'"'
             local _sr_rest ""
             gettoken _sr_file _sr_rest : saverif, parse(",")
@@ -575,6 +677,11 @@ program define csdid, eclass sortpreserve
         * user's prior estimation over a typo'd filename. The clear this
         * block used to carry belonged to the days the destination check ran
         * mid-estimation, where a partial posting was the thing to prevent.
+        mata: st_local("_sr_isdir", strofreal(direxists(st_local("saverif_path"))))
+        if `_sr_isdir' {
+            display as error `"saverif() destination `saverif_path' is a directory; name a file"'
+            exit 603
+        }
         if `saverif_rc' == 602 & `"`replace'"' == "" {
             display as error `"saverif() destination `saverif_path' already exists; specify replace to overwrite it"'
             exit 602
@@ -582,6 +689,31 @@ program define csdid, eclass sortpreserve
         if `saverif_rc' != 0 & `saverif_rc' != 602 {
             display as error `"saverif() destination `saverif_path' cannot be written"'
             exit `saverif_rc'
+        }
+        * confirm new file says only that the file exists; replace promises
+        * it can be overwritten. A read-only file, or a directory with that
+        * name, used to pass here and fail at the save, after the whole
+        * estimation. Opening it to append (and writing nothing) asks the
+        * file system the real question now.
+        if `saverif_rc' == 602 {
+            tempname sr_probe
+            capture file open `sr_probe' using `"`saverif_path'"', write append
+            local saverif_rc = _rc
+            if !`saverif_rc' {
+                file close `sr_probe'
+                * save, replace also writes into the directory, so a writable
+                * file in a read-only directory still failed after estimating;
+                * confirm new file on a sibling name asks and leaves nothing
+                mata: pathsplit(st_local("saverif_path"), sr_dir = "", sr_base = ""); st_local("sr_dir", sr_dir)
+                if `"`sr_dir'"' == "" local sr_dir "."
+                tempname sr_sib
+                capture confirm new file `"`sr_dir'/`sr_sib'.tmp"'
+                local saverif_rc = _rc
+            }
+            if `saverif_rc' {
+                display as error `"saverif() destination `saverif_path' exists but cannot be overwritten"'
+                exit `saverif_rc'
+            }
         }
     }
     local biters 0
@@ -605,6 +737,7 @@ program define csdid, eclass sortpreserve
     * reps()/biters()/seed()/rseed() value is checked here, so a negative or
     * fractional or non-numeric value errors instead of silently reverting to
     * the default. The message names the option the user actually typed.
+    _csdid_typed_empty `raw_call'
     foreach csdid_intopt in reps biters seed rseed {
         local csdid_intval `"``csdid_intopt'_top'"'
         if `"`csdid_intval'"' != "" {
@@ -614,7 +747,7 @@ program define csdid, eclass sortpreserve
                 exit 198
             }
         }
-        else if regexm(lower(`"`csdid_zero_entry'"'), "[, ]`csdid_intopt'\( *\)") {
+        else if regexm(`"`opt_noquotes'"', `"[, ]`csdid_intopt'\( *\)"') {
             * a TYPED-but-empty count or seed -- reps(), rseed(`unset') --
             * fell through to the defaults silently, so a run the user
             * believed seeded was unseeded and unreproducible at rc 0
@@ -624,8 +757,10 @@ program define csdid, eclass sortpreserve
             exit 198
         }
     }
-    if regexm(lower(`"`wboot'"'), "(reps|biters|seed|rseed)\( *\)") {
-        display as error "wboot(`=regexs(1)'()) is empty; supply a positive integer or omit the sub-option"
+    * a quoted empty value -- rseed("`unset'") -- is as empty as a bare one,
+    * and an empty cluster() here would silently run unclustered
+    if regexm(lower(`"`wboot'"'), `"(reps|biters|seed|rseed|cluster|wtype|wbtype)\( *("")? *\)"') {
+        display as error "wboot(`=regexs(1)'()) is empty; supply a value or omit the sub-option"
         exit 198
     }
     if `bstrap' {
@@ -757,7 +892,7 @@ program define csdid, eclass sortpreserve
         * than return a number that looks like a standard error and is not.
         * DELIBERATE DIVERGENCE (approved): R accepts biters = 1.
         if `biters' <= 20 {
-            display as error "wboot() reps() must be greater than 20; `biters' multiplier draws cannot support a standard error or a simultaneous critical value. Use reps(1000), the default, or larger."
+            display as error "reps() must be greater than 20; `biters' multiplier draws cannot support a standard error or a simultaneous critical value. Use reps(1000), the default, or larger."
             exit 198
         }
         local biters = floor(`biters')
@@ -765,6 +900,13 @@ program define csdid, eclass sortpreserve
             local seed_value = real("`boot_seed'")
             if missing(`seed_value') | `seed_value' < 1 | `seed_value' != floor(`seed_value') {
                 display as error "wboot() rseed() must be a positive integer"
+                exit 198
+            }
+            * set seed and R's set.seed both stop at 2^31 - 1; the generator
+            * reduced a larger seed modulo 2^32, so two different recorded
+            * seeds could give identical draws
+            if `seed_value' > 2147483647 {
+                display as error "the bootstrap seed must be at most 2147483647, the largest seed Stata's set seed accepts"
                 exit 198
             }
             local boot_seed : display %21.0f `seed_value'
@@ -777,6 +919,14 @@ program define csdid, eclass sortpreserve
             display as error "wboot(cluster()) accepts one numeric cluster variable"
             exit 198
         }
+        * cluster() and vce(cluster) resolve abbreviations; so must this, or
+        * e(clustervar) records the abbreviation csdid_stats cannot match
+        capture unab boot_cluster_full : `boot_cluster', max(1)
+        if _rc {
+            display as error "wboot(cluster(`boot_cluster')): variable `boot_cluster' not found, or an ambiguous abbreviation"
+            exit 111
+        }
+        local boot_cluster "`boot_cluster_full'"
         if "`cluster'" != "" & "`cluster'" != "`boot_cluster'" {
             display as error "wboot(cluster()) must match cluster() when both are supplied"
             exit 198
@@ -839,6 +989,10 @@ program define csdid, eclass sortpreserve
         display as text "csdid legacy compatibility: method(stdipw) is retired; running method(ipw), which is the same estimator. Use method(ipw) in new code."
         local method "ipw"
     }
+    if "`method_requested'" == "drimp" {
+        display as error "method(drimp), Version 1.82's improved doubly robust estimator, is not offered; method(dr), the default, is the locally efficient doubly robust estimator"
+        exit 198
+    }
     if !inlist("`method'", "dr", "reg", "ipw") {
         display as error "method() must be one of dr, reg, or ipw"
         exit 198
@@ -856,7 +1010,7 @@ program define csdid, eclass sortpreserve
     * review, entry lens). The refusals below name the spelling typed.
     local base_period = strtrim(`"`base_period'"')
     local fix_weights = strtrim(`"`fix_weights'"')
-    if "`base_period'" == "" {
+    if `"`base_period'"' == "" {
         * DEFAULT: universal. Every cell is measured against g-1, which is the
         * layout an event-study plot assumes and the one nearly everyone
         * presents. Post-treatment effects are identical either way; only the
@@ -867,14 +1021,14 @@ program define csdid, eclass sortpreserve
         * This is a deliberate divergence from R did, which defaults to varying.
         local base_period "universal"
     }
-    if !inlist("`base_period'", "varying", "universal") {
+    if !inlist(`"`base_period'"', "varying", "universal") {
         display as error "`base_period_src'() must be varying or universal"
         exit 198
     }
-    if "`fix_weights'" != "" {
-        if inlist("`fix_weights'", "base", "baseperiod") local fix_weights "base_period"
-        if inlist("`fix_weights'", "first", "firstperiod") local fix_weights "first_period"
-        if !inlist("`fix_weights'", "varying", "base_period", "first_period") {
+    if `"`fix_weights'"' != "" {
+        if inlist(`"`fix_weights'"', "base", "baseperiod") local fix_weights "base_period"
+        if inlist(`"`fix_weights'"', "first", "firstperiod") local fix_weights "first_period"
+        if !inlist(`"`fix_weights'"', "varying", "base_period", "first_period") {
             display as error "`fix_weights_src'() must be one of varying, base, or first"
             exit 198
         }
@@ -954,7 +1108,11 @@ program define csdid, eclass sortpreserve
             display as error "covariates must be numeric Stata variables; encode string covariates before using factor-variable notation"
             exit 109
         }
+        * A name listed twice (overlapping control macros, or x and c.x)
+        * comes back from fvrevar twice and makes every 2x2 design singular.
+        * R's formula keeps one copy of a repeated term, and so does this.
         local xvars_expanded "`r(varlist)'"
+        local xvars_expanded : list uniq xvars_expanded
         foreach xv of local xvars_expanded {
             capture confirm numeric variable `xv'
             if _rc {
@@ -1032,7 +1190,13 @@ program define csdid, eclass sortpreserve
                 * every balance mode; a period only PARTIALLY missing keeps
                 * its survivors and takes the ordinary route below.
                 * -----------------------------------------------------------
-                quietly levelsof `time' if `touse', local(ds07_periods)
+                * The periods are read exactly. levelsof prints about sixteen
+                * significant digits, which does not round-trip a float-stored
+                * or computed decimal (1.2 stored as float lists as
+                * 1.200000047683716), and `time' == that literal matched no row:
+                * a live period was announced dead and a dead one was kept.
+                * %21.0g round-trips every double; messages show the shorter form.
+                mata: st_local("ds07_periods", invtokens(strofreal(uniqrows(select(st_data(., "`time'"), st_data(., "`touse'") :!= 0))', "%21.0g")))
                 local ds07_dead ""
                 foreach tv of local ds07_periods {
                     quietly count if `touse' & `time' == `tv' & `xmiss' == 0
@@ -1046,6 +1210,8 @@ program define csdid, eclass sortpreserve
                     local ds07_ndead : word count `ds07_dead'
                     local ds07_nleft = `ds07_nleft' - `ds07_ndead'
                     foreach tv of local ds07_dead {
+                        local tv_show : display %18.0g `tv'
+                        local tv_show = strtrim("`tv_show'")
                         local ds07_names ""
                         foreach xv of local xvars_expanded {
                             quietly count if `touse' & `time' == `tv' & !missing(`xv')
@@ -1055,7 +1221,7 @@ program define csdid, eclass sortpreserve
                                 local ds07_names "`ds07_names'`=cond("`ds07_names'" == "", "", ", ")'`ds07_lbl'"
                             }
                         }
-                        display as error "warning: covariate `ds07_names' is missing for every observation in period `tv' of time(`time'); the period was dropped and estimation proceeds on the `ds07_nleft' remaining period(s), exactly as if the sample had excluded it (if `time' != `tv'). Supply the covariate for that period to keep it."
+                        display as error "warning: covariate `ds07_names' is missing for every observation in period `tv_show' of time(`time'); the period was dropped and estimation proceeds on the `ds07_nleft' remaining period(s), exactly as if the sample had excluded it (if `time' != `tv_show'). Supply the covariate for that period to keep it."
                         quietly replace `touse' = 0 if `touse' & `time' == `tv'
                         quietly replace `xmiss' = . if `time' == `tv'
                     }
@@ -1082,7 +1248,7 @@ program define csdid, eclass sortpreserve
                 if r(N) == 0 {
                     local ds07_x ""
                     local ds07_t ""
-                    quietly levelsof `time' if `touse_prex', local(ds07_times)
+                    mata: st_local("ds07_times", invtokens(strofreal(uniqrows(select(st_data(., "`time'"), st_data(., "`touse_prex'") :!= 0))', "%21.0g")))
                     foreach xv of local xvars_expanded {
                         foreach tv of local ds07_times {
                             quietly count if `touse_prex' & `time' == `tv' & !missing(`xv')
@@ -1090,7 +1256,8 @@ program define csdid, eclass sortpreserve
                                 quietly count if `touse_prex' & `time' == `tv'
                                 if r(N) > 0 {
                                     local ds07_x "`xv'"
-                                    local ds07_t "`tv'"
+                                    local ds07_t : display %18.0g `tv'
+                                    local ds07_t = strtrim("`ds07_t'")
                                     continue, break
                                 }
                             }
@@ -1218,22 +1385,34 @@ program define csdid, eclass sortpreserve
     tempname ps_gcounts
     local want_bal = ("`ivar'" != "" & "`balance_mode'" == "full")
     capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'")
-    if _rc {
+    local prescan_rc = _rc
+    * the scan's global scalars become locals at once, so no refusal below
+    * can leave them in the user's session
+    _csdid_ps_collect
+    if `prescan_rc' {
         * a scan failure refuses cleanly. Like every entry refusal it
         * PRESERVES whatever estimation results were already in memory --
         * they belong to a previous, complete command, and erasing them
         * over a refused csdid destroyed work (cold-audit F3; the doctrine
         * csdid.sthlp states). Only a failure after the engine has begun
         * clears e().
-        local prescan_rc = _rc
         display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
         exit `prescan_rc'
     }
     local balance_lostgroups "`__csdid_ps_lostgroups'"
-    local use_prebalance_grid = (`want_bal' & "`notyet'" != "" & __csdid_ps_incunits > 0)
+    local use_prebalance_grid = (`want_bal' & "`notyet'" != "" & `ps_incunits' > 0)
+    * What the kernel keeps from this scan when bal(full) drops a unit: R folds
+    * as-if-never-treated cohorts once, before balancing, under either
+    * comparison group (pre_process_did2.R:207-214, then :356-384), so both
+    * keep the fold (a drop can empty the last periods, and the balanced
+    * calendar would fold treated cohorts into controls). notyet also keeps
+    * the latest cohort and cohort list (1); nevertreated keeps the fold only
+    * (2), reading its comparison cohort from the balanced sample -- the
+    * registered divergence for a balanced-away never-treated group.
+    local prebalance_mode = cond(`want_bal' & `ps_incunits' > 0, cond("`notyet'" != "", 1, 2), 0)
     if `use_prebalance_grid' {
-        local prebalance_min_time = __csdid_ps_tmin
-        local prebalance_never = __csdid_ps_never
+        local prebalance_min_time `ps_tmin'
+        local prebalance_never = `ps_never'
         local prebalance_glevels "`__csdid_ps_prebalance_groups'"
     }
     * The three data-shape violations R refuses -- an irreversible-treatment
@@ -1265,9 +1444,9 @@ program define csdid, eclass sortpreserve
     local raw_shape_cvary = 0
     local raw_shape_dup = 0
     capture {
-        local raw_shape_gvary = __csdid_ps_shape_gvary
-        local raw_shape_cvary = __csdid_ps_shape_cvary
-        local raw_shape_dup = __csdid_ps_shape_dup
+        local raw_shape_gvary = `ps_shape_gvary'
+        local raw_shape_cvary = `ps_shape_cvary'
+        local raw_shape_dup = `ps_shape_dup'
     }
     * -------------------------------------------------------------------
     * The scan above reads `touse', which by now has lost the rows with a
@@ -1372,8 +1551,8 @@ program define csdid, eclass sortpreserve
         * kernel deletes the periods at or beyond latest_g - anticipation, and
         * R balances on what survives that deletion (pre_process_did.R:263/:270
         * then :437-446), so a unit missing only a deleted period is kept.
-        local bal_T = __csdid_ps_baltime
-        local balance_dropped_units = __csdid_ps_incunits
+        local bal_T = `ps_baltime'
+        local balance_dropped_units = `ps_incunits'
         if `balance_dropped_units' > 0 {
             * The announced count is not the marked count. A unit whose every
             * row lies at or beyond the cutoff is removed by R's period filter
@@ -1381,8 +1560,8 @@ program define csdid, eclass sortpreserve
             * :437-446), so R never announces it as a balance drop; csdid still
             * marks it, which the kernel's own cutoff makes numerically
             * irrelevant. Say what R says.
-            local balance_announced_units = __csdid_ps_balunits
-            local balance_dropped_obs = __csdid_ps_balobs
+            local balance_announced_units = `ps_balunits'
+            local balance_dropped_obs = `ps_balobs'
             * "as error" is a DISPLAY STYLE here, not an error: it is the only
             * channel Stata does not suppress under `quietly csdid ...'.
             * Verified: `noisily display' inside a program does NOT survive a
@@ -1439,23 +1618,23 @@ program define csdid, eclass sortpreserve
             * cohort 0 and csdid names 0 and 1 (a small never-treated group
             * alongside first-period-treated units).
             *
-            * The REFUSALS that read the same measurement do not drift, and the
-            * reason is structural rather than lucky. never_small can only fire
-            * when a never-treated group exists, and R deletes periods only
-            * when one does NOT, so on every design that can reach the refusal
-            * R's denominator is this one; dropping first-period-treated units
-            * removes no period and no group-0 row. The third design above
-            * confirms it -- both stop with r(459) -- and the kernel re-raises
-            * the same refusal on the fully final sample anyway
-            * (src/mata/csdid.mata, csdid_basic_attgt).
+            * The never-treated REFUSAL does not drift. For a genuine
+            * never-treated group this measurement is R's: R deletes periods
+            * only when no such group exists, and dropping first-period-treated
+            * units removes no period and no group-0 row. The group the
+            * no-never-treated fallback makes of the latest cohort exists only
+            * after that deletion, so it is not judged here but in the kernel
+            * (csdid__group_probs), on R's rows-over-periods measure of the
+            * settled sample.
             *
             * Modelling the two transformations here would put the kernel's own
             * settling logic in a second place that can drift from it, to move
             * one warning list. It is recorded rather than attempted.
             * ---------------------------------------------------------------
-            capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', 0, "`bal_drop'", "`ps_gcounts'")
-            if _rc {
-                local prescan_rc = _rc
+            capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', 0, "`bal_drop'", "`ps_gcounts'", 1)
+            local prescan_rc = _rc
+            _csdid_ps_collect
+            if `prescan_rc' {
                 display as error "csdid could not scan the estimation sample (Mata rc `prescan_rc'); the data may be degenerate"
                 exit `prescan_rc'
             }
@@ -1472,8 +1651,14 @@ program define csdid, eclass sortpreserve
     * -- where R, which builds its model matrix on the already-reduced data,
     * simply never creates the column and estimates normally.
     *
-    * Re-run the screen here, where `touse' is final. Only fvrevar's own
-    * generated columns (`__' prefix) are screened, exactly as before: a
+    * Re-run the screen here, on the sample the kernel estimates on. That is
+    * `touse' less two reductions the kernel still makes: the units treated at
+    * or before the first period plus anticipation and, with no never-treated
+    * units, the periods from the latest cohort's date on. R builds its model
+    * matrix after both (pre_process_did2.R:246-310), so a level held only
+    * there is no column for R and must not be one here. csdid_settled_mark
+    * marks those rows with the kernel's own settling routine. Only fvrevar's
+    * own generated columns (`__' prefix) are screened, exactly as before: a
     * user-supplied variable that happens to be all zero is the user's to
     * keep.
     *
@@ -1494,6 +1679,21 @@ program define csdid, eclass sortpreserve
     * screened; a user-supplied all-zero variable is the user's to keep.
     * ---------------------------------------------------------------------
     if `"`xvars'"' != "" & `"`xvars_expanded'"' != "" {
+        * fvrevar fills its columns on every row, so a narrower sample changes
+        * which levels become columns and which is the base, never a value on
+        * an estimation row. Only factor or operator terms can change, so a
+        * plain covariate list keeps `touse'. An empty settled sample is
+        * refused below by name ("No valid groups"), not here.
+        local design_mark "`touse'"
+        if strpos(`"`xvars'"', ".") | strpos(`"`xvars'"', "#") {
+            tempvar settled_mark
+            quietly generate byte `settled_mark' = 0
+            capture mata: csdid_settled_mark("`time'", "`gvar'", "`touse'", "`settled_mark'", "`notyet'", `anticipation', `prebalance_mode')
+            if _rc == 0 {
+                quietly count if `settled_mark'
+                if r(N) > 0 local design_mark "`settled_mark'"
+            }
+        }
         * An EXPLICITLY pinned base (ib#.) whose level has no observations
         * left in the final sample cannot be rebuilt around: the user chose
         * that reference, and estimating against a different one behind
@@ -1501,30 +1701,31 @@ program define csdid, eclass sortpreserve
         * errors on an absent reference level; csdid refuses by name
         * (cold-audit round 5, F3 -- measured: the swallowed rebuild left
         * the stale partition and six of eight cells silently missing).
-        capture quietly fvexpand `xvars' if `touse'
+        capture quietly fvexpand `xvars' if `design_mark'
         if _rc == 0 {
             foreach fvterm in `r(varlist)' {
                 foreach fvpart in `: subinstr local fvterm "#" " ", all' {
                     if regexm("`fvpart'", "^([0-9]+)b\.(.+)$") {
                         local fvlev = regexs(1)
                         local fvvar = regexs(2)
-                        quietly count if `touse' & `fvvar' == `fvlev'
+                        quietly count if `design_mark' & `fvvar' == `fvlev'
                         if r(N) == 0 {
-                            display as error "the base category `fvlev' of factor covariate `fvvar' has no observations left in the final estimation sample (the covariate screening or the panel-balance requirement removed all of them). Choose a base that survives with ib#.`fvvar', or let Stata pick one with i.`fvvar'."
+                            display as error "the base category `fvlev' of factor covariate `fvvar' has no observations left in the final estimation sample (the covariate screening, the panel-balance requirement, the removal of units treated in the first period, or of the periods with no comparison group removed all of them). Choose a base that survives with ib#.`fvvar', or let Stata pick one with i.`fvvar'."
                             exit 459
                         }
                     }
                 }
             }
         }
-        capture quietly fvrevar `xvars' if `touse'
+        capture quietly fvrevar `xvars' if `design_mark'
         if _rc == 0 {
             local xvars_expanded "`r(varlist)'"
+            local xvars_expanded : list uniq xvars_expanded
         }
         local xvars_rescreened ""
         foreach xv of local xvars_expanded {
             if substr("`xv'", 1, 2) == "__" {
-                quietly summarize `xv' if `touse', meanonly
+                quietly summarize `xv' if `design_mark', meanonly
                 if r(N) > 0 & r(min) == 0 & r(max) == 0 {
                     continue
                 }
@@ -1551,10 +1752,12 @@ program define csdid, eclass sortpreserve
     * the log; a plain -capture- would swallow those too.
     * The equivalent effect is obtained by hoisting the kernel's own
     * structural checks in front of the call, with the kernel's exact wording
-    * and its rc 459. The kernel keeps its copies as the backstop - they are
-    * simply no longer reachable for these shapes, so no traceback is
-    * produced. All four are panel-only, exactly as the kernel guards them
-    * (`idname != ""'), and three of the four have moved further forward
+    * and its rc 459. The kernel keeps its copies as the backstop, and its
+    * data refusals end with Mata's exit(459), which returns without the
+    * traceback, for the shapes only the settled sample shows (a unit count
+    * reduced by the first-period drop, the latest cohort as comparison
+    * group, an empty cohort list or cell grid). The four hoisted checks are
+    * panel-only, exactly as the kernel guards them (`idname != ""'), and three of the four have moved further forward
     * still, to the first scan above: R decides them in validate_args, ahead
     * of anything else this file does with the sample. Only the unit COUNT is
     * left here, because it is the one that has to describe the FINAL sample.
@@ -1584,7 +1787,7 @@ program define csdid, eclass sortpreserve
         * be estimated and a design balanced down to one unit has to refuse.
         * It does not describe the sample the kernel finally settles on, which
         * drops more.
-        capture scalar `eux_nunit' = __csdid_ps_shape_nunit
+        capture scalar `eux_nunit' = `ps_shape_nunit'
         if scalar(`eux_nunit') == 1 {
             display as error "ivar() identifies only one unit in the estimation sample; csdid needs at least two units (a treated unit and a comparison unit) to form a 2x2 comparison. Check that ivar() names the panel identifier and is not constant."
             exit 459
@@ -1597,7 +1800,7 @@ program define csdid, eclass sortpreserve
     * command is quietly-run and side-effect free apart from the `gsmall'
     * tempvar and r(): no sort, no observation changes. The noisy-only
     * diagnostics below reuse them, so noisy runs do no duplicated work.
-    local min_time = __csdid_ps_tmin
+    local min_time `ps_tmin'
     * the ATT(g,t) coefficient names are built literally from the g, t and
     * base-period VALUES (g2004___2005_2003). A time axis in epoch seconds
     * once produced a 35-character name and died deep in `matrix colnames'
@@ -1609,12 +1812,14 @@ program define csdid, eclass sortpreserve
     * as att_#, keeps the true (g, t, base) values in e(attgt), and announces
     * how many cells were renamed. Estimation, aggregation, and inference
     * never depended on the labels.
-    local never_count = __csdid_ps_never
+    local never_count = `ps_never'
     * F-010 fix (DEC-021): when NO cohort can be estimated the run previously
     * fell through to the estimation kernel, which died with a silent rc=111
     * ("variable not found") from an unguarded `confirm matrix'. A cohort is
-    * USABLE when it has a base period (g - anticipation > first period, the
-    * same condition as the first-period-treated drop below); with no
+    * USABLE when it has a base period (g > first period + anticipation, in
+    * R's additive form, pre_process_did2.R:279, which g - anticipation does
+    * not match on a decimal axis; the same condition as the
+    * first-period-treated drop below); with no
     * never-treated units the fallback additionally consumes the LATEST cohort
     * as the control group. Zero usable cohorts -> refuse up front with R's
     * diagnostic ("No valid groups.") and a data-error code. Both silent-111
@@ -1626,16 +1831,16 @@ program define csdid, eclass sortpreserve
         * comparison units can erase finite latest-cohort placebo effects;
         * a vanished treated cohort is refused separately below.
         local __treated_levels "`prebalance_glevels'"
-        local min_time = `prebalance_min_time'
+        local min_time `prebalance_min_time'
         local never_count = `prebalance_never'
     }
     local __n_treated : word count `__treated_levels'
     local __n_usable 0
     local __gmax_usable 0
     foreach __gv of local __treated_levels {
-        if `__gv' - `anticipation' > `min_time' {
+        if `__gv' > `min_time' + `anticipation' {
             local ++__n_usable
-            local __gmax_usable = `__gv'
+            local __gmax_usable `__gv'
         }
     }
     if !`use_prebalance_grid' & `never_count' == 0 & `__n_usable' > 0 {
@@ -1676,7 +1881,16 @@ program define csdid, eclass sortpreserve
     * is handed to the kernel, whose own never-treated guard used to rebuild it
     * from the expanded column count and so demanded a larger never-treated
     * group than R on every factor-variable model.
-    local nx_req : word count `xvars'
+    * A repeated term counts once, as in R's formula; c.x is the term x.
+    local x_terms ""
+    foreach xt of local xvars {
+        if substr(`"`xt'"', 1, 2) == "c." & !strpos(`"`xt'"', "#") {
+            local xt = substr(`"`xt'"', 3, .)
+        }
+        local x_terms `"`x_terms' `xt'"'
+    }
+    local x_terms : list uniq x_terms
+    local nx_req : word count `x_terms'
     local reqsize = `nx_req' + 5
     local small_groups ""
     local never_small 0
@@ -1688,8 +1902,16 @@ program define csdid, eclass sortpreserve
         local gv = `gcounts'[`__gi', 1]
         local group_units = `gcounts'[`__gi', 2] / `n_time'
         if `group_units' < `reqsize' {
-            local gtxt : display %21.0g `gv'
-            local gtxt = strtrim("`gtxt'")
+            * the cohort as the coefficient names write it, from the matrix
+            * (see the ATT(g,t) posting loop below)
+            foreach gw in 16 17 18 19 20 21 {
+                local gtxt = strtrim(strofreal(`gcounts'[`__gi', 1], "%`gw'.0g"))
+                if real("`gtxt'") == `gcounts'[`__gi', 1] & !strpos("`gtxt'", "e") continue, break
+            }
+            * With no never-treated units, nevertreated compares against the
+            * latest cohort (the last row), which R lists as group 0. Its size
+            * refusal is the kernel's (csdid__group_probs).
+            if `never_count' == 0 & "`notyet'" == "" & `__gi' == rowsof(`gcounts') local gtxt "0"
             local small_groups "`small_groups'`=cond("`small_groups'" == "", "", ",")'`gtxt'"
             if `gv' == 0 local never_small 1
         }
@@ -1737,10 +1959,10 @@ program define csdid, eclass sortpreserve
     * before the first usable period are still dropped, but a unit the
     * fallback's period filter has already removed is not announced, because it
     * was never part of the sample the message describes.
-    if __csdid_ps_firstunits > 0 {
+    if `ps_firstunits' > 0 {
         local firstper_note ""
         if `anticipation' > 0 local firstper_note " (accounting for anticipation = `anticipation')"
-        display as error "warning: dropped `=__csdid_ps_firstunits' unit(s) already treated in the first period`firstper_note'."
+        display as error "warning: dropped `ps_firstunits' unit(s) already treated in the first period`firstper_note'."
     }
     * csdid__prescan returns its scalar outputs through GLOBAL Stata scalars,
     * and nothing dropped them: every csdid run left them standing in the
@@ -1748,12 +1970,6 @@ program define csdid, eclass sortpreserve
     * below ends the same way. The list below is the whole set the prescan
     * writes -- keep it in step with the st_numscalar() calls in
     * csdid__prescan, which is the only thing that writes them.
-    capture scalar drop __csdid_ps_tmin __csdid_ps_tmax __csdid_ps_gmin ///
-        __csdid_ps_gmax __csdid_ps_baltime __csdid_ps_never ///
-        __csdid_ps_firstunits __csdid_ps_nunits __csdid_ps_incunits ///
-        __csdid_ps_incobs __csdid_ps_balunits __csdid_ps_balobs ///
-        __csdid_ps_shape_nunit __csdid_ps_shape_gvary ///
-        __csdid_ps_shape_cvary __csdid_ps_shape_dup
 
     local fast_requested = ("`fast'" != "")
     local fast_auto = ("`fast_mode'" == "auto")
@@ -1788,7 +2004,7 @@ program define csdid, eclass sortpreserve
     * if/in (including e(sample)) has already been resolved into touse, and
     * every input to the engine and poster is a local, temporary or cache value.
     ereturn clear
-    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `reqsize', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'", `use_prebalance_grid')
+    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `reqsize', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'", `prebalance_mode')
     local csdid_rc = _rc
     if `csdid_rc' {
         ereturn clear
@@ -1918,10 +2134,14 @@ program define csdid, eclass sortpreserve
                         local plugin_bind_rc = _rc
                         if `plugin_bind_rc' == 0 {
                             global CSDID_BOOT_PLUGIN_PATH "`bootstrap_plugin_path'"
+                            global CSDID_BOOT_PLUGIN_EVER 1
                             local plugin_loaded 1
                             local bootstrap_accelerator_file "`bootstrap_plugin_file'"
                         }
-                        else if `plugin_bind_rc' == 110 & "$CSDID_BOOT_PLUGIN_PATH" != "" {
+                        * 110 is a handle already resident -- after csdid reset
+                        * too, which cannot unload it -- so it is a stale
+                        * binding whatever the path global says, not a failed load
+                        else if `plugin_bind_rc' == 110 {
                             local bootstrap_accelerator_status "mata-stale-plugin-binding"
                             local bootstrap_accelerator_rc = 110
                         }
@@ -2315,12 +2535,12 @@ program define csdid, eclass sortpreserve
     else if "`wald_state'" == "na" {
         * R did 2.5.1, att_gt(): warning("Not returning pre-test Wald
         * statistic due to NA pre-treatment values").
-        display as text "warning: Not returning pre-test Wald statistic due to NA pre-treatment values."
+        display as text "warning: Not returning pre-test Wald statistic due to NA pre-treatment values"
     }
     else if "`wald_state'" == "singular" {
         * R did 2.5.1, att_gt(): warning("Not returning pre-test Wald
         * statistic due to singular covariance matrix").
-        display as text "warning: Not returning pre-test Wald statistic due to singular covariance matrix."
+        display as text "warning: Not returning pre-test Wald statistic due to singular covariance matrix"
     }
     local n_units = `group_prob'[1, 3]
     local n_attgt = rowsof(`attgt')
@@ -2338,8 +2558,6 @@ program define csdid, eclass sortpreserve
     local post_k = 0
     local post_renamed = 0
     forvalues i = 1/`=rowsof(`attgt')' {
-        local post_g = `attgt'[`i', 1]
-        local post_t = `attgt'[`i', 2]
         local post_att = `attgt'[`i', 4]
         if missing(`post_att') continue
         * The one cell that must not enter e(b)/e(V) is the universal-base
@@ -2360,20 +2578,25 @@ program define csdid, eclass sortpreserve
         * %21.0f ROUNDED each field, so on a non-integer cohort or period axis
         * distinct cells collapsed onto one coefficient name; Stata accepts
         * duplicate colnames and test/lincom/_b[] then resolve silently to the
-        * first column carrying the name. %21.0g is injective on the value (it
-        * is the format the display and plot paths already use), and "." is not
-        * usable in a coefficient name, so it becomes "_".
-        local post_gtxt : display %21.0g `post_g'
-        local post_ttxt : display %21.0g `post_t'
-        * The last field of the coefficient name is documented as the base
-        * period, so it is read from base_time rather than assumed to be g-1.
-        local post_btxt : display %21.0g `attgt'[`i', 10]
-        foreach post_fld in post_gtxt post_ttxt post_btxt {
-            local `post_fld' = strtrim("``post_fld''")
-            if substr("``post_fld''", 1, 1) == "." local `post_fld' "0``post_fld''"
-            local `post_fld' = subinstr("``post_fld''", ".", "_", .)
+        * first column carrying the name. Each field is now the shortest of
+        * %16.0g ... %21.0g that reads back as the stored double -- the value
+        * written in full, and injective -- read from the matrix element, since
+        * a `local x =' copy keeps sixteen digits. %21.0g alone wrote 2.2 as
+        * 2.200000000000000178 and sent every name on a one-decimal axis past
+        * 32 characters. A form with an exponent is kept only when nothing
+        * else reads back, so integers print exactly as %21.0g prints them.
+        * "." is not usable in a coefficient name, so it becomes "_". The last
+        * field is documented as the base period, so it is read from base_time
+        * (column 10) rather than assumed to be g-1.
+        local post_cname "g"
+        foreach post_col in 1 2 10 {
+            foreach post_w in 16 17 18 19 20 21 {
+                local post_txt = strtrim(strofreal(`attgt'[`i', `post_col'], "%`post_w'.0g"))
+                if real("`post_txt'") == `attgt'[`i', `post_col'] & !strpos("`post_txt'", "e") continue, break
+            }
+            if substr("`post_txt'", 1, 1) == "." local post_txt "0`post_txt'"
+            local post_cname "`post_cname'`=subinstr("`post_txt'", ".", "_", .)'`=cond(`post_col' == 1, "___", cond(`post_col' == 2, "_", ""))'"
         }
-        local post_cname "g`post_gtxt'___`post_ttxt'_`post_btxt'"
 
         local ++post_k
         * Residue the format cannot cover: a name past Stata's 32-character
@@ -2432,12 +2655,17 @@ program define csdid, eclass sortpreserve
     * cannot suppress. What they announce is that the run has no e(b) -- the
     * rule this command follows for anything that changes what was estimated.
     if `post_k' == 0 {
-        local ds03_valid = 0
+        * No coefficient was posted, so every cell that is not a normalised
+        * base cell (time == base_time, a structural 0) failed. Only when
+        * there is no such cell at all is the base period the cause; counting
+        * the base cells' zeros as estimates sent every failed run under the
+        * default universal base to the baseperiod() message.
+        local ds03_real = 0
         forvalues i = 1/`=rowsof(`attgt')' {
-            if !missing(`attgt'[`i', 4]) local ++ds03_valid
+            if `attgt'[`i', 2] != `attgt'[`i', 10] local ++ds03_real
         }
-        if `ds03_valid' == 0 {
-            display as error "warning: every ATT(g,t) cell failed to estimate - all `n_attgt' group-time cells are missing - so no coefficient vector was posted and postestimation commands (csdid_stats, estat, test, lincom, predict) have nothing to work with. Common causes are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim (pscoretrim()) that empties every comparison group, comparison groups with too few units, and an outcome with no variation. Check the covariate list and pscoretrim(), or rerun with method(reg). The ATT(g,t) table is still available in e(attgt)."
+        if `ds03_real' > 0 {
+            display as error "warning: every ATT(g,t) cell failed to estimate - all `ds03_real' group-time cells outside the normalised base period are missing - so no coefficient vector was posted and postestimation commands (csdid_stats, estat, test, lincom, predict) have nothing to work with. Common causes are a covariate that is collinear or constant within the 2x2 comparisons, a propensity-score trim (pscoretrim()) that empties every comparison group, comparison groups with too few units, and an outcome with no variation. Check the covariate list and pscoretrim(), or rerun with method(reg). The ATT(g,t) table is still available in e(attgt)."
         }
         else {
             display as error "warning: no ATT(g,t) coefficient could be named - every estimable cell is a normalised base period - so no coefficient vector was posted. Check baseperiod() and anticipation(). The ATT(g,t) table is still available in e(attgt), where the base period of each cell is reported in the base_time column."
@@ -2464,7 +2692,7 @@ program define csdid, eclass sortpreserve
     }
     * F-009: the panel's first time period, needed for balance_e event-time
     * truncation. min_time already describes the settled estimation sample.
-    local time_first = `min_time'
+    local time_first `min_time'
     * A failed ATT grid still has an estimation sample. Post its marker even
     * when there is no b/V to post; otherwise e(N)>0 accompanies e(sample)==0.
     * esample() consumes its variable, so pass a copy of touse.
@@ -2641,7 +2869,14 @@ program define csdid, eclass sortpreserve
         ereturn scalar wald_pvalue = `wald_pvalue'
     }
     if `"`saverif'"' != "" {
-        _csdid_save_rif using `"`saverif'"', `replace'
+        * The estimation has run, so a failure here clears e() rather than
+        * leaving a posting with no e(cmd) (help csdid, the refusal rules).
+        capture noisily _csdid_save_rif using `"`saverif'"', `replace'
+        if _rc {
+            local sr_rc = _rc
+            ereturn clear
+            exit `sr_rc'
+        }
         ereturn local rif_file `"`saverif'"'
     }
 
@@ -2683,15 +2918,53 @@ program define _csdid_parse_wboot, rclass
     * typed, so `rep(7)' is rejected as an unknown option rather than silently
     * abbreviating to reps(); `syntax' supplies the "specified more than once",
     * "not allowed" and "incorrectly specified" diagnostics for free, all 198.
-    syntax [, CLUSTER(string) REPS(string) BITERS(string) ///
-              RSEED(string) SEED(string) WTYPE(string) WBTYPE(string) ]
-    return local wb_cluster `"`cluster'"'
-    return local wb_reps    `"`reps'"'
-    return local wb_biters  `"`biters'"'
-    return local wb_rseed   `"`rseed'"'
-    return local wb_seed    `"`seed'"'
-    return local wb_wtype   `"`wtype'"'
-    return local wb_wbtype  `"`wbtype'"'
+    * Each sub-option is taken as typed and its value parsed on its own, so a
+    * typed value that is empty once syntax strips its quotes -- "", `""',
+    * " " -- is refused wherever it sits, rather than running at the
+    * default. A bare rseed() leaves passthru empty; the raw-text scan in
+    * csdid catches that form.
+    syntax [, CLUSTER(passthru) REPS(passthru) BITERS(passthru) ///
+              RSEED(passthru) SEED(passthru) WTYPE(passthru) WBTYPE(passthru) ]
+    foreach o in cluster reps biters rseed seed wtype wbtype {
+        local pt_`o' `"``o''"'
+    }
+    foreach o in cluster reps biters rseed seed wtype wbtype {
+        local v ""
+        if `"`pt_`o''"' != "" {
+            local 0 `", `pt_`o''"'
+            syntax [, CLUSTER(string) REPS(string) BITERS(string) ///
+                      RSEED(string) SEED(string) WTYPE(string) WBTYPE(string) ]
+            local v = strtrim(`"``o''"')
+            if `"`v'"' == "" {
+                display as error "wboot(`o'()) is empty; supply a value or omit the sub-option"
+                exit 198
+            }
+        }
+        return local wb_`o' `"`v'"'
+    }
+end
+
+* The four top-level count and seed options, taken as typed: a value that
+* is empty once syntax strips its quotes -- rseed(""), rseed(`""'),
+* rseed(" ") -- is a typo, not a request for the default. The caller hands
+* over its raw command line; only these four options are read.
+program define _csdid_typed_empty
+    version 14
+    syntax [anything] [if] [in] [iw] [, REPS(passthru) BITERS(passthru) ///
+        SEED(passthru) RSEED(passthru) * ]
+    foreach o in reps biters seed rseed {
+        local pt_`o' `"``o''"'
+    }
+    foreach o in reps biters seed rseed {
+        if `"`pt_`o''"' != "" {
+            local 0 `", `pt_`o''"'
+            syntax [, REPS(string) BITERS(string) SEED(string) RSEED(string)]
+            if strtrim(`"``o''"') == "" {
+                display as error "`o'() is empty; supply a positive integer or omit the option"
+                exit 198
+            }
+        }
+    }
 end
 
 program define Display
@@ -2842,7 +3115,10 @@ program define _csdid_save_rif
     * F-009: balance_e truncation needs the panel's first period. Persist it so
     * `csdid_stats using <rif>, balance()' works instead of refusing; artifacts
     * written before this char existed still get the clean rc 498 refusal.
-    char _dta[csdid_time_first] "`=e(time_first)'"
+    * Written %21.0g so the loader's real() reads back the exact period; `=exp'
+    * keeps sixteen digits, and the truncation is exact arithmetic on it.
+    local tf_txt : display %21.0g e(time_first)
+    char _dta[csdid_time_first] "`=strtrim("`tf_txt'")'"
     * #20. These rows record the aggregation weights the estimation used, and
     * csdid_stats checks them on load. The audit called for widening the format
     * here too, on the grounds that `=exp' expansion truncates to about eight
@@ -2896,13 +3172,61 @@ program define _csdid_save_rif
     quietly datasignature set, reset
     save `"`using'"', `replace'
     restore
+    }
     * The reader (csdid_stats using) must materialize an N_units-row classic
-    * matrix, which this flavour caps at c(max_matdim); the writer has no
-    * such cap, so an artifact can be written here that THIS Stata cannot
-    * reload (cold-audit M2). Say so at write time, when the user can still
-    * plan, instead of at reload time, when the estimation is long gone.
-    if e(N_units) > c(max_matdim) {
-        display as text "note: this artifact holds `=e(N_units)' unit rows, more than this Stata flavour's matrix limit (c(max_matdim) = `=c(max_matdim)'), so csdid_stats using cannot reload it HERE. A flavour whose limit covers it (e.g. Stata/MP) can."
+    * matrix; the writer has no such cap, so an artifact can be written here
+    * that this Stata cannot reload. Say so at write time, when the user can
+    * still aggregate in this session, and outside the quietly block above,
+    * which swallowed it. The cap is c(max_matdim) from Stata 16 (MP 65,534,
+    * SE 11,000, BE 800) and the current -set matsize- before it; c() names a
+    * newer Stata added are r(133) on an older one, hence the branch.
+    if c(stata_version) >= 16 local rif_cap = c(max_matdim)
+    else local rif_cap = c(matsize)
+    if e(N_units) > `rif_cap' {
+        * 65,534 is Stata/MP's limit and the largest any flavour has
+        local rif_later "help csdid (saverif()) says which Stata can reload it later"
+        if e(N_units) > 65534 local rif_later "no Stata can reload an artifact this large"
+        display as text "note: this artifact holds `=e(N_units)' unit rows, more than csdid_stats using can reload on this Stata (its matrix limit is `rif_cap'). Aggregate now, in this session, where csdid_stats and estat have no such limit; `rif_later'."
     }
+end
+
+* The pre-estimation scan reports through global scalars __csdid_ps_*. They are
+* copied into the caller's locals ps_* and dropped straight away, so a refusal
+* anywhere later cannot leave them in the user's session. A scalar the scan did
+* not set leaves the caller's earlier local as it was, which is what reading the
+* surviving global did before.
+* The copy is written %21.0g, which reads back as the same double for every
+* period, cohort and count. `local v = scalar' keeps sixteen significant digits:
+* the first period 2000 + 5/12 of a monthly axis came back one ulp high, and
+* R's usable-cohort test and balance_e truncation (pre_process_did2.R:279,
+* compute.aggte.R:463) take the exact first period. Carry the copy on as text
+* (`local x `ps_tmin''); an `=' assignment rounds it again.
+program define _csdid_ps_collect
+    version 14
+    foreach s in tmin tmax gmin gmax baltime never firstunits nunits incunits ///
+        incobs balunits balobs shape_nunit shape_gvary shape_cvary shape_dup {
+        capture confirm scalar __csdid_ps_`s'
+        if !_rc {
+            local v : display %21.0g scalar(__csdid_ps_`s')
+            c_local ps_`s' `=strtrim("`v'")'
+            scalar drop __csdid_ps_`s'
+        }
     }
+end
+
+* The value of a catch-all option token such as baseperiod( "varying" ), read
+* as syntax reads a string option: the text inside the outer parentheses, one
+* enclosing pair of plain or compound quotes removed, blanks trimmed. Done in
+* Mata so a quote character in the value cannot break an expression.
+program define _csdid_synonym_value, rclass
+    version 14
+    syntax , TOKEN(string asis)
+    mata: st_local("v", strtrim(substr(st_local("token"), strpos(st_local("token"), "(") + 1, ///
+        strlen(st_local("token")) - strpos(st_local("token"), "(") - 1)))
+    mata: st_local("v", strtrim( ///
+        (strlen(st_local("v")) >= 4 & substr(st_local("v"), 1, 2) == char(96) + char(34) & ///
+         substr(st_local("v"), -2, 2) == char(34) + char(39)) ? substr(st_local("v"), 3, strlen(st_local("v")) - 4) : ///
+        ((strlen(st_local("v")) >= 2 & substr(st_local("v"), 1, 1) == char(34) & substr(st_local("v"), -1, 1) == char(34)) ? ///
+         substr(st_local("v"), 2, strlen(st_local("v")) - 2) : st_local("v"))))
+    return local value `"`v'"'
 end

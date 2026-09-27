@@ -1,0 +1,5 @@
+"case","data","balance_e","min_e","max_e","na_rm"
+"onecell_balance1","onecell",1,-Inf,Inf,FALSE
+"onecell_window12","onecell",,1,2,FALSE
+"decimal_balance0_narm","decimal",0,-Inf,Inf,TRUE
+"twocell_balance1","twocell",1,-Inf,Inf,FALSE

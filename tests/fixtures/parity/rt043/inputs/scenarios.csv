@@ -1,0 +1,4 @@
+"scenario","method","base_period"
+"decimal_ant1_universal_reg","reg","universal"
+"decimal_ant1_varying_reg","reg","varying"
+"decimal_ant1_universal_dr","dr","universal"

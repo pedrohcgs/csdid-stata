@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -57,7 +57,7 @@ periods and staggered treatment adoption (Callaway and Sant'Anna 2021){p_end}
 {bf:Redisplay}
 
 {p 8 16 2}
-{cmd:csdid}
+{cmd:csdid} [{cmd:,} {opt l:evel(#)}]
 
 {pstd}
 {bf:Diagnostics}
@@ -96,7 +96,7 @@ sections{p_end}
 {cmd:ipw}; default is {cmd:method(dr)}{p_end}
 {synopt:{opt pscoretrim(#)}}propensity-score trimming level; default is
 {cmd:pscoretrim(.995)}{p_end}
-{synopt:{opt fix_w:eights(rule)}}weight rule when {cmd:iweight}s are used:
+{synopt:{opt fix:_weights(rule)}}weight rule when {cmd:iweight}s are used:
 {cmd:varying}, {cmd:base}, or {cmd:first}; by default the option is not set{p_end}
 {synopt:{opt fixweights(rule)}}synonym for {cmd:fix_weights()}{p_end}
 
@@ -108,7 +108,7 @@ explicitly{p_end}
 group{p_end}
 
 {syntab:Base period and anticipation {help csdid##opt_base:[+]}}
-{synopt:{opt base_p:eriod(rule)}}{cmd:varying} or {cmd:universal} base period;
+{synopt:{opt base:_period(rule)}}{cmd:varying} or {cmd:universal} base period;
 default is {cmd:base_period(universal)}{p_end}
 {synopt:{opt baseperiod(rule)}}synonym for {cmd:base_period()}{p_end}
 {synopt:{opt varying}}synonym for {cmd:base_period(varying)}{p_end}
@@ -216,7 +216,7 @@ Typed on its own after an estimation, {cmd:csdid} redisplays the results
 already in {cmd:e()} without recomputing anything, as every official
 estimation command does; {helpb estimates:estimates replay} arrives at the same
 display. {cmd:level()} is the one thing a redisplay cannot change: the
-confidence bands stored in {cmd:e(attgt)} were computed at the estimation's
+confidence bands {cmd:csdid} reported were computed at the estimation's
 level, so {cmd:csdid, level(#)} with a level other than {cmd:e(level)} refuses
 with return code 198 and names the run that would compute them at the level
 you asked for. When what is in {cmd:e()} carries no ATT(g,t) table or no
@@ -241,11 +241,17 @@ earlier on the adopath. See
 estimated: the engine choice, the plugin bindings, and the estimation cache.
 The next {cmd:csdid} decides again from the current adopath, which is what
 makes a {cmd:csdid} installed or replaced in the middle of a session the one
-that runs. It is the way out of a stale decision short of
+that runs. Results already in {cmd:e()} stay there, but those estimated
+without {cmd:storeall} lose their influence functions with the cache: they
+can be redisplayed, and aggregating them needs the estimation re-run. It is the way out of a stale decision short of
 {cmd:macro drop _all}, which would take your own globals with it. One caveat
-the command states itself: a plugin binary replaced at the {it:same} path may
-still be served from memory by the operating system, so restart Stata to be
-certain that a re-installed accelerator is the one running.
+the command states itself: {cmd:csdid reset} cannot unload a macOS bootstrap
+accelerator this session has loaded. While it stays in memory, seeded
+bootstraps run on the Mata path, which draws the same multipliers and agrees
+to floating-point rounding, and {cmd:e(bootstrap_accelerator_status)} reports
+{cmd:mata-stale-plugin-binding}; once Stata has dropped it from memory, the
+next seeded bootstrap loads it again and reports {cmd:plugin-active}. Restart
+Stata to be certain a re-installed accelerator is the one that runs.
 
 {pstd}
 Source, issue tracker, and release notes are at
@@ -314,8 +320,8 @@ not accepted.
 {opt method(string)} selects the 2x2 estimator used for every (g,t) cell:
 
 {p2colset 12 26 28 2}{...}
-{p2col:{cmd:dr}}doubly robust (the default): the improved, locally efficient
-estimator of Sant'Anna and Zhao (2020){p_end}
+{p2col:{cmd:dr}}doubly robust (the default): the locally efficient doubly
+robust estimator of Sant'Anna and Zhao (2020){p_end}
 {p2col:{cmd:reg}}outcome regression only{p_end}
 {p2col:{cmd:ipw}}normalized (Hajek) inverse probability weighting only{p_end}
 {p2colreset}{...}
@@ -325,10 +331,10 @@ With no covariates all three coincide with the unconditional two-by-two
 difference in differences. The legacy Stata spellings {cmd:method(dripw)} and
 {cmd:method(stdipw)} are accepted with a compatibility message and are mapped
 to {cmd:dr} and {cmd:ipw}; the requested spelling is recorded in
-{cmd:e(method_requested)}. The legacy names {cmd:method(drimp)} and
-{cmd:method(aipw)} are {bf:rejected} with return code 198, because they do not
-correspond to any of the estimators above, and silently substituting one
-would change the estimand.
+{cmd:e(method_requested)}. {cmd:method(drimp)}, Version 1.82's improved
+doubly robust estimator, and {cmd:method(aipw)} are {bf:rejected} with return
+code 198, because neither is one of the estimators above, and silently
+substituting one would change the estimand.
 
 {phang}
 {opt pscoretrim(#)} sets the propensity-score trimming level used by
@@ -350,7 +356,7 @@ panel data. {it:rule} may
 be {cmd:varying} (use each observation's own weight in each of the two periods
 of the comparison), {cmd:base} or {cmd:base_period} (freeze each unit's weight
 at the base period), or {cmd:first} or {cmd:first_period} (freeze each unit's
-weight at its first observed period). {cmd:fixweights()}, without the
+weight at the first period of the estimation sample). {cmd:fixweights()}, without the
 underscore, is an accepted synonym. The fixed rules require {cmd:ivar()}: there is no
 repeated-cross-section analogue. The resolved rule is reported in
 {cmd:e(fix_weights)}, which is empty when the option is not given.
@@ -371,17 +377,22 @@ unset. On a balanced panel an
 unset {cmd:fix_weights()} uses, for each 2-by-2 comparison, the weight from the
 {it:earlier} of the two periods, that is the base period for post-treatment
 cells. {cmd:fix_weights(varying)} is a different rule and gives different
-numbers whenever the weights vary within a unit over time; if they do not vary,
-all four settings coincide. {cmd:csdid} prints a note when it detects
-time-varying weights.
+numbers whenever the weights vary within a unit over time. When they do not,
+the unset, {cmd:base}, and {cmd:first} settings coincide, and
+{cmd:fix_weights(varying)} gives the same point estimates but, once covariates
+are present, different standard errors. {cmd:csdid} prints a note when it
+detects time-varying weights.
 
 {marker opt_control}{...}
 {dlgtab:Comparison group}
 
 {phang}
-{opt notyet} uses units that have not been treated as of the current period,
-including units that will be treated later, as the comparison group.
-{opt notyettreated} is a synonym.
+{opt notyet} uses as the comparison group the never-treated units together
+with the units of other cohorts not yet treated in either period of the
+comparison: those first treated after both period {it:t} and the base period,
+and under {cmd:anticipation(#)} more than {it:#} units of {cmd:time()} after
+both. For a pre-treatment cell under {cmd:base_period(universal)} the base
+period is the later of the two. {opt notyettreated} is a synonym.
 
 {phang}
 {opt nevertreated} selects the never-treated comparison group instead of the
@@ -422,10 +433,10 @@ post-treatment ATT(g,t) estimates; it changes which pre-treatment comparisons
 are reported and how an event study lines up.
 
 {phang}
-{opt anticipation(#)} allows units to respond up to {it:#} periods before
-their nominal treatment date. The no-anticipation restriction then applies
-only to periods {it:t < g - #}; responses are allowed from {it:g - #}
-onward. Post-treatment comparisons and every comparison under
+{opt anticipation(#)} allows units to respond up to {it:#} units of
+{cmd:time()} before their nominal treatment date. The no-anticipation
+restriction then applies only to periods {it:t < g - #}; responses are allowed
+from {it:g - #} onward. Post-treatment comparisons and every comparison under
 {cmd:base_period(universal)} use the last observed period before that boundary
 as their base. Varying-base pre-treatment comparisons still use the
 preceding observed period. {it:#} must be a nonnegative integer; the default is
@@ -555,8 +566,11 @@ missing cell stops the aggregation with return code 498 and a message saying
 how many cells are missing out of how many -- the same rule
 {helpb csdid_stats} and {helpb csdid_estat} follow. A dropped cell changes
 which group-time effects the reported average is over, so it is yours to ask
-for. {cmd:dropmissing} is only meaningful together with {cmd:agg()}; on its
-own it is refused rather than ignored.
+for. The refusal stops the aggregation only: the ATT(g,t) estimation it
+follows is complete and stays posted, so the {cmd:csdid_stats} command the
+message names can aggregate it without re-estimating. {cmd:dropmissing} is
+only meaningful together with {cmd:agg()}; on its own it is refused rather
+than ignored.
 
 {marker opt_saving}{...}
 {dlgtab:Saving}
@@ -581,9 +595,12 @@ that cannot be written refuses with the file-system's own code (typically
 603). Nothing is estimated, no partial results are posted, and
 whatever estimation results were already in memory remain exactly as they
 were, so an unwritable destination costs you the refusal and not the run. An
-artifact holding more unit rows than this Stata flavour's matrix limit
-({cmd:c(max_matdim)}) is announced at write time: {cmd:csdid_stats using}
-needs a flavour whose limit covers it to reload the file. An aggregation run later from the
+artifact holding more unit rows than this Stata's matrix limit (65,534 on
+Stata/MP, 11,000 on Stata/SE, 800 on Stata/BE; the {cmd:set matsize} value on
+Stata 14 and 15) is announced at write time: {cmd:csdid_stats using} can
+reload it only on a Stata whose limit covers it, and past 65,534 unit rows on
+none, so aggregate it in the session that estimated it, where {cmd:csdid_stats}
+and {cmd:estat} have no such limit. An aggregation run later from the
 saved file bands at the confidence level of the estimation that wrote it, not
 the session default, unless {helpb csdid_stats}'s own {cmd:level()} is given.
 
@@ -677,9 +694,11 @@ one fixed sample behind every reported cell. The alternatives are one option
 away and are always disclosed in {cmd:e(panel_mode)}. If you would rather keep
 every observation, say {cmd:bal(none)}.
 {cmd:bal(pair)} reproduces the behaviour of Stata {cmd:csdid} Version 1.82,
-which balanced each comparison separately without saying so. Use it to
-reproduce a result computed with that version. {cmd:e(panel_mode)} reports
-{cmd:pair-balanced}.
+which balanced each comparison separately. Use it to
+reproduce a result computed with that version;
+{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82} lists the
+other options a reproduction needs and the differences no option removes.
+{cmd:e(panel_mode)} reports {cmd:pair-balanced}.
 
 {phang}
 {opt unbalanced} is a synonym for {cmd:bal(none)}, for when that reads better
@@ -731,7 +750,7 @@ error, as is combining it with {cmd:fix_weights(base)} or
 
 {pstd}
 These options exist so that do-files written for Stata {cmd:csdid} Version 1.82 keep
-running. All of them announce themselves. None of them changes a default.
+running. None of them changes a default.
 See {it:{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}}.
 
 {phang}
@@ -748,8 +767,10 @@ is an error.
 {phang}
 {opt long} and {opt long2} are deprecated aliases for the legacy event-study
 layout. When {cmd:base_period()} is not otherwise given, they select
-{cmd:base_period(universal)}. New code should say
-{cmd:base_period(universal)}.
+{cmd:base_period(universal)}, whose pre-treatment cells are the ones Version
+1.82 reported under {opt long2}: a do-file written with {opt long} sees every
+pre-treatment estimate change sign and move one event time. New code should
+say {cmd:base_period(universal)}.
 
 {phang}
 The unbalanced-panel vocabulary is {cmd:bal(full)}, {cmd:bal(pair)} and
@@ -885,15 +906,17 @@ over time or repeated cross sections drawn from the same population.
 
 {pstd}
 {cmd:csdid} checks the shape of the estimation sample before it estimates
-anything, and refuses with a message that names the variable and the value at
-fault rather than failing later inside a matrix operation. Every check below is
+anything, and refuses with a message that names what is wrong rather than
+failing later inside a matrix operation. Every check below is
 run whether or not output is suppressed, so {cmd:quietly csdid ...} stops in
 exactly the same cases. A refusal posts nothing: whatever estimation results
 were in memory before the command remain exactly as they were, as with every
 Stata estimation command, so a do-file that {cmd:capture}s a refused
 {cmd:csdid} continues with its previous results rather than a half-finished
 estimation. Once the estimation itself begins, a failure clears {cmd:e()}
-instead of posting a partial result, and the aggregation cache carries a
+instead of posting a partial result -- a {cmd:csdid, agg(event)} whose
+aggregation refuses is not such a failure, and leaves its completed ATT(g,t)
+estimation posted (see {cmd:dropmissing}) -- and the aggregation cache carries a
 run-specific token that {cmd:csdid_stats} verifies, so the results of one run
 can never be aggregated with the cached influence functions of another.
 
@@ -1008,7 +1031,7 @@ and reports that it did so.
 
 {pstd}
 {bf:Not-yet-treated} ({cmd:notyet}) additionally uses units that will be
-treated later but have not been treated as of the period being compared. This
+treated later but have not been treated in either period being compared. This
 buys precision, sometimes a great deal of it, and it is often the only option
 when treatment eventually reaches everyone. It requires parallel trends to
 hold against those future-treated units as well, and it leans harder on no
@@ -1059,7 +1082,7 @@ periods are removed only when there is no never-treated group at all.
 {pstd}
 On a balanced panel this measure equals the number of distinct units. On an
 unbalanced panel it is strictly smaller, so the guard is stricter there.
-Version 1.82 counted distinct units and therefore estimated in some cases that
+Version 1.82 had no such check and therefore estimated in some cases that
 are now refused; see
 {help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}.
 
@@ -1085,26 +1108,31 @@ and the estimates are comparable in variance across event times, which makes
 pre-test.
 
 {pstd}
-Either way, the post-treatment ATT(g,t) estimates are the same. With
-{cmd:anticipation(#)} the base period moves back {it:#} additional observed
-periods. On a calendar recorded without gaps the base period is exactly
-{it:g - 1 - anticipation}; on a gapped calendar -- biennial data, a skipped
-survey wave -- it is the previous period the data actually contain, and the
-reference cell's event time is then the true calendar difference (for example
+Either way, the post-treatment ATT(g,t) estimates are the same.
+{cmd:anticipation(#)} moves the base period in units of {cmd:time()}, not in
+observed periods: the base period is the last observed period before
+{it:g - #}. On a calendar recorded without gaps that is exactly
+{it:g - 1 - #}; on a gapped calendar -- biennial data, a skipped survey
+wave -- it is the last period the data actually contain before {it:g - #}, so
+{cmd:anticipation(1)} on biennial data leaves every base period where it was.
+The reference cell's event time is the true calendar difference (for example
 {it:-2} when periods step by two).
 
 {pstd}
-Cells whose event time is {it:-1} are the reference cells. They are reported
-in {cmd:e(attgt)}, where under a universal base period they carry an estimate
-of exactly zero and a missing standard error, but they are excluded from
-{cmd:e(b)} and {cmd:e(V)}.
+Under a universal base period each cohort's reference cell -- the row of
+{cmd:e(attgt)} whose {cmd:base_time} equals its {cmd:time}, at event time
+{it:-1} on a calendar without gaps or anticipation -- is reported with an
+estimate of exactly zero and a missing standard error, and is excluded from
+{cmd:e(b)} and {cmd:e(V)}. Under a varying base period there is no reference
+cell, and the event-time {it:-1} cells are estimated placebos like the
+others.
 
 {marker remarks_agg}{...}
 {title:Why aggregation is necessary}
 
 {pstd}
 A staggered design with {it:G} cohorts and {it:T} periods produces on the order
-of {it:G x T} group-time effects. The mpdta example below has 12 of them for
+of {it:G x T} group-time effects. The mpdta example below has 15 of them for
 three cohorts and five periods; realistic applications have hundreds. That
 table is the right object to estimate, because it is what the assumptions
 identify without further restrictions, but it is not a reportable summary and
@@ -1222,7 +1250,7 @@ will be reported. The same facts are stored in {cmd:e(vce)}, {cmd:e(reps)},
 zero and prints
 
 {pmore}
-{cmd:P-value for pre-test of parallel trends assumption:  0.16812}
+{cmd:P-value for pre-test of parallel trends assumption:  0.16813}
 
 {pstd}
 beneath the table, rounded to five decimals. The statistic, its degrees of
@@ -1258,14 +1286,16 @@ same results and costs only the compile it was there to remove. The library
 shipped with release 2.0.0 was compiled by Stata 17; on Stata 14, 15, and 16
 csdid says so once per session and compiles {cmd:csdid.mata} instead -- same
 numbers, one compile per session. On macOS the package also installs a compiled bootstrap accelerator,
-which is used only for explicitly seeded Rademacher draws; its results are
-identical to the Mata path, including the full random-number state. Every
+which is used only for explicitly seeded Rademacher draws. It draws the same
+multipliers and leaves the same random-number state as the Mata path, and its
+results agree with the Mata path to floating-point rounding, not bit for bit.
+Every
 other case -- every other platform, every unseeded or non-Rademacher draw, and
 any run where the accelerator cannot load -- uses Mata. The accelerator also
 has a floor of its own: it uses plugin interface 3.0, which requires Stata
 14.1 or newer, so on Stata 14.0 the Mata path runs.
 {cmd:e(bootstrap_accelerator)} and {cmd:e(bootstrap_accelerator_status)}
-report which path ran. These are diagnostics; they never change results.
+report which path ran. These are diagnostics.
 
 {marker remarks_post}{...}
 {title:Postestimation}
@@ -1279,9 +1309,10 @@ individual cells and on linear combinations of them.
 
 {pstd}
 Each name identifies exactly one cell. When the cohort or period axis is not
-integer valued, the value is written in full and its decimal point becomes an
-underscore, so ATT(2000.25, 2000.5) with base period 2000 is
-{cmd:g2000_25___2000_5_2000}. A cell that cannot be named this way -- because
+integer valued, the value is written in the shortest form that reads back as
+the stored value and its decimal point becomes an underscore, so
+ATT(2000.25, 2000.5) with base period 2000 is {cmd:g2000_25___2000_5_2000}. A
+cell that cannot be named this way -- because
 the name would pass Stata's 32-character limit, or would repeat a name already
 in use -- is named {cmd:att_}{it:#} instead and the run reports how many cells
 were affected. {cmd:e(attgt)} always reports the cohort, period and base period
@@ -1308,12 +1339,12 @@ marks the estimation sample, so {cmd:summarize ... if e(sample)} and
 The refusals are the conventional Stata ones. {cmd:csdid} sets
 {cmd:e(predict)} to {cmd:csdid_p}, a program shipped with the package whose
 only job is to explain why {cmd:predict} cannot work and exit with return code
-198; without it, {cmd:predict} fell through to Stata's default scoring code and
-failed with {cmd:r(111)} naming an internal coefficient, which reads like a
-missing variable in your own data. {cmd:margins} is blocked by
-{cmd:e(marginsnotok)}, which is set to {cmd:_ALL} and is preserved by
-{helpb csdid_estat} and {helpb csdid_stats}, including when they replace
-{cmd:e(b)} with an aggregation through {cmd:post}, so {cmd:margins} refuses
+198; without it, {cmd:predict} would fall through to Stata's default scoring
+code and fail with {cmd:r(111)} naming an internal coefficient, which reads
+like a missing variable in your own data. {cmd:margins} is blocked by
+{cmd:e(marginsnotok)}, which is set to {cmd:_ALL} and is preserved by every
+aggregation, including {cmd:estat} {it:type}{cmd:, post}, which replaces
+{cmd:e(b)}, so {cmd:margins} refuses
 with {cmd:r(322)} at every stage of a session rather than producing a table of
 fabricated numbers after an aggregation.
 
@@ -1323,7 +1354,9 @@ engine, and leaves {cmd:e()} untouched, so estimation results and every
 postestimation command survive it. A bare {cmd:csdid} redisplays the stored
 results and leaves them equally untouched. {cmd:csdid reset} clears the
 session's engine decision and estimation cache, not {cmd:e()}: the results
-stay, and the next estimation decides its engine afresh.
+stay, and the next estimation decides its engine afresh. Results estimated
+without {cmd:storeall} cannot be aggregated after a reset until the
+estimation is re-run.
 
 {pstd}
 See {helpb csdid_postestimation:csdid postestimation} for the full list of
@@ -1353,8 +1386,11 @@ leaves it there. Mata resolves a function name by searching that list in
 order, and an installed package is indexed after everything already present,
 so without the move every first call in a session is answered from the end of
 the list. Nothing else is reordered, and no other library is displaced from
-its position relative to the rest. If you set {cmd:c(matalibs)} yourself and
-want your order back, {cmd:set matalibs} restores it at any point.{p_end}
+its position relative to the rest -- except on the first {cmd:csdid} after
+csdid was installed in the same session, which has Stata rebuild its library
+index ({cmd:mata mlib index}) and so first returns {cmd:c(matalibs)} to
+Stata's default order. If you set {cmd:c(matalibs)} yourself and want your
+order back, {cmd:set matalibs} restores it at any point.{p_end}
 
 {phang2}
 o {bf:Multiplier distribution.} The bootstrap draws Rademacher multipliers.
@@ -1372,7 +1408,10 @@ of {cmd:e(attgt)} -- it is the row whose {cmd:base_time} equals its own
 only when the reference period happens to be exactly one time unit before
 {it:g}. Cells with a missing estimate are excluded as well. Note that a
 genuine cell can still have a missing standard error when its influence
-function is degenerate; its variance is then posted as zero.{p_end}
+function is degenerate; its variance is then posted as zero. A standard error
+of 1.49e-7 or less (ten times the square root of machine epsilon) counts as
+degenerate, so an outcome measured on a very small scale can lose every
+standard error; rescaling the outcome restores them.{p_end}
 
 {phang2}
 o {bf:Immediate aggregation.} {cmd:agg()} accepts only {cmd:event} and
@@ -1415,41 +1454,151 @@ diagnostics. Neither changes the estimates.{p_end}
 {title:Migrating from Stata csdid Version 1.82}
 
 {pstd}
-This is a rewrite, not a patch of the legacy package, and its defaults differ
-from legacy Stata. Two changes will move numbers in existing do-files:
+This is a rewrite, not a patch of the legacy package. Version 1.82 here is the
+last revision of the 1.8x line; {cmd:ssc install csdid} installs Version 1.81,
+which differs from it as noted below. These changes move numbers in an
+existing do-file:
+
+{phang2}
+o {bf:The comparison group is not-yet-treated.} Version 1.82 compared each
+cohort with the never-treated units only. Post-treatment estimates move
+whenever later-treated cohorts exist. {cmd:nevertreated} restores the
+never-treated comparison group.{p_end}
+
+{phang2}
+o {bf:The base period is universal.} Version 1.82's was varying. Only the
+pre-treatment cells move, and the reference row is added.
+{cmd:base_period(varying)} restores the varying base period.{p_end}
 
 {phang2}
 o {bf:Inference is bootstrapped by default}, with simultaneous bands and 1,000
-iterations. Add {cmd:analytical} to get analytical standard errors.{p_end}
+iterations, where Version 1.82 reported analytical pointwise standard errors.
+Point estimates do not move. Add {cmd:analytical} to get analytical standard
+errors. The bootstrap draws Rademacher multipliers only, while Version 1.82's
+{cmd:wboot} drew Mammen multipliers unless told otherwise, so bootstrap
+standard errors differ from Version 1.82's in any case.{p_end}
 
 {phang2}
-o {bf:Unbalanced panels are balanced, and say so.} Version 1.82 dropped, without
-comment, the units missing from either period of each 2x2 comparison. The
+o {bf:Propensity scores are trimmed at .995} under {cmd:method(dr)} and
+{cmd:method(ipw)}, without a message; Version 1.82 did not trim. Where the
+trim binds, the estimates move. {cmd:pscoretrim(1)} turns trimming off.{p_end}
+
+{phang2}
+o {bf:Unbalanced panels are balanced once, and csdid says how many units went.}
+Version 1.82 balanced each 2x2 comparison separately: it said the panel was
+unbalanced, but not which or how many units each comparison dropped. The
 default is now {cmd:bal(full)}: units not observed in every period are dropped
 once, for all comparisons, and {cmd:csdid} reports how many. To keep every
-observation instead, use {cmd:bal(none)}; to reproduce Version 1.82's per-
-comparison balancing, use {cmd:bal(pair)}.{p_end}
+observation instead, use {cmd:bal(none)}; to reproduce Version 1.82's
+per-comparison balancing, use {cmd:bal(pair)}.{p_end}
+
+{phang2}
+o {bf:notyet pre-treatment cells follow Version 1.82's asinr rule.} With a
+varying base period, Version 1.82's plain {cmd:notyet} compared cohort {it:g}
+in a pre-treatment cell only with cohorts treated after {it:g}, and
+{cmd:notyet asinr} with every cohort not yet treated at {it:t}. A comparison
+unit here must be untreated in both periods of the comparison, which is the
+{cmd:asinr} rule, so pre-treatment cells, the event study's pre-period
+coefficients and the pre-test move under {cmd:notyet base_period(varying)};
+post-treatment cells do not.{p_end}
+
+{phang2}
+o {bf:long reverses the sign of Version 1.82's long pre-treatment cells.}
+{cmd:long} and {cmd:long2} both give Version 1.82's {cmd:long2} cells. After
+{cmd:long}, each pre-treatment ATT(g,t) changes sign, and each pre-period
+event-study coefficient changes sign and moves one event time earlier:
+Version 1.82's {cmd:Tm1} is {cmd:Tm2} here, with the sign reversed.{p_end}
+
+{phang2}
+o {bf:The overall standard error of estat group} differs from Version 1.82's.
+The cohort effects and their standard errors are unchanged; so are the overall
+effect and the other aggregations' standard errors, except as the next item
+says.{p_end}
+
+{phang2}
+o {bf:Time-varying iweights move the aggregations on a balanced panel.}
+The cohort shares behind {cmd:estat simple}, {cmd:estat calendar} and
+{cmd:estat event}, and behind the overall effect of {cmd:estat group}, count
+each unit at its iweight in the first period; Version 1.82 counted it at its
+mean iweight over its periods. Where a unit's iweight varies over time, those
+estimates and their standard errors differ from Version 1.82's. The two rules
+agree when each unit's iweight is constant, and on an unbalanced panel under
+{cmd:bal(pair)}, which also uses the mean. The ATT(g,t), their standard errors
+and the per-cohort effects of {cmd:estat group} do not move.{p_end}
+
+{pstd}
+To reproduce a Version 1.82 run, add
+{cmd:nevertreated base_period(varying) analytical pscoretrim(1)}, and
+{cmd:bal(pair)} on an unbalanced panel. The last four changes above, and the
+bootstrap draws, are not undone by any option.
+
+{pstd}
+Version 1.81 differs from Version 1.82 in two places. Its {cmd:method(ipw)}
+weighted without normalizing the weights; Version 1.82 and this version
+normalize them, as Version 1.81's {cmd:method(stdipw)} did, so
+{cmd:method(ipw)} estimates move. And the aggregation standard errors on
+repeated cross sections differ slightly from Version 1.81's.
 
 {pstd}
 One further change does not move any number, but can stop a do-file that
 previously ran:
 
 {phang2}
-o {bf:Group size is measured as observations divided by the number of periods}, rather than as distinct units. On unbalanced panels this is stricter,
-so the never-treated-too-small refusal now fires in cases that Version 1.82
-estimated. Use {cmd:notyet}, which is the remedy the message
-recommends. See
+o {bf:A never-treated comparison group that is too small is refused.}
+Version 1.82 had no size check. With {cmd:nevertreated}, {cmd:csdid} stops when the
+never-treated group averages fewer than {it:k} + 5 units per period, on a
+balanced panel as well as an unbalanced one. Use {cmd:notyet}, the default,
+which is the remedy the message recommends. See
 {help csdid##remarks_groupsize:When a group is too small} above.{p_end}
+
+{pstd}
+These Version 1.82 postestimation forms stop a do-file here. What replaces
+each:
+
+{p2colset 9 38 40 2}{...}
+{p2col:{cmd:estat pretrend}}the pre-test {cmd:csdid} prints below the ATT(g,t)
+table and stores in {cmd:e(wald_stat)}, {cmd:e(wald_df)} and
+{cmd:e(wald_pvalue)}; {cmd:window()} has no equivalent{p_end}
+{p2col:{cmd:estat cevent}}no equivalent; {cmd:estat event, window(}{it:# #}{cmd:)}
+reports the effects inside an event-time window{p_end}
+{p2col:{cmd:estat all}}each aggregation in turn{p_end}
+{p2col:{cmd:estore()}, {cmd:esave()}}{cmd:estat} {it:type}{cmd:, post}, then
+{cmd:estimates store} or {cmd:estimates save}{p_end}
+{p2col:{cmd:estat event, balance()}}{cmd:csdid_stats event, balance()}{p_end}
+{p2col:{cmd:csdid ..., agg(group)}}{cmd:estat group} after {cmd:csdid}, and
+likewise for {cmd:simple}, {cmd:calendar} and {cmd:attgt}; {cmd:agg(event)}
+still runs{p_end}
+{p2col:{cmd:csdid, version}}{cmd:csdid version}{p_end}
+{p2col:{cmd:csdid_stats attgt}}{cmd:estat attgt}{p_end}
+{p2col:{cmd:csdid_stats ..., wboot}}bootstrap inference is chosen when
+{cmd:csdid} runs; aggregation from a saved RIF file is analytical{p_end}
+{p2col:{cmd:csdid_stats ..., save}}{cmd:storeall}, which keeps the
+aggregation's influence functions in {cmd:e(agg_inffunc)}{p_end}
+{p2col:{cmd:csdid_stats ..., post}}{cmd:estat} {it:type}{cmd:, post}{p_end}
+{p2colreset}{...}
+
+{pstd}
+{cmd:csdid_stats} with no type aggregates by group, where Version 1.82
+redisplayed the active results; name the type. A RIF file written by Version 1.82 is
+not read by {cmd:csdid_stats using}; run {cmd:csdid} again with
+{opt saverif()}. {cmd:csdid_stats} reads a saved file only through
+{cmd:using}, never from the data in memory. Coefficient names and stored
+results follow the layout under {help csdid##results:Stored results}: an
+ATT(g,t) cell is named like {cmd:g2004___2005_2003}, the overall effect of
+{cmd:estat group} and {cmd:estat calendar} is {cmd:Overall}, and
+{cmd:estat event} reports no {cmd:Pre_avg}.
 
 {pstd}
 Legacy option spellings that still work, each with a message:
 {cmd:method(dripw)}, {cmd:method(stdipw)}, {cmd:asinr}, {cmd:never},
-{cmd:long}, {cmd:long2}, and the top-level bootstrap shorthand.
-{cmd:method(drimp)}, {cmd:method(aipw)}, {cmd:from()} and {cmd:dryrun} are
-rejected. Each is
-described under {help csdid##opt_legacy:Legacy compatibility} above; the
-option-by-option migration guide is online at
-{browse "https://github.com/pedrohcgs/csdid-stata":github.com/pedrohcgs/csdid-stata}.
+{cmd:long} and {cmd:long2}. The top-level bootstrap shorthand
+{cmd:wboot reps(}{it:#}{cmd:) seed(}{it:#}{cmd:)} works too, silently.
+{cmd:method(drimp)}, {cmd:wbtype(mammen)}, {cmd:from()} and {cmd:dryrun} are
+rejected; {cmd:method(dr)} is Version 1.82's {cmd:method(dripw)}, and no
+option here gives its {cmd:drimp}. Each is described under
+{help csdid##opt_legacy:Legacy compatibility} above; the option-by-option
+upgrading guide is online at
+{browse "https://psantanna.com/csdid/articles/upgrading-from-182.html":psantanna.com/csdid/articles/upgrading-from-182.html}.
 
 
 {marker examples}{...}
@@ -1458,7 +1607,7 @@ option-by-option migration guide is online at
 {pstd}
 The examples use {cmd:mpdta.dta}, the county teen-employment panel of Callaway
 and Sant'Anna (2021), which ships with the package as an ancillary file.
-{cmd:net get csdid} copies it into the current directory; do that once, and
+The first Setup line copies it into the current directory; do that once, and
 every example below runs offline.
 {cmd:lemp} is log county-level teen employment, {cmd:lpop} is log county
 population, {cmd:countyreal} is the county identifier, {cmd:year} is the
@@ -1466,12 +1615,11 @@ period, and {cmd:first_treat} is the year the county's state raised its
 minimum wage, or {cmd:0} for never-treated counties.
 
 {pstd}Setup{p_end}
-{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. net get csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main")}{p_end}
 {phang2}{cmd:. use mpdta, clear}{p_end}
 
 {pstd}
-On an installation where the ancillary files were not retrieved, the same
-dataset can be loaded over the network instead:{p_end}
+The same dataset can also be loaded over the network directly:{p_end}
 {phang2}{cmd:. use "http://fmwww.bc.edu/repec/bocode/m/mpdta.dta", clear}{p_end}
 
 {hline}
@@ -1505,8 +1653,9 @@ same estimates; the nested form is preferred in new code.{p_end}
 {phang2}{cmd:. csdid lemp, ivar(countyreal) time(year) gvar(first_treat) rseed(20200806) agg(event)}{p_end}
 
 {hline}
-{pstd}Not-yet-treated comparison group, which compares the 2004 cohort against
-the 2006 and 2007 cohorts while those are still untreated{p_end}
+{pstd}The default not-yet-treated comparison group, spelled out: the 2004
+cohort is compared with the never-treated counties and with the 2006 and 2007
+cohorts while those are still untreated{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) notyet rseed(20200806)}{p_end}
 
 {hline}
@@ -1514,8 +1663,8 @@ the 2006 and 2007 cohorts while those are still untreated{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) analytical cluster(countyreal)}{p_end}
 
 {hline}
-{pstd}Universal base period, so the event study reads against a single
-normalized reference period{p_end}
+{pstd}The default universal base period, spelled out, so the event study reads
+against a single normalized reference period{p_end}
 {phang2}{cmd:. csdid lemp, ivar(countyreal) time(year) gvar(first_treat) base_period(universal) rseed(20200806)}{p_end}
 {phang2}{cmd:. estat event, window(-4 4)}{p_end}
 
@@ -1593,7 +1742,10 @@ cross sections) entering the influence function{p_end}
 {synopt:{cmd:e(level)}}confidence level{p_end}
 {synopt:{cmd:e(crit_val)}}critical value applied to the reported intervals:
 the simultaneous value under the default, the normal quantile under
-{cmd:pointwise} or {cmd:analytical}{p_end}
+{cmd:pointwise} or {cmd:analytical}. An aggregation that computes its own
+critical values replaces this and {cmd:e(point_crit_val)} (see
+{helpb csdid_stats##results:csdid_stats}); under the bootstrap the ATT(g,t)
+value stays in the {cmd:crit_val} column of {cmd:e(boot_attgt)}{p_end}
 {synopt:{cmd:e(point_crit_val)}}pointwise normal critical value{p_end}
 {synopt:{cmd:e(anticipation)}}value of {cmd:anticipation()}{p_end}
 {synopt:{cmd:e(pscoretrim)}}value of {cmd:pscoretrim()}{p_end}
@@ -1604,9 +1756,9 @@ analytical{p_end}
 own {helpb bootstrap} uses {it:(conditional: bootstrap)}{p_end}
 {synopt:{cmd:e(cband)}}1 when simultaneous bands were requested, that is
 whenever {cmd:pointwise} was not typed. Under {cmd:analytical} no simultaneous
-band is computed and {cmd:e(crit_val)} is the normal quantile, so read
-{cmd:e(crit_val)} against {cmd:e(point_crit_val)} to tell whether a band was
-actually built{p_end}
+band is computed and {cmd:e(crit_val)} is the normal quantile, so before any
+aggregation read {cmd:e(crit_val)} against {cmd:e(point_crit_val)} to tell
+whether a band was actually built{p_end}
 {synopt:{cmd:e(pointwise)}}1 if pointwise intervals were requested{p_end}
 {synopt:{cmd:e(wald_stat)}}chi-squared statistic of the parallel-trends
 pre-test {it:(conditional: pre-test computable)}{p_end}
@@ -1648,7 +1800,7 @@ refuse by name{p_end}
 {cmd:cluster()} was used{p_end}
 {synopt:{cmd:e(vcetype)}}title used for the standard-error column:
 {cmd:Bootstrap}, {cmd:Robust}, or {cmd:Analytical}{p_end}
-{synopt:{cmd:e(rseed)}}bootstrap seed as typed, empty when the bootstrap was
+{synopt:{cmd:e(rseed)}}bootstrap seed, empty when the bootstrap was
 unseeded {it:(conditional: bootstrap)}{p_end}
 {synopt:{cmd:e(yname)}}name of the outcome variable{p_end}
 {synopt:{cmd:e(timevar)}}name of the {cmd:time()} variable{p_end}
@@ -1711,9 +1863,14 @@ every cell is missing, in which case a warning says so{p_end}
 {cmd:n_treat_t}, {cmd:n_treat_pre}, {cmd:n_control_t}, {cmd:n_control_pre},
 and {cmd:base_time} (the reference period the cell was differenced against;
 the row whose {cmd:base_time} equals its {cmd:time} is the normalised
-reference cell). The printed table shows the first nine columns{p_end}
+reference cell). The four counts are the treated and comparison observations
+of the cell in period {cmd:time} and in period {cmd:base_time}, taken before
+{cmd:pscoretrim()}: a comparison observation the trim drops is still counted.
+The printed table shows the first nine columns{p_end}
 {synopt:{cmd:e(group_prob)}}one row per cohort, with columns {cmd:group},
-{cmd:prob} (the cohort's population share) and {cmd:n_units}{p_end}
+{cmd:prob} (the cohort's population share) and {cmd:n_units} (the number of
+units in the estimation sample, {cmd:e(N_units)}, the denominator of
+{cmd:prob}; the same on every row){p_end}
 {synopt:{cmd:e(inffunc)}}unit-by-cell influence functions
 {it:(conditional: storeall)}{p_end}
 {synopt:{cmd:e(unit_group)}}one row per unit, with columns {cmd:id},
@@ -1748,13 +1905,15 @@ bootstrap in this estimation's chain; each bootstrap aggregation advances it
 {p2colreset}{...}
 
 {pstd}
-After {cmd:csdid, agg(event)}, and after {helpb csdid_stats} or
-{helpb csdid_estat} with {cmd:post}, {cmd:e(b)} and {cmd:e(V)} hold the
-{it:aggregated} coefficients and the additional results {cmd:e(aggte)},
-{cmd:e(agg_type)}, and {cmd:e(N_aggte)} are present, along with
-{cmd:e(agg_inffunc)} under {cmd:storeall}.
-Those are documented in {helpb csdid_stats} and
-{helpb csdid_postestimation:csdid postestimation}.
+Every aggregation -- {cmd:csdid, agg(event)}, {helpb csdid_stats}, and the
+{helpb csdid_estat} aggregations with or without {cmd:post} -- adds
+{cmd:e(aggte)}, {cmd:e(agg_type)}, and {cmd:e(N_aggte)}, and
+{cmd:e(agg_inffunc)} when the influence functions are in {cmd:e()}. Only
+{cmd:csdid, agg(event)} and {cmd:estat} {it:type}{cmd:, post} replace
+{cmd:e(b)} and {cmd:e(V)} with the {it:aggregated} coefficients;
+{cmd:csdid_stats} and {cmd:estat} without {cmd:post} leave them as
+{cmd:csdid} posted them. These results are documented in {helpb csdid_stats}
+and {helpb csdid_postestimation:csdid postestimation}.
 
 {pstd}
 {cmd:r(table)} is returned by {cmd:estat event}, {cmd:estat dynamic},
@@ -1776,11 +1935,14 @@ for profiling and support and may change or disappear in any release.
 {title:Methods and formulas}
 
 {pstd}
-{bf:The estimand.} With {it:C} denoting the comparison group -- the units not
-yet treated as of period {it:t} under the default, or the never-treated units
-under {cmd:nevertreated} -- and {it:b} the base period ({it:g - 1 - d}
-under {cmd:anticipation(}{it:d}{cmd:)}, or {it:t - 1} for pre-treatment cells
-under a varying base period), conditional parallel trends identifies
+{bf:The estimand.} With {it:b} the base period (the last observed period
+before {it:g - d} under {cmd:anticipation(}{it:d}{cmd:)}, which is
+{it:g - 1 - d} on a calendar without gaps, or the observed period before
+{it:t} for pre-treatment cells under a varying base period) and {it:C} the
+comparison group -- under the default the never-treated units together with
+the units of other cohorts first treated more than {it:d} periods after both
+{it:t} and {it:b}, under {cmd:nevertreated} the never-treated units only --
+conditional parallel trends identifies
 
 {p 12 12 2}
 ATT(g,t) = E[ Y_t - Y_b | X, G = g ] - E[ Y_t - Y_b | X, C ],
@@ -1822,9 +1984,7 @@ invariant. Consistent when the propensity score is correct.{p_end}
 {cmd:method(dr)}, doubly robust (the default):{break}
 {space 4}ATT = E[ w1 ( DY - m(X) ) ] / E[ w1 ] - E[ w0 ( DY - m(X) ) ] / E[ w0 ].
 Consistent if {it:either} the outcome regression {it:or} the propensity score
-is correctly specified, and locally efficient when both are. This is the
-improved estimator of Sant'Anna and Zhao (2020), and is the default for that
-reason.{p_end}
+is correctly specified, and locally efficient when both are.{p_end}
 
 {pstd}
 Under {cmd:pscoretrim(}{it:c}{cmd:)}, comparison observations with
@@ -1884,7 +2044,9 @@ max over (g,t) of | ATTstar_b(g,t) - ATThat(g,t) | / sehat(g,t)
 
 {pstd}
 is computed in every iteration, and its {it:1 - alpha} empirical quantile is
-the critical value {cmd:e(crit_val)}. The band
+the critical value, stored in the {cmd:crit_val} column of
+{cmd:e(boot_attgt)} and, until an aggregation replaces it, in
+{cmd:e(crit_val)}. The band
 {it:ATThat(g,t) +/- crit_val x sehat(g,t)} then covers all ATT(g,t)
 simultaneously with asymptotic probability {it:1 - alpha}. {cmd:pointwise}
 replaces this critical value with the normal quantile, giving intervals with
@@ -1933,6 +2095,7 @@ the test still selects cells by {it:t < g}; it does not restrict itself to
 the anticipation window. Inspect the earlier cells when assessing the
 no-anticipation restriction.
 
+{marker random}{...}
 {pstd}
 {bf:Random numbers.} Seeded runs draw the multipliers from a Mersenne-Twister
 stream, and the resulting state is stored in {cmd:e(boot_rng_state)}. The
@@ -2072,7 +2235,7 @@ Source, issue tracker, and release notes:
 and travels with the package, so it is there on a machine with no network.
 
 {pstd}
-{bf:Upgrading from the SSC {cmd:csdid}.} SSC distributes csdid Version 1.82,
+{bf:Upgrading from the SSC {cmd:csdid}.} SSC distributes csdid Version 1.81,
 which installs the same command names and the same filenames as this release.
 Remove it first, so that Stata's package tracking records one csdid and not
 two:
@@ -2092,12 +2255,15 @@ the name matches two entries -- or removes the wrong one.
 stale entry by number:
 
 {phang2}{cmd:. ado dir}{p_end}
-{phang2}{cmd:. ado uninstall [1]}{p_end}
+{phang2}{cmd:. ado uninstall [}{it:#}{cmd:]}{p_end}
 
 {pmore}
-{cmd:ado dir} prints one numbered stanza per installed package with its
-distribution date; the number in square brackets is what {cmd:ado uninstall}
-takes. Remove the older csdid stanza, then reinstall as above.
+{cmd:ado dir} prints one numbered stanza per installed package, with the
+address it was installed from; the number in square brackets is what
+{cmd:ado uninstall} takes, and {cmd:ado describe [}{it:#}{cmd:]} shows that
+package's distribution date. Remove the csdid stanza you do not want --
+a Version 1.82 copy from SSC is the one installed from
+{cmd:http://fmwww.bc.edu/repec/bocode/c} -- then reinstall as above.
 
 {pstd}
 {bf:Pinning a version in a replication package.} A published version tag can
@@ -2110,13 +2276,14 @@ the reported version in your replication package. Installing from {cmd:main}
 tracks future updates.
 
 {pstd}
-{bf:When something looks wrong, start here.} {cmd:csdid version} is the first
-diagnostic: it names the copy of {cmd:csdid.ado} that answered and the engine
-the session is using, and it changes nothing. If the path it reports is not
-the copy you meant to run, {cmd:which csdid, all} lists every copy on the
-adopath in the order Stata searches them -- the current directory and
-PERSONAL come before PLUS, so a leftover {cmd:csdid.ado} in either shadows the
-installed one until it is removed. After installing or replacing csdid in a
+{bf:When something looks wrong, start here.} {cmd:which csdid, all} lists
+every copy of {cmd:csdid.ado} on the adopath in the order Stata searches them
+-- the current directory and PERSONAL come before PLUS, so a leftover
+{cmd:csdid.ado} in either shadows the installed one until it is removed -- and
+it works whichever copy answers. {cmd:csdid version} then names the copy that
+answered and the engine the session is using, and changes nothing; if it
+fails instead of printing its version line, an older csdid is the one
+answering. After installing or replacing csdid in a
 session that has already estimated something, {cmd:csdid reset} clears the
 session's engine decision so the next command decides again from the current
 adopath; a plugin binary replaced at the same path may need Stata restarted,
@@ -2124,11 +2291,12 @@ and {cmd:csdid reset} says so.
 
 {pstd}
 {cmd:csdid} requires Stata 14 or newer, the same floor as the SSC {cmd:csdid}
-it succeeds. The estimation engine is Mata and behaves identically on Windows,
+it succeeds. The estimation engine is Mata and runs the same code on Windows,
 macOS, and Linux. On macOS the package also installs a compiled bootstrap
 accelerator, a universal binary covering both Intel and Apple-silicon machines;
 anywhere it is absent or cannot load, the bootstrap falls back to the Mata
-implementation with identical results.
+implementation, which draws the same multipliers and agrees to floating-point
+rounding.
 
 {pstd}
 When reporting a numerical problem, please include the output of

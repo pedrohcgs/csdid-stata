@@ -1,0 +1,65 @@
+{
+  "matrix_id": "RT060",
+  "fixture_family": "r-empty-cell-warnings",
+  "normative_source": "did 2.5.1 compute.att_gt2.R:463-468 (valid_did_cohort: a cell with no treated or no comparison unit in either period returns NULL silently) and :267-284 (the four corner warnings)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/cohort4-gaps.csv",
+      "sha256": "c4ff2a604e4b89f8559c6d54b0d256598995f35c43285a01e663bf1d7b3dc0ce"
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "26e87468f83a5f0faecec3829cf93f9c24fc0c75fa6063523420972ee3c56306"
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt060/generate.R",
+      "path": "tools/parity/generators/rt060/generate.R",
+      "sha256": "d08a88f66a2c3f839523804b3036003035dccae354937cbbbbb6a78289cf382a"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/warnings.csv",
+      "schema": "warning-counts",
+      "sha256": "73dfcf1e374475fbab0df8260f71bf2de5956f4a28055a51e1e25ca3cfed7f34"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "1749b06456129a32db69dca06c5442c41df8107090385a835a9b6ff720bd6c05"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "count of each corner warning csdid prints",
+      "expected": "expected/r/warnings.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "message"]
+    },
+    {
+      "actual": "Stata ATT(g,t) and standard errors",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "group", "time"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Repeated cross sections and an unbalanced panel with one cohort absent from two periods, one of them its universal base."
+}

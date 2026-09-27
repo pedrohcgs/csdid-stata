@@ -11,7 +11,7 @@ The following results are intended to be stable across compatible releases:
 | `e(attgt)` | matrix | stable | Group-time ATT table with group, time, event time, estimate, standard error, counts, and `base_time`. Columns 1-9 (`group`, `time`, `event_time`, `att`, `se`, `n_treat_t`, `n_treat_pre`, `n_control_t`, `n_control_pre`) keep their positions; column 10 `base_time` is the reference period the cell was differenced against, and the row whose `base_time` equals its own `time` is the universal-base normalised cell. The printed table shows columns 1-9. |
 | `e(b)` | matrix | stable | Posted coefficient vector for nonbase ATT(g,t) estimates when available. The excluded cell is the normalised reference cell identified by `base_time`, not by event time -1; each coefficient name carries the base period the cell actually used. |
 | `e(V)` | matrix | stable | Full posted covariance matrix aligned to `e(b)` when available. For ATT(g,t), analytical runs use influence-function covariance and bootstrap runs use bootstrap-draw correlations rescaled to the reported SEs. For posted aggregations, both inference routes use the aggregated influence-function covariance, rescaled to the reported SEs; clustering uses cluster-summed influence functions. Aggregation bootstrap draws are independent across effects and do not supply their cross-effect covariance. |
-| `e(group_prob)` | matrix | stable | Treated-group probability and count metadata. |
+| `e(group_prob)` | matrix | stable | One row per cohort, with columns `group`, `prob` (the cohort's population share) and `n_units`, the number of units in the estimation sample (`e(N_units)`, the denominator of `prob`), which is the same on every row. |
 | `e(inffunc)` | matrix | conditional stable | Stored only when `storeall` is requested; otherwise the influence functions stay in the Mata cache at every sample size. |
 | `e(unit_group)` | matrix | conditional stable | Stored only when `storeall` is requested. |
 | `e(cluster_vec)` | matrix | conditional stable | Stored when clustering is requested and the stored matrices are materialized. |
@@ -54,9 +54,7 @@ removed when no never-treated group exists, both of which the estimator drops
 before it computes anything. `e(sample)` marks exactly those observations, so
 `summarize ... if e(sample)` and `estat summarize` describe the sample the
 estimates come from, and on a balanced panel
-`e(N)` = `e(N_units)` * `e(N_time)`. Before 2.0.0 the count and the marker came
-from the pre-drop sample while `e(N_units)` came from the post-drop one, so the
-three could not all be right at once.
+`e(N)` = `e(N_units)` * `e(N_time)`.
 
 `e(agg_cband)` describes the band on the aggregation's **per-effect** rows, not
 on its overall summary. The overall effect — `overall_att`/`overall_se` in
@@ -118,7 +116,7 @@ Performance-related macros and scalars are stable only as user diagnostics.
 They may be refined to expose better profiling, but they must not be required
 for econometric workflows.
 
-`e(mata_cache_token)` is an internal diagnostic used to reject stale lean-mode
+`e(mata_cache_token)` is an internal diagnostic used to reject stale
 postestimation caches. It is not a reproducibility identifier and should not be
 used in analysis code.
 
@@ -137,15 +135,3 @@ This policy is part of the public API because one uniform rule means a workflow
 that works on a test extract behaves the same way on the full dataset, and
 because it protects users from accidental memory blowups while preserving an
 explicit compatibility path.
-
-## Evolving the Mata surface
-
-The engine's externally reached Mata names -- the 26 ado-called entry points
-and the handful of test- and tool-pinned internals listed in the source's
-naming banner -- are frozen at 2.0.0 alongside the `e()` surface above. A
-future release that must change one of those signatures does it the way
-[M-3] lmbuild sanctions: a `callersversion()` split, with the old body kept
-compiling in its own `version` block of the same source file, so existing
-callers keep the behaviour they were written against. A hard edit to a frozen
-signature is not an option; if a split is genuinely impossible, the change is
-a new name plus a deprecation of the old one.

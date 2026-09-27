@@ -1,4 +1,4 @@
-*! csdid_rif 2.0.0 08sep2026
+*! csdid_rif 2.0.0 27sep2026
 * Corrects Aggregation when data is missing
 
 * v1 csdid_rif
@@ -121,7 +121,7 @@ real matrix csdidrif_mboot_anyc(real matrix rif, real scalar reps, bwtype, clv, 
 
 
 void csdidrif_mboot(real matrix rif, vv, cband, string scalar clv,
-			real scalar ci, reps, wbtype, string scalar nclname) {
+			real scalar ci, reps, wbtype, string scalar nclname, string scalar touse) {
     //, real scalar reps, bwtype, ci 
     real matrix fr, tt
 	real matrix ifse , ccb, mean_rif
@@ -140,7 +140,10 @@ void csdidrif_mboot(real matrix rif, vv, cband, string scalar clv,
 				mean_rif':+tt':* ifse'   )
 	}
 	else {
-		clvar=st_data(.,clv)
+		// on the estimation sample, row for row with rif: read over every
+		// observation, an if/in or a missing cluster value left clvar longer
+		// than rif and the multiplier indexing stopped with r(3301)
+		clvar=st_data(.,clv,touse)
 		
 		fr=csdidrif_mboot_anyc(rif,reps, wbtype, clvar, nclname)
 		ifse = csdidrif_iqrse(fr)
@@ -257,7 +260,7 @@ void csdidrif_make_tbl(string scalar rifv, clv, touse, cband_, bmat_, vmat_,
 	real matrix cband
 	// wboot w / wo cluster
 	if ( setype ==3 ) {
-		csdidrif_mboot(rif,  VV, cband, clv, ci, reps, wbtype, nclname)
+		csdidrif_mboot(rif,  VV, cband, clv, ci, reps, wbtype, nclname, touse)
 		st_matrix(cband_,cband)
 		
 	}
@@ -283,7 +286,7 @@ end
                     * line above and never forwarded -- the table labels the
                     * bounds from the e(level) csdid_rif just posted
                     * (cold-audit LEG-1).
-                    csdid_table, `diopts'
+                    csdid_table, `diopts' csdidrifcall
 					display "{p}Note: RIF Std. err. "
 					* csdid 2.0.0 stores this as e(clustervar); legacy csdid used e(clustvar).
                     local csdid_cvar = cond("`e(clustervar)'" != "", "`e(clustervar)'", "`e(clustvar)'")
@@ -311,6 +314,13 @@ end
     display as text "note: csdid_rif is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
 	syntax varlist [if] [in], [  cluster(varname) level(real 95) reps(int 999) wboot seed(string) ]
+	* A file written by csdid 2.0.0's saverif() holds each cell's centred
+	* influence function (mean zero), not Version 1.82's ATT-plus-influence
+	* RIF this command averages, so every coefficient would come back as 0.
+	if `"`: char _dta[csdid_artifact]'"' == "rif" {
+		display as error "this dataset was written by csdid 2.0.0's saverif(); its rif# columns are influence functions with mean zero, so csdid_rif cannot rebuild ATT(g,t) from them. Aggregate the saved file with csdid_stats using <filename>, or rerun csdid and use estat."
+		exit 198
+	}
 	* An impossible confidence level refuses before any computation, any
 	* RNG state change, or any e() posting (cold-audit LEG-1): the level
 	* drives the wild-bootstrap band quantile below, so it must be a level.

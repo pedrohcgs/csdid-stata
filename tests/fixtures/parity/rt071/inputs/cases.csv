@@ -1,0 +1,6 @@
+"case","type","max_e","na_rm"
+"group_maxe1_narm","group",1,TRUE
+"group_narm","group",Inf,TRUE
+"group_maxe05_narm","group",0.5,TRUE
+"simple_maxe1_narm","simple",1,TRUE
+"group_maxe1","group",1,FALSE

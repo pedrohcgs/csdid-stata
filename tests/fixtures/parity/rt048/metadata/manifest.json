@@ -1,0 +1,54 @@
+{
+  "matrix_id": "RT048",
+  "fixture_family": "r-dynamic-zero-probability-event-time",
+  "normative_source": "did 2.5.1 compute.aggte.R:479-486 (dynamic.att.e = sum(atte * pg[whiche] / sum(pg[whiche])))",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/zero_weight_cohort.csv",
+      "sha256": "e4f5282cb2a50defdfc096bc7d24aea481dee183442c92ce8ae4cb9fd166d5f1",
+      "rows": 160,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt048/generate.R",
+      "path": "tools/parity/generators/rt048/generate.R",
+      "sha256": "598f39053bb42c842af257609f66ffdad3df90467bbdf6ad154070f7b24f9dd5"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte",
+      "sha256": "c7cc42d69fd9cb5f4ee2cc9d5988ce7e9acee85789f6428a97449f61540d1232"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "csdid_stats type(dynamic) dropmissing: every event-time effect and SE, NaN as missing",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": [
+        "egt"
+      ]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "A cohort with zero weight in every row; its reference cell alone populates one event time."
+}

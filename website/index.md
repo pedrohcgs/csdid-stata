@@ -37,13 +37,15 @@ If your current copy came from SSC, `ssc uninstall csdid` is the first line
 instead. Uninstalling first is what keeps Stata tracking one `csdid` rather
 than two. Run `csdid version` afterwards to confirm what you are running.
 
-SSC currently distributes csdid **Version 1.82**, the previous generation of
-the package. If that is what you want, it is one line:
+SSC currently distributes csdid **Version 1.81**, the previous generation of
+the package. It needs `drdid` as well, so if that is what you want, it is two
+lines:
 
 <!-- norun -->
 
 ```stata
 ssc install csdid, replace
+ssc install drdid, replace
 ```
 
 ## What it is built for
@@ -75,7 +77,7 @@ reports both runtime and differences in what each command estimates.
 
 ## Also in R and Python
 
-The same estimators, from the same team, are available as [`did` for R](https://bcallaway11.github.io/did/) and [`csdid` for Python](https://d2cml-ai.github.io/csdid/index.html) (`pip install csdid`).
+The same estimators are available as [`did` for R](https://bcallaway11.github.io/did/) and [`csdid` for Python](https://d2cml-ai.github.io/csdid/index.html) (`pip install csdid`).
 
 When comparing implementations, set the same sample, comparison group, base
 period, estimator, and inference options explicitly. This Stata package

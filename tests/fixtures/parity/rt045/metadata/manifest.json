@@ -1,0 +1,87 @@
+{
+  "matrix_id": "RT045",
+  "fixture_family": "r-settled-sample-refusals",
+  "normative_source": "did 2.5.1 pre_process_did2.R:246-265 (latest cohort coerced, periods cut), :405-407 (No valid groups), :433-452 (never-treated group too small), compute.att_gt2.R:782-785 (no valid (g, t) cells)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/small_latest_rcs.csv",
+      "sha256": "68062980b7fff23b06154cddb006911906dab046f01e58c6cfbf46015f5d1bad",
+      "rows": 172,
+      "columns": 4
+    },
+    {
+      "path": "inputs/small_latest_unbal.csv",
+      "sha256": "43ced1b7cf3d2b1feac215668e4c1e462b3c19afb02fe86b533d48c6c4b3abf9",
+      "rows": 176,
+      "columns": 4
+    },
+    {
+      "path": "inputs/small_latest_bal.csv",
+      "sha256": "392869d56aff52d73d73e37d05aabb0aa68b798d88b4445b8d9420f9629e4dd0",
+      "rows": 172,
+      "columns": 4
+    },
+    {
+      "path": "inputs/empty_cohorts.csv",
+      "sha256": "907a5902255e275975864244845e5f8bd090dd0c7be4f85f9fe385c28f0b9aaa",
+      "rows": 65,
+      "columns": 4
+    },
+    {
+      "path": "inputs/no_cells.csv",
+      "sha256": "e10b855b02ee83450c2485859bc28dfa4a431551dfdbb0bb1f4f763f63c90097",
+      "rows": 120,
+      "columns": 4
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "65959331ea989f57fbcee51cd3cf002582450beed7001c92ca4d9e0953f6db7d",
+      "rows": 12,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt045/generate.R",
+      "path": "tools/parity/generators/rt045/generate.R",
+      "sha256": "19bae5df608e3abff80682de7763f78184cb065cf749ebfd22869f679995fed8"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/estimation_status.csv",
+      "schema": "estimation_status",
+      "sha256": "71aa9652a22dde16b59e15c30c56a7d8172e0b3c56665d5f195d6f5729712cd5"
+    },
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "35314e681c1053878f2818658d0f418dd78bac27b348f56303d8a20669bec2a3"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata return code, refusal message and the absence of internal frames; cells of the one estimable scenario",
+      "expected": ["expected/r/estimation_status.csv", "expected/r/attgt.csv"],
+      "tolerance_id": "TOL001",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Refusals R reaches only after the no-never-treated period cut: a coerced latest cohort too small (repeated cross sections, unbalanced and balanced panels), an empty cohort list (three sample modes, both comparison groups), and an empty cell grid under the varying base; the universal base of the last design estimates. R's fast and slow routes agree on every verdict."
+}

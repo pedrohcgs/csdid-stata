@@ -1,0 +1,5 @@
+"scenario","control","message"
+"guard_exact","notyettreated","No valid groups. The variable in 'gname' should be expressed as the time a unit is first treated (0 if never-treated)."
+"guard_exact","nevertreated","No valid groups. The variable in 'gname' should be expressed as the time a unit is first treated (0 if never-treated)."
+"latest_only","notyettreated","No valid groups. The variable in 'gname' should be expressed as the time a unit is first treated (0 if never-treated)."
+"latest_only","nevertreated","No valid groups. The variable in 'gname' should be expressed as the time a unit is first treated (0 if never-treated)."

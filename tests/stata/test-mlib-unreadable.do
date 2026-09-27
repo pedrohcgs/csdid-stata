@@ -65,6 +65,7 @@ assert strpos(`"`marker'"', "2.0.0|source;") == 1
 local said_found 0
 local said_nothing 0
 local said_reinstall 0
+local said_damaged 0
 local logical ""
 file open fh using "`lg'", read text
 file read fh line
@@ -77,6 +78,7 @@ while r(eof) == 0 {
         if strpos(`"`logical'"', "could not read it") local said_found 1
         if strpos(`"`logical'"', "Nothing needs to be done") local said_nothing 1
         if strpos(`"`logical'"', "re-install csdid") local said_reinstall 1
+        if strpos(`"`logical'"', "probably damaged") local said_damaged 1
         local logical `"`line'"'
     }
     file read fh line
@@ -84,10 +86,23 @@ while r(eof) == 0 {
 if strpos(`"`logical'"', "could not read it") local said_found 1
 if strpos(`"`logical'"', "Nothing needs to be done") local said_nothing 1
 if strpos(`"`logical'"', "re-install csdid") local said_reinstall 1
+if strpos(`"`logical'"', "probably damaged") local said_damaged 1
 file close fh
-assert `said_found' == 1
-assert `said_nothing' == 1
-assert `said_reinstall' == 0
+* The shipped library is built by Stata 17. An older Stata cannot read it by
+* design -- the note says nothing needs doing, and never asks for a
+* re-install, which would only bring the same library back. Stata 17 or
+* later reads the shipped library, so unreadable bytes there are a damaged
+* file and re-installing is the remedy; that note is pinned in
+* install-isolated.do on a real truncated library.
+if c(stata_version) < 17 {
+    assert `said_found' == 1
+    assert `said_nothing' == 1
+    assert `said_reinstall' == 0
+}
+else {
+    assert `said_damaged' == 1
+    assert `said_nothing' == 0
+}
 
 * Announced once per decision, not once per call: a second load stops at the
 * session marker and says nothing.

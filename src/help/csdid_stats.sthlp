@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -102,13 +102,17 @@ confidence bands are inherited from the {cmd:csdid} call that produced the
 results.
 
 {pstd}
-Aggregation needs the influence functions of the ATT(g,t) estimates, which
-{cmd:csdid} keeps in its Mata cache (and additionally materializes as
-{cmd:e(inffunc)} and {cmd:e(unit_group)} under {cmd:storeall}). Both live in
-the current session: after {cmd:clear all}, {cmd:mata clear}, or a restart,
-re-run {cmd:csdid} or use the {cmd:using} form below. {cmd:csdid_stats} says
-what is missing and exits with return code 498 rather than aggregating
-something stale.
+Aggregation needs the influence functions of the ATT(g,t) estimates.
+{cmd:csdid} keeps them in the session's memory, outside {cmd:e()}, and under
+{cmd:storeall} also posts them as {cmd:e(inffunc)} and {cmd:e(unit_group)},
+which travel with the results. Without {cmd:storeall}, results whose influence
+functions the session does not hold -- after {cmd:csdid reset} or
+{cmd:mata clear}, or restored with {cmd:estimates use} in a later session --
+and results restored from an earlier estimation than the one the session holds
+are refused with return code 498 rather than aggregated against the wrong
+influence functions; re-run {cmd:csdid}, or use the {cmd:using} form below.
+After {cmd:clear all} or a restart there are no {cmd:csdid} results at all,
+and {cmd:csdid_stats} exits with return code 301.
 
 {pstd}
 The {cmd:using} form reloads a saved influence-function (RIF) file written by
@@ -177,6 +181,14 @@ A window that leaves no event time at all, or no post-treatment event time,
 is refused with return code 498. No placeholder
 coefficients are created for event times that are not in the data.
 
+{pmore}
+Under {opt dropmissing}, {cmd:type(group)} first leaves out a cohort with no
+estimated post-treatment cell at t <= g + {it:max}, and then averages each
+remaining cohort over its cells within {it:max} observed periods. When periods
+sit less than one {cmd:time()} unit apart the second window is the narrower
+one, and a cohort with no estimated cell left in it is refused with return
+code 498 rather than dropped from the overall effect.
+
 {marker opt_balance}{...}
 {phang}
 {opt balance(#)} restricts the dynamic aggregation to a balanced event-time
@@ -197,20 +209,22 @@ reported profile would mix event times that only some cohorts contribute to.
 
 {pmore}
 Both restrictions are computed from the cells that survive estimation, so
-under {opt dropmissing} the guarantee is conditional: cohort admission tests
-whether a cohort's last surviving period is at least {it:#} periods after
-treatment, not whether every event time inside the window was estimated for
-it. A cohort with a missing cell at an interior event time therefore drops
-out of that one event time while still contributing to the others, and the
-composition inside the balanced window can then differ across event times.
-When that happens {cmd:csdid_stats} says so: a warning names each missing
-cell inside the window and its cohort. Inspect {cmd:e(attgt)} for the missing
-cells before reading the balanced profile as composition-constant.
+under {opt dropmissing} the guarantee is conditional: {it:last period} is the
+last period with an estimated cell of any cohort, not the cohort's own last
+estimated period, so a cohort can be admitted although its cells at event
+time {it:#} are missing. A cohort with a missing cell inside the window drops
+out of that event time while still contributing to the others, and the
+composition inside the balanced window can then differ across event times;
+an event time with no estimated cell left is not reported at all. Both are
+announced by a warning, and neither stops the aggregation: a missing cell at
+an event time that is still reported is named with its cohort, and an event
+time that lost every cell is named as not reported. Inspect
+{cmd:e(attgt)} for the missing cells before reading the balanced profile as
+composition-constant.
 {cmd:balance(0)} is legal and keeps every cohort with at least one
 post-treatment period. {cmd:balance()} needs the first period of the estimation
-sample, which {cmd:csdid} stores in {cmd:e(time_first)}; a RIF file written by
-an older version of {cmd:csdid} does not carry it, and {cmd:csdid_stats}
-then refuses with return code 498 rather than guessing.
+sample, which {cmd:csdid} stores in {cmd:e(time_first)} and a RIF file
+carries.
 
 {phang}
 {opt min_e(#)}, {opt max_e(#)}, and {opt balance_e(#)} are the same three
@@ -363,11 +377,12 @@ downward-sloping profile can be composition rather than dynamics.
 the range those cohorts share. Both steps matter: the cohort restriction alone would
 leave event times that not every retained cohort reaches. The guarantee is
 exact when every retained cohort's cells inside the window were estimated;
-when {opt dropmissing} removes a failed cell at an interior event time, its
-cohort leaves that one event time but remains in the rest of the window, so
-some composition change survives the balancing -- and {cmd:csdid_stats}
-warns, naming each such cell. If composition constancy matters for the
-application, resolve the failed cells -- the estimation names each one and
+when {opt dropmissing} removes a failed cell inside the window, its cohort
+leaves that one event time but remains in the rest of the window, so some
+composition change survives the balancing -- and {cmd:csdid_stats} warns,
+naming each such cell; when no cell of an event time survives, the event time
+is dropped from the profile, and the warning names it. If composition constancy
+matters for the application, resolve the failed cells -- the estimation names each one and
 its cause -- rather than dropping them.
 
 {pstd}
@@ -458,6 +473,13 @@ estimation can be aggregated many ways later, or in another session, without
 re-estimating.
 
 {pstd}
+The file carries a signature of its rows and metadata, and {cmd:using} checks
+it before aggregating: a file whose content does not match its signature,
+or that carries none -- such as a RIF file written by Version 1.82 -- is
+refused with return code 459. Re-run the estimation with {cmd:saverif()} to
+rewrite it.
+
+{pstd}
 Two consequences follow from what the file contains. First, aggregation from a
 RIF file is analytical: bootstrap draws and the bootstrap random-number state
 are not saved. Second, the {cmd:using} form replaces the estimation results in
@@ -470,9 +492,7 @@ Clustering does travel with the file. A RIF written by a run with
 {cmd:csdid_stats using} reports the same clustered standard errors as
 aggregating the estimation directly; {cmd:cluster(}{it:clustvar}{cmd:)} on the
 {cmd:using} form is accepted, and naming a different variable is refused, as it
-is for a live estimation. A file that does not record the clustering at all is
-refused by name rather than aggregated as if the estimation had been
-unclustered; re-run {cmd:csdid} with {cmd:saverif()} to rewrite it.
+is for a live estimation.
 
 {pstd}
 The confidence level travels with the file. {cmd:saverif()} records the level
@@ -481,9 +501,7 @@ of the estimation that wrote it, and the {cmd:using} form restores it as
 {cmd:e(level)}. So a RIF file written by {cmd:csdid ..., level(90)} still
 reports 90% intervals when it is aggregated in a later session whose
 {help level:set level} is 95, and {cmd:e(level)} and {cmd:e(agg_level)} agree.
-Type {cmd:level()} on the {cmd:csdid_stats} command to override it. A file
-written by an older version of {cmd:csdid} that does not carry the level falls
-back to the session default.
+Type {cmd:level()} on the {cmd:csdid_stats} command to override it.
 
 {marker examples}{...}
 {title:Examples}
@@ -491,10 +509,10 @@ back to the session default.
 {pstd}
 The examples use {cmd:mpdta.dta}, the county-level teen-employment panel of
 Callaway and Sant'Anna (2021), which ships with the package as an ancillary
-file: {cmd:net get csdid} copies it into the current directory.
+file; the first Setup line copies it into the current directory.
 
 {pstd}{bf:Setup}{p_end}
-{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. net get csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main")}{p_end}
 {phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 
@@ -526,9 +544,12 @@ file: {cmd:net get csdid} copies it into the current directory.
 {title:Stored results}
 
 {pstd}
-{cmd:csdid_stats} adds the following to the results left by {cmd:csdid}. All
-results of the estimation itself are preserved, including {cmd:e(b)},
-{cmd:e(V)}, and {cmd:e(attgt)}.
+{cmd:csdid_stats} adds the following to the results left by {cmd:csdid} and
+leaves the estimation's own results in place, including {cmd:e(b)},
+{cmd:e(V)}, {cmd:e(attgt)}, and {cmd:e(boot_attgt)}, with two exceptions:
+{cmd:e(crit_val)} and {cmd:e(point_crit_val)} take the aggregation's values
+whenever it computes them (see below), and each bootstrap aggregation advances
+{cmd:e(boot_rng_state)}.
 
 {pstd}
 {cmd:csdid_stats} stores the following in {cmd:e()}:
@@ -566,10 +587,11 @@ columns {cmd:egt}, {cmd:att}, {cmd:se}, {cmd:overall_att}, {cmd:overall_se};
 missing for {cmd:type(simple)}{p_end}
 {synopt:{cmd:e(agg_inffunc)}}influence functions of the aggregated effects, one
 row per unit and one column per reported effect, plus a final column for the
-overall effect. Posted under {cmd:storeall} only: by default the influence
-functions are held internally, and every postestimation result, including
-the posted {cmd:e(V)} after {cmd:post}, is computed from the internal
-copy{p_end}
+overall effect. Posted when the estimation's influence functions are in
+{cmd:e()}: under {cmd:storeall}, and on the {cmd:using} form. By default the
+influence functions are held internally, and every postestimation result,
+including the posted {cmd:e(V)} after {cmd:post}, is computed from the
+internal copy{p_end}
 {synopt:{cmd:e(boot_aggte)}}bootstrap aggregation table with columns
 {cmd:egt}, {cmd:att}, {cmd:se_boot}, {cmd:crit_val}, {cmd:ci_low},
 {cmd:ci_high}, {cmd:point_crit_val}, {cmd:point_ci_low}, {cmd:point_ci_high},
@@ -606,8 +628,8 @@ the RIF file: {cmd:e(attgt)}, {cmd:e(inffunc)}, {cmd:e(group_prob)},
 {cmd:e(rif_file)}, {cmd:e(N)}, {cmd:e(N_units)}, {cmd:e(N_attgt)},
 {cmd:e(N_groups)}, {cmd:e(N_time)}, {cmd:e(anticipation)}, {cmd:e(level)},
 {cmd:e(version)}, the postestimation plumbing macros {cmd:e(estat_cmd)},
-{cmd:e(predict)}, and {cmd:e(marginsnotok)}, {cmd:e(time_first)} when the
-file carries it, and -- when the estimation that wrote the file was
+{cmd:e(predict)}, and {cmd:e(marginsnotok)}, {cmd:e(time_first)}, and --
+when the estimation that wrote the file was
 clustered -- {cmd:e(clustervar)}, {cmd:e(cluster_vec)}, and
 {cmd:e(N_clusters)}.
 
@@ -664,13 +686,13 @@ pointwise quantile. See Callaway and Sant'Anna (2021, section 4.2).
 {pstd}
 The aggregation bootstrap is implemented in Mata. On macOS the package also
 installs a compiled accelerator, which is used only for explicitly seeded
-Rademacher draws; it computes exactly the same draws from the same
-random-number state, so its results are identical to the Mata path, including
-the full random-number state. Every other case -- every other platform, every
+Rademacher draws. It draws the same multipliers from the same random-number
+state and leaves the same state behind, and its results agree with the Mata
+path to floating-point rounding, not bit for bit. Every other case -- every other platform, every
 unseeded or non-Rademacher draw, and any run where the accelerator cannot load
 -- uses Mata. {cmd:e(agg_boot_accelerator)} and
-{cmd:e(agg_boot_accel_status)} record which path ran; they are diagnostics and
-never change results.
+{cmd:e(agg_boot_accel_status)} record which path ran; they are
+diagnostics.
 
 
 {marker references}{...}

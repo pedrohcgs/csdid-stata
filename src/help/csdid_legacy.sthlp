@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -71,9 +71,11 @@ Two numerical details are frozen at their Version 1.82 values, deliberately:
 the wild-bootstrap band quantile in {cmd:csdid_rif} selects the order
 statistic at {it:floor(np)+1}, one position above the type-1 quantile the
 2.0.0 engine uses, and {cmd:csdid_table}'s {cmd:p} row is left blank, as the
-Version 1.82 table always left it. Both reproduce the legacy commands' published
-behavior exactly; the 2.0.0 estimation and aggregation commands use the
-modern definitions.
+Version 1.82 table always left it. Both reproduce the legacy commands'
+published behavior, to floating-point rounding: {cmd:csdid_rif} rescales the
+RIF columns only when an entry is missing, where Version 1.82 always did, so
+on complete columns the last digits can differ. The 2.0.0 estimation and
+aggregation commands use the modern definitions.
 
 {marker syntax}{...}
 {title:Syntax and stored results of the deprecated commands}
@@ -134,9 +136,22 @@ aggregation exports itself the same way: {cmd:estat event, saving()},
 {p_end}
 
 {pstd}
-The saved-RIF workflow itself is still supported: {cmd:csdid_stats} accepts a
-saved RIF file with {cmd:csdid_stats using} {it:filename}. Only the
-table-building command is deprecated.
+The saved-RIF workflow itself is still supported for files written by
+2.0.0's {opt saverif()}: {cmd:csdid_stats} accepts one with
+{cmd:csdid_stats using} {it:filename}. Only the table-building command is
+deprecated. A file written by 2.0.0's
+{opt saverif()} is not a Version 1.82 RIF file: each column is the centred
+influence function of its cell, with mean zero, and the cell's ATT(g,t) is kept
+in the column's {cmd:csdid_attgt} characteristic. {cmd:csdid_rif} therefore
+refuses such a file; aggregate it with {cmd:csdid_stats using}. A RIF file
+written by Version 1.82 goes the other way: {cmd:csdid_rif} reads it and
+{cmd:csdid_stats using} refuses it, so run {cmd:csdid} again with
+{opt saverif()} to aggregate it with {cmd:csdid_stats}. {cmd:csdid_stats}
+reads a saved file only through {cmd:using}; loading one with {cmd:use} does
+not make {cmd:csdid_stats} aggregate it. The Version 1.82 recipe that passed
+{cmd:csdid_rif} the aggregated columns written by {cmd:csdid_stats, save} does
+not run, because {cmd:save} is not an option of {cmd:csdid_stats}; see
+{help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82}.
 {p_end}
 
 {pstd}

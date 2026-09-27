@@ -6,9 +6,11 @@ title: News
 
 ## csdid 2.0.0
 
-A rewritten estimation engine. Everything below is what changes for someone upgrading from **csdid Version 1.82** —
-the SSC release dated 2025-10-05.
-The command surface is deliberately the same, so most existing do-files run
+A rewritten estimation engine. Everything below is what changes for someone
+upgrading from **csdid Version 1.82**, the last revision of the 1.8x line
+(November 2025). SSC distributes Version 1.81, dated 2025-10-05; the two ways
+it differs from Version 1.82 are listed at the end of the next section. The
+command surface is deliberately the same, so most existing do-files run
 unchanged.
 
 ### Changes that can affect your results
@@ -18,10 +20,6 @@ to never-treated. Version 2.0.0 also uses later-treated cohorts while they
 remain eligible controls, accounting for the base period and `anticipation()`.
 This can use more of the data and does not require a never-treated group.
 `nevertreated` restores the old comparison group.
-
-One consequence: the refusal described below, when the never-treated group is
-too small, no longer fires by default. That is correct — `notyet` is precisely
-the remedy that refusal recommends.
 
 **Universal base period is now the default.** Version 1.82 defaults to a
 varying base period. Version 2.0.0 uses one reference period per cohort: the
@@ -65,15 +63,26 @@ whole set of effects lies inside its intervals at once; a single summary number
 has no set to be simultaneous over. An `estat event` table can therefore show
 both kinds of interval at once, and it says so beneath the table.
 
-**Unbalanced panels are balanced, and say so.** Version 1.82 dropped, without
-comment, the units not observed in both periods of each comparison — silently
-changing the estimand. Version 2.0.0 makes the choice explicit and reports it.
-`bal()` takes three modes:
+**The bootstrap draws Rademacher multipliers.** Version 1.82's `wboot` drew
+Mammen multipliers unless `wbtype(rademacher)` was given. Version 2.0.0 draws
+Rademacher multipliers only, so a do-file that bootstraps gets different draws
+and therefore different bootstrap standard errors and bands; `wbtype(mammen)`
+is refused.
+
+**Propensity scores are trimmed at .995.** Version 1.82 did not trim. Under
+`method(dr)` and `method(ipw)`, Version 2.0.0 drops comparison observations
+whose estimated propensity score is .995 or more, without a message, and where
+that binds the estimates move. `pscoretrim(1)` turns trimming off.
+
+**Unbalanced panels are balanced once, and csdid says how many units went.**
+Version 1.82 balanced each comparison separately: it said the panel was
+unbalanced, but not which or how many units each comparison dropped.
+Version 2.0.0 makes the choice explicit and reports it. `bal()` takes three modes:
 
 | | |
 | --- | --- |
 | `bal(full)` | drop units not observed in every period, once, for all comparisons. **Default**. |
-| `bal(pair)` | balance each 2x2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did silently; ask for it to reproduce a result from that version. |
+| `bal(pair)` | balance each 2x2 separately, keeping the units observed in both of its periods. This is what Version 1.82 did; ask for it to reproduce a result from that version. |
 | `bal(none)` | keep every unit and use the repeated-cross-section computation. |
 
 Whenever a mode discards observations, `csdid` reports how many units and how
@@ -83,22 +92,59 @@ than a mode inside `bal()`; `allowunbalanced` and `allow_unbalanced` are the
 longhand forms of the same setting. All three are typed in full — no abbreviation of them is an
 option.
 
+**`notyet` pre-treatment cells follow Version 1.82's `asinr` rule.** In a
+pre-treatment cell with a varying base period, Version 1.82's `notyet`
+compared cohort *g* only with cohorts treated after *g*; its `asinr` option
+compared it with every cohort not yet treated at *t*. Version 2.0.0's `notyet`
+keeps a comparison unit when it is untreated in both periods of the
+comparison, which is the `asinr` rule. Under `notyet base_period(varying)` the
+pre-treatment cells, the event study's pre-period coefficients and the
+pre-test therefore differ from Version 1.82's plain `notyet`, and no option
+reproduces them; post-treatment cells do not change.
+
+**`long` reports pre-treatment cells with the opposite sign.** Version 1.82's
+`long` and `long2` gave the same pre-treatment cells with opposite signs. In
+2.0.0 both select `base_period(universal)`, which is Version 1.82's `long2`.
+A do-file that used `long` therefore sees every pre-treatment ATT(g,t) change
+sign, and each pre-period event-study coefficient change sign and move one
+event time earlier: Version 1.82's `Tm1` is 2.0.0's `Tm2` with the sign
+reversed, and 2.0.0's `Tm1` is the reference row, fixed at 0.
+
+**The group aggregation's overall standard error.** `estat group` reports the
+same cohort effects, cohort standard errors and overall effect as Version 1.82,
+and a different standard error for the overall effect: 0.0119 against
+Version 1.82's 0.0118 on the package's `mpdta` example with `lpop` as
+covariate, and a wider gap under sampling weights. The event-study, calendar and simple
+aggregations report Version 1.82's standard errors.
+
+**Time-varying iweights move the aggregations on a balanced panel.** The
+cohort shares behind the simple, calendar and event-study aggregations, and
+behind the overall effect of `estat group`, count each unit at its iweight in
+the first period; Version 1.82 counted it at its mean iweight over its periods.
+Where a unit's iweight varies over time, those estimates and their standard
+errors differ from Version 1.82's, including the ones the previous paragraph
+lists as unchanged. The two rules agree when each unit's iweight is constant,
+and on an unbalanced panel under `bal(pair)`, which also uses the mean. The
+ATT(g,t), their standard errors and the per-cohort effects of `estat group` do
+not move.
+
 **Repeated cross sections can be declared, not just inferred.** Use the new
 `rcs` option to declare this sampling structure explicitly.
-Previously the only way to say "these are cross sections" was to omit `ivar()`,
+In Version 1.82 the only way to say "these are cross sections" was to omit `ivar()`,
 which forced anyone whose cross sections carried an identifier to withhold a
 real variable. With `rcs` you keep it: it is validated and used to exclude
 observations where it is missing, but each observation is its own unit.
 `cluster()` is what puts that identifier back into the standard errors.
 
-**A too-small never-treated group is now refused.** `csdid` stops when the
-never-treated group is smaller than `#covariates + 5`, and warns about any
-small group. Group size is measured as rows divided by periods — the average
-number of units per period — not as distinct units. The two agree on balanced
-panels and differ only on unbalanced ones, where the guard now fires in cases
-earlier versions estimated. If it fires, `notyet` uses not-yet-treated units as
-the comparison group and does not depend on the never-treated group being large. This
-changes *whether the command runs*, never an estimate.
+**A never-treated comparison group that is too small is refused.**
+Version 1.82 had no size check. When never-treated units are the comparison group
+(`nevertreated`), Version 2.0.0 stops if that group is smaller than
+`#covariates + 5`, and it warns about any small group. Group size is measured
+as rows divided by periods — the average number of units per period. The
+check can stop a `nevertreated` run that Version 1.82 estimated, on a balanced
+panel as well as an unbalanced one; `notyet`, the default, does not depend on
+the never-treated group being large. This changes *whether the command runs*,
+never an estimate.
 
 **A panel that is not shaped like a panel is refused, and the message says
 which variable is at fault.** With `ivar()` supplied, Version 2.0.0 makes three
@@ -140,6 +186,19 @@ varies elsewhere, and an outcome that varies by one part in a million is
 degenerate-but-estimable and still runs. This is the third refusal that changes
 *whether the command runs*, never an estimate.
 
+**Upgrading from Version 1.81, the SSC release.** Two further differences
+apply. Version 1.81's `method(ipw)` weighted without normalizing the weights;
+Version 1.82 and 2.0.0 normalize them (Version 1.81's `method(stdipw)`), so
+`method(ipw)` estimates change and 2.0.0 has no unnormalized version. And the
+aggregation standard errors on repeated cross sections differ slightly from
+Version 1.81's.
+
+**To reproduce a Version 1.82 run**, add `nevertreated base_period(varying)
+analytical pscoretrim(1)`, and `bal(pair)` on an unbalanced panel. Five things
+stay different: `notyet` pre-treatment cells, the sign convention of `long`,
+Mammen bootstrap draws, the overall standard error of `estat group`, and, on a
+balanced panel whose iweights vary over time, the aggregations.
+
 ### Stored results
 
 **`e()` carries the estimation contract; unit-level objects stay internal.**
@@ -155,39 +214,61 @@ units. Two explicit routes expose the influence functions when you want them —
 as Stata matrices, and `saverif()` writes the durable dataset that
 `csdid_stats using` aggregates in any later session.
 
-### Options that now error instead of being accepted quietly
+### Options that now error
 
 | Option | 2.0.0 |
 | --- | --- |
-| `wboot(wtype(mammen\|gaussian\|normal))` | Errors. Only the Rademacher multiplier is supported; these used to be coerced to it silently |
+| `method(drimp)` | Errors. The improved doubly robust estimator is not offered; `method(dr)` is Version 1.82's `method(dripw)` |
+| `wboot(wbtype(mammen))` | Errors. Only the Rademacher multiplier is supported |
 | `wboot(reps(#))` with `#` ≤ 20 | Errors. `reps()` must exceed 20; 1,000 is the default |
 | `pscoretrim(#)` with `#` ≤ 0 | Errors. Omit it for the default of .995, or pass 1 (or more) for no trimming |
 | `gvar()` with negative values | Errors. `gvar()` is 0 for never-treated units and 1 or more for treated cohorts |
 | `time()` below 1 | Errors. Add the same constant to time and treated cohort codes; leave never-treated codes at zero |
-| `from()` | No longer supported. Use `window(# #)` on `estat event` for event-time windows |
+| `from()` | Errors. Use `window(# #)` on `estat event` for event-time windows |
 | `dryrun` | Rejected; it was never a documented option |
+
+### Postestimation forms that are gone
+
+Each of these ran in Version 1.82 and stops a do-file in 2.0.0.
+
+| Version 1.82 | 2.0.0 |
+| --- | --- |
+| `estat pretrend` | `csdid` prints the pre-test below the ATT(g,t) table and stores it in `e(wald_stat)`, `e(wald_df)` and `e(wald_pvalue)`. `window()` has no equivalent |
+| `estat cevent` | No equivalent. `estat event, window(# #)` reports the effects inside an event-time window |
+| `estat all` | Run `estat simple`, `estat group`, `estat calendar` and `estat event` |
+| `estore()`, `esave()` | `estat` *type*`, post`, then `estimates store` or `estimates save` |
+| `estat event, balance(#)` | `csdid_stats event, balance(#)` |
+| `csdid ..., agg(simple\|group\|calendar\|attgt)` | `csdid`, then `estat` *type*. `agg(event)` still works |
+| `csdid, version` | `csdid version` |
+| `csdid_stats attgt`, `csdid_stats cevent` | `estat attgt`; `cevent` has no equivalent |
+| `csdid_stats` with no type | Aggregates by group, where Version 1.82 redisplayed the active results. Name the type |
+| `csdid_stats ..., wboot` | Bootstrap inference is chosen when `csdid` runs; aggregation from a saved RIF file is analytical |
+| `csdid_stats ..., save` | `storeall` keeps the aggregation's influence functions in `e(agg_inffunc)` |
+| `csdid_stats ..., post` | `estat` *type*`, post` |
+| A RIF file written by Version 1.82 | `csdid_stats using` reads files written by 2.0.0's `saverif()`; run `csdid` again with `saverif()`. `csdid_stats` aggregates a file only through `using`, not after `use` |
+
+Coefficient names and stored results have a new layout, documented in
+`help csdid`: ATT(g,t) cells are named like `g2004___2005_2003` (Version 1.82:
+`g2004:t_2003_2005`); the overall effect of `estat group` and `estat calendar`
+is `Overall` (Version 1.82: `GAverage`, `CAverage`); `estat event` reports no
+`Pre_avg`; and `e(b)`, `e(V)`, `e(attgt)` and `e(N_clusters)` take the place of
+Version 1.82's `e(b_attgt)`, `e(V_attgt)`, `e(gtt)` and `e(N_clust)`.
 
 ### New
 
-- **Repeated cross sections.** Omit `ivar()`, or declare them with `rcs` and
-  keep the identifier for `cluster()`.
-- **Clustered standard errors without the bootstrap.** `cluster()` with
-  `analytical` reports cluster-robust standard errors at every aggregation
-  level, and the parallel-trends pre-test under clustering.
+- **`rcs`**, which declares repeated cross sections and keeps the identifier
+  for `cluster()`.
 - **`fix_weights()`** — control how time-varying sampling weights are resolved
   in each 2×2 comparison: `varying`, `base_period`, or `first_period`.
-- **Parallel-trends pre-test** reported with the results and stored in
+- **Parallel-trends pre-test** printed below the ATT(g,t) table and stored in
   `e(wald_stat)`, `e(wald_pvalue)` and `e(wald_df)`.
 - **Influence functions on request** — `storeall` materializes them as
   `e(inffunc)` for sensitivity analysis or custom aggregation, and
-  `saverif()` writes them as a dataset that `csdid_stats using` aggregates
-  later, in another session or on another machine.
-- **`estat event`, `estat group`, `estat calendar`, `estat simple`,
-  `estat dynamic`, `estat attgt` and `estat plot`** as conventional
-  postestimation forms. `estat event` displays the full inference table —
-  estimate, standard error, z, p, and the aggregation's own confidence band —
-  with or without `post`; `estat plot` is `csdid_plot` under its `estat`
-  spelling.
+  `csdid_stats using` aggregates a `saverif()` file later, in another session
+  or on another machine.
+- **`estat dynamic`, `estat plot`, `estat tidy` and `estat glance`** join
+  `estat event`, `estat group`, `estat calendar`, `estat simple` and
+  `estat attgt`. `estat plot` is `csdid_plot` under its `estat` spelling.
 - **`saving()` on every `estat` subcommand**, which writes what that subcommand
   computed to a dataset — the same option `margins`, `simulate` and `graph`
   take, so there is no separate export command.
@@ -196,7 +277,6 @@ as Stata matrices, and `saverif()` writes the durable dataset that
   want it. A bare `csdid_plot` still draws: ATT(g,t) panels by cohort, or the
   active event-study, cohort, or calendar aggregation. Unlike Version 1.82, that drawn
   graph takes no styling options; `saving()` is the styling route.
-- **Transformation and factor covariates** in the covariate list.
 - **No external dependencies.** Version 1.82 required `drdid` from SSC; 2.0.0 requires
   nothing beyond Stata itself.
 
@@ -204,10 +284,6 @@ as Stata matrices, and `saverif()` writes the durable dataset that
 
 Version 2.0.0 is a rewritten engine, and speed at scale was a design goal
 alongside accurate estimation and inference.
-
-**Bootstrap acceleration after `clear all`.** Seeded estimation and aggregation
-continue to use available acceleration without restarting Stata, avoiding an
-unintended slower fallback after clearing the session.
 
 **Against Version 1.82, on identical data with 2.0.0 pinned to that
 version's own defaults so both versions compute the same numbers: gains range
@@ -247,10 +323,11 @@ identify the measured design and whether a warmup was discarded.
   In these workloads, including aggregation inference,
   `estat event` takes 0.06 seconds after a 20,000-unit estimation and 0.26
   seconds after 100,000 units (a million-row panel).
-- The multiplier bootstrap is accelerated by a compiled plugin on macOS
-  (shipped with the package; Mata everywhere else, with identical results):
-  199 replications on a 350,000-row panel add about 0.02 seconds over the
-  analytical fit.
+- In the multiplier bootstrap, 199 replications on a 350,000-row panel add
+  about 0.02 seconds over the analytical fit. On macOS a compiled plugin shipped with the package
+  runs explicitly seeded (`rseed()`) bootstraps; unseeded draws, and every
+  other platform, use Mata, which draws the same multipliers and agrees to
+  floating-point rounding.
 - `saverif()` writes its dataset in about 0.27 seconds at 20,000
   units.
 
@@ -270,13 +347,14 @@ keep running, but are **deprecated and will be removed in a future release**.
 Each prints a notice when called. They are not covered by the numerical test
 suite. `help csdid_legacy` documents what to use instead — in short,
 `estat attgt, saving()` for a results dataset, with the saved-RIF path still
-supported through `csdid_stats using`.
+supported through `csdid_stats using` for files written by 2.0.0's `saverif()`.
 
 ### Compatibility
 
-These are accepted and map to the documented spelling. Most warn; the ones
-marked as supported below do not, because they are current names rather than
-deprecations. New code should use the names in `help csdid`.
+These are accepted and map to the documented spelling. Six print a message
+saying what they resolved to: `method(dripw)`, `method(stdipw)`, `asinr`,
+`long`, `long2` and `never`. The rest are current names rather than
+deprecations and run silently. New code should use the names in `help csdid`.
 
 | Accepted | Canonical |
 | --- | --- |
@@ -291,15 +369,14 @@ deprecations. New code should use the names in `help csdid`.
 | `method(dripw)`, `method(stdipw)` | `method(dr)`, `method(ipw)` |
 | `wboot reps(#) seed(#)` | `wboot(reps(#) rseed(#))` |
 | `asinr` | no-op; use `notyet` |
-| `long`, `long2` | deprecated; imply `baseperiod(universal)` when `baseperiod()` is omitted |
+| `long`, `long2` | deprecated; imply `baseperiod(universal)` when `baseperiod()` is omitted. `long` reverses the sign of Version 1.82's `long` pre-treatment cells (see above) |
+| `never` | `nevertreated`, which is not the default |
 | `agg(event)`, `csdid_stats event` | dynamic aggregation |
 
 #### Spellings that are not options
 
-These have never been options in any release, so there is nothing to be
-compatible with: they are absent from Version 1.82 and 2.0.0 is the first
-release of this rewrite. Each is refused as an unknown option
-(return code 198).
+None of these is an option in Version 1.82 or in 2.0.0. Each is refused as an
+unknown option (return code 198).
 
 | Not an option | Use instead |
 | --- | --- |

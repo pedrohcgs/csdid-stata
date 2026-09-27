@@ -1,4 +1,4 @@
-*! csdid 2.0.0 08sep2026
+*! csdid 2.0.0 27sep2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -70,18 +70,17 @@ mata:
 // taking the change through the perf-differential harness AND the parity
 // suite; do not upgrade the rcond site without owner sign-off.
 //
-// EVOLVING THE PUBLIC SURFACE. The 26 ado-called entry points (and the
+// EVOLVING THE PUBLIC SURFACE. The 27 ado-called entry points (and the
 // test-pinned names above) are frozen at 2.0.0. A future release that must
 // change one of their signatures does it the sanctioned way -- a
 // callersversion() split with the old body kept in its own version block
-// ([M-3] lmbuild, "Version control") -- never a hard edit; see
-// docs/stored-results-api.md for the policy.
+// ([M-3] lmbuild, "Version control") -- never a hard edit.
 //
-// HOW MANY NAMES, and why the count is worth keeping. 135 free functions and
+// HOW MANY NAMES, and why the count is worth keeping. 138 free functions and
 // three classes: `mata mlib add csdid*()' writes one library member per free
-// function and ONE per class, so the compiled library holds 138 top-level
+// function and ONE per class, so the compiled library holds 141 top-level
 // names and the 28 class methods travel inside the three classdef entries
-// rather than beside them (166 members in all: 21 methods on csdid__Agg,
+// rather than beside them (169 members in all: 21 methods on csdid__Agg,
 // 3 on csdid__Boot, 4 on csdid__Engine). Mata answers a global name it
 // is not already holding by walking c(matalibs), so each free name is a
 // first-call lookup a session pays once and a method is not.
@@ -191,7 +190,13 @@ string scalar csdid_mlib_version()
 // four forms, a spread of 2.5ns which is exactly the clock's resolution over
 // that many calls. Both are called per ROW of the sample, so it was measured
 // rather than assumed.
-real scalar csdid__previous_time(real rowvector tlist, real scalar t)
+// The last period p with p + shift < t. The shift is anticipation, applied to
+// p rather than subtracted from t because that is R's form
+// (compute.att_gt.R:301, tlist + anticipation < g): on a decimal axis
+// 2.2 - 1 is 1.2000000000000002, so t < g - # admitted 1.2 as the base of
+// cohort 2.2 where R rejects it. The two forms agree wherever doubles are
+// exact, integer axes included.
+real scalar csdid__previous_time(real rowvector tlist, real scalar t, real scalar shift)
 {
     real scalar lo, hi, mid, prev
 
@@ -200,7 +205,7 @@ real scalar csdid__previous_time(real rowvector tlist, real scalar t)
     prev = .
     while (lo <= hi) {
         mid = floor((lo + hi) / 2)
-        if (tlist[mid] < t) {
+        if (tlist[mid] + shift < t) {
             prev = tlist[mid]
             lo = mid + 1
         }
@@ -247,7 +252,18 @@ void csdid__profile_reset()
     CSDID_PROFILE = J(8, 3, 0)
 }
 
+// The profile clock. now() arrived in Stata 17, and Mata links every function
+// a routine calls the first time that routine runs -- a version test beside
+// the call cannot stop the link. So now() sits in its own function that Stata
+// 14-16 never enter; there the clock falls back to c(current_time), whose
+// 1-second step is the ceiling of a diagnostic nobody's numbers depend on.
 real scalar csdid__profile_start()
+{
+    if (c("stata_version") >= 17) return(csdid__profile_now())
+    return(clock(c("current_date") + " " + c("current_time"), "DMYhms"))
+}
+
+real scalar csdid__profile_now()
 {
     return(now())
 }
@@ -260,7 +276,7 @@ void csdid__profile_add(real scalar phase, real scalar started, real scalar work
         CSDID_PROFILE = J(8, 3, 0)
     }
     if (phase < 1 | phase > rows(CSDID_PROFILE)) return
-    CSDID_PROFILE[phase, 1] = CSDID_PROFILE[phase, 1] + (now() - started) / 1000
+    CSDID_PROFILE[phase, 1] = CSDID_PROFILE[phase, 1] + (csdid__profile_start() - started) / 1000
     CSDID_PROFILE[phase, 2] = CSDID_PROFILE[phase, 2] + 1
     CSDID_PROFILE[phase, 3] = CSDID_PROFILE[phase, 3] + work
 }
@@ -280,7 +296,7 @@ void csdid__boot_profile_add(real scalar phase, real scalar started, real scalar
         CSDID_BOOT_PROFILE = J(6, 3, 0)
     }
     if (phase < 1 | phase > rows(CSDID_BOOT_PROFILE)) return
-    CSDID_BOOT_PROFILE[phase, 1] = CSDID_BOOT_PROFILE[phase, 1] + (now() - started) / 1000
+    CSDID_BOOT_PROFILE[phase, 1] = CSDID_BOOT_PROFILE[phase, 1] + (csdid__profile_start() - started) / 1000
     CSDID_BOOT_PROFILE[phase, 2] = CSDID_BOOT_PROFILE[phase, 2] + 1
     CSDID_BOOT_PROFILE[phase, 3] = CSDID_BOOT_PROFILE[phase, 3] + work
 }
@@ -300,7 +316,7 @@ void csdid__boot_kernel_profile_add(real scalar phase, real scalar started, real
         CSDID_BOOT_KERNEL_PROFILE = J(5, 3, 0)
     }
     if (phase < 1 | phase > rows(CSDID_BOOT_KERNEL_PROFILE)) return
-    CSDID_BOOT_KERNEL_PROFILE[phase, 1] = CSDID_BOOT_KERNEL_PROFILE[phase, 1] + (now() - started) / 1000
+    CSDID_BOOT_KERNEL_PROFILE[phase, 1] = CSDID_BOOT_KERNEL_PROFILE[phase, 1] + (csdid__profile_start() - started) / 1000
     CSDID_BOOT_KERNEL_PROFILE[phase, 2] = CSDID_BOOT_KERNEL_PROFILE[phase, 2] + 1
     CSDID_BOOT_KERNEL_PROFILE[phase, 3] = CSDID_BOOT_KERNEL_PROFILE[phase, 3] + work
 }
@@ -320,7 +336,7 @@ void csdid__agg_boot_profile_add(real scalar phase, real scalar started, real sc
         CSDID_AGG_BOOT_PROFILE = J(3, 3, 0)
     }
     if (phase < 1 | phase > rows(CSDID_AGG_BOOT_PROFILE)) return
-    CSDID_AGG_BOOT_PROFILE[phase, 1] = CSDID_AGG_BOOT_PROFILE[phase, 1] + (now() - started) / 1000
+    CSDID_AGG_BOOT_PROFILE[phase, 1] = CSDID_AGG_BOOT_PROFILE[phase, 1] + (csdid__profile_start() - started) / 1000
     CSDID_AGG_BOOT_PROFILE[phase, 2] = CSDID_AGG_BOOT_PROFILE[phase, 2] + 1
     CSDID_AGG_BOOT_PROFILE[phase, 3] = CSDID_AGG_BOOT_PROFILE[phase, 3] + work
 }
@@ -389,7 +405,11 @@ class csdid__Engine {
 
     // R fixes the cohort grid and no-never cutoff before whole-unit balance.
     // These are populated only when that first scan removes a unit, and
-    // consumed only by an explicitly flagged full-panel not-yet-treated run.
+    // consumed only by an explicitly flagged full-panel run:
+    // use_prebalance_grid 1 (notyet) keeps the fold, the latest cohort and
+    // the cohort list; 2 (nevertreated) keeps the fold alone, because there
+    // the comparison cohort is read from the balanced sample -- the
+    // registered divergence for a balanced-away never-treated group.
     real scalar    prebalance_fold
     real scalar    prebalance_latest
     real rowvector prebalance_glevels
@@ -756,16 +776,20 @@ real scalar csdid__valid_inverse(real matrix a)
 
 real matrix csdid__inv_r_parity(real matrix a)
 {
-    // R parity (F-005): invsym() drops near-collinear columns at its own
-    // sweep tolerance, refusing cells R computes. Once the R-side rcond
-    // guard has passed, fall back to LU inversion so Stata computes exactly
-    // where R computes; a truly singular matrix still yields missings and
-    // the caller's csdid__valid_inverse check refuses as before.
+    // R parity (F-005): every matrix inverted here is a DRDID regression
+    // design XpX, which DRDID refuses when rcond(XpX) < .Machine$double.eps
+    // before solve() (reg_did_panel, drdid_panel, and each pre/post block of
+    // reg_did_rc and drdid_rc), so the guard is R's and comes first: a block
+    // or a weighting can be ill-conditioned while the pooled unweighted
+    // control design did tests is not. Past it, invsym() drops near-collinear
+    // columns at its own sweep tolerance, refusing cells R computes, so LU
+    // inversion at tolerance 0 (exact singularity only) takes over.
     real matrix ai
 
+    if (csdid__rcond1(a) < epsilon(1)) return(J(rows(a), cols(a), .))
     ai = invsym(a)
     if (csdid__valid_inverse(ai)) return(ai)
-    ai = luinv(a)
+    ai = luinv(a, 0)
     if (hasmissing(ai)) return(J(rows(a), cols(a), .))
     return(ai)
 }
@@ -878,7 +902,10 @@ real colvector csdid__logit_fit(real colvector d, real matrix x, real colvector 
             b = h_inv * quadcross(x, ww :* z)
         }
         else {
-            b = qrsolve(h, quadcross(x, ww :* z))
+            // fastglm's LDLT solve keeps every column; qrsolve() would zero a
+            // near-collinear one at its rank tolerance and fit a different
+            // model. Tolerance 0: only an exactly singular system is missing.
+            b = lusolve(h, quadcross(x, ww :* z), 0)
         }
         if (sum(b :>= .) > 0) return(J(cols(x), 1, .))
         eta = x * b
@@ -992,7 +1019,11 @@ real scalar csdid__overlap_status(real matrix x, real colvector d)
             status = 2
         }
         else {
-            ps = csdid__invlogit(x * beta)
+            // An intercept-only design has one fitted value, and ipw without
+            // covariates passes its design with no rows at all, where
+            // max() of an empty vector is missing and missing >= cut is true.
+            if (cols(x) == 1) ps = csdid__invlogit(beta)
+            else ps = csdid__invlogit(x * beta)
             if (max(ps) >= overlap_cut) status = 1
         }
     }
@@ -1014,7 +1045,9 @@ real scalar csdid__rcond1(real matrix a)
 
     n1a = max(colsum(abs(a)))
     if (n1a >= . | n1a == 0) return(0)
-    ai = luinv(a)
+    // tolerance 0: luinv()'s default declares singularity near rcond 1e-14,
+    // about 45 times above R's cut, and a 0 here would refuse that whole band
+    ai = luinv(a, 0)
     if (hasmissing(ai)) return(0)
     n1ai = max(colsum(abs(ai)))
     if (n1ai >= . | n1ai == 0) return(0)
@@ -1044,10 +1077,10 @@ real scalar csdid__rcond_fail(real matrix x, real colvector d)
 // comparison units in either period, was dropped from the table with no
 // explanation. Wordings are R's verbatim.
 //
-// Two of the five call sites alias nt0 to nt1 and nc0 to nc1, so only the
-// treated-empty and comparison-empty states exist there; the helper is still
-// correct in that case because equal counts cannot produce a pre-only
-// message.
+// Two of the five call sites alias nt0 to nt1 and nc0 to nc1: a panel cell
+// counts units, each observed in both periods. There an empty corner is a side
+// empty in both periods, which R skips without a word, so those sites never
+// reach this helper (see csdid__emit_degenerate_cell).
 //
 // CHANNEL. Every per-cell warning in this file is written with errprintf, not
 // printf, and that is the whole difference between a warning and a warning the
@@ -1093,6 +1126,14 @@ void csdid__fit_status_warning(
         // the cell arrived as a blank row with no explanation at all -- in a
         // package whose rule is loud refusal over silent fallback.
         errprintf("warning: no usable weights for group %g in time period %g; the supplied weights are missing or non-positive on this cell, or the propensity-score trim left no effective comparison mass. ATT(g,t) is not estimable\n", g, t)
+        return
+    }
+    if (fit_status >= 4 & fit_status <= 6) {
+        // DRDID's stop on rcond(XpX) of an outcome-regression design, in the
+        // form the ipw design refusal below takes; the repeated cross-section
+        // estimators name the period of the block (reg_did_rc, drdid_rc).
+        errprintf("warning: The regression design matrix%s is singular for group %g in time period %g. Consider removing some covariates.\n",
+            (fit_status == 5 ? " for pre-treatment" : (fit_status == 6 ? " for post-treatment" : "")), g, t)
         return
     }
     if (fit_status != 2) return
@@ -1157,7 +1198,7 @@ real colvector csdid__reg_panel_fit(
     weights_ols = w :* (1 :- d)
     xtwx = quadcross(x, weights_ols, x)
     xtwx_inv = csdid__inv_r_parity(xtwx)  // F-005: R-parity inverse
-    if (!csdid__valid_inverse(xtwx_inv)) return(. \ J(n, 1, .) \ 2)
+    if (!csdid__valid_inverse(xtwx_inv)) return(. \ J(n, 1, .) \ 4)
     // DRDID::reg_did_panel uses fastglm's method 0 (pivoted QR) for
     // coefficients. The normal-matrix inverse above belongs to the IF;
     // reusing it for coefficients amplifies rounding on affine outcomes.
@@ -1430,7 +1471,9 @@ real colvector csdid__reg_rc_fit(
     xtwx_post = quadcross(xpost, select(w, m_cont_post), xpost)
     xtwx_inv_pre = csdid__inv_r_parity(xtwx_pre)  // F-005: R-parity inverse
     xtwx_inv_post = csdid__inv_r_parity(xtwx_post)  // F-005: R-parity inverse
-    if (!csdid__valid_inverse(xtwx_inv_pre) | !csdid__valid_inverse(xtwx_inv_post)) return(. \ J(n, 1, .) \ 2)
+    // DRDID tests the pre block first and names the block that failed
+    if (!csdid__valid_inverse(xtwx_inv_pre)) return(. \ J(n, 1, .) \ 5)
+    if (!csdid__valid_inverse(xtwx_inv_post)) return(. \ J(n, 1, .) \ 6)
     // DRDID::reg_did_rc uses fastglm's method 0 (pivoted QR) for both
     // outcome fits; the normal inverses remain the IF's separate inputs.
     wls_root = sqrt(select(w, m_cont_pre))
@@ -1683,7 +1726,12 @@ real colvector csdid__dr_rc_fit(
     xtwx_inv_c_post = csdid__inv_r_parity(xtwx_c_post)  // F-005: R-parity inverse
     xtwx_inv_t_pre = csdid__inv_r_parity(xtwx_t_pre)  // F-005: R-parity inverse
     xtwx_inv_t_post = csdid__inv_r_parity(xtwx_t_post)  // F-005: R-parity inverse
-    if (!csdid__valid_inverse(xtwx_inv_c_pre) | !csdid__valid_inverse(xtwx_inv_c_post) | !csdid__valid_inverse(xtwx_inv_t_pre) | !csdid__valid_inverse(xtwx_inv_t_post)) return(. \ J(n, 1, .) \ 2)
+    // DRDID tests control pre, control post, treated pre, treated post, in
+    // that order, and names the period of the block that failed
+    if (!csdid__valid_inverse(xtwx_inv_c_pre)) return(. \ J(n, 1, .) \ 5)
+    if (!csdid__valid_inverse(xtwx_inv_c_post)) return(. \ J(n, 1, .) \ 6)
+    if (!csdid__valid_inverse(xtwx_inv_t_pre)) return(. \ J(n, 1, .) \ 5)
+    if (!csdid__valid_inverse(xtwx_inv_t_post)) return(. \ J(n, 1, .) \ 6)
 
     // PERF: pure common-subexpression elimination, no regrouping. `trim :* wd'
     // was built five times and `trim :* wc :* psratio' twice; w_dt1 and w_dt0
@@ -1907,7 +1955,8 @@ void csdid__prescan(
     real scalar anticipation,
     real scalar want_balance,
     string scalar dropmarkname,
-    string scalar gcountname)
+    string scalar gcountname,
+    | real scalar keep_fold)
 {
     external class csdid__Engine scalar CSDID_ENGINE
     real colvector tv, gv, idv, clv, rowsel, runlen, runstart, runheads, gsmall
@@ -1946,7 +1995,12 @@ void csdid__prescan(
     for (i = 1; i <= nt; i++) tlist = tlist + (i > 1 ? " " : "") + strofreal(tlev[i], "%21.0g")
 
     // ---- gsmall levels and per-level row counts ----
+    // keep_fold: the re-scan after a bal(full) drop keeps the first scan's
+    // fold, which R fixes before balancing (pre_process_did2.R:207-214).
     cutoff = tmax + anticipation
+    if (args() >= 10) {
+        if (keep_fold) cutoff = CSDID_ENGINE.prebalance_fold
+    }
     gsmall = gv :* (gv :<= cutoff)          // cohorts beyond the horizon fold to 0
     ord = sort(gsmall, 1)
     if (n > 1) runstart = csdid__selidx((1 :: n) :== 1 :| (ord :!= (ord[1] \ ord[|1 \ n - 1|])))
@@ -2534,10 +2588,23 @@ real colvector csdid__rc_slice(
 // as an estimated one does; skipping the iteration instead would silently
 // apply dropmissing to that cell.
 //
+// R skips a cell with no treated or no comparison row in EITHER period without
+// a word (valid_did_cohort, compute.att_gt2.R:463-468) and raises its four
+// corner warnings on the cells that pass (run_DRDID, :267-284). Under
+// fix_weights(base_period|first_period) the two checks straddle the exclusion
+// of the units the target period does not observe (:534-577): validity is
+// judged on the rows before it, the corners on the rows after it, with no
+// validity test. STAGE says which checks a call runs:
+//   "cell"    both, on one set of counts (every cell with no such exclusion)
+//   "before"  validity only: a valid cell goes on to the exclusion even with
+//             an empty corner
+//   "after"   the corners only, on the counts the exclusion left
+//
 // Returns 1 when a row has been written and the caller must move on to the
 // next cell, 0 when the cell is fit to estimate.
 real scalar csdid__emit_degenerate_cell(
     real scalar universal_base,
+    string scalar stage,
     real scalar g,
     real scalar t,
     real scalar pret,
@@ -2556,14 +2623,18 @@ real scalar csdid__emit_degenerate_cell(
         ifmat_t[cell_ix, .] = J(1, n_units, 0)
         return(1)
     }
-    if (min((nt1, nt0, nc1, nc0)) <= 0) {
+    if (min((nt1, nt0, nc1, nc0)) > 0) return(0)
+    if (stage == "after") {
         csdid__empty_cell_warning(nt1, nt0, nc1, nc0, g, t, pret)
-        cell_ix = cell_ix + 1
-        out[cell_ix, .] = (g, t, t - g, ., ., nt1, nt0, nc1, nc0, pret)
-        ifmat_t[cell_ix, .] = J(1, n_units, .)
-        return(1)
     }
-    return(0)
+    else if (max((nt1, nt0)) > 0 & max((nc1, nc0)) > 0) {
+        if (stage == "before") return(0)
+        csdid__empty_cell_warning(nt1, nt0, nc1, nc0, g, t, pret)
+    }
+    cell_ix = cell_ix + 1
+    out[cell_ix, .] = (g, t, t - g, ., ., nt1, nt0, nc1, nc0, pret)
+    ifmat_t[cell_ix, .] = J(1, n_units, .)
+    return(1)
 }
 
 // ---------------------------------------------------------------------------
@@ -2744,6 +2815,123 @@ void csdid__store_cell(
 
 
 // ---------------------------------------------------------------------------
+// The rows the estimation reads, out of `touse': it removes the periods the
+// no-never-treated fallback cuts away and the units treated at or before the
+// first period plus anticipation. csdid__settle_sample settles the kernel's
+// sample with it, and csdid_settled_mark hands the same rows to the ado so the
+// factor-covariate rebuild sees exactly the sample the kernel estimates on
+// (R builds its model matrix on the reduced data: pre_process_did2.R:246-310
+// run before get_did_tensors). Returns `use'; geff, first_t and
+// exclude_latest_g are its by-products.
+// ---------------------------------------------------------------------------
+real colvector csdid__settled_use(
+    pointer(class csdid__Engine scalar) scalar eng,
+    real colvector tt,
+    real colvector gg,
+    real colvector touse,
+    real colvector geff,
+    real scalar first_t,
+    real scalar exclude_latest_g)
+{
+    real colvector use, drop_ids
+    real rowvector tlevels
+    real scalar fold_cutoff, has_never, latest_g, cutoff_t, anticipation
+    string scalar notyet
+
+    anticipation = eng->anticipation
+    notyet       = eng->notyet
+
+    use = touse
+    tlevels = uniqrows(select(tt, use :!= 0))'
+    fold_cutoff = max(tlevels) + anticipation
+    first_t = min(tlevels)
+    // R folds as-if-never-treated once, on the calendar before balancing
+    // (pre_process_did2.R:207-214, balancing at :356-384). A bal(full) drop
+    // can empty the last periods, so the balanced calendar's own maximum would
+    // fold treated cohorts into controls under either comparison group.
+    if (eng->use_prebalance_grid) fold_cutoff = eng->prebalance_fold
+    geff = gg :- ((use :!= 0) :& (gg :> fold_cutoff)) :* gg
+    has_never = (sum((use :!= 0) :& (geff :== 0)) > 0)
+    drop_ids = select(geff, (use :!= 0) :& (geff :> 0))
+    latest_g = .
+    if (rows(drop_ids) > 0) latest_g = max(drop_ids)
+    exclude_latest_g = .
+    if (eng->use_prebalance_grid == 1) {
+        latest_g = eng->prebalance_latest
+        has_never = (latest_g >= .)
+    }
+    if (!has_never & latest_g < .) {
+        cutoff_t = latest_g - anticipation
+        // Both sweeps below only ever CLEAR bits, so the `use[r] == 0'
+        // guard was redundant and the whole thing is elementwise. These ran
+        // as interpreted scalar loops over every row in the dataset, and they
+        // fire on every run that has no never-treated group.
+        use = use :* (tt :< cutoff_t)
+        if (notyet == "") {
+            geff = geff :- ((use :!= 0) :& (geff :== latest_g)) :* geff
+        }
+        else {
+            exclude_latest_g = latest_g
+        }
+    }
+    // #29(d). This drops units treated at or before the first period; on a
+    // repeated cross section every row is its own unit. It used to run an
+    // interpreted scalar loop over EVERY row, each iteration calling
+    // csdid__sorted_index() for a binary search of the drop list -- measured
+    // at 1.602s of a 1.996s run on 600,000 rows.
+    //
+    // On a panel the loop's rule is unit-level: it builds the set of
+    // qualifying unit ids and then clears every row whose id is in that set.
+    // The elementwise clear below is the same rule ONLY because geff cannot
+    // vary within a unit, and it cannot, because csdid refuses a time-varying
+    // gvar() within ivar() outright ("gvar() must be time-invariant within
+    // ivar(); treatment timing must be irreversible", error 459). Given that,
+    // a unit either qualifies on all of its rows or on none, and per-row and
+    // per-unit clearing coincide.
+    //
+    // That is a real dependency on a guard several hundred lines away, so
+    // it is pinned rather than assumed: test-f068 asserts the refusal
+    // still fires, and asserts this branch's output against the unit-level
+    // reduction computed independently. If the refusal is ever relaxed,
+    // that test fails and this line has to become the grouped form again.
+    use = use :* !((geff :> 0) :& (geff :<= first_t + anticipation))
+
+    return(use)
+}
+
+// ---------------------------------------------------------------------------
+// The kernel's settled sample, written to `markname' before the kernel runs.
+// csdid.ado rebuilds its factor-variable expansion on these rows. The three
+// settings are the ones the ado then passes to csdid_basic_attgt, which
+// records them again on entry.
+// ---------------------------------------------------------------------------
+void csdid_settled_mark(
+    string scalar tname,
+    string scalar gname,
+    string scalar tousename,
+    string scalar markname,
+    string scalar notyet,
+    real scalar anticipation,
+    real scalar prebalance_mode)
+{
+    external class csdid__Engine scalar CSDID_ENGINE
+    pointer(class csdid__Engine scalar) scalar eng
+    real colvector geff
+    real scalar first_t, exclude_latest_g
+
+    csdid__engine_ensure()
+    eng = &CSDID_ENGINE
+    eng->notyet = notyet
+    eng->anticipation = anticipation
+    eng->use_prebalance_grid = prebalance_mode
+    geff = J(0, 1, .)
+    first_t = exclude_latest_g = .
+    st_store(., markname, csdid__settled_use(eng, st_data(., tname),
+        st_data(., gname), st_data(., tousename), geff, first_t,
+        exclude_latest_g) :!= 0)
+}
+
+// ---------------------------------------------------------------------------
 // SEAM 1 -- the estimation sample.
 //
 // Reads the variables the run was given, clears from `use' every row the
@@ -2782,13 +2970,10 @@ void csdid__settle_sample(
     real scalar has_cluster,
     real scalar first_t)
 {
-    real colvector touse, drop_ids
-    real scalar fold_cutoff, has_never, latest_g, cutoff_t, exclude_latest_g
-    real scalar anticipation
-    string scalar notyet
+    real colvector touse
+    real scalar exclude_latest_g, anticipation
 
     anticipation = eng->anticipation
-    notyet       = eng->notyet
 
     y = st_data(., yname)
     tt = st_data(., tname)
@@ -2825,63 +3010,8 @@ void csdid__settle_sample(
         cl = J(0, 1, .)
     }
 
-    use = touse
-    tlevels = uniqrows(select(tt, use :!= 0))'
-    fold_cutoff = max(tlevels) + anticipation
-    first_t = min(tlevels)
-    if (eng->use_prebalance_grid) fold_cutoff = eng->prebalance_fold
-    geff = gg :- ((use :!= 0) :& (gg :> fold_cutoff)) :* gg
-    has_never = (sum((use :!= 0) :& (geff :== 0)) > 0)
-    drop_ids = select(geff, (use :!= 0) :& (geff :> 0))
-    latest_g = .
-    if (rows(drop_ids) > 0) latest_g = max(drop_ids)
     exclude_latest_g = .
-    if (eng->use_prebalance_grid) {
-        latest_g = eng->prebalance_latest
-        has_never = (latest_g >= .)
-    }
-    if (!has_never & latest_g < .) {
-        cutoff_t = latest_g - anticipation
-        // Both sweeps below only ever CLEAR bits, so the `use[r] == 0'
-        // guard was redundant and the whole thing is elementwise. These ran
-        // as interpreted scalar loops over every row in the dataset, and they
-        // fire on every run that has no never-treated group.
-        use = use :* (tt :< cutoff_t)
-        if (notyet == "") {
-            geff = geff :- ((use :!= 0) :& (geff :== latest_g)) :* geff
-        }
-        else {
-            exclude_latest_g = latest_g
-        }
-    }
-    if (idname == "") {
-        // Same shape as the two above: clears bits only, so it is elementwise.
-        // This one fires on EVERY repeated-cross-section run.
-        use = use :* !((geff :> 0) :& (geff :<= first_t + anticipation))
-    }
-    else {
-        // #29(d). This drops units treated at or before the first period. It
-        // used to run an interpreted scalar loop over EVERY row, each
-        // iteration calling csdid__sorted_index() for a binary search of
-        // the drop list -- measured at 1.602s of a 1.996s run on 600,000 rows.
-        //
-        // The loop's rule is unit-level: it builds the set of qualifying unit
-        // ids and then clears every row whose id is in that set. The
-        // elementwise clear below is the same rule ONLY because geff cannot
-        // vary within a unit on this branch -- `idname != ""' -- and it cannot,
-        // because csdid refuses a time-varying gvar() within ivar() outright
-        // ("gvar() must be time-invariant within ivar(); treatment timing must
-        // be irreversible", error 459). Given that, a unit either qualifies on
-        // all of its rows or on none, and per-row and per-unit clearing
-        // coincide.
-        //
-        // That is a real dependency on a guard several hundred lines away, so
-        // it is pinned rather than assumed: test-f068 asserts the refusal
-        // still fires, and asserts this branch's output against the unit-level
-        // reduction computed independently. If the refusal is ever relaxed,
-        // that test fails and this line has to become the grouped form again.
-        use = use :* !((use :!= 0) :& (geff :> 0) :& (geff :<= first_t + anticipation))
-    }
+    use = csdid__settled_use(eng, tt, gg, touse, geff, first_t, exclude_latest_g)
 
     // The estimation sample, settled. `use' started as touse and has since had
     // cleared from it every row this command will not look at: the periods the
@@ -2928,7 +3058,15 @@ void csdid__settle_sample(
     // post-drop floor and refuses with "No valid groups" first.
     glevels = select(glevels, glevels :> first_t + anticipation)
     if (exclude_latest_g < .) glevels = select(glevels, glevels :< exclude_latest_g)
-    if (eng->use_prebalance_grid) glevels = eng->prebalance_glevels
+    if (eng->use_prebalance_grid == 1) glevels = eng->prebalance_glevels
+    // R recomputes glist after the no-never period cut and the first-period
+    // drop and stops when it is empty (pre_process_did2.R:246-310, :405-407).
+    // The driver's guard reads the scan's cohort list, which does not model the
+    // cut, so a cohort seen only in the removed periods reaches this point.
+    if (cols(glevels) == 0) {
+        errprintf("No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings.\n")
+        exit(459)
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -3028,9 +3166,14 @@ void csdid__build_layout(
     // stopped conforming). No 2x2 comparison can be formed from one unit, so
     // refuse here with the same clean 459 class the other data-shape checks
     // use, before any of those checks can misfire.
+    //
+    // The refusals in this routine and in csdid__group_probs end with Mata's
+    // exit(459), not _error(459): the message and rc are the same, and exit()
+    // returns to Stata without the traceback that would name internal
+    // functions under a data refusal.
     if (idname != "" & n_units == 1) {
         errprintf("ivar() identifies only one unit in the estimation sample; csdid needs at least two units (a treated unit and a comparison unit) to form a 2x2 comparison. Check that ivar() names the panel identifier and is not constant.\n")
-        _error(459)
+        exit(459)
     }
     kx = (has_x ? cols(x) : 1)
     row_index = J(0, 0, .)
@@ -3096,7 +3239,7 @@ void csdid__build_layout(
         gg_panel = rowshape(gg[use_rows], n_units)
         if (sum(gg_panel :!= unit_raw_group) > 0) {
             errprintf("gvar() must be time-invariant within ivar(); treatment timing must be irreversible\n")
-            _error(459)
+            exit(459)
         }
         if (has_w) {
             wsum_vec = w_panel * J(nt, 1, 1)
@@ -3126,7 +3269,7 @@ void csdid__build_layout(
             cl_panel = rowshape(cl[use_rows], n_units)
             if (sum(cl_panel :!= unit_cluster) > 0) {
                 errprintf("cluster() must be time-invariant within ivar()\n")
-                _error(459)
+                exit(459)
             }
         }
     }
@@ -3140,7 +3283,7 @@ void csdid__build_layout(
         uid_vec = row_unit_index[use_rows]
         if (sum(gg[use_rows] :!= unit_raw_group[uid_vec]) > 0) {
             errprintf("gvar() must be time-invariant within ivar(); treatment timing must be irreversible\n")
-            _error(459)
+            exit(459)
         }
 
         wsum_vec = panelsum(ww[use_rows], uid_info)
@@ -3153,7 +3296,7 @@ void csdid__build_layout(
             unit_cluster = cl[unit_first_row]
             if (sum(cl[use_rows] :!= unit_cluster[uid_vec]) > 0) {
                 errprintf("cluster() must be time-invariant within ivar()\n")
-                _error(459)
+                exit(459)
             }
         }
 
@@ -3169,7 +3312,7 @@ void csdid__build_layout(
                 time_uids = row_unit_index[time_rows]
                 if (rows(uniqrows(time_uids)) != rows(time_uids)) {
                     errprintf("The value of ivar() must be unique within time(). Some units are observed more than once in a period.\n")
-                    _error(459)
+                    exit(459)
                 }
                 row_index[time_uids, j] = time_rows
                 y_panel[time_uids, j] = y[time_rows]
@@ -3200,7 +3343,7 @@ void csdid__build_layout(
             }
             else if (gg[r] != unit_raw_group[k]) {
                 errprintf("gvar() must be time-invariant within ivar(); treatment timing must be irreversible\n")
-                _error(459)
+                exit(459)
             }
             if (unit_first_row[k] >= .) unit_first_row[k] = r
             if (has_cluster) {
@@ -3209,7 +3352,7 @@ void csdid__build_layout(
                 }
                 else if (cl[r] != unit_cluster[k]) {
                     errprintf("cluster() must be time-invariant within ivar()\n")
-                    _error(459)
+                    exit(459)
                 }
             }
             wsum_vec[k] = wsum_vec[k] + ww[r]
@@ -3227,7 +3370,7 @@ void csdid__build_layout(
                 if (rowpos < .) {
                     if (row_index[k, rowpos] < .) {
                         errprintf("The value of ivar() must be unique within time(). Some units are observed more than once in a period.\n")
-                        _error(459)
+                        exit(459)
                     }
                     row_index[k, rowpos] = r
                     y_panel[k, rowpos] = y[r]
@@ -3290,7 +3433,7 @@ void csdid__group_probs(
     real matrix unit_group_mat)
 {
     real colvector wpos, unit_p1, p1_present  // F-001/F-022: first-appearance period sweep
-    real scalar never_units, i, j, g
+    real scalar never_rows, i, j, g
     string scalar notyet
 
     notyet = eng->notyet
@@ -3324,17 +3467,19 @@ void csdid__group_probs(
     // and the kernel refused designs both of them accept. That is the whole
     // behavior change here.
     //
-    // The COUNT stays a unit count while the driver's is R's rows/n_periods.
-    // On a balanced panel the two are the same number; on an unbalanced one
-    // rows/n_periods is strictly smaller, so the driver refuses everything
-    // this guard would refuse and more, and it runs first. This guard is
-    // therefore the backstop for a direct kernel call, and it cannot fire on
-    // a design the driver let through.
+    // The size is R's: the group's rows over the periods left after settling
+    // (pre_process_did2.R:433-452, gsize <- .N / length(tlist)), which is the
+    // unit count on a balanced panel and smaller on an unbalanced panel or
+    // repeated cross sections. The driver measures a genuine never-treated
+    // group the same way before the kernel runs. It cannot measure the group
+    // the no-never-treated fallback makes of the latest cohort, because that
+    // group exists only once the periods from its date on are gone
+    // (:246-265); this guard is where that one is judged.
     if (notyet == "") {
-        never_units = sum(unit_group :== 0)
-        if (never_units > 0 & never_units < reqsize) {
+        never_rows = sum(wcount_vec :* (unit_group :== 0))
+        if (never_rows > 0 & never_rows / cols(tlevels) < reqsize) {
             errprintf("The never-treated group is too small to serve as a reliable comparison group. Try specifying notyet to include not-yet-treated units in the comparison group.\n")
-            _error(459)
+            exit(459)
         }
     }
     group_prob_mat = J(cols(glevels), 3, .)
@@ -3517,13 +3662,13 @@ real matrix csdid__Engine::cell_grid(
         for (j = 1; j <= cols(tlevels); j++) {
             t = tlevels[j]
             if (t >= g) {
-                pret = csdid__previous_time(tlevels, g - anticipation)
+                pret = csdid__previous_time(tlevels, g, anticipation)
             }
             else if (base_period == "universal") {
-                pret = csdid__previous_time(tlevels, g - anticipation)
+                pret = csdid__previous_time(tlevels, g, anticipation)
             }
             else {
-                pret = csdid__previous_time(tlevels, t)
+                pret = csdid__previous_time(tlevels, t, 0)
             }
             if (pret >= .) continue
             n = n + 1
@@ -3634,7 +3779,7 @@ void csdid__cells_fast(
         nt0 = nt1
         nc1 = rows(control_uid)
         nc0 = nc1
-        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret,
+        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret, "cell",
             g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
         // The propensity-score guard R runs for dr and ipw but not
         // for reg. Same classifier the general path uses, so the same
@@ -3741,6 +3886,7 @@ void csdid__cells_panel(
 {
     real scalar ic, g, t, pret, control_time
     real colvector treat_fast, control_fast, eligible_vec, pair_obs_ok, valid_uid
+    real colvector w_obs_ok
     real colvector y1_cell, y0_cell, d_cell, w_cell, w1_cell, w0_cell
     real colvector y_rc, post_rc, d_rc, w_rc, beta_ps_cell, fit, unit_if
     real matrix x_cell, x_rc
@@ -3748,7 +3894,7 @@ void csdid__cells_panel(
     real scalar xstart, xend, nt1, nt0, nc1, nc0, att, se, fit_status
     real scalar dr_control_key, dr_nonconstant, dr_same_set
     real scalar prof_fit_t0, prof_if_t0, overlap_cut
-    real scalar anticipation, trim_level
+    real scalar anticipation, trim_level, fixed_rule
     string scalar notyet, base_period, fix_weights
 
     notyet       = eng->notyet
@@ -3756,6 +3902,7 @@ void csdid__cells_panel(
     fix_weights  = eng->fix_weights
     anticipation = eng->anticipation
     trim_level   = eng->trim_level
+    fixed_rule   = (fix_weights == "base_period" | fix_weights == "first_period")
 
     overlap_cut = 0.999          // did::overlap_check_fail()
 
@@ -3769,7 +3916,7 @@ void csdid__cells_panel(
         tidx_pre = csdid__sorted_index(tlevels, pret)
         tidx_x = csdid__sorted_index(tlevels, covt)
         if (fix_weights == "base_period") {
-            row_w_time = csdid__previous_time(tlevels, g - anticipation)
+            row_w_time = csdid__previous_time(tlevels, g, anticipation)
         }
         else if (fix_weights == "first_period") {
             row_w_time = first_t
@@ -3795,17 +3942,33 @@ void csdid__cells_panel(
         if (pair_mode) {
             pair_obs_ok = (row_index[., tidx_t] :< .) :& (row_index[., tidx_pre] :< .)
             if (has_x) pair_obs_ok = pair_obs_ok :& (row_index[., tidx_x] :< .)
-            if (has_w) pair_obs_ok = pair_obs_ok :& (row_index[., tidx_w] :< .)
             eligible_vec = eligible_vec :& pair_obs_ok
+            // A fixed weight rule excludes the units its target period does
+            // not observe, weights supplied or not, and says so: the rule and
+            // the warning of the unbalanced route (csdid__cells_rc), in R's
+            // order there -- announced only for a cell with a treated and a
+            // comparison unit left by the pair (compute.att_gt2.R:463-468,
+            // :534-577), and never for the universal-base normalisation
+            // cell, which R settles before any exclusion. Under the other
+            // rules the weight period is one of the pair's own.
+            if (fixed_rule) {
+                w_obs_ok = (row_index[., tidx_w] :< .)
+                if (!(base_period == "universal" & t == pret)) {
+                    if (sum(eligible_vec :& !w_obs_ok) > 0 & sum(eligible_vec :& treat_fast) > 0 & sum(eligible_vec :& control_fast) > 0) {
+                        errprintf("warning: Some units not observed in %s (period %g) for group %g in time period %g. These units are excluded.\n", fix_weights, row_w_time, g, t)
+                    }
+                }
+                eligible_vec = eligible_vec :& w_obs_ok
+            }
         }
         n1 = sum(eligible_vec)
         // A pair-empty cell is still a cell. R appends the NA row and
         // an all-NA influence column for every cell it declines
         // (compute.att_gt.R:679-687, :840-849) and never drops one, so
         // n1 == 0 falls through to the shared blank-row emitters below
-        // -- universal-base normalisation first, then the empty-cell
-        // warning -- instead of skipping the (g,t) iteration, which
-        // silently applied dropmissing to that cell.
+        // -- universal-base normalisation first, then the blank row --
+        // instead of skipping the (g,t) iteration, which silently
+        // applied dropmissing to that cell.
         valid_uid = select(uid_seq, eligible_vec)
         y1_cell = y_panel[valid_uid, tidx_t]
         y0_cell = y_panel[valid_uid, tidx_pre]
@@ -3840,7 +4003,7 @@ void csdid__cells_panel(
         nt0 = nt1
         nc1 = sum(d_cell :== 0)
         nc0 = nc1
-        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret,
+        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret, "cell",
             g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
 
         prof_fit_t0 = csdid__profile_start()
@@ -3965,7 +4128,7 @@ void csdid__cells_panel(
                         eng->dr_weights_ols = eng->dr_w :* (1 :- d_cell)
                         eng->dr_xtwx_inv = csdid__inv_r_parity(quadcross(x_cell, eng->dr_weights_ols, x_cell))  // F-005: R-parity inverse
                         if (!csdid__valid_inverse(eng->dr_xtwx_inv)) {
-                            eng->dr_status = 2
+                            eng->dr_status = 4
                         }
                     }
                     if (eng->dr_status == 0) {
@@ -4132,7 +4295,7 @@ void csdid__cells_unbal_panel(
         nt0 = rows(row_treat_pre)
         nc1 = rows(row_control_t)
         nc0 = rows(row_control_pre)
-        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret,
+        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret, "cell",
             g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
 
         if (sorted_unit_scan) {
@@ -4233,14 +4396,21 @@ void csdid__cells_rc(
     real scalar rc_bg, rc_b, rc_c, rc_tid_t, rc_tid_pre, rr, k, r
     real scalar nt1, nt0, nc1, nc0, n1, n_dropped_w, row_w, row_w_time, tidx_w
     real scalar uid_index, mt1, mt0, mc1, mc0, if_value, att, se, fit_status
-    real scalar prof_fit_t0, prof_if_t0, anticipation, trim_level
-    string scalar notyet, base_period, fix_weights
+    real scalar prof_fit_t0, prof_if_t0, anticipation, trim_level, fitted_route
+    string scalar notyet, base_period, fix_weights, first_stage
 
     notyet       = eng->notyet
     base_period  = eng->base_period
     fix_weights  = eng->fix_weights
     anticipation = eng->anticipation
     trim_level   = eng->trim_level
+
+    // Which of the two estimators finishes a cell is fixed by the run, not by
+    // the cell; see the note at the fitted branch below for why each term is
+    // there. A fixed weight rule excludes units between R's two emptiness
+    // checks, so on that route the first call judges validity only.
+    fitted_route = !balanced_panel & (has_w | has_x | notyet != "" | method != "reg" | fix_weights == "base_period" | fix_weights == "first_period")
+    first_stage = (fitted_route & (fix_weights == "base_period" | fix_weights == "first_period")) ? "before" : "cell"
 
     for (ic = 1; ic <= rows(cells); ic++) {
         g            = cells[ic, 1]
@@ -4299,7 +4469,7 @@ void csdid__cells_rc(
             }
             nt1 = sum(idx_t1); nt0 = sum(idx_t0); nc1 = sum(idx_c1); nc0 = sum(idx_c0)
         }
-        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret,
+        if (csdid__emit_degenerate_cell(base_period == "universal" & t == pret, first_stage,
             g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
 
         // dr and ipw ALWAYS take the fitted route, even with no covariates, no
@@ -4330,7 +4500,7 @@ void csdid__cells_rc(
         // reported ATT = .2099498 / .1269936 with no warning, where R dropped
         // the unit and reported .1201847 / .2589032. method(dr) already
         // matched R, because `method != "reg"' sent it here.
-        if (!balanced_panel & (has_w | has_x | notyet != "" | method != "reg" | fix_weights == "base_period" | fix_weights == "first_period")) {
+        if (fitted_route) {
             if (rc_built) {
                 // union of the four slices, deduplicated and ascending -
                 // identical to select() over the OR of the masks; the
@@ -4353,7 +4523,7 @@ void csdid__cells_rc(
             // dropped row, for a number a counter gives in O(1).
             n_dropped_w = 0
             if (fix_weights == "base_period") {
-                row_w_time = csdid__previous_time(tlevels, g - anticipation)
+                row_w_time = csdid__previous_time(tlevels, g, anticipation)
             }
             else if (fix_weights == "first_period") {
                 row_w_time = first_t
@@ -4430,8 +4600,11 @@ void csdid__cells_rc(
             // passed the shared emitter above, before the repeated
             // cross-section rows were assembled, so a universal-base
             // normalisation row has moved on and the flag is 0 by
-            // construction.
-            if (csdid__emit_degenerate_cell(0,
+            // construction. The cell passed R's validity check there too, so
+            // the corners are raised here without it (run_DRDID,
+            // compute.att_gt2.R:267-284); with no unit excluded these are the
+            // counts the first call saw, and it let only full cells through.
+            if (csdid__emit_degenerate_cell(0, "after",
                 g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
             prof_fit_t0 = csdid__profile_start()
             csdid__rc_fit_dispatch(method, y_rc, post_rc, d_rc, x_rc, w_rc,
@@ -4808,6 +4981,12 @@ void csdid_basic_attgt(
     eng->dr_cache_reset()
 
     cells = eng->cell_grid(glevels, tlevels)
+    // compute.att_gt2.R:782-785: a settled calendar can leave a valid cohort
+    // with no period to difference against (varying base, one period left).
+    if (rows(cells) == 0) {
+        errprintf("No valid (g, t) cells found for estimation. Check treatment timing, control group definition, and anticipation settings.\n")
+        exit(459)
+    }
 
     // One run, one route. They are ordered by how much each may assume: the
     // closed form first, then the panel fit, then the unbalanced panel, and
@@ -5266,26 +5445,44 @@ real scalar csdid__bootstrap_sigma(real colvector bres, real scalar iqr_norm)
     return(bsigma)
 }
 
+// The aggregation-level simultaneous band, built as did 2.5.1's mboot builds
+// it (R/mboot.R:142-180) -- which is not the ATT(g,t)-level rule in
+// csdid__boot_table. A column enters when none of its draws is missing and its
+// sum of squared draws exceeds sqrt(.Machine$double.eps)*10 (l142), and its
+// IQR scale is then used as it stands: att_gt.R:707 blanks a scale at or
+// below that tolerance, mboot does not (l158-162). A tiny positive scale
+// therefore dominates the maximum, which is where R's very-large-critical-
+// value warning below comes from. A zero scale divides to Inf where the draw
+// is nonzero and to NaN where it is zero; NaN is ignored (-Inf) and a draw
+// whose maximum is Inf is dropped by the is.finite filter (l174-178). Mata
+// returns missing for both, so a missing ratio over a nonzero draw is R's Inf.
 real scalar csdid__bootstrap_cband_crit(
     real matrix bres,
-    real colvector bsigma,
     real scalar alp,
     real scalar pointcrit)
 {
-    real colvector bT, rowmax, scaled
-    real scalar b, j, crit
+    real colvector keep, bT, sorted
+    real rowvector bsigma
+    real matrix b, scaled
+    real scalar j, n, crit, iqr_norm
 
     crit = pointcrit
-    rowmax = J(rows(bres), 1, .)
-    for (b = 1; b <= rows(bres); b++) {
-        scaled = J(cols(bres), 1, .)
-        for (j = 1; j <= cols(bres); j++) {
-            if (bsigma[j] < .) scaled[j] = abs(bres[b, j] / bsigma[j])
+    n = rows(bres)
+    iqr_norm = invnormal(.75) - invnormal(.25)
+    keep = csdid__selidx(((colmissing(bres) :== 0) :&
+        (quadcolsum(bres :* bres) :> sqrt(epsilon(1)) * 10))')
+    bT = J(0, 1, .)
+    if (rows(keep) > 0) {
+        b = bres[., keep]
+        bsigma = J(1, cols(b), .)
+        for (j = 1; j <= cols(b); j++) {
+            sorted = sort(b[., j], 1)
+            bsigma[j] = (sorted[ceil(.75 * n)] - sorted[ceil(.25 * n)]) / iqr_norm
         }
-        scaled = select(scaled, scaled :< .)
-        if (rows(scaled) > 0) rowmax[b] = max(scaled)
+        scaled = abs(b :/ bsigma)
+        bT = select(rowmax(scaled), !rowsum((scaled :>= .) :& (b :!= 0)))
+        bT = select(bT, bT :< .)
     }
-    bT = select(rowmax, rowmax :< .)
     // R's aggregation-level fallbacks are LABELED, not silent: when the
     // band quantile cannot be computed, or comes back below the pointwise
     // quantile, compute.aggte warns, uses qnorm(1-alp/2) and sets
@@ -5970,7 +6167,7 @@ void csdid_agg_boot_plugin_finish(
 {
     external real matrix CSDID_AGG_BOOT_PROFILE
     real matrix agg, bres, common, bootout
-    real colvector bsigma, bsigma_cband, seboot
+    real colvector bsigma, seboot
     real scalar k, k_effects, j, iqr_norm, pointcrit, crit, phase_t0, scale
 
     CSDID_AGG_BOOT_PROFILE[2, 1] =
@@ -6004,11 +6201,7 @@ void csdid_agg_boot_plugin_finish(
     pointcrit = invnormal(1 - alp / 2)  // transcribes R's qnorm(1 - alp/2); parity keeps the complement form
     crit = pointcrit
     if (cband) {
-        bsigma_cband = J(k_effects, 1, .)
-        for (j = 1; j <= k_effects; j++) {
-            bsigma_cband[j] = csdid__bootstrap_sigma(common[., j], iqr_norm)
-        }
-        crit = csdid__bootstrap_cband_crit(common, bsigma_cband, alp, pointcrit)
+        crit = csdid__bootstrap_cband_crit(common, alp, pointcrit)
     }
     csdid__agg_assemble_bootout(agg, seboot, crit, pointcrit, bootout = J(0, 0, .))
 
@@ -7545,15 +7738,16 @@ void csdid__Agg::load()
             // can judge whether dropping them is acceptable before asking for
             // it. R's aggte() defaults to na.rm = FALSE and stops here too.
             //
-            // "the per-cell warnings above name it" is a promise about another
-            // message, and it was only kept on a noisy run: the per-cell
-            // warnings used printf, which a caller's `quietly' removes, while
-            // this refusal is an errprintf, which it does not. A user who ran
-            // the estimation quietly was sent to warnings that were not there.
-            // Those warnings are errprintf now (see the channel note at
-            // csdid__empty_cell_warning), so the sentence holds on every run
-            // that reaches this line -- keep them on that channel.
-            errprintf("%g of the %g ATT(g,t) cells have a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated, or address the cause of the failures (the per-cell warnings above name it) and re-run.\n",
+            // The pointer at the end names what every route leaves behind. A
+            // cell with no treated or no comparison unit in either of its
+            // periods is blanked in silence, as R does (valid_did_cohort,
+            // compute.att_gt2.R:463-468), and so is a cell bal(pair) leaves
+            // empty, so "the per-cell warnings name it" would send the user
+            // to a warning that was never printed; the counts in e(attgt) are
+            // there on every run. The warnings that do exist are errprintf
+            // (see the channel note at csdid__empty_cell_warning), so a
+            // caller's `quietly' does not remove them -- keep them there.
+            errprintf("%g of the %g ATT(g,t) cells have a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated, or address the cause of the failures and re-run; e(attgt) holds each cell's treated and comparison counts, and the warnings printed during estimation name any cause csdid detected.\n",
                 sum(att :>= .), rows(att), sum(att :< .))
             _error(498)
         }
@@ -7771,7 +7965,11 @@ void csdid__Agg::cell_effect(
 
     weights = cell_weights(keep)
     wif = weight_if(keep, pg, group)
-    effect = quadcross(weights, take(keep))
+    // Cells whose p(g) sum to zero have no weights (0/0), and R's
+    // sum(att * pg / sum(pg)) is NaN there (compute.aggte.R:479-486).
+    // quadcross() would drop the missing rows and return an exact 0.
+    if (hasmissing(weights)) effect = .
+    else effect = quadcross(weights, take(keep))
     effect_if = combine_if(att, inffunc, keep, weights, wif)
     se = cluster_se(effect_if)
 }
@@ -7912,6 +8110,13 @@ void csdid__Agg::agg_group()
             }
         }
     }
+    // R stops when no cohort survives the screen (compute.aggte.R:185-187).
+    // select() on a one-cohort glist returns 0 x 0, which the union below
+    // cannot take, so the refusal is raised before it.
+    if (!any(agg_gscreen)) {
+        errprintf("no valid ATT(g,t) estimates found for group aggregation\n")
+        _error(498)
+    }
     agg_tgrid = uniqrows(tgrid_full \ select(glist, agg_gscreen))
     agg_tr = J(rows(tt), 1, 0)
     agg_gr = J(rows(group), 1, 0)
@@ -7923,8 +8128,12 @@ void csdid__Agg::agg_group()
         g = glist[i]
         if (agg_gscreen[i] == 0) continue
         keep = which((group :== g) :& (group :<= tt) :& (agg_tr :<= agg_gr :+ max_e))
+        // R averages every cohort its screen admitted and stops on one with
+        // nothing to average (get_agg_inf_func, compute.aggte.R:777-781).
+        // With na.rm the raw screen above can admit such a cohort: on an axis
+        // whose periods sit less than one time() unit apart, [g, g + max_e]
+        // is wider than the rank window taken here (:335).
         if (cols(keep) == 0) {
-            if (na_rm) continue
             errprintf("no valid ATT(g,t) estimates found for group aggregation\n")
             _error(498)
         }
@@ -7936,10 +8145,6 @@ void csdid__Agg::agg_group()
         effect_if_mat[., n_effects] = effect_if
         egt[n_effects] = g
         pgg[n_effects] = lookup_prob(g)
-    }
-    if (n_effects == 0) {
-        errprintf("no valid ATT(g,t) estimates found for group aggregation\n")
-        _error(498)
     }
     if (n_effects < n_max) {
         effects = effects[1..n_effects]
@@ -7965,8 +8170,9 @@ void csdid__Agg::agg_dynamic()
     real rowvector keep, keep2
     real scalar i, e, n_effects, max_t, effect, se
     real scalar t_first  // F-009: balance_e truncation needs e(time_first)
-    real scalar drift_n
-    string scalar drift_list
+    real scalar drift_n, vanish_n, win_lo, win_hi
+    string scalar drift_list, vanish_list
+    real colvector vanish_e
 
     include_balanced = J(rows(group), 1, 1)
     if (balance_e >= 0) {
@@ -7974,6 +8180,13 @@ void csdid__Agg::agg_dynamic()
         include_balanced = ((max_t :- group) :>= balance_e)
     }
     egt = uniqrows(select(event_time, include_balanced :!= 0))
+    // select() on a 1 x 1 vector returns 0 x 0 when it keeps nothing, and a
+    // select() on 0 x 0 raises 3201 ("vector required") before the empty-
+    // window refusal below can run: one cell, and balance() admits no cohort
+    // or truncates the one event time away. R stops there with "No event
+    // times fall within the requested window" (compute.aggte.R:472-476).
+    // 0 x 1 selects cleanly, so an empty result is kept a column.
+    if (rows(egt) == 0) egt = J(0, 1, .)
     if (balance_e >= 0) {
         // R parity (did 2.5.1 compute.aggte): with balance_e set, event
         // times are restricted to [balance_e - (maxT - t_first), balance_e]
@@ -7993,6 +8206,7 @@ void csdid__Agg::agg_dynamic()
             _error(498)
         }
         egt = select(egt, (egt :<= balance_e) :& (egt :>= balance_e - max_t + t_first))  // F-009
+        if (rows(egt) == 0) egt = J(0, 1, .)
     }
     egt = select(egt, (egt :>= min_e) :& (egt :<= max_e))
     if (rows(egt) == 0) {
@@ -8023,6 +8237,30 @@ void csdid__Agg::agg_dynamic()
         if (drift_n > 0) {
             st_numscalar("CSDID_AGG_BAL_DRIFT", drift_n)
             st_global("CSDID_AGG_BAL_DRIFT_LIST", drift_list)
+        }
+        // Owner decision 2026-09-26: an event time inside the balanced
+        // window whose every cell dropmissing removed is not reported, and
+        // the overall effect averages over the event times left. The
+        // reference drops it in silence; csdid warns and carries on. An
+        // admitted cohort's dropped cell at an event time absent from egt
+        // is exactly such an event time.
+        win_lo = max((balance_e - max_t + t_first, min_e))
+        win_hi = min((balance_e, max_e))
+        vanish_e = J(0, 1, .)
+        for (i = 1; i <= rows(dropped_gt); i++) {
+            e = dropped_gt[i, 2]
+            if ((max_t - dropped_gt[i, 1]) >= balance_e & e >= win_lo & e <= win_hi &
+                sum(egt :== e) == 0) vanish_e = vanish_e \ e
+        }
+        if (rows(vanish_e) > 0) {
+            vanish_e = uniqrows(vanish_e)
+            vanish_n = rows(vanish_e)
+            vanish_list = ""
+            for (i = 1; i <= vanish_n; i++) {
+                vanish_list = vanish_list + (i > 1 ? " " : "") + sprintf("%g", vanish_e[i])
+            }
+            st_numscalar("CSDID_AGG_BAL_VANISH", vanish_n)
+            st_global("CSDID_AGG_BAL_VANISH_LIST", vanish_list)
         }
     }
     n_effects = rows(egt)
@@ -8207,7 +8445,7 @@ void csdid__Agg::boot_finish(
 void csdid__Agg::core()
 {
     real matrix bres_col, bres_cband
-    real colvector bsigma, bsigma_cband, seboot
+    real colvector bsigma, seboot
     real scalar j, iqr_norm, simple_duplicate, phase_t0
 
     phase_t0 = csdid__profile_start()
@@ -8274,11 +8512,7 @@ void csdid__Agg::core()
             }
         }
         bres_cband = csdid__bmisc_bootstrap_auto(sc[., 1..k_effects], biters, rng_state) / sqrt(n)
-        bsigma_cband = J(k_effects, 1, .)
-        for (j = 1; j <= k_effects; j++) {
-            bsigma_cband[j] = csdid__bootstrap_sigma(bres_cband[., j], iqr_norm)
-        }
-        crit = csdid__bootstrap_cband_crit(bres_cband, bsigma_cband, alp, pointcrit)
+        crit = csdid__bootstrap_cband_crit(bres_cband, alp, pointcrit)
         bres_col = csdid__bmisc_bootstrap_auto(sc[., k], biters, rng_state) / sqrt(n)
         bres[., k] = bres_col
         bsigma[k] = csdid__bootstrap_sigma(bres_col, iqr_norm)
@@ -8300,11 +8534,7 @@ void csdid__Agg::core()
         }
         if (cband) {
             bres_cband = csdid__bootstrap_auto(sc[., 1..k_effects], biters, dist, rng_state, use_bmisc, cband) / sqrt(n)
-            bsigma_cband = J(k_effects, 1, .)
-            for (j = 1; j <= k_effects; j++) {
-                bsigma_cband[j] = csdid__bootstrap_sigma(bres_cband[., j], iqr_norm)
-            }
-            crit = csdid__bootstrap_cband_crit(bres_cband, bsigma_cband, alp, pointcrit)
+            crit = csdid__bootstrap_cband_crit(bres_cband, alp, pointcrit)
         }
         bres_col = csdid__bootstrap_auto(sc[., k], biters, dist, rng_state, use_bmisc, cband) / sqrt(n)
         bres[., k] = bres_col
@@ -8324,7 +8554,7 @@ void csdid__Agg::core()
 void csdid__Agg::cluster_core()
 {
     real matrix bres_col, bres_cband
-    real colvector bsigma, bsigma_cband, seboot
+    real colvector bsigma, seboot
     real scalar j, iqr_norm, simple_duplicate, phase_t0
 
     phase_t0 = csdid__profile_start()
@@ -8373,11 +8603,7 @@ void csdid__Agg::cluster_core()
         else {
             if (cband) {
                 bres_cband = csdid__bootstrap_auto(sc[., 1..k_effects], biters, dist, rng_state, use_bmisc, cband) / sqrt(nc)
-                bsigma_cband = J(k_effects, 1, .)
-                for (j = 1; j <= k_effects; j++) {
-                    bsigma_cband[j] = csdid__bootstrap_sigma(bres_cband[., j], iqr_norm)
-                }
-                crit = csdid__bootstrap_cband_crit(bres_cband, bsigma_cband, alp, pointcrit)
+                crit = csdid__bootstrap_cband_crit(bres_cband, alp, pointcrit)
             }
             bres_col = csdid__bootstrap_auto(sc[., k], biters, dist, rng_state, use_bmisc, cband) / sqrt(nc)
             bres[., k] = bres_col
@@ -8401,9 +8627,10 @@ void csdid__Agg::cluster_core()
 // set.seed(2468) + aggte(dynamic) crit 2.5879258429398755, the second call
 // 2.595670815356983, type(simple) consuming nothing in between). ifname
 // empty reads the aggregation cache like csdid_bootstrap_aggte_direct;
-// otherwise the influence functions come from the named Stata matrix, with
-// the cluster vector resolved exactly as csdid_bootstrap_aggte_cluster
-// resolves it. statename empty draws from the session stream (R's own
+// otherwise the influence functions come from the named Stata matrix, in
+// the draw order the unit map `unitname' (with `timename' for repeated cross
+// sections) gives the cache, or clustered with the cluster vector resolved
+// exactly as csdid_bootstrap_aggte_cluster resolves it. statename empty draws from the session stream (R's own
 // semantics for a fit that carries no bootstrap state; set seed reproduces
 // it); a supplied state uses the seeded emulation, which is how the R
 // bit-parity of this block is tested. csdid__bootstrap_cband_crit sets the
@@ -8423,9 +8650,9 @@ void csdid_analytical_cband(
 {
     external class csdid__Engine scalar CSDID_ENGINE
     class csdid__Agg scalar ag
-    real matrix inf, bres_cband
-    real colvector cluster_vec, bsigma_cband
-    real scalar j, k_eff, nc_l, crit, pointcrit, iqr_norm
+    real matrix inf, bres_cband, unit_group
+    real colvector cluster_vec
+    real scalar k_eff, nc_l, crit, pointcrit
 
     ag.agg = st_matrix(aggname)
     ag.use_cluster = use_cluster
@@ -8446,7 +8673,17 @@ void csdid_analytical_cband(
             }
             ag.sc = csdid__cluster_sums(cluster_vec, inf)
         }
-        else ag.sc = inf
+        else {
+            // the draw order csdid__agg_boot_assemble gives the cached
+            // influence functions (F-022), so the stored ones draw the same
+            // multipliers for the same units under the same set seed
+            unit_group = st_matrix(unitname)
+            if (rows(unit_group) != ag.n | cols(unit_group) < 2) {
+                errprintf("stored unit/group map does not match bootstrap influence functions\n")
+                _error(498)
+            }
+            ag.sc = inf[csdid__boot_row_order(unit_group, timename, ag.n), .]
+        }
     }
     k_eff = rows(ag.agg)
     nc_l = rows(ag.sc)
@@ -8456,13 +8693,8 @@ void csdid_analytical_cband(
     }
     if (reps < 1) _error(198)
     pointcrit = invnormal(1 - alpha / 2)
-    iqr_norm = invnormal(.75) - invnormal(.25)
     bres_cband = csdid__bootstrap_auto(ag.sc[., 1..k_eff], reps, "rademacher", ag.rng_state, ag.use_bmisc, 1) / sqrt(nc_l)
-    bsigma_cband = J(k_eff, 1, .)
-    for (j = 1; j <= k_eff; j++) {
-        bsigma_cband[j] = csdid__bootstrap_sigma(bres_cband[., j], iqr_norm)
-    }
-    crit = csdid__bootstrap_cband_crit(bres_cband, bsigma_cband, alpha, pointcrit)
+    crit = csdid__bootstrap_cband_crit(bres_cband, alpha, pointcrit)
     st_numscalar(critname, crit)
     st_numscalar(pointcritname, pointcrit)
     if (statename != "") st_matrix(statename, ag.rng_state)

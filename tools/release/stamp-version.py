@@ -24,6 +24,8 @@ Sites covered:
   src/help/*.sthlp       `{* *! version <ver> <date>}` header
   csdid.pkg              `d Distribution-Date: YYYYMMDD` (value compared to
                          the stamped date, not just present) and `d Version:`
+  CITATION.cff           `version:` and `date-released:`, which GitHub shows
+                         as the citation for the repository
   src/legacy/*.ado       the same `*!` header as src/ado
   the compiled library's stamp, which is a version string in four files:
                          src/mata/csdid.mata      "<ver>|source"
@@ -58,6 +60,7 @@ ADOS = sorted((ROOT / "src" / "ado").glob("*.ado")) + sorted(
 MATAS = sorted((ROOT / "src" / "mata").glob("*.mata"))
 HELPS = sorted((ROOT / "src" / "help").glob("*.sthlp"))
 PKG = ROOT / "csdid.pkg"
+CFF = ROOT / "CITATION.cff"
 
 ADO_HDR = re.compile(r"^(\*! \S+ )(\S+)( )(\d{2}\w{3}\d{4})", re.M)
 HELP_HDR = re.compile(r"^(\{\* \*! version )(\S+)( )(\d{2}\w{3}\d{4})(\})", re.M)
@@ -65,6 +68,8 @@ ERETURN_V = re.compile(r'(ereturn local version ")([^"]+)(")')
 DISPLAY_V = re.compile(r'(display as text "csdid version )([^"]+)(")')
 DIST_DATE = re.compile(r"^(d Distribution-Date: )(\d{8})", re.M)
 PKG_VERSION = re.compile(r"^(d Version: )(\S+)", re.M)
+CFF_VERSION = re.compile(r"^(version: )(\S+)", re.M)
+CFF_DATE = re.compile(r'^(date-released: ")(\d{4}-\d{2}-\d{2})(")', re.M)
 
 # The compiled library's stamp. Every one of these is the package half of
 # `<version>|<who built it>`; each pattern captures (prefix, version, suffix).
@@ -164,6 +169,20 @@ def check() -> int:
                 file=sys.stderr,
             )
             status = 1
+    if CFF.exists() and len(found["versions"]) == 1 and len(found["dates"]) == 1:
+        cff_text = CFF.read_text()
+        cv = CFF_VERSION.search(cff_text)
+        cd = CFF_DATE.search(cff_text)
+        want_v = next(iter(found["versions"]))
+        want_d = _dt.datetime.strptime(next(iter(found["dates"])), "%d%b%Y").strftime("%Y-%m-%d")
+        if not cv or cv.group(2) != want_v:
+            print(f"CITATION.cff version {cv.group(2) if cv else 'missing'} disagrees "
+                  f"with the stamped version {want_v}", file=sys.stderr)
+            status = 1
+        if not cd or cd.group(2) != want_d:
+            print(f"CITATION.cff date-released {cd.group(2) if cd else 'missing'} "
+                  f"disagrees with the stamped date (= {want_d})", file=sys.stderr)
+            status = 1
     if status == 0:
         v = next(iter(found["versions"])); d = next(iter(found["dates"]))
         print(f"version consistent: {v} ({d})")
@@ -193,6 +212,12 @@ def stamp(version: str, date: str) -> None:
         for rx in MLIB_STAMP.values():
             t = rx.sub(lambda m: m.group(1) + version + m.group(3), t)
         p.write_text(t)
+    if CFF.exists():
+        dashed = _dt.datetime.strptime(date, "%d%b%Y").strftime("%Y-%m-%d")
+        t = CFF.read_text()
+        t = CFF_VERSION.sub(lambda m: m.group(1) + version, t)
+        t = CFF_DATE.sub(lambda m: m.group(1) + dashed + m.group(3), t)
+        CFF.write_text(t)
     print(f"stamped {version} ({date}, Distribution-Date {iso})")
     print("now rebuild:  stata-mp -b do src/build.do   (regenerates build/ and pkg/)")
 

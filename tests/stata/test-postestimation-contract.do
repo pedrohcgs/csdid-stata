@@ -115,6 +115,28 @@ capture drop zhat2
 capture margins
 assert _rc == 322
 
+* The refusal's reason must fit what is posted: after the re-post e(b) holds
+* event-time effects, so a message calling them ATT(g,t) effects, or sending
+* the user to ATT(g,t) coefficient names, misdescribes the results in memory.
+tempfile predlog
+log using "`predlog'", replace text name(pcpred)
+capture noisily predict double zhat3
+log close pcpred
+capture drop zhat3
+tempname plh
+local predbody ""
+file open `plh' using "`predlog'", read text
+file read `plh' pline
+while r(eof) == 0 {
+    local predbody `"`predbody' `pline'"'
+    file read `plh' pline
+}
+file close `plh'
+local predbody = subinstr(subinstr(`"`predbody'"', ">", "", .), " ", "", .)
+assert strpos(`"`predbody'"', "e(b)holdstreatmenteffects") > 0
+assert strpos(`"`predbody'"', "ATT(g,t)treatmenteffects") == 0
+assert strpos(`"`predbody'"', "ATT(g,t)coefficientnames") == 0
+
 display as text "postestimation contract: e() plumbing, predict 198 and margins 322 hold before and after the re-post"
 
 * ---------------------------------------------------------------------------
@@ -141,6 +163,23 @@ assert strpos("`e(datasignaturevars)'", "__") == 0
 quietly estat summarize
 capture estat summarize
 assert _rc == 0
+* a bare estat summarize describes the estimation's variables, outcome first,
+* not the ATT(g,t) coefficient names (which it printed as <not found> rows)
+quietly estat summarize
+tempname S
+matrix `S' = r(stats)
+local srows : rownames `S'
+local bcols : colnames e(b)
+assert word("`srows'", 1) == "y"
+assert strpos(" `srows' ", " region ") > 0
+assert "`: list srows & bcols'" == ""
+
+* a signed variable that is gone is a changed sample: 459, as the help says
+preserve
+drop region
+capture estat summarize
+assert _rc == 459
+restore
 
 * weights: untouched passes, a changed weight refuses
 import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble

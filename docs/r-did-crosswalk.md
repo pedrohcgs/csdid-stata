@@ -86,7 +86,7 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `bstrap` | `TRUE` | bootstrap is the default; `analytical` or `vce(analytical)` turns it off | bootstrap | `e(bstrap)` is 1/0. `reps()`, `biters()`, `seed()`, `rseed()` with `analytical` is an error, not a silent no-op. |
 | `cband` | `TRUE` | `pointwise` turns uniform bands off | uniform bands | `cband = FALSE` is `pointwise`. `e(cband)` records the request (1/0). Under `analytical` without `pointwise`, aggregations still carry a simultaneous band whose critical value comes from the multiplier bootstrap — exactly R's behavior on a `bstrap = FALSE` fit, warning included — while every standard error stays analytical. The ATT(g,t) table itself is pointwise in both packages when the bootstrap is off. |
 | `biters` | `1000` | `biters(#)`, `reps(#)`, `wboot(biters(#))`, or `wboot(reps(#))` | `1000` | All four spellings set the same thing; two spellings that disagree is an error. |
-| `clustervars` | `NULL` | `cluster(varname)`, `vce(cluster varname)`, or `wboot(cluster(varname))` | none (unit level) | R takes at most two variables and one of them must be `idname`; Stata takes the one non-unit clustering variable, which is the same thing. Must be numeric. `e(N_clusters)` reports the count. |
+| `clustervars` | `NULL` | `cluster(varname)`, `vce(cluster varname)`, or `wboot(cluster(varname))` | none (unit level) | R takes at most two variables and one of them must be `idname`; Stata takes the one non-unit clustering variable, which is the same thing. Must be numeric. `e(N_clusters)` reports the count. R drops `idname` from `clustervars`, so `clustervars = idname` is unclustered there; csdid's `cluster()` on the `ivar()` variable runs the clustered computation with one cluster per unit, which gives the unclustered analytical standard errors, and a seeded bootstrap that matches R's `clustervars` on a copy of the identifier rather than R's unclustered draws. |
 | `est_method` | `"dr"` | `method(dr\|reg\|ipw)` | `dr` | Legacy aliases: `dripw` -> `dr`, `stdipw` -> `ipw`, both with a deprecation note. A user-supplied estimator function has no Stata equivalent. |
 | `base_period` | `"varying"` | `base_period()` / `baseperiod()`, or the bare keywords `varying` / `universal` | **universal** | **Deliberate divergence.** csdid defaults to a universal base period; `base_period(varying)` restores R's default. Post-treatment cells are identical either way; the pre-treatment cells differ. `e(base_period)` reports it. |
 | `faster_mode` | `TRUE` | `fast` / `nofast` (closest analogue, not a port of R's internals) | optimization allowed | Both are speed switches that leave the estimand alone, and both optimize by default, but they optimize different code: Stata's default is `e(fast_mode)` = `auto` (`fast` forces it on, `nofast` off) while R's `faster_mode` defaults to `TRUE`, and R reorganizes its data handling, Stata selects specialized Mata kernels. `nofast` is the way to ask for the unoptimized path, as `faster_mode = FALSE` is in R. `e(fast_used)` reports whether the optimized path was permitted -- it is 1 on any run that did not specify `nofast` -- and `e(compute_path)` names the computation surface selected for the data layout, not the kernel that executed. |
@@ -107,7 +107,7 @@ Stata-only options on `csdid`, with no R counterpart:
 | `vce(analytical)`, `vce(cluster var)` | Stata-idiomatic spellings of `bstrap = FALSE` and `clustervars`. |
 | `unbalanced` | Documented synonym of `bal(none)`, accepted with no warning. |
 | `allowunbalanced`, `allow_unbalanced` | The same setting under R's own argument name, accepted as a supported longhand with no warning. |
-| `long`, `long2`, `asinr`, `never`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-stata-compatibility.md`. |
+| `long`, `long2`, `asinr`, `never`, `dripw`, `stdipw` | Legacy Stata `csdid` Version 1.82 compatibility spellings. Each either maps to an R-parity setting or is a warned no-op; see `docs/legacy-migration-guide.md`. |
 
 ---
 
@@ -140,7 +140,7 @@ csdid_stats using filename [, ...]
 | `bstrap` | inherited | - | inherited from `e(bstrap)` | **Cannot be overridden at aggregation.** See [section 6](#6-where-the-two-deliberately-differ). |
 | `biters` | inherited | - | inherited from `e(biters)` | Same. |
 | `cband` | inherited | - | inherited from `e(cband)` | Same. |
-| `clustervars` | inherited | `cluster(varname)` or `clustervars(varname)` | inherited from `e(clustervar)` | Accepted only when it names the variable `csdid` already clustered on; anything else is refused with return code 498 and a message telling you to re-run `csdid`. R has the same restriction (it can only honor clusters `att_gt()` stored); when it cannot honor the request it warns and reports *unclustered* standard errors. Stata refuses instead of reporting a different quantity than you asked for. |
+| `clustervars` | inherited | `cluster(varname)` or `clustervars(varname)` | inherited from `e(clustervar)` | Accepted only when it names the variable `csdid` already clustered on; anything else is refused with return code 498 and a message telling you to re-run `csdid`. R has the same restriction (it can only honor clusters `att_gt()` stored); when it cannot honor the request it warns and reports *unclustered* standard errors. Stata refuses instead of reporting a different quantity than you asked for. `clustervars = idname` is the exception: R ignores it and aggregates without a word, while `csdid_stats, cluster()` on the `ivar()` variable after an unclustered `csdid` is refused like any other mismatch. |
 
 `estat` is a thin wrapper over the same code path, for users who prefer Stata's
 postestimation idiom:
@@ -244,7 +244,7 @@ states map onto two of its three settings:
 | --- | --- | --- |
 | `bal(full)` (**default**) | `allow_unbalanced_panel = FALSE` (default) | Units not observed in every period are dropped once, before estimation. Same sample as R; csdid additionally reports how many units and observations that removed, where R drops them silently. |
 | `bal(none)`, or `unbalanced` (longhand `allowunbalanced`) | `allow_unbalanced_panel = TRUE` | Every unit is kept and the repeated-cross-section computation runs, as in R. |
-| `bal(pair)` | no counterpart | Each 2x2 comparison is balanced separately. This exists only to reproduce legacy Stata `csdid` Version 1.82, which did it silently. |
+| `bal(pair)` | no counterpart | Each 2x2 comparison is balanced separately. This exists only to reproduce legacy Stata `csdid` Version 1.82, which did it by default. |
 
 So the *samples* agree with R by default; what differs is that Stata makes the
 choice an explicit option and says out loud what it did. `allow_unbalanced_panel
@@ -271,7 +271,10 @@ Both packages can only cluster at aggregation on information `att_gt()` /
 `csdid` already stored. When the request cannot be honored, R warns and returns
 standard errors that do not account for clustering at all; `csdid_stats` exits
 with return code 498 and tells you to re-run `csdid` with the cluster you want.
-Neither behavior is wrong, but the Stata one cannot be missed in a log.
+Neither behavior is wrong, but the Stata one cannot be missed in a log. The one
+request R honors silently is `clustervars = idname`, which it treats as no
+clustering; `csdid_stats, cluster()` naming the `ivar()` variable after an
+unclustered `csdid` is refused like any other mismatch.
 
 **6.4 Plot styling goes through the exported data.**
 `ggdid()` returns a `ggplot` object with a fixed theme. A bare `csdid_plot`
@@ -285,11 +288,12 @@ and `cluster()` to be numeric and errors otherwise (`egen id = group(strid)`).
 
 **6.6 The bootstrap has a compiled accelerator on macOS and a Mata engine
 everywhere else.**
-The package ships `csdid_bootstrap_macosx.plugin`, a universal binary used on
-macOS. Every other platform, and any run where the plugin cannot be loaded, uses
-the Mata implementation. The two paths return the same numbers and both
-reproduce R's random-number stream, so the accelerator is a speed decision and
-never an estimand decision. `e(bootstrap_accelerator)` and
+The package ships `csdid_bootstrap_macosx.plugin`, a universal binary that runs
+explicitly seeded (`rseed()`) bootstraps on macOS. Unseeded draws, every other
+platform, and any run where the plugin cannot be loaded use the Mata
+implementation. The two paths draw the same multipliers from R's
+random-number stream and agree to floating-point rounding, so the accelerator
+is a speed decision and never an estimand decision. `e(bootstrap_accelerator)` and
 `e(bootstrap_accelerator_status)` report which path ran.
 
 **6.7 A never-treated group that balancing empties is replaced out loud, not
@@ -314,11 +318,11 @@ value. The R table is not wrong, but it is indistinguishable at a glance from a
 precisely estimated null, and none of the warnings that do fire names this
 cause. The test is exact (`min == max`) and is applied to the estimation
 sample, so an outcome that varies by any amount, or that varies outside an
-`if`, still reaches R's answer. See `docs/behavior-decisions.md` D026.
+`if`, still reaches R's answer.
 
 Legacy-Stata-facing divergences (options that exist only to ease migration from
 Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in
-`docs/legacy-stata-compatibility.md` and `docs/legacy-migration-guide.md`.
+`docs/legacy-migration-guide.md`.
 
 ---
 
@@ -463,7 +467,11 @@ This is not a coincidence of this dataset: the port reproduces R's
 random-number stream, so for the same integer seed the raw multiplier draw
 matrix, the bootstrap standard errors, and the simultaneous critical values
 agree with R to within 3.4e-14 of the quantity's own scale, including on
-unbalanced panels and with `cluster()`.
+unbalanced panels and with `cluster()` on a variable coarser than the unit.
+`cluster()` on the `ivar()` variable itself is the one exception: csdid runs the
+clustered bootstrap with one cluster per unit, which reproduces R's
+`clustervars` on a copy of the identifier, whereas R drops
+`clustervars = idname` and draws as if unclustered.
 
 ### 8.3 `balance_e`, the trickiest option to port
 

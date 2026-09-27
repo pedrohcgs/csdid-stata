@@ -1,0 +1,5 @@
+route,method,trim_level,att,overlap_check_fail
+att_gt,ipw,0.995,,0
+att_gt,dr,0.995,,0
+drdid,ipw,1,1.0000000000000182,0
+drdid,dr,1,0.99999999999999989,0

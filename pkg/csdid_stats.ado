@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 08sep2026
+*! csdid_stats 2.0.0 27sep2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -161,6 +161,13 @@ program define _csdid_stats_main, eclass
         _csdid_stats_load_rif using `"`using'"'
     }
     else {
+        * A saved RIF file loaded with -use- and then aggregated without
+        * using() is Version 1.82's idiom; here it aggregated whatever csdid
+        * results were active, with no word that the file was ignored.
+        if `"`: char _dta[csdid_artifact]'"' == "rif" {
+            display as error "the data in memory are a file written by saverif(), but csdid_stats without using() aggregates the csdid results in e(), not these data. Aggregate the file with csdid_stats using <filename>."
+            exit 459
+        }
         if "`e(cmd)'" != "csdid" {
             display as error "csdid_stats requires prior csdid results or a saved RIF file"
             exit 301
@@ -188,6 +195,7 @@ program define _csdid_stats_main, eclass
     * OMITTED level inherits: first from e(level), the estimation's own
     * level (the F-034 rule, R's alp inheritance by construction), then
     * from the session default.
+    local level_typed = (`"`level'"' != "")
     if `"`level'"' != "" {
         * two separate tests: -if- evaluates its whole expression, so a
         * non-numeric token inside the range comparison aborted with the
@@ -209,10 +217,17 @@ program define _csdid_stats_main, eclass
         * a command Stata said failed. Refuse before doing the work, which is
         * what csdid itself does (it declares Level(cilevel) at entry).
         * Three-decimal levels are not exotic: 1 - 0.05/3 is level(98.333).
-        if `level' != round(`level', 0.01) {
+        * The receivers' own parser decides, in a subprogram so its syntax
+        * call cannot touch these locals: a comparison with round(level, .01)
+        * is binary floating point and refused 90.1 and 99.99.
+        capture _csdid_stats_level_ok, level(`level')
+        if _rc {
             display as error "level(`level') can have at most two digits after the decimal point"
             exit 198
         }
+        * the value, not the text, goes downstream: +95 is a legal level that
+        * Mata cannot read spliced into (100 - `level') / 100
+        local level = strofreal(`level', "%12.0g")
     }
     else {
         local level = c(level)
@@ -542,6 +557,23 @@ program define _csdid_stats_main, eclass
     }
     local na_rm_flag = ("`na_rm'" != "")
     local use_cluster = ("`e(clustervar)'" != "")
+    * An abbreviation csdid itself accepted names the same variable here.
+    * Only on the direct route: after using(), the data in memory are not
+    * the estimation data.
+    if "`agg_cluster'" != "" & `"`using'"' == "" {
+        capture unab agg_cluster_full : `agg_cluster', max(1)
+        if !_rc local agg_cluster "`agg_cluster_full'"
+        else if "`e(clustervar)'" != "`agg_cluster'" {
+            display as error "cluster(`agg_cluster'): variable `agg_cluster' not found, or an ambiguous abbreviation"
+            exit 111
+        }
+    }
+    * On the using route the file records its cluster variable by full name;
+    * an abbreviation of that name is the same request, where Stata allows
+    * abbreviations at all.
+    if "`agg_cluster'" != "" & `"`using'"' != "" & "`e(clustervar)'" != "" & c(varabbrev) == "on" {
+        if strpos("`e(clustervar)'", "`agg_cluster'") == 1 local agg_cluster "`e(clustervar)'"
+    }
     if "`agg_cluster'" != "" {
         if "`e(clustervar)'" == "`agg_cluster'" {
             local use_cluster = 1
@@ -593,12 +625,12 @@ program define _csdid_stats_main, eclass
     if `use_cache' {
         capture confirm scalar e(mata_cache)
         if _rc | e(mata_cache) != 1 {
-            display as error "csdid_stats needs the results of the csdid run it is summarizing; rerun csdid, or rerun it with storeall, immediately before csdid_stats"
+            display as error "csdid_stats needs the results of the csdid run it is summarizing; rerun csdid, or rerun it with storeall, immediately before aggregating"
             exit 498
         }
         capture confirm scalar e(mata_cache_token)
         if _rc {
-            display as error "csdid_stats needs the results of the csdid run it is summarizing; rerun csdid immediately before csdid_stats"
+            display as error "csdid_stats needs the results of the csdid run it is summarizing; rerun csdid immediately before aggregating"
             exit 498
         }
         local cache_token = e(mata_cache_token)
@@ -612,7 +644,19 @@ program define _csdid_stats_main, eclass
         capture mata: csdid_cache_validate(`cache_token', `cache_n_units', `cache_n_attgt')
         local cache_rc = _rc
         if `cache_rc' {
-            display as error "the stored results do not match the last csdid run; rerun csdid with storeall, or rerun the original estimation, immediately before csdid_stats"
+            * Two causes, and only one of them is a mismatch. csdid reset,
+            * mata clear and estimates use in a later session leave the lean
+            * results in e() and the session holding no influence functions
+            * at all; restoring an earlier estimation leaves it holding
+            * another run's. Asked only here, so a valid cache pays nothing.
+            tempname cache_held
+            mata: st_numscalar("`cache_held'", csdid_cache_if_rows())
+            if scalar(`cache_held') == 0 {
+                display as error "the influence functions of these results are not held in this session (csdid reset, mata clear and a new session discard them); rerun the original estimation, adding storeall to keep them in e()"
+            }
+            else {
+                display as error "the stored results do not match the last csdid run; rerun csdid with storeall, or rerun the original estimation, immediately before aggregating"
+            }
             exit `cache_rc'
         }
     }
@@ -621,8 +665,9 @@ program define _csdid_stats_main, eclass
     * "missing values found in ATT(g,t) estimates", ...) arrived with two
     * lines of Mata frames stapled underneath it. Run it under -capture- and
     * re-raise the diagnosis from the ado.
-    capture scalar drop CSDID_AGG_BAL_DRIFT
+    capture scalar drop CSDID_AGG_BAL_DRIFT CSDID_AGG_BAL_VANISH
     global CSDID_AGG_BAL_DRIFT_LIST
+    global CSDID_AGG_BAL_VANISH_LIST
     capture mata: csdid_aggte("`type'", `min_e', `max_e', `balance_e', `na_rm_flag', `use_cluster', `use_cache', "`aggte'", "`agg_inffunc'", `agg_store_large')
     local aggte_rc = _rc
     if `aggte_rc' {
@@ -645,11 +690,17 @@ program define _csdid_stats_main, eclass
             * question than the one that just failed -- the numbers come back
             * and nothing says they are a different aggregation.
             if `"`window'"' != "" local remedy `"`remedy' window(`window')"'
+            else {
+                if `min_e_specified' local remedy `"`remedy' min_e(`min_e')"'
+                if `max_e_specified' local remedy `"`remedy' max_e(`max_e')"'
+            }
             if `"`balance'"' != "" local remedy `"`remedy' balance(`balance')"'
-            * level() is deliberately NOT carried: by this point an omitted
-            * level has already been filled in from e(level), so echoing it
+            else if `balance_e_specified' local remedy `"`remedy' balance_e(`balance_e')"'
+            * level() is carried only when the user typed it: an omitted
+            * level has already been filled in from e(level), and echoing it
             * would add an option the user never typed to advice that means
             * the same thing without it.
+            if `level_typed' local remedy `"`remedy' level(`level')"'
         }
         _csdid_stats_aggfail, type(`type') mine(`min_e') maxe(`max_e') ///
             bale(`balance_e') narm(`na_rm_flag') usecache(`use_cache') ///
@@ -671,6 +722,15 @@ program define _csdid_stats_main, eclass
         local bal_drift_more ""
         if `bal_drift' > 5 local bal_drift_more "; ..."
         display as error `"warning: `bal_drift' missing cell(s) fall inside the balance(`balance_e') window (`bal_drift_list'`bal_drift_more'), so under dropmissing their cohorts leave those event times while remaining in the rest of the window: the balanced profile's cohort composition differs across event times. See e(attgt) for the missing cells."'
+    }
+    * Owner decision 2026-09-26: an event time of the balanced window that
+    * lost every cell to dropmissing is not reported. Say so; do not stop.
+    capture confirm scalar CSDID_AGG_BAL_VANISH
+    if !_rc {
+        scalar drop CSDID_AGG_BAL_VANISH
+        local bal_vanish_list `"$CSDID_AGG_BAL_VANISH_LIST"'
+        global CSDID_AGG_BAL_VANISH_LIST
+        display as error `"warning: under dropmissing no estimated cell is left at event time(s) `bal_vanish_list' of the balance(`balance_e') window, so those event times are not reported and the post-treatment average covers only the event times that remain. See e(attgt) for the missing cells."'
     }
     capture confirm scalar e(bstrap)
     local bstrap = 0
@@ -747,6 +807,12 @@ program define _csdid_stats_main, eclass
         local agg_boot_args `"`biters', (100 - `level') / 100, `cband', "`boot_dist'", "`boot_rng_arg'", "`boot_aggte'", "`agg_boot_draws'", "`agg_crit'", "`agg_pointcrit'", `agg_simple'"'
         local agg_boot_accel "mata"
         local agg_boot_status "mata-unseeded"
+        * A seeded aggregation runs the accelerator only when the estimation
+        * did, so when the estimation ran on Mata its reason is this one's too.
+        if "`boot_rng_arg'" != "" & "`e(bootstrap_accelerator)'" != "plugin" & ///
+            "`e(bootstrap_accelerator_status)'" != "" {
+            local agg_boot_status "`e(bootstrap_accelerator_status)'"
+        }
         local agg_boot_rc 0
         * stale flags from an earlier aggregation must not label this one
         capture scalar drop CSDID_AGG_CRIT_FALLBACK
@@ -811,9 +877,12 @@ program define _csdid_stats_main, eclass
                         local agg_bind_rc = _rc
                         if `agg_bind_rc' == 0 {
                             global CSDID_AGG_BOOT_PLUGIN_PATH "`agg_plugin_path'"
+                            global CSDID_BOOT_PLUGIN_EVER 1
                             local agg_plugin_bound 1
                         }
-                        else if `agg_bind_rc' == 110 & "$CSDID_AGG_BOOT_PLUGIN_PATH" != "" {
+                        * 110: a resident handle (csdid reset cannot unload
+                        * one), a stale binding rather than a failed load
+                        else if `agg_bind_rc' == 110 {
                             local agg_boot_status "mata-stale-plugin-binding"
                             local agg_boot_rc = 110
                         }
@@ -1160,12 +1229,12 @@ program define _csdid_stats_main, eclass
                     local band_cluster_vec "`band_cluster_raw'"
                 }
             }
-            capture mata: csdid_analytical_cband("`aggte'", "`agg_inffunc'", "`band_cluster_vec'", "", "", `use_cluster', 1000, (100 - `level') / 100, "", "`agg_crit'", "`agg_pointcrit'")
+            capture mata: csdid_analytical_cband("`aggte'", "`agg_inffunc'", "`band_cluster_vec'", "`agg_unit_src'", "`agg_time_src'", `use_cluster', 1000, (100 - `level') / 100, "", "`agg_crit'", "`agg_pointcrit'")
         }
         local band_rc = _rc
         if `band_rc' == 1 exit 1
         if `band_rc' {
-            display as error `"csdid_stats could not bootstrap the simultaneous band for the type(`type') aggregation; rerun csdid before csdid_stats, or specify pointwise"'
+            display as error `"csdid_stats could not bootstrap the simultaneous band for the type(`type') aggregation; rerun csdid before aggregating, or rerun it with pointwise"'
             exit `band_rc'
         }
         * the same fallback labeling the seeded band carries: a band that
@@ -1212,7 +1281,7 @@ program define _csdid_stats_main, eclass
         local overall_se_missing = missing(`aggte'[1, 5])
     }
     if `n_se_total' > 0 & `n_se_missing' == `n_se_total' & `overall_se_missing' {
-        display as text "note: every standard error in this type(`type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome scale that overflows the variance. The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
+        display as text "note: every standard error in this type(`type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome measured on a very small scale: a standard error of 1.49e-7 or less is reported as missing, so rescale the outcome (for example, multiply it by 1e6). The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
     }
     local n_aggte = rowsof(`aggte')
     ereturn matrix aggte = `aggte'
@@ -1255,6 +1324,10 @@ end
 * the kernel's wording and its check order. It never aborts: if the probe
 * itself fails it is discarded and the caller falls back to a generic message,
 * so a probe defect can never turn a working aggregation into a refusal.
+* type(group) follows csdid__Agg::agg_group step for step: the raw-calendar
+* screen under dropmissing, then each admitted cohort's window on the rank
+* grid of periods, base periods and admitted cohorts. The two windows differ
+* when periods sit less than one time() unit apart.
 * Mirror of csdid_stats's own syntax line, minus the `*' catch-all and the
 * options this command parses by hand out of `options' (min_e(), max_e(),
 * balance_e(), cluster()/clustervars(), na_rm/na.rm/dropmissing). A leftover
@@ -1262,6 +1335,11 @@ end
 * second time, whatever abbreviation was typed -- Stata does the abbreviation
 * matching, so the two declaration lists cannot drift into disagreement the
 * way a hand-written name list did.
+program define _csdid_stats_level_ok
+    version 14
+    syntax [, Level(cilevel)]
+end
+
 program define _csdid_stats_optdup, rclass
     version 14
     * REMEDY is declared here too, so this mirror keeps holding exactly the
@@ -1287,7 +1365,7 @@ end
 program define _csdid_stats_aggfail
     version 14
     syntax , TYPE(string) MINE(string) MAXE(string) BALE(string) ///
-        NARM(integer) USECACHE(integer) [REMEDY(string)]
+        NARM(integer) USECACHE(integer) [REMEDY(string asis)]
     local msg ""
     capture mata: ///
         __csdid_pM = ""; ///
@@ -1302,7 +1380,7 @@ program define _csdid_stats_aggfail
             } ///
             if (__csdid_pM == "") { ///
                 if (sum(__csdid_pA[., 4] :>= .) > 0) { ///
-                    if (`narm' == 0) __csdid_pM = sprintf("%g of the %g ATT(g,t) cells have a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated (that is: %s), or address the cause of the failures (the per-cell warnings above name it) and re-run.", sum(__csdid_pA[., 4] :>= .), rows(__csdid_pA), sum(__csdid_pA[., 4] :< .), st_local("remedy")); ///
+                    if (`narm' == 0) __csdid_pM = sprintf("%g of the %g ATT(g,t) cells %s a missing estimate, so the aggregation is not defined over the full set of cells. Specify dropmissing to aggregate over the %g cells that were estimated (that is: %s), or address the cause of the failures and re-run; e(attgt) holds each cell's treated and comparison counts, and the warnings printed during estimation name any cause csdid detected.", sum(__csdid_pA[., 4] :>= .), rows(__csdid_pA), (sum(__csdid_pA[., 4] :>= .) == 1 ? "has" : "have"), sum(__csdid_pA[., 4] :< .), st_local("remedy")); ///
                     if (`narm' != 0) { ///
                         __csdid_pA = select(__csdid_pA, __csdid_pA[., 4] :< .); ///
                         if (rows(__csdid_pA) == 0) __csdid_pM = "all ATT(g,t) estimates are missing; cannot aggregate"; ///
@@ -1316,15 +1394,24 @@ program define _csdid_stats_aggfail
                 if ("`type'" == "group") { ///
                     __csdid_pG = st_matrix("e(group_prob)"); ///
                     if (rows(__csdid_pG) > 0) { ///
-                        __csdid_pN = 0; ///
-                        __csdid_pE = 0; ///
+                        __csdid_pS = J(rows(__csdid_pG), 1, 1); ///
                         for (__csdid_pI = 1; __csdid_pI <= rows(__csdid_pG); __csdid_pI++) { ///
                             __csdid_pK = sum((__csdid_pA[., 1] :== __csdid_pG[__csdid_pI, 1]) :& (__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pA[., 2] :<= __csdid_pA[., 1] :+ (`maxe'))); ///
-                            if (__csdid_pK == 0) __csdid_pE = 1; ///
-                            if (__csdid_pK > 0) __csdid_pN = __csdid_pN + 1; ///
+                            if (__csdid_pK == 0 & `narm' != 0) __csdid_pS[__csdid_pI] = 0; ///
                         } ///
-                        if (__csdid_pE == 1 & `narm' == 0) __csdid_pM = "no valid ATT(g,t) estimates found for group aggregation"; ///
-                        if (__csdid_pN == 0) __csdid_pM = "no valid ATT(g,t) estimates found for group aggregation"; ///
+                        if (sum(__csdid_pS) == 0) __csdid_pM = "no valid ATT(g,t) estimates found for group aggregation"; ///
+                        if (sum(__csdid_pS) > 0) { ///
+                            __csdid_pF = st_matrix("e(attgt)"); ///
+                            __csdid_pT = uniqrows(__csdid_pF[., 2] \ __csdid_pF[., 10] \ select(__csdid_pG[., 1], __csdid_pS)); ///
+                            __csdid_pR = J(rows(__csdid_pA), 1, 0); ///
+                            for (__csdid_pI = 1; __csdid_pI <= rows(__csdid_pT); __csdid_pI++) __csdid_pR = __csdid_pR + (__csdid_pA[., 2] :>= __csdid_pT[__csdid_pI]); ///
+                            for (__csdid_pI = 1; __csdid_pI <= rows(__csdid_pG); __csdid_pI++) { ///
+                                if (__csdid_pS[__csdid_pI] == 1) { ///
+                                    __csdid_pK = sum((__csdid_pA[., 1] :== __csdid_pG[__csdid_pI, 1]) :& (__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pR :<= sum(__csdid_pT :<= __csdid_pG[__csdid_pI, 1]) + (`maxe'))); ///
+                                    if (__csdid_pK == 0) __csdid_pM = "no valid ATT(g,t) estimates found for group aggregation"; ///
+                                } ///
+                            } ///
+                        } ///
                     } ///
                 } ///
                 if ("`type'" == "calendar") { ///
@@ -1544,8 +1631,9 @@ program define _csdid_stats_load_rif, eclass
     }
 
     * The load materializes the influence functions as CLASSIC Stata
-    * matrices, whose dimensions are capped at c(max_matdim) (11,000 on
-    * SE/MP, 800 on BE). mkmat raises a bare `error 915' at that cap, naming
+    * matrices, whose dimensions are capped at c(max_matdim) from Stata 16
+    * (MP 65,534, SE 11,000, BE 800) and by the current -set matsize- before
+    * it (at most c(max_matsize)). mkmat raises a bare `error 915' at that cap, naming
     * neither the file, nor the size, nor a remedy -- and the WRITER has no
     * matching cap, because saverif() fills the artifact through st_store,
     * which is linear and uncapped. So a large estimation could write an
@@ -1556,9 +1644,22 @@ program define _csdid_stats_load_rif, eclass
     quietly count
     local rif_rows = r(N)
     local rif_dim = max(`rif_rows', `nrif')
-    if `rif_dim' > c(max_matdim) {
+    * c() names a newer Stata added are r(133) on an older one, hence the
+    * branch. 65,534 is Stata/MP's limit and the largest any flavour has.
+    if c(stata_version) >= 16 local rif_cap = c(max_matdim)
+    else local rif_cap = c(matsize)
+    if `rif_dim' > `rif_cap' {
+        if c(stata_version) < 16 & `rif_dim' <= c(max_matsize) {
+            local rif_how "Type -set matsize `rif_dim'- and reload it."
+        }
+        else if c(stata_version) >= 16 & !c(MP) & `rif_dim' <= 65534 {
+            local rif_how "Stata/MP, whose limit is 65,534, can reload it; or re-run csdid and aggregate in that session, where csdid_stats and estat have no such limit."
+        }
+        else {
+            local rif_how "No Stata can hold a matrix this large: re-run csdid and aggregate in that session, where csdid_stats and estat have no such limit."
+        }
         restore
-        display as error "saved RIF artifact in using() holds `rif_rows' unit rows and `nrif' ATT(g,t) columns, and reading it needs a matrix of `rif_dim' rows or columns; this Stata's limit is `=c(max_matdim)'. The artifact is valid -- it was written through a path with no such limit -- but it cannot be read back on this Stata flavour. Use Stata/SE or Stata/MP, or re-run csdid rather than reloading."
+        display as error "saved RIF artifact in using() holds `rif_rows' unit rows and `nrif' ATT(g,t) columns, and reading it needs a matrix of `rif_dim' rows or columns; this Stata's limit is `rif_cap'. The artifact is valid -- it was written through a path with no such limit -- but it cannot be read back here. `rif_how'"
         exit 908
     }
 

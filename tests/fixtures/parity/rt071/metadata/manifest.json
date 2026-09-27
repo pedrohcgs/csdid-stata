@@ -1,0 +1,69 @@
+{
+  "matrix_id": "RT071",
+  "fixture_family": "r-group-window-subunit-axis",
+  "normative_source": "did 2.5.1 compute.aggte.R:177 (raw-scale na.rm screen), :252-253 (rank recode), :335-344 (rank-scale group window), :777-781 (get_agg_inf_func stop on an empty selection)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/subunit_axis.csv",
+      "sha256": "62f08349e5fe21812a263b7f5626277765b41c01d5b5d37278cd41af33e0ace2",
+      "rows": 1020,
+      "columns": 4
+    },
+    {
+      "path": "inputs/cases.csv",
+      "sha256": "5e1b2f55bb108586b9e7fd876cab5a7602b679bda014cb7e2129b7d37b3703e9",
+      "rows": 5,
+      "columns": 4
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt071/generate.R",
+      "path": "tools/parity/generators/rt071/generate.R",
+      "sha256": "fa250c09ac036e16f605d21934d60d75f71c7a49773b296e7094b405d6c5b856"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/aggte.csv",
+      "schema": "aggte-group",
+      "sha256": "ccaedb1668aa46341f9fb20460019b58ffaa6fedf3d60c605766f76f44712db4"
+    },
+    {
+      "path": "expected/r/refusals.csv",
+      "schema": "refusal-message",
+      "sha256": "2b47178f2764f1835478f8441b6a84b361ea3f1f4a54efcfdf88a907b52dc61f"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "csdid_stats group/simple with dropmissing and the case's max_e(): cohort effects, overall ATT and standard errors",
+      "expected": "expected/r/aggte.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["case", "row", "egt"]
+    },
+    {
+      "actual": "the cases R stops on are refused with rc 498, through csdid_stats and estat",
+      "expected": "expected/r/refusals.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "case"
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Axis {1, 1.2, 1.7, 2.2, 2.7, 3.1}, cohorts 1.7, 2.2, 2.7, 3.1 and 60 never-treated units, 30 units per cohort; cohort 1.7 unobserved at 1.7 and 2.2, estimated under bal(none)."
+}

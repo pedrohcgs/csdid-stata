@@ -1,0 +1,110 @@
+{
+  "matrix_id": "RT070",
+  "fixture_family": "r-decimal-axis-first-period",
+  "normative_source": "did 2.5.1 pre_process_did2.R:279 (glist > first_period + anticipation); compute.aggte.R:463 (eseq >= balance_e - t2orig(maxT) + t2orig(1))",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/month_double.csv",
+      "sha256": "ed87eec75b3eae61608a7b694eca80f1330ba4a5687db5b757e8656a98355e9a",
+      "rows": 2400,
+      "columns": 4
+    },
+    {
+      "path": "inputs/month_float.csv",
+      "sha256": "dda0b9b8a6b2b102c9851b44e422248e7374112cf1b7b73ff10cde5fb0c0ef6e",
+      "rows": 2400,
+      "columns": 4
+    },
+    {
+      "path": "inputs/month_unbalanced.csv",
+      "sha256": "692254a5fb57e314a577587f11d54ccc8a811859672a815d6e3330a6b7ab5ff7",
+      "rows": 2399,
+      "columns": 4
+    },
+    {
+      "path": "inputs/guard_ulp.csv",
+      "sha256": "948e96b02753697d795c0e01f206681ccd82a655fd8edde9f3865fe693e911f2",
+      "rows": 240,
+      "columns": 4
+    },
+    {
+      "path": "inputs/guard_exact.csv",
+      "sha256": "9f8a7742e7911c055817d0649ef13e5419a53a2f700967ec864b2e5a64ca7dea",
+      "rows": 240,
+      "columns": 4
+    },
+    {
+      "path": "inputs/latest_only.csv",
+      "sha256": "b0868b6d1ec754122aed27767c3c274aea6c2756e6c1b404f7972ed9f6623846",
+      "rows": 360,
+      "columns": 4
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "7bb3d7b1c898a0166dadf6a183a65acf371f93046c3cf92ede92a0b7ccfee9aa",
+      "rows": 6,
+      "columns": 3
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt070/generate.R",
+      "path": "tools/parity/generators/rt070/generate.R",
+      "sha256": "138dacf41989474ec25aece15bde1f5361a11f88d4ce1cab1ced9eba8d7ea1a6"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "b78ccf8845dac8713f1f7d408009ead4e9d573080bc9099523fc6f6622e656d2"
+    },
+    {
+      "path": "expected/r/dynamic.csv",
+      "schema": "aggte-dynamic",
+      "sha256": "27912eee8a968ba0b4d5eb5ad0507b4fcb0ac186dc3f89a2b8838296e8ae2121"
+    },
+    {
+      "path": "expected/r/refusals.csv",
+      "schema": "refusal-message",
+      "sha256": "e916e843f6f07cacf00b367b97929e9d90b3e4df8bb0b5aba96ee6e49f7761e1"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "e(time_first) equals the first period exactly; csdid_stats dynamic, balance(0|1) event times (exact), effects and standard errors, from e() and from a saverif() file",
+      "expected": "expected/r/dynamic.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "balance_e", "egt"]
+    },
+    {
+      "actual": "the one-ulp first period estimates R's cells under both comparison groups",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "control", "group", "time"]
+    },
+    {
+      "actual": "the exact first period, and a latest cohort the no-never-treated fallback consumes, refuse with rc 459 under both comparison groups",
+      "expected": "expected/r/refusals.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "control"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "A 24-period monthly axis 2000 + m/12 stored as double and as float (the Stata test recasts time() and gvar() to float; every value is float-representable), and the same axis with one unit short of a period under bal(full); a four-period axis whose first period is 1.02 - eps or exactly 1.02, cohort 2.02 under anticipation(1); a monthly axis with no never-treated group whose only usable cohort, 2000 + 8/12, is the latest."
+}

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid legacy utilities" "help csdid_legacy"}{...}
 {vieweralsosee "" "--"}{...}
@@ -159,6 +159,8 @@ behind:
 An expression that cannot be evaluated aborts earlier with Stata's own code
 for the specific failure (for example 111 for an unknown variable, 133 for an
 unknown function, 109 for a type mismatch){p_end}
+{p2col:{cmd:r(109)}}{cmd:tvar()} is a string variable; the message names it
+and how to convert it{p_end}
 {p2col:{cmd:r(459)}}the indicator takes more than two values on the selected
 sample, or takes two values neither of which is {cmd:0}; the message names the
 values it found{p_end}

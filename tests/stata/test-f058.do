@@ -122,6 +122,43 @@ assert `rc_win' == 498
 f058_log_has using "`lgw'", message("(that is: csdid_stats, type(dynamic) dropmissing window(-3 2))")
 assert r(found)
 
+* -- the synonyms min_e()/max_e()/balance_e() change the aggregation as
+*    much as window() and balance() do, and the retype must carry them
+tempfile lgm
+log using "`lgm'", text replace name(f058m)
+capture noisily csdid_stats, type(dynamic) min_e(-3) max_e(2) balance_e(1)
+local rc_syn = _rc
+log close f058m
+assert `rc_syn' == 498
+f058_log_has using "`lgm'", message("(that is: csdid_stats, type(dynamic) dropmissing min_e(-3) max_e(2) balance_e(1))")
+assert r(found)
+
+* -- on the saved-RIF route the path keeps its quotes, so a path with a
+*    space gives a retype that parses
+tempfile rifstub
+local rifsp "`rifstub' with space.dta"
+quietly csdid y x [iw=w], ivar(id) time(period) gvar(g) method(dr) ///
+    analytical nevertreated base_period(varying) bal(none) saverif("`rifsp'") replace
+tempfile lgq
+log using "`lgq'", text replace name(f058q)
+capture noisily csdid_stats using "`rifsp'", type(dynamic)
+local rc_rif = _rc
+log close f058q
+assert `rc_rif' == 498
+f058_log_has using "`lgq'", message(`"(that is: csdid_stats using "`rifsp'", type(dynamic) dropmissing)"')
+assert r(found)
+capture erase "`rifsp'"
+
+* -- a level() the user typed is part of the aggregation the retype names
+tempfile lgl
+log using "`lgl'", text replace name(f058l)
+capture noisily csdid_stats, type(dynamic) level(90)
+local rc_lv = _rc
+log close f058l
+assert `rc_lv' == 498
+f058_log_has using "`lgl'", message("(that is: csdid_stats, type(dynamic) dropmissing level(90))")
+assert r(found)
+
 tempfile lge
 log using "`lge'", text replace name(f058e)
 capture noisily estat event

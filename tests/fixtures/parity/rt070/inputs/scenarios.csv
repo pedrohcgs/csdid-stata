@@ -1,0 +1,7 @@
+"scenario","control","anticipation"
+"month_double","notyet",0
+"month_float","notyet",0
+"month_unbalanced","notyet",0
+"guard_ulp","both",1
+"guard_exact","both",1
+"latest_only","both",0

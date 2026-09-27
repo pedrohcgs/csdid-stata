@@ -2,7 +2,8 @@
 *
 * Each pair below shows a legacy spelling first -- which still runs, and says
 * what it is -- and then the modern line that replaces it. Run the file and
-* read the messages: the legacy lines are the ones that print something.
+* read the messages: most legacy lines print a compatibility note; id(), a
+* plain synonym of ivar(), runs without one.
 
 version 14
 clear
@@ -23,7 +24,7 @@ drop if mod(id, 16) == 0 & year == 2
 * 1. id() -> ivar(), and the unbalanced panel is now an explicit choice.
 *
 * id() is the Version 1.82 spelling of ivar() and is still accepted. The
-* default for an unbalanced panel changed: 1.82 balanced each 2x2 silently,
+* default for an unbalanced panel changed: 1.82 balanced each 2x2 separately,
 * while 2.0.0 balances the whole panel with bal(full) and reports how many
 * units that dropped. Say bal(none) to keep every unit, or bal(pair) to
 * reproduce what 1.82 did.

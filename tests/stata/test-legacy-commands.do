@@ -59,6 +59,27 @@ assert _rc == 459
 capture egen bad_egen = csgvar(three_vals), tvar(year) ivar(countyreal)
 assert _rc == 459
 
+* a string tvar() is refused by name; it fell through to egen's bare
+* "type mismatch", which names neither the option nor the remedy
+generate str4 syear = string(year)
+tempfile csglg
+log using "`csglg'", text replace name(csgstr)
+capture noisily csgvar bad_str = treated, tvar(syear) ivar(countyreal)
+local rc_str = _rc
+log close csgstr
+assert `rc_str' == 109
+tempname csgfh
+local csgbody ""
+file open `csgfh' using "`csglg'", read text
+file read `csgfh' line
+while r(eof) == 0 {
+    local csgbody `"`csgbody' `line'"'
+    file read `csgfh' line
+}
+file close `csgfh'
+assert strpos(`"`csgbody'"', "tvar() must be a numeric time variable") > 0
+drop syear
+
 * and it refuses a two-valued indicator whose untreated state is not 0. This
 * one used to pass: `replace aux = 0 if exp == 0' never fired, every unit came
 * back with a positive cohort, and csdid then silently coerced the latest
@@ -194,6 +215,99 @@ assert `ct_k' == colsof(`CTB')
 forvalues j = 1/`ct_k' {
     assert !missing(`CTT'[2,`j'], `CTT'[3,`j'], `CTT'[5,`j'], `CTT'[6,`j'])
 }
+
+* e(crit_val) is overwritten by every aggregation, so after estat event at
+* another level the ATT(g,t) cells must still be banded at their own
+* critical value, read from e(boot_attgt) as estat tidy and csdid_plot do
+use "`root'/src/data/mpdta.dta", clear
+quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) rseed(3)
+tempname CTBA
+matrix `CTBA' = e(boot_attgt)
+local ct_gt_crit = `CTBA'[1, colnumb(`CTBA', "crit_val")]
+quietly estat event, level(90)
+quietly csdid_table
+matrix `CTT' = r(table)
+matrix `CTB' = e(b)
+matrix `CTV' = e(V)
+forvalues j = 1/`=colsof(`CTB')' {
+    if `CTV'[`j',`j'] > 0 & `CTV'[`j',`j'] < . {
+        assert reldif(`CTT'[5,`j'], `CTB'[1,`j'] - `ct_gt_crit' * sqrt(`CTV'[`j',`j'])) < 1e-10
+    }
+}
+* after a posted event study, the overall column is banded pointwise, as
+* estat prints it, not at the simultaneous critical value
+quietly estat event, post
+matrix `CTB' = e(b)
+local ct_pk = colnumb(`CTB', "Post_avg")
+quietly csdid_table
+matrix `CTT' = r(table)
+local ct_z = invnormal(1 - (100 - e(agg_level)) / 200)
+assert reldif(`CTT'[5,`ct_pk'], _b[Post_avg] - `ct_z' * _se[Post_avg]) < 1e-10
+
+* a posted aggregation keeps the band it was posted with: under analytical
+* pointwise inference at another level, and after a later, non-posted
+* aggregation re-levels e(crit_val) -- csdid_table redraws what estat posted
+use "`root'/src/data/mpdta.dta", clear
+tempname POSTED
+foreach route in analytical later {
+    if "`route'" == "analytical" {
+        quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) analytical pointwise
+        quietly estat event, level(90) post
+        matrix `POSTED' = r(table)
+    }
+    else {
+        quietly csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) rseed(3)
+        quietly estat event, post
+        matrix `POSTED' = r(table)
+        quietly csdid_stats, type(group) level(90)
+    }
+    quietly csdid_table
+    matrix `CTT' = r(table)
+    forvalues j = 1/`=colsof(`CTT')' {
+        if !missing(`POSTED'[2,`j']) & `POSTED'[2,`j'] > 0 {
+            assert reldif(`CTT'[5,`j'], `POSTED'[5,`j']) < 1e-10
+            assert reldif(`CTT'[6,`j'], `POSTED'[6,`j']) < 1e-10
+        }
+        * a coefficient with no standard error is shown without one
+        else assert missing(`CTT'[2,`j'])
+    }
+}
+
+* the header reads the level as typed: 90.1, not its binary expansion
+use "`root'/src/data/mpdta.dta", clear
+quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical level(90.1)
+tempfile ctl
+log using "`ctl'", text replace name(ctl)
+csdid_table
+log close ctl
+tempname ctfh
+local ctbody ""
+file open `ctfh' using "`ctl'", read text
+file read `ctfh' line
+while r(eof) == 0 {
+    local ctbody `"`ctbody' `line'"'
+    file read `ctfh' line
+}
+file close `ctfh'
+assert strpos(`"`ctbody'"', "[90.1% conf. interval]") > 0
+
+* csdid_rif, wboot redisplays through csdid_table without a second note
+* about a command the user did not type
+clear
+quietly set obs 300
+quietly generate double rifx = mod(_n * 7, 89) / 89 + 0.4
+log using "`ctl'", text replace name(ctl)
+csdid_rif rifx, wboot reps(99) seed(11)
+log close ctl
+local ctbody ""
+file open `ctfh' using "`ctl'", read text
+file read `ctfh' line
+while r(eof) == 0 {
+    local ctbody `"`ctbody' `line'"'
+    file read `ctfh' line
+}
+file close `ctfh'
+assert strpos(`"`ctbody'"', "csdid_table is deprecated") == 0
 
 * and with nothing to tabulate it refuses by name rather than printing blanks
 * under a filled-in header
@@ -421,5 +535,56 @@ capture csdid_table, noci
 assert _rc == 198
 * a bare call still displays: it aborts the do-file here if it cannot
 csdid_table
+* an option it does not know is refused, not dropped
+capture csdid_table, frobnicate
+assert _rc == 198
+
+* ---- csdid_rif, cluster() wboot on a restricted sample ---------------------
+* The wild-bootstrap cluster ids were read over every observation while the
+* RIF columns were read on the estimation sample, so an if/in or a missing
+* cluster value stopped the run with a Mata r(3301).
+clear
+quietly set obs 400
+quietly generate long id = _n
+quietly generate double cl = mod(id, 23) + 1
+quietly replace cl = . in 5
+quietly generate double rif1 = mod(id * 13, 97) / 97 - 0.5 + 1.2
+csdid_rif rif1 if id > 20, cluster(cl) wboot reps(99) seed(7)
+assert e(N) == 380
+csdid_rif rif1, cluster(cl) wboot reps(99) seed(7)
+assert e(N) == 399
+
+* ---- csdid_rif refuses a 2.0.0 saverif() file ----------------------------
+* Its rif# columns are centred influence functions (mean zero), not the
+* Version 1.82 ATT-plus-influence RIF csdid_rif averages, so accepting it
+* reported every ATT(g,t) as 0 with p = 1.
+use "`root'/src/data/mpdta.dta", clear
+tempfile rif200
+quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical saverif("`rif200'") replace
+use "`rif200'", clear
+capture noisily csdid_rif rif2 rif3
+assert _rc == 198
+assert "`e(cmd)'" == "csdid"
+* and csdid_stats without using() does not silently aggregate e() in its place
+capture noisily csdid_stats, type(simple)
+assert _rc == 459
+
+* ---- csdid, version names csdid version -----------------------------------
+* Version 1.82 read its version as an option. The replay parser answered
+* "option version not allowed", which says what failed but not what to type.
+* A refusal posts nothing: the estimation stays active.
+use "`root'/src/data/mpdta.dta", clear
+quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical
+set linesize 255
+foreach form in ", version" ",version" " , version " {
+    tempfile lgv
+    log using "`lgv'", text replace name(legv)
+    capture noisily csdid `form'
+    local rcv = _rc
+    log close legv
+    assert `rcv' == 198
+    assert "`e(cmd)'" == "csdid"
+    assert strpos(fileread("`lgv'"), "type csdid version, without the comma") > 0
+}
 
 display "LEGACY OK: csgvar verified against csdid on both routes, bare and expression; four deprecated commands load; csdid_rif posts e(N)/e(sample) and leaves bb_/VV_/cln_ alone; csdid_table fills its t and CI columns from either e(cband) shape; tsvmat stores double and refuses before mutating; level provenance survives replay; the RNG stream survives a refused wboot"

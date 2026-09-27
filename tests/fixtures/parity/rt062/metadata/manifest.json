@@ -1,0 +1,50 @@
+{
+  "matrix_id": "RT062",
+  "fixture_family": "r-wald-pretest-warning",
+  "normative_source": "did 2.5.1 att_gt.R:670-675 (the Wald pre-test is not returned when the pre-treatment covariance is singular, with this warning)",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/singular-pretest.csv",
+      "sha256": "7683377502936ebd945483c0943ccaba752bc56f0563bc4481405d313e210124"
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt062/generate.R",
+      "path": "tools/parity/generators/rt062/generate.R",
+      "sha256": "db752445da4729397f5e46f6c7712b1f23b8d2b0a7ccf9ce6cb3faa0adb05a2b"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/warnings.csv",
+      "schema": "warning-text",
+      "sha256": "209fb5284538371a3c44023e2cb11170c8c21523af9e13db71474cdf6cdb27c6"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "the Wald pre-test warning line csdid prints",
+      "expected": "expected/r/warnings.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "message"
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "Repeated cross sections whose two pre-treatment cells are each other's comparison, so the pre-test covariance is singular."
+}

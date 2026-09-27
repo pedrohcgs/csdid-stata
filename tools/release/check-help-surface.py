@@ -304,7 +304,7 @@ ABSENT_BY_DESIGN = ["ll"]
 # the note about what a bare _b[] used to produce) and 322 (margins refusing on
 # e(marginsnotok)). The checker asserts the source raises neither, so if csdid
 # ever starts raising one, this entry has to be revisited.
-STATA_OWN_RETURN_CODES = ["111", "322"]
+STATA_OWN_RETURN_CODES = ["322"]
 
 
 def read(path):
@@ -470,7 +470,9 @@ def declared_options(program_text):
         for token in DECLARED.findall(block):
             if token.lower() in NOT_AN_OPTION:
                 continue
-            lead = re.match(r"[A-Z0-9_]*", token).group(0)
+            # Stata accepts the capitalized lead without its trailing
+            # underscore: BASE_period is abbreviable to base (measured).
+            lead = re.match(r"[A-Z0-9_]*", token).group(0).rstrip("_")
             minlen = len(lead) if lead else len(token)
             full = token.lower()
             out[full] = min(out.get(full, minlen), minlen)

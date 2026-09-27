@@ -1,0 +1,7 @@
+"scenario","data","fix_weights","method"
+"treated-first","treated-gaps","first_period","reg"
+"treated-base","treated-gaps","base_period","reg"
+"treated-first-dr","treated-gaps","first_period","dr"
+"treated-unset","treated-gaps","","reg"
+"control-first","control-gaps","first_period","reg"
+"control-base","control-gaps","base_period","reg"

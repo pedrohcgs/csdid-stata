@@ -1,0 +1,6 @@
+"scenario","design","base_period","method"
+"two_varying_reg","two","varying","reg"
+"two_universal_reg","two","universal","reg"
+"three_varying_reg","three","varying","reg"
+"three_universal_reg","three","universal","reg"
+"three_universal_dr","three","universal","dr"

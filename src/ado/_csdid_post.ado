@@ -1,4 +1,4 @@
-*! _csdid_post 2.0.0 08sep2026
+*! _csdid_post 2.0.0 27sep2026
 program define _csdid_post, eclass
     version 14
     gettoken subcmd 0 : 0, parse(" ,")
@@ -106,7 +106,6 @@ program define _csdid_post_aggte, eclass
     * F-045: `simple' has no per-row panel; only the overall ATT is posted.
     if "`atype'" != "simple" {
         forvalues i = 1/`=rowsof(`A')' {
-            local ev = `A'[`i', 1]
             local att = `A'[`i', 2]
             local se = `A'[`i', 3]
             if missing(`att') continue
@@ -116,15 +115,22 @@ program define _csdid_post_aggte, eclass
             * round() ROUNDED the axis value, so on a non-integer event-time,
             * cohort or period axis distinct rows collapsed onto one name and
             * test/lincom resolved silently to the first column carrying it.
-            * %21.0g is injective on the value; "." is not usable in a
-            * coefficient name, so it becomes "_". The sign of an event time is
-            * carried by the m/p prefix, not by the formatted field.
-            local evtxt : display %21.0g abs(`ev')
-            local evtxt = strtrim("`evtxt'")
+            * The field is the shortest of %16.0g ... %21.0g that reads back as
+            * the stored value, read from the matrix element: a `local x ='
+            * copy keeps sixteen digits, so the event time 1 - 2.2
+            * (-1.2000000000000002) was named from -1.2 and 2.2 - 1.2
+            * collided with 1. An exponent form is kept only when nothing else
+            * reads back, so integers print exactly as %21.0g prints them. "."
+            * is not usable in a coefficient name, so it becomes "_". The sign
+            * of an event time is carried by the m/p prefix, not by the field.
+            foreach w in 16 17 18 19 20 21 {
+                local evtxt = strtrim(strofreal(abs(`A'[`i', 1]), "%`w'.0g"))
+                if real("`evtxt'") == abs(`A'[`i', 1]) & !strpos("`evtxt'", "e") continue, break
+            }
             if substr("`evtxt'", 1, 1) == "." local evtxt "0`evtxt'"
             local evtxt = subinstr("`evtxt'", ".", "_", .)
             if "`atype'" == "dynamic" | "`eventnames'" != "" {
-                local cname = cond(`ev' < 0, "Tm", "Tp") + "`evtxt'"
+                local cname = cond(`A'[`i', 1] < 0, "Tm", "Tp") + "`evtxt'"
             }
             else if "`atype'" == "group" {
                 local cname "G`evtxt'"
@@ -158,8 +164,8 @@ program define _csdid_post_aggte, eclass
             }
             * Residue the format cannot cover: a name past Stata's
             * 32-character limit, two axis values whose "_" substitution
-            * reassembles the same string, and any character %21.0g can emit
-            * that a coefficient name cannot carry (an exponent's sign, say).
+            * reassembles the same string, and any character the format can
+            * emit that a coefficient name cannot carry (an exponent's sign).
             capture confirm name `cname'
             if _rc | strlen("`cname'") > 32 | strpos(" `names' ", " `cname' ") {
                 local cname "eff_`k'"
@@ -289,6 +295,14 @@ program define _csdid_post_aggte, eclass
     if `use_boot_crit' {
         capture local bandcrit = e(crit_val)
         if missing(`bandcrit') local bandcrit = `pointcrit'
+    }
+    * A later aggregation, posted or not, overwrites e(crit_val) and
+    * e(agg_level) while e(b) keeps these coefficients; the band they were
+    * posted with travels with them, for the deprecated csdid_table.
+    if "`post'" != "" {
+        ereturn hidden scalar post_crit_val = `bandcrit'
+        ereturn hidden scalar post_point_crit_val = `pointcrit'
+        ereturn hidden scalar post_level = `level'
     }
     * ---------------------------------------------------------------------
     * The OVERALL summary column is banded pointwise, the per-effect columns
@@ -443,6 +457,11 @@ program define _csdid_post_replace_bv, eclass
         local has_scalar_`s' = !_rc
         if `has_scalar_`s'' local scalar_`s' = e(`s')
     }
+    * time_first is a period, and balance() truncates on it exactly
+    * (compute.aggte.R:463). The `=' copy above keeps sixteen significant
+    * digits, which moves a first period like 2000 + 5/12 by an ulp; %21.0g
+    * reads back as the same double.
+    if `has_scalar_time_first' local scalar_time_first : display %21.0g e(time_first)
 
     * marginsnotok was missing from this enumeration (same class as the
     * F-055 omissions above), so every estat posting path stripped csdid's

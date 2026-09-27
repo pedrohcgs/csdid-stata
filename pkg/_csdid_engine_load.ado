@@ -1,4 +1,4 @@
-*! _csdid_engine_load 2.0.0 08sep2026
+*! _csdid_engine_load 2.0.0 27sep2026
 * ---------------------------------------------------------------------------
 * Bringing the Mata engine into the session.
 *
@@ -15,6 +15,10 @@
 * ---------------------------------------------------------------------------
 program define _csdid_engine_load
     version 14
+    if `"`0'"' == "teardown" {
+        _csdid_engine_teardown
+        exit
+    }
 
     * -----------------------------------------------------------------------
     * DECIDED ONCE PER SESSION.
@@ -174,9 +178,7 @@ program define _csdid_engine_load
             * functions, other packages' loaded code -- survives. (`mata
             * clear' here once destroyed all of it; the cold audit measured
             * a user sentinel vanishing.)
-            capture mata: mata drop CSDID_*
-            capture mata: mata drop csdid_*
-            capture mata: mata drop csdid_*()
+            _csdid_engine_teardown
             capture quietly mata: mata mlib index
         }
         else if `mlib_found' & strpos(";`c(matalibs)';", ";lcsdid_v2;") == 0 {
@@ -207,7 +209,13 @@ program define _csdid_engine_load
     if _rc {
         _csdid_engine_source
         local engine_from_source = 1
-        if `mlib_found' {
+        * csdid's library is built by Stata 17, so Stata 17 or later reads
+        * it unless the file itself is damaged; only an older Stata meets a
+        * library it cannot read by design.
+        if `mlib_found' & c(stata_version) >= 17 {
+            display as text "note: the compiled csdid library at `mlib_file' could not be read, although this Stata reads the library csdid ships, so the file is probably damaged -- an interrupted download, for example. csdid compiled its source copy instead and the results are the same. Re-install csdid to restore the compiled library."
+        }
+        else if `mlib_found' {
             display as text "note: a compiled csdid library was found at `mlib_file' but this Stata could not read it -- most often the library was built by a newer Stata than this one -- so csdid compiled its source copy instead. The results are the same; only the first csdid of a session takes a moment longer. Nothing needs to be done."
         }
     }
@@ -258,9 +266,7 @@ program define _csdid_engine_load
             local mlib_stale = (real("`mlib_stata'") >= . | `mlib_newer')
         }
         if `mlib_stale' {
-            capture mata: mata drop CSDID_*
-            capture mata: mata drop csdid_*
-            capture mata: mata drop csdid_*()
+            _csdid_engine_teardown
             _csdid_engine_source
             if `mlib_newer' {
                 display as text "note: csdid's compiled library was built by Stata `mlib_stata' and this is Stata `c(stata_version)', so csdid is reading its source copy instead. The results are the same; only the first csdid of a session takes a moment longer. Nothing needs to be done."
@@ -370,6 +376,38 @@ end
 * path must not leak strictness into the user's session (see the note at the
 * top of csdid.mata), and the shipped source compiles cleanly either way.
 * ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+* Dropping the engine without touching anyone else's Mata. The pattern
+* csdid_*() also matches other packages' names -- csdid2 defines a class
+* csdid_estat -- and Mata refuses a pattern drop as a whole when any match is a
+* class with a live instance, so one package's object kept csdid's entire old
+* engine in memory, silently. csdid__*() holds every internal function and the
+* three classes; the single-underscore functions are dropped one by one, by
+* name, so no refusal can block the rest. tests/meta/test-engine-teardown.sh
+* holds this list to the functions csdid.mata defines. csdid's session state
+* lives in Mata variables named CSDID_*, dropped first so no instance holds a
+* classdef; a variable named csdid_* is not csdid's and is left alone.
+* ---------------------------------------------------------------------------
+program define _csdid_engine_teardown
+    version 14
+    capture mata: mata drop CSDID_*
+    capture mata: mata drop csdid__*()
+    foreach f in ///
+        csdid_agg_boot_plugin_finish csdid_agg_boot_plugin_prep_vars csdid_aggte ///
+        csdid_analytical_cband csdid_basic_attgt csdid_bmisc_aggskip ///
+        csdid_bmisc_attgtskip csdid_bmisc_labelse csdid_bmisc_skipdraws ///
+        csdid_bmisc_skiponce csdid_boot_plugin_finish csdid_boot_plugin_prepare ///
+        csdid_boot_plugin_record csdid_boot_reorder_r csdid_boot_reorder_rc_r ///
+        csdid_bootstrap_aggte csdid_bootstrap_aggte_cluster csdid_bootstrap_aggte_direct ///
+        csdid_bootstrap_attgt_fast csdid_cache_agg_cols csdid_cache_agg_token ///
+        csdid_cache_cluster_vec csdid_cache_if_cols csdid_cache_if_rows ///
+        csdid_cache_if_select csdid_cache_validate csdid_cluster_attgt ///
+        csdid_mlib_version csdid_post_attgt_v csdid_post_mapped_v ///
+        csdid_rif_export csdid_settled_mark csdid_shapescan {
+        capture mata: mata drop `f'()
+    }
+end
+
 program define _csdid_engine_source_path, rclass
     version 14
     local mata_source ""

@@ -24,6 +24,12 @@
 *      (:763, balancing at :331-390). csdid read its flags after balancing, so a
 *      violation confined to a unit that bal(full) drops was never refused: R
 *      stopped and csdid estimated the survivors.
+*
+*   E. bal(pair) with fix_weights(first_period). A fixed rule excludes the units
+*      its target period does not observe, weights supplied or not, and says so
+*      -- the rule R applies on its unbalanced route (compute.att_gt2.R:534-577)
+*      and bal(none) mirrors. Under bal(pair) it applied only when iweights
+*      were given, and never warned.
 
 version 15
 clear all
@@ -87,6 +93,8 @@ assert `r' == _N
 generate double y = mod(id, 7)/3 + 0.4*t + 0.5*(g == 3 & t >= 3) + 0.1*mod(id*t, 5)
 sort id t
 
+tempfile pairemptylog
+log using "`pairemptylog'", replace text
 csdid y, ivar(id) time(t) gvar(g) method(reg) bal(pair) nofast rseed(12345)
 
 tempname A
@@ -103,9 +111,18 @@ forvalues c = 6/9 {
     assert `A'[`row34',`c'] == 0
 }
 
-* the missing cell must reach the aggregations, not vanish from them
+* the missing cell must reach the aggregations, not vanish from them, and the
+* refusal points at what the run left behind: no per-cell warning names this
+* cell (both periods are observed, by different units, so a corner warning
+* would be false), and its zero counts are in e(attgt)
 capture noisily csdid_stats simple
 assert _rc == 498
+log close
+pcbo_assert_log using "`pairemptylog'", message("No units in group") omit
+pcbo_assert_log using "`pairemptylog'", message("No available control units") omit
+pcbo_assert_log using "`pairemptylog'", message("per-cell warnings above") omit
+pcbo_assert_log using "`pairemptylog'", ///
+    message("e(attgt) holds each cell's treated and comparison counts")
 capture noisily csdid_stats event
 assert _rc == 498
 csdid_stats simple, dropmissing
@@ -330,5 +347,60 @@ quietly drop if t == mod(id, 3) + 1
 sort id t
 capture csdid y, ivar(id) time(t) gvar(g) method(reg) analytical
 assert _rc == 2000
+
+* -----------------------------------------------------------------------
+* E. bal(pair) + fix_weights(first_period).
+*
+* Periods 1-4, never-treated ids 1-12 and cohort 3 ids 21-32; ids 1-4 and
+* 21-23 are not observed in period 1, the target period, and trend apart from
+* the rest. Under base_period(varying) cell (3,2) pairs periods 1 and 2, so
+* the pair itself removes them and the rule adds nothing; cells (3,3) and (3,4)
+* pair periods 2 and 3 or 4, where the rule removes them. The sample, the
+* numbers and the warnings must not depend on whether iweights are given, and
+* on this design, where the pair removes no one else, they are bal(none)'s.
+* -----------------------------------------------------------------------
+clear
+set obs 96
+generate long id = ceil(_n/4)
+generate int t = mod(_n - 1, 4) + 1
+replace id = id + 8 if id > 12
+generate byte g = cond(id > 12, 3, 0)
+generate double y = 0.1*id + 0.5*t + (g == 3 & t >= 3)*(1 + id/50) + 0.3*t*(id <= 4 | inrange(id, 21, 23))
+quietly drop if t == 1 & (id <= 4 | inrange(id, 21, 23))
+generate double one = 1
+sort id t
+
+local fwrun "ivar(id) time(t) gvar(g) method(reg) nevertreated base_period(varying) fix_weights(first) analytical"
+tempname P W N
+tempfile pairlog pairwlog
+log using "`pairlog'", replace text
+csdid y, `fwrun' bal(pair)
+log close
+matrix `P' = e(attgt)
+log using "`pairwlog'", replace text
+csdid y [iw=one], `fwrun' bal(pair)
+log close
+matrix `W' = e(attgt)
+quietly csdid y, `fwrun' bal(none)
+matrix `N' = e(attgt)
+
+assert rowsof(`P') == 3 & rowsof(`W') == 3 & rowsof(`N') == 3
+forvalues i = 1/3 {
+    assert `P'[`i', 2] == `N'[`i', 2] & `W'[`i', 2] == `N'[`i', 2]
+    forvalues c = 6/9 {
+        assert `P'[`i', `c'] == `W'[`i', `c']
+    }
+    assert reldif(`P'[`i', 4], `W'[`i', 4]) < 1e-12
+    assert reldif(`P'[`i', 4], `N'[`i', 4]) < 1e-12
+    * every cell uses the 9 treated and 8 comparison units period 1 observes
+    assert `P'[`i', 6] == 9 & `P'[`i', 8] == 8
+}
+foreach lg in pairlog pairwlog {
+    foreach tt in 3 4 {
+        pcbo_assert_log using "``lg''", ///
+            message("warning: Some units not observed in first_period (period 1) for group 3 in time period `tt'. These units are excluded.")
+    }
+    pcbo_assert_log using "``lg''", message("for group 3 in time period 2. These units are excluded.") omit
+}
 
 display as text "test-pair-cell-and-balance-order: all assertions passed"

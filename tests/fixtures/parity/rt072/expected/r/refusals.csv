@@ -1,0 +1,4 @@
+"case","message"
+"onecell_balance1","No event times fall within the requested window. Adjust 'min_e'/'max_e' (and 'balance_e') so at least one event time is included."
+"onecell_window12","No event times fall within the requested window. Adjust 'min_e'/'max_e' (and 'balance_e') so at least one event time is included."
+"decimal_balance0_narm","No event times fall within the requested window. Adjust 'min_e'/'max_e' (and 'balance_e') so at least one event time is included."

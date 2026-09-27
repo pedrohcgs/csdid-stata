@@ -1,10 +1,9 @@
-*! csdid_table 2.0.0 08sep2026
+*! csdid_table 2.0.0 27sep2026
 program csdid_table, rclass
 	version 14
     * DEPRECATED in csdid 2.0.0. Shipped only so existing do-files keep
     * running; it is not covered by the parity suite and will be removed in
     * a future release. Replacement: the table csdid prints directly, or estat tidy, saving().
-    display as text "note: csdid_table is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
 
 	* level(), noci, cformat() and sformat() were parsed and then never
 	* consulted: the table's number formats are hardcoded below, the CI
@@ -19,7 +18,12 @@ program csdid_table, rclass
 	* distinguish from omission -- is refused as the help promises
 	* (cold-audit N1). The numeric value used below stays c(level), and the
 	* cband branches overwrite it with e(level) provenance where stored.
-	syntax [, Level(string) noci cformat(string) sformat(string) *]
+	* CSDIDRIFCALL is internal: csdid_rif redisplays through this command, and
+	* its user already saw csdid_rif's own deprecation note
+	syntax [, Level(string) noci cformat(string) sformat(string) CSDIDRIFCALL *]
+	if "`csdidrifcall'" == "" {
+		display as text "note: csdid_table is deprecated and will be removed in a future release of csdid; see {help csdid_legacy}"
+	}
 	local ct_bad ""
 	if `"`level'"' != "" local ct_bad "`ct_bad' level()"
 	local level = c(level)
@@ -50,6 +54,11 @@ program csdid_table, rclass
 	}
 *set trace on
 	_get_diopts diopts rest, `options'
+	* anything that is not a display option was dropped without a word
+	if `"`rest'"' != "" {
+		display as error `"csdid_table does not take: `rest'"'
+		exit 198
+	}
 
 	local cf %9.0g  
 	local pf %5.3f
@@ -70,7 +79,7 @@ program csdid_table, rclass
  if `wdt'<15 local wdt = 12
 ***
         tempname mytab z t  ll ul cimat rtab
-        tempname ct_b ct_v ct_se ct_crit ctb ctv
+        tempname ct_b ct_v ct_se ct_crit ctb ctv ct_sep
         .`mytab' = ._tab.new, col(6) lmargin(0)
         .`mytab'.width    `wdt'   |12    12     8         12    12
         .`mytab'.titlefmt  .     .     .   %6s       %24s     .
@@ -114,25 +123,64 @@ program csdid_table, rclass
 			* value csdid used for its own bands, so these bounds are the bounds
 			* csdid reported. The header level follows e(level) for the same
 			* reason: a band drawn at e(level) must not be captioned c(level).
+			* e(crit_val) is whatever the last aggregation left there, so
+			* ATT(g,t) cells are banded where csdid_plot and estat tidy read
+			* their band: e(boot_attgt)'s crit_val, else the normal quantile at
+			* e(level). A posted aggregation keeps e(crit_val) for its effects,
+			* and its overall column is banded pointwise at e(agg_level), as
+			* estat prints it.
+			local ct_first : word 1 of `namelist'
+			local ct_attgt = ("`e(cmd)'" == "csdid" & regexm("`ct_first'", "^(g.*___|att_[0-9]+$)"))
+			local ct_agg = ("`e(cmd)'" == "csdid" & !`ct_attgt')
 			matrix `ctb' = e(b)
 			matrix `ctv' = e(V)
-			scalar `ct_crit' = e(crit_val)
+			scalar `ct_crit' = .
+			if `ct_attgt' {
+				capture confirm matrix e(boot_attgt)
+				if !_rc {
+					tempname ct_ba
+					matrix `ct_ba' = e(boot_attgt)
+					local ct_cc = colnumb(`ct_ba', "crit_val")
+					if !missing(`ct_cc') scalar `ct_crit' = `ct_ba'[1, `ct_cc']
+				}
+			}
+			else if `ct_agg' {
+				* the band recorded when these coefficients were posted: a
+				* later aggregation overwrites e(crit_val) and e(agg_level)
+				capture confirm scalar e(post_crit_val)
+				if _rc {
+					display as error "csdid_table cannot tell which band the posted aggregation was reported with; redisplay it with estat `e(agg_type)', post"
+					exit 459
+				}
+				scalar `ct_crit' = e(post_crit_val)
+			}
+			else scalar `ct_crit' = e(crit_val)
+			local ct_point = .
+			if `ct_agg' local ct_point = e(post_point_crit_val)
 			if missing(`ct_crit') {
 				local ct_level = e(level)
+				if `ct_agg' local ct_level = e(post_level)
 				if missing(`ct_level') local ct_level = `level'
 				scalar `ct_crit' = invnormal(1 - (100 - `ct_level') / 200)
 			}
 			if !missing(e(level)) local level = e(level)
+			if `ct_agg' local level = e(post_level)
 			matrix `cimat' = J(`k', 5, .)
 			forvalues i = 1/`k' {
+				local ct_name : word `i' of `namelist'
+				local ct_c = `ct_crit'
+				if inlist("`ct_name'", "Post_avg", "Overall", "ATT") & !missing(`ct_point') local ct_c = `ct_point'
 				scalar `ct_b'  = `ctb'[1,`i']
 				scalar `ct_v'  = `ctv'[`i',`i']
-				scalar `ct_se' = cond(!missing(`ct_v') & `ct_v' >= 0, sqrt(`ct_v'), .)
+				* a coefficient posted with variance 0 has no standard error
+				* (the reference period, a cell whose SE is missing): missing,
+				* as estat reports it, not a zero-width interval
+				scalar `ct_se' = cond(!missing(`ct_v') & `ct_v' > 0, sqrt(`ct_v'), .)
 				matrix `cimat'[`i',1] = `ct_b'
 				matrix `cimat'[`i',2] = `ct_se'
 				matrix `cimat'[`i',3] = cond(!missing(`ct_se') & `ct_se' > 0, `ct_b'/`ct_se', .)
-				matrix `cimat'[`i',4] = `ct_b' - `ct_crit' * `ct_se'
-				matrix `cimat'[`i',5] = `ct_b' + `ct_crit' * `ct_se'
+				matrix `cimat'[`i',4] = `ct_b' - `ct_c' * `ct_se'
+				matrix `cimat'[`i',5] = `ct_b' + `ct_c' * `ct_se'
 			}
 		}
 		* pvalue
@@ -154,6 +202,10 @@ program csdid_table, rclass
         if `:word count `e(depvar)'' == 1 {
                 local depvar "`e(depvar)'"
         }
+        * the level as a number reads, not its binary expansion: 90.1, not
+        * 90.09999999999999
+        local level : display %9.0g `level'
+        local level = strtrim("`level'")
         .`mytab'.titles "`depvar'"                      /// 1
                         " Coefficient"                  /// 2
                         "Std. err."                     /// 3
@@ -187,9 +239,12 @@ program csdid_table, rclass
 				
 				scalar `ll'   = `cimat'[`i',4]
 				scalar `ul'   = `cimat'[`i',5]
+				* the column r(table) carries, not _se[], which prints 0 for
+				* a coefficient posted with variance 0
+				scalar `ct_sep' = `cimat'[`i',2]
                 .`mytab'.row    "`name'"                ///
                                 `beq'_b[`name']         ///
-                                `beq'_se[`name']        ///
+                                `ct_sep'                ///
                                 `t'                     /// `p'  ///
                                 `ll' `ul'
         }

@@ -103,6 +103,10 @@ display "clusters     : " e(N_clusters)
 display "pre-test W   : " e(wald_stat) "  p = " e(wald_pvalue)
 ```
 
+On these data the clustered pre-test's covariance matrix is singular, so
+`csdid` reports no pre-test and `e(wald_stat)` and `e(wald_pvalue)` are
+missing; run without `quietly` to see the warning that says so.
+
 `e(attgt)` has ten columns: `group`, `time`, `event_time`, `att`, `se`,
 `n_treat_t`, `n_treat_pre`, `n_control_t`, `n_control_pre`, and `base_time`.
 Use column names when extracting results. `base_time` identifies the period

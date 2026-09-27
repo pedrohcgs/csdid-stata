@@ -11,7 +11,7 @@ estimators.
 It implements the same estimators as our R package
 [`did`](https://github.com/bcallaway11/did), from which this implementation
 derives, and the same methods are available in Python through
-[`csdid`](https://github.com/DrSquare/csdid) (`pip install csdid`). Two
+[`csdid`](https://github.com/d2cml-ai/csdid) (`pip install csdid`). Two
 omitted-option defaults differ deliberately — this package defaults to
 the not-yet-treated comparison group and a universal base period, where `did`
 defaults to never-treated and varying — and both are documented in `NEWS.md`. State those
@@ -69,7 +69,7 @@ cap ado uninstall csdid
 net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main") replace
 ```
 
-SSC distributes csdid Version 1.82 under the same command name and the same
+SSC distributes csdid Version 1.81 under the same command name and the same
 filenames, so remove any existing copy first — `cap ado uninstall csdid`, or
 `ssc uninstall csdid` if it came from SSC. `replace` does overwrite the files,
 but installing over a package Stata still tracks leaves two csdid entries
@@ -90,12 +90,14 @@ on the day someone re-runs your do-files:
 <!-- norun -->
 ```stata
 cap ado uninstall csdid
-net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/7e7ca810ce85939c5fb2eed27db868f667980173") replace
+net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/COMMIT") replace
 ```
 
-The commit ID takes the place of `main` in the address; everything else is the
-same. This example pins version 2.0.0. Record both the full installation URL
-and the version reported by `csdid version` in your replication package.
+Replace `COMMIT` with the full 40-character ID of the commit you installed,
+listed on the [commits page](https://github.com/pedrohcgs/csdid-stata/commits/main);
+everything else in the address is the same as for `main`. Record both the full
+installation URL and the version reported by `csdid version` in your
+replication package.
 
 ### Troubleshooting
 
@@ -110,10 +112,10 @@ csdid reset          // clear the session's engine decision and estimation cache
   PLUS, so a leftover `csdid.ado` in either shadows the installed one;
   `which csdid, all` lists every copy, and removing the stale one fixes it.
 - **You installed or replaced csdid in a session that had already run it.**
-  `csdid reset` clears the session's engine decision, plugin bindings and
-  estimation cache, so the next command decides again from the current adopath.
-  A plugin binary replaced at the *same* path may still be served from memory
-  by the operating system; restart Stata to be certain.
+  `csdid reset` clears the session's engine decision and estimation cache, so
+  the next command decides again from the current adopath. The macOS
+  bootstrap accelerator stays loaded until Stata restarts, so restart Stata to
+  load a re-installed one.
 - **Two csdid entries in the package list.** `ado dir` prints one numbered
   stanza per installed package; remove the older csdid stanza with
   `ado uninstall [#]`, using the number in square brackets, then reinstall as
@@ -122,9 +124,10 @@ csdid reset          // clear the session's engine decision and estimation cache
 Requires Stata 14 or newer. There are no external dependencies: the
 estimation engine is Mata and ships precompiled, so the same install works
 on Windows, macOS and Linux. On macOS the package also installs a small
-compiled accelerator (a universal binary) that speeds up the multiplier
-bootstrap; everywhere else — and on macOS if the accelerator cannot load —
-the bootstrap runs through the Mata implementation with identical results.
+compiled accelerator (a universal binary) that runs explicitly seeded
+(`rseed()`) multiplier bootstraps. Unseeded draws, every other platform, and
+a Mac where the accelerator cannot load use the Mata implementation, which
+draws the same multipliers and agrees to floating-point rounding.
 
 ## A short example
 
@@ -174,8 +177,10 @@ expanding in 2014, 2015, 2016 and 2019 against a large never-treated group.
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rseed(20250101)
 ```
 
-`csdid` reports every ATT(g,t) cell, the estimator and comparison group it used,
-and a joint pre-test of parallel trends on the pre-treatment cells.
+`csdid` reports every ATT(g,t) cell and, below the table, a joint pre-test of
+parallel trends on the pre-treatment cells. `e(method)`, `e(control_group)`
+and `e(base_period)` record the estimator, comparison group and base period
+it used.
 
 ```stata
 * ---- aggregate --------------------------------------------------------------
@@ -211,8 +216,8 @@ restore
 
 ## Speed
 
-Measured against **csdid Version 1.82** &mdash; the SSC release dated 2025-10-05
-&mdash; on 7 August 2026, on the same machine and data, with seven timed
+Measured against **csdid Version 1.82** &mdash; the last revision of the 1.8x
+line, November 2025 &mdash; on 7 August 2026, on the same machine and data, with seven timed
 trials per workload after one discarded warmup, on StataNow/MP 19.5.
 
 | Workload | Version 1.82 | 2.0.0 | |
@@ -264,8 +269,7 @@ explicit, disclosed choice — `bal()` — rather than a silent one. The default
 `bal(full)`, keeps only units observed in every period. `bal(none)` keeps
 every unit and estimates through the repeated-cross-section computation with
 the standard-error accounting that goes with it. `bal(pair)` balances each
-2×2 comparison separately, which is what Version 1.82 did without telling
-you. Whatever you choose (or let default), `e(panel_mode)` reports the
+2×2 comparison separately, which is what Version 1.82 did. Whatever you choose (or let default), `e(panel_mode)` reports the
 resolved rule, and `e(N_units)` reports how many units contributed — the
 choice is never invisible.
 
@@ -348,6 +352,12 @@ From inside Stata:
 | `help csdid_stats` | aggregation, event-time windows, balanced event samples |
 | `help csdid_plot` | default plots and plot-ready data export |
 | `help csdid_legacy` | utility and deprecated commands carried over from Version 1.82 |
+| `help csdid_whatsnew` | what changes when you upgrade from Version 1.82 |
+
+Upgrading from Version 1.81 or Version 1.82? The
+[upgrading guide](https://psantanna.com/csdid/articles/upgrading-from-182.html)
+lists every change that moves a number, what replaces each removed option,
+and how to reproduce a Version 1.82 run.
 
 ## How to cite
 

@@ -1,0 +1,9 @@
+scenario,method,att,se,r_reason
+rc_spre1,reg,,,The regression design matrix for pre-treatment is singular
+rc_spre1,dr,,,The regression design matrix for pre-treatment is singular
+rc_spre1,ipw,1.2874262044776534,0.16381548914810537,
+rc_spre3,reg,0.97621571905679627,0.17499435075669198,
+rc_spre3,dr,0.98961670516547984,0.16799444442624339,
+rc_spre3,ipw,0.99141357182158107,0.16497914720504067,
+panel_weighted,reg,,,The regression design matrix is singular
+panel_weighted,dr,,,The regression design matrix is singular

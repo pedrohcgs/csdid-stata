@@ -12,8 +12,9 @@ under "Start here" are enough to run an analysis end to end, and each of
 the rest answers one question.
 
 Every script loads its own data, some of it over the network, so nothing
-here depends on a file you do not have and nothing needs a package other
-than `csdid`. The numbers shown are the numbers the code produces, and
+here depends on a file you do not have. Apart from the field comparison and
+its code appendix, which run the packages they compare, nothing needs a
+package other than `csdid`. The numbers shown are the numbers the code produces, and
 they are not empirical findings about the applications whose data the
 guides borrow.
 

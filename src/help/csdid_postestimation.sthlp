@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 08sep2026}{...}
+{* *! version 2.0.0 27sep2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -88,10 +88,15 @@ sample, off {cmd:e(sample)}{p_end}
 {p2colreset}{...}
 
 {p 4 6 2}
-All of these read {cmd:e(b)} and {cmd:e(V)}, so they act on the ATT(g,t) cells
-immediately after {cmd:csdid} and on the aggregated effects after
-{cmd:estat} {it:type}{cmd:, post}. {cmd:estimates stats} runs but reports
-missing AIC and BIC, because {cmd:csdid} is not likelihood based.{p_end}
+{cmd:test}, {cmd:testnl}, {cmd:lincom}, {cmd:nlcom}, {cmd:predictnl},
+{cmd:estat vce}, and {cmd:estimates table} read {cmd:e(b)} and {cmd:e(V)}, so
+they act on the ATT(g,t) cells immediately after
+{cmd:csdid} and on the aggregated effects after
+{cmd:estat} {it:type}{cmd:, post}. {cmd:estimates replay} and a bare
+{cmd:csdid} are the exception: they redisplay the estimation's ATT(g,t) table
+whatever is posted, so use {cmd:estimates table} to see a stored aggregation.
+{cmd:estimates stats} runs but reports missing AIC and BIC, because
+{cmd:csdid} is not likelihood based.{p_end}
 
 {pstd}
 Standard postestimation commands that do {it:not} work after {cmd:csdid}, and
@@ -161,7 +166,7 @@ Remarks are presented under the following headings:
 {pstd}
 Estimate once, then summarize as often as you like:
 
-{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. net get csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main")}{p_end}
 {phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 {phang2}{cmd:. estat attgt}{p_end}
@@ -178,7 +183,7 @@ export plot data.
 {pstd}
 Each aggregation subcommand recomputes from the same stored ATT(g,t) results
 and replaces the active aggregation in {cmd:e()}; {cmd:e(agg_type)} says which
-one is active, and the estimation results themselves are never disturbed.
+one is active, and the ATT(g,t) table in {cmd:e(attgt)} is never disturbed.
 {cmd:csdid} must have been run in the same session, because aggregation reads
 the influence functions it left behind; use {cmd:csdid, saverif()} and
 {helpb csdid_stats:csdid_stats using} to aggregate later or elsewhere.
@@ -188,9 +193,10 @@ the influence functions it left behind; use {cmd:csdid, saverif()} and
 {cmd:e()}, so the {cmd:window()}, {cmd:level()}, and {cmd:dropmissing} you type
 are the ones the reported numbers were computed under, and asking for a
 different confidence level really does give you a band at that level, bootstrap
-inference included. Recomputation is reproducible to the bit, because the
-multiplier draws come from the random-number state the estimation stored. See
-{helpb csdid_estat##level:csdid_estat}.
+inference included. Under the bootstrap each recomputation continues the
+multiplier stream the estimation started, so repeating a request uses later
+draws; re-running the seeded estimation and then the same sequence of requests
+reproduces every number. See {helpb csdid_estat##level:csdid_estat}.
 
 {marker choosing}{...}
 {title:Choosing an aggregation}
@@ -241,9 +247,11 @@ example that all pre-treatment event-time effects are zero.
 {pstd}
 {cmd:estimates store} and {cmd:estimates restore} round-trip whatever is
 posted, so several aggregations of one estimation can be stored and tabulated
-side by side; {cmd:e(agg_type)} is restored with them, so a restored set still
-says which aggregation it is. {cmd:estat attgt} keeps working throughout, since
-the estimation results themselves are never overwritten.
+side by side. {cmd:e(agg_type)} is stored with them and names the aggregation
+active when the set was stored: the posted one when {cmd:estimates store}
+follows the {cmd:post} directly, but a display-only aggregation run in between
+replaces it. {cmd:estat attgt} keeps working throughout, since
+{cmd:e(attgt)} is never overwritten.
 
 {pstd}
 {cmd:estat vce} works too, and displays whichever {cmd:e(V)} is current. What
@@ -298,10 +306,10 @@ coefficient is created for an event time that is absent from the data.
 {pstd}
 The examples use {cmd:mpdta.dta}, the county-level teen-employment panel of
 Callaway and Sant'Anna (2021), which ships with the package as an ancillary
-file: {cmd:net get csdid} copies it into the current directory.
+file; the first Setup line copies it into the current directory.
 
 {pstd}{bf:Setup}{p_end}
-{phang2}{cmd:. net get csdid}{p_end}
+{phang2}{cmd:. net get csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/main")}{p_end}
 {phang2}{cmd:. use mpdta, clear}{p_end}
 {phang2}{cmd:. csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat)}{p_end}
 
@@ -318,11 +326,13 @@ file: {cmd:net get csdid} copies it into the current directory.
 
 {pstd}{bf:Test the pre-treatment coefficients jointly}{p_end}
 {phang2}{cmd:. estat event, window(-3 3) post}{p_end}
-{phang2}{cmd:. test Tm3 = Tm2 = Tm1 = 0}{p_end}
+{phang2}{cmd:. test Tm3 Tm2}{p_end}
 
 {pstd}
-The window is given here so that the coefficient names {cmd:Tm3}, {cmd:Tm2}
-and {cmd:Tm1} are known to exist. Note that {cmd:estat} never inherits an
+The window is given here so that the coefficient names {cmd:Tm3} and {cmd:Tm2}
+are known to exist. {cmd:Tm1} is left out: under the default base period it is
+the reference period, fixed at zero with no variance, so it has nothing to
+test. Note that {cmd:estat} never inherits an
 aggregation computed earlier: every {cmd:estat} aggregation recomputes from
 the ATT(g,t) cells, and {cmd:balance()} is a {helpb csdid_stats} option that
 {cmd:estat} does not accept and cannot forward. So the {cmd:balance(1)} line
@@ -356,8 +366,8 @@ its table, or post from it with {cmd:_csdid_post event, post}.
 Aggregation results are stored in {cmd:e()} by {helpb csdid_stats}, which lists
 them in {helpb csdid_stats##results:its own Stored results section}. The
 headline items are {cmd:e(aggte)} (the aggregation table), {cmd:e(agg_type)},
-{cmd:e(agg_level)}, {cmd:e(crit_val)}, and, under {cmd:storeall},
-{cmd:e(agg_inffunc)}.
+{cmd:e(agg_level)}, {cmd:e(crit_val)}, and, when the influence functions are
+in {cmd:e()}, {cmd:e(agg_inffunc)}.
 
 {pstd}
 The {cmd:estat} aggregation commands return {cmd:r(table)} with standard
@@ -365,8 +375,8 @@ errors, tests, and confidence limits, with or without {cmd:post}. With
 {cmd:post}, {cmd:e(b)} and {cmd:e(V)} additionally hold the aggregated
 effects and their covariance matrix; see
 {helpb csdid_estat##results:csdid_estat}. Estimation results, including
-{cmd:e(attgt)}, {cmd:e(group_prob)}, and the estimation macros and scalars,
-survive every postestimation command, so {cmd:estat attgt} always shows the
+{cmd:e(attgt)}, {cmd:e(group_prob)}, and the estimation macros, survive every
+postestimation command, so {cmd:estat attgt} always shows the
 cells no matter what has been aggregated or posted.
 
 {pstd}

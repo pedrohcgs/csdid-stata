@@ -81,5 +81,5 @@ f pkg/csdid_table.sthlp
 f pkg/dipt.sthlp
 f pkg/tsvmat.sthlp
 f pkg/csdid_whatsnew.sthlp
-F pkg/LICENSE
+F pkg/csdid_license.txt
 f pkg/mpdta.dta

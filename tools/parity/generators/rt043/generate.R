@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 # RT043: the base period under anticipation on a decimal time axis.
-# R takes the last period t with t + anticipation < g (compute.att_gt.R:301).
+# R takes the last period t with t + anticipation < g (compute.att_gt2.R:705;
+# slow path compute.att_gt.R:301).
 # On the axis {1, 1.2, 1.7, 2.2, 2.7}, 2.2 - 1 is 1.2000000000000002, so the
 # subtractive test t < g - anticipation admits 1.2 as cohort 2.2's base where
 # R's additive test rejects it and uses 1.0. Every post-treatment cell of the
@@ -49,7 +50,7 @@ write.csv(scenarios, file.path(out, "inputs/scenarios.csv"), row.names = FALSE)
 inputs[[length(inputs) + 1L]] <- list(path = "inputs/scenarios.csv", sha256 = sha(file.path(out, "inputs/scenarios.csv")), rows = nrow(scenarios), columns = ncol(scenarios))
 outputs <- list(list(path = "expected/r/attgt.csv", schema = "attgt", sha256 = sha(file.path(out, "expected/r/attgt.csv"))))
 manifest <- list(matrix_id = "RT043", fixture_family = "r-anticipation-base-period",
-  normative_source = "did 2.5.1 compute.att_gt.R:301 (idx_g <- which((tlist + anticipation) < glist[g])); pre_process_did2.R:279 (glist > first_period + anticipation)",
+  normative_source = "did 2.5.1 compute.att_gt2.R:705 (idx <- which((time_periods + dp2$anticipation) < dp2$treated_groups[g]); slow path compute.att_gt.R:301); pre_process_did2.R:279 (glist > first_period + anticipation)",
   source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt043/generate.R", path = "tools/parity/generators/rt043/generate.R", sha256 = sha(script_path))),

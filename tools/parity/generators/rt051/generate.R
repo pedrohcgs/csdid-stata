@@ -54,8 +54,11 @@ manifest <- list(matrix_id = "RT051", fixture_family = "r-near-collinear-conditi
   comparison_plan = list(
     list(actual = "Stata ATT(2,2), method reg", expected = "expected/r/attgt.csv", tolerance_id = "TOL002", key_columns = c("k", "method")),
     list(actual = "Stata ATT(2,2), methods ipw and dr, and every SE", expected = "expected/r/attgt.csv", tolerance_id = "ill-conditioning",
-      note = "Approved ill-conditioning divergence (reports/postestimation-display-audit-2026-08-31.md): with a propensity-score hessian condition number near 1e14 the two logit solvers agree to about 5e-5 in the ATT; the reg ATT is stable to 1e-9 and is compared at TOL002; the ipw and dr ATTs are bounded at 1e-3 absolute and every SE at 1e-3 relative (measured gaps: 3e-5 in an ATT, 1e-4 relative in an SE). The same model with x2 dropped is 1e-2 away for ipw and 2.6e-3 for dr, so the bound separates the specified model from a re-specified one.")),
-  approved_divergence = NULL,
+      note = "Ill-conditioning tolerance, recorded under approved_divergence: with a propensity-score hessian condition number near 1e14 the two logit solvers agree to about 5e-5 in the ATT; the reg ATT is stable to 1e-9 and is compared at TOL002; the ipw and dr ATTs are bounded at 1e-3 absolute and every SE at 1e-3 relative (measured gaps: 3e-5 in an ATT, 1e-4 relative in an SE). The same model with x2 dropped is 1e-2 away for ipw and 2.6e-3 for dr, so the bound separates the specified model from a re-specified one.")),
+  approved_divergence = list(
+    status = "approved-ill-conditioning-tolerance",
+    reason = "At a propensity-score hessian condition number near 1e14 the logit solvers of csdid and the reference implementation agree to about 5e-5 in the ipw and dr ATT and 1e-4 relative in the SE, below any tolerance of the registry. The ipw and dr ATTs are compared at 1e-3 absolute and every SE at 1e-3 relative; the reg ATT, which is stable to 1e-9, stays at TOL002. The bound still separates the specified model from a re-specified one (x2 dropped: 1e-2 away for ipw, 2.6e-3 for dr). Owner approval 2026-09-27 (AGENTS.md register)."
+  ),
   scope_note = "300-unit two-period panel, cohort 2 against never-treated units, covariates x1 and x2 = x1 + 10^(-k/10) z, universal base, analytical inference; k = 65 and k = 68, methods reg, ipw and dr.")
 jsonlite::write_json(manifest, file.path(out, "metadata/manifest.json"), pretty = TRUE, auto_unbox = TRUE, null = "null")
 cat("RT051 written:", nrow(res), "rows.\n")

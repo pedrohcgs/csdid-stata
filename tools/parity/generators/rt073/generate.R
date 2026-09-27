@@ -60,7 +60,7 @@ outputs <- list(
   list(path = "expected/r/aggte.csv", schema = "aggte", sha256 = sha(file.path(out, "expected/r/aggte.csv"))),
   list(path = "expected/r/warnings.csv", schema = "warning-message", sha256 = sha(file.path(out, "expected/r/warnings.csv"))))
 manifest <- list(matrix_id = "RT073", fixture_family = "r-decimal-axis-names",
-  normative_source = "did 2.5.1 compute.aggte.R:450 (eseq <- unique(originalt - originalgroup), exact); pre_process_did2.R small-group warning (toString of the cohorts)",
+  normative_source = "did 2.5.1 compute.aggte.R:448 (eseq <- unique(originalt - originalgroup), exact); pre_process_did2.R small-group warning (toString of the cohorts)",
   source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt073/generate.R", path = "tools/parity/generators/rt073/generate.R", sha256 = sha(script_path))),

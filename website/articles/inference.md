@@ -55,8 +55,10 @@ Read the family of effects and the reported critical value together.
 csdid mrate, ivar(county_code) time(year) gvar(gvar) pointwise    // one at a time
 ```
 
-`e(cband)` and `e(pointwise)` record which of the two was used. `e(crit_val)` is
-the critical value actually applied (a saved run remembers both).
+`e(cband)` and `e(pointwise)` record which of the two was requested. `e(crit_val)`
+is the critical value actually applied (a saved run remembers both), and after
+a bootstrap `e(cband_fallback)` is 1 when the band could not be built and the
+intervals are pointwise.
 
 One row is always pointwise, whichever band you choose: an aggregation's overall
 summary effect — `Post_avg` on an event study, `Overall` by cohort or period,

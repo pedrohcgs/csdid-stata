@@ -451,8 +451,8 @@ bootstrap simultaneous critical value cannot be computed, or comes out below
 the pointwise normal quantile (common for a single-effect aggregation such as
 a one-period {cmd:window()}), the band falls back to pointwise with a warning,
 and the header and {cmd:e(agg_cband)} say so. The ATT(g,t) table keeps the
-simultaneous band it was estimated with in every case; only the aggregation
-is affected.
+band it was estimated with in every case -- simultaneous, or pointwise when
+{cmd:e(cband_fallback)} is 1; only the aggregation is affected.
 
 {pstd}
 {cmd:e(agg_cband)} reports which band the aggregation just computed carries on

@@ -4007,7 +4007,13 @@ void csdid__cells_panel(
             g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
 
         prof_fit_t0 = csdid__profile_start()
-        if (fix_weights == "varying" & has_w) {
+        // fix_weights(varying) stacks the two periods as repeated cross
+        // sections whether or not iweights were given, as R's force_rc does
+        // (compute.att_gt2.R:589); without weights both periods carry weight
+        // one. Under method(dr) with covariates the stacked standard errors
+        // differ from the panel ones, so gating this on the weights left the
+        // unweighted route on R's panel numbers instead of its varying ones.
+        if (fix_weights == "varying") {
             y_rc = y0_cell \ y1_cell
             post_rc = J(n1, 1, 0) \ J(n1, 1, 1)
             d_rc = d_cell \ d_cell
@@ -4191,7 +4197,7 @@ void csdid__cells_panel(
         prof_if_t0 = csdid__profile_start()
         unit_if = J(n_units, 1, 0)
         if (att < .) {
-            if (fix_weights == "varying" & has_w) {
+            if (fix_weights == "varying") {
                 unit_if[valid_uid] = (n_units / n1) * (fit[2..(n1 + 1)] + fit[(n1 + 2)..(2 * n1 + 1)]) / 2
             }
             else {
@@ -4842,7 +4848,9 @@ void csdid_basic_attgt(
     real matrix y_fast, y_panel, w_panel, x_panel, rc_lut, cells
     real scalar first_t
     real scalar has_x, has_w, has_cluster, kx, n_units, max_cells, cell_ix
-    real scalar balanced_panel, pair_mode, fast_eligible, fast_used
+    real scalar balanced_panel, pair_mode, fast_eligible, fast_used, flat, n_zero, nk
+    real colvector est_rows, sel, yk, ik, ord
+    real matrix unit_span
     real scalar sorted_unit_scan, rc_built, rc_nbg, rc_nbt
     real scalar prof_t0
 
@@ -5030,6 +5038,61 @@ void csdid_basic_attgt(
             row_unit_index, n_units, sorted_unit_scan, method, has_x,
             has_w, balanced_panel, rc_built, rc_gcats, rc_sorted_rows,
             rc_lut, rc_nbg, rc_nbt, rc_mask, out, ifmat_t, cell_ix)
+    }
+
+    // An outcome that does not change over time within any unit leaves every
+    // comparison of the same units in two periods a difference of zeros:
+    // that ATT(g,t) is 0 with no standard error, as in R. An outcome constant
+    // over the whole sample is refused before estimation; this one is
+    // estimated and named (owner decision 2026-09-27, AGENTS.md register).
+    // The warning is judged first on what was estimated -- cells other than
+    // the universal-base normalisation rows (base_time == time) that came
+    // back with no standard error and an ATT(g,t) of rounding size -- and only
+    // then on the outcome, so an ordinary run pays nothing. Rounding size, not
+    // exact zero: the unbalanced route sums its means in data order, so the
+    // same degenerate cell is 0 or 5e-15 depending on how the rows are
+    // sorted, and the count must not depend on that. Which cells degenerate
+    // depends on the route, the weights rule and the covariates; the realized
+    // table is the one thing that cannot be wrong about it, so the message
+    // counts them.
+    if (idname != "" & cell_ix > 0) {
+        est_rows = (out[1..cell_ix, 4] :< .) :& (out[1..cell_ix, 2] :!= out[1..cell_ix, 10])
+        n_zero = 0
+        if (sum(est_rows :& (out[1..cell_ix, 5] :>= .)) > 0) {
+            n_zero = sum(est_rows :& (out[1..cell_ix, 5] :>= .) :&
+                (abs(out[1..cell_ix, 4]) :<= 1e-10 * (1 + max(abs(rows(use) == rows(y) ? select(y, use :!= 0) : y)))))
+        }
+        if (n_zero > 0) {
+            // over the settled rows. A balanced panel already holds them one
+            // unit per row; other layouts are normally in unit order, and then
+            // one adjacent comparison decides it; otherwise sort by unit and
+            // outcome, so each unit's first and last rows hold its smallest
+            // and largest outcome.
+            if (balanced_panel) flat = !sum(y_panel :!= y_panel[., 1])
+            else {
+                sel = (rows(use) == rows(y) ? csdid__selidx(use :== 1) : (1::rows(y)))
+                ik = id[sel]
+                yk = y[sel]
+                nk = rows(ik)
+                if (nk < 2) flat = 1
+                else if (!sum(ik[2..nk] :< ik[1..(nk - 1)])) {
+                    flat = !sum((ik[2..nk] :== ik[1..(nk - 1)]) :& (yk[2..nk] :!= yk[1..(nk - 1)]))
+                }
+                else {
+                    ord = order((ik, yk), (1, 2))
+                    ik = ik[ord]
+                    yk = yk[ord]
+                    unit_span = panelsetup(ik, 1)
+                    flat = !sum(yk[unit_span[., 1]] :!= yk[unit_span[., 2]])
+                }
+            }
+            if (flat & n_zero == sum(est_rows)) {
+                errprintf("warning: %s does not change over time within any unit of the estimation sample, so every estimated ATT(g,t) is 0 (up to rounding) with no standard error. Check that the outcome variable is the one you meant.\n", yname)
+            }
+            else if (flat) {
+                errprintf("warning: %s does not change over time within any unit of the estimation sample, so %g of the %g estimated ATT(g,t) are 0 (up to rounding) with no standard error. Check that the outcome variable is the one you meant.\n", yname, n_zero, sum(est_rows))
+            }
+        }
     }
 
     csdid__store_results(eng, cell_ix, n_units, store_large, fast_used,
@@ -5546,7 +5609,7 @@ real matrix csdid__boot_table(
     real scalar crit,
     real scalar pointcrit)
 {
-    real scalar j, k, iqr_norm, boot_t0, se_floor
+    real scalar j, k, iqr_norm, boot_t0, se_floor, band_built
     real colvector bsigma, seboot, seanalytic, rowmaxv, bT, active
     real matrix scaled, bootout
 
@@ -5577,14 +5640,24 @@ real matrix csdid__boot_table(
     pointcrit = invnormal(1 - alp / 2)  // transcribes R's qnorm(1 - alp/2); parity keeps the complement form
     crit = pointcrit
     if (cband) {
+        band_built = 0
         active = csdid__selidx(bsigma :< .)
         if (rows(active) > 0) {
             scaled = J(biters, 1, 1) * bsigma[active]'
             scaled = abs(bres[., active] :/ scaled)
             rowmaxv = rowmax(scaled)
             bT = select(rowmaxv, rowmaxv :< .)
-            if (rows(bT) > 0) crit = csdid__type1_quantile(bT, 1 - alp)
+            if (rows(bT) > 0) {
+                crit = csdid__type1_quantile(bT, 1 - alp)
+                band_built = 1
+            }
         }
+        // No ATT(g,t) has a usable bootstrap scale, so no band exists. R's
+        // att_gt returns a critical value of -Inf here; csdid keeps the
+        // pointwise value and reports the table as pointwise, with a warning
+        // (owner decision 2026-09-27, AGENTS.md register). Signalled as a
+        // scalar for the reason given for CSDID_ATTGT_CRIT_LARGE below.
+        if (!band_built) st_numscalar("CSDID_ATTGT_CRIT_FALLBACK", 1)
         // F-011 R parity: att_gt-level cband crit is the raw type-1 quantile
         // of max-|t| (did::att_gt l240-266, no pointwise floor); only the
         // AGGREGATION level clamps to pointwise (compute.aggte l242-246),

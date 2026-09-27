@@ -234,7 +234,7 @@ Each of these ran in Version 1.82 and stops a do-file in 2.0.0.
 | `estat all` | Run `estat simple`, `estat group`, `estat calendar` and `estat event` |
 | `estore()`, `esave()` | `estat` *type*`, post`, then `estimates store` or `estimates save` |
 | `estat event, balance(#)` | `csdid_stats event, balance(#)` |
-| `csdid ..., agg(simple\|group\|calendar\|attgt)` | `csdid`, then `estat` *type*. `agg(event)` still works |
+| `csdid ..., agg(simple)`, `agg(group)`, `agg(calendar)` or `agg(attgt)` | `csdid`, then `estat` *type*. `agg(event)` still works |
 | `csdid, version` | `csdid version` |
 | `csdid_stats attgt`, `csdid_stats cevent` | `estat attgt`; `cevent` has no equivalent |
 | `csdid_stats` with no type | Aggregates by group, where Version 1.82 redisplayed the active results. Name the type |

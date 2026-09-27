@@ -34,7 +34,7 @@ aggregation — `e(agg_type)` and `e(agg_clustervar)`.
 
 Stable scalars include `e(N)`, `e(N_units)`, `e(N_attgt)`, `e(N_groups)`,
 `e(N_time)`, `e(N_aggte)`, `e(level)`, `e(agg_level)`, `e(agg_cband)`,
-`e(bstrap)`, `e(cband)`, `e(biters)`, `e(pointwise)`, `e(N_clusters)`,
+`e(bstrap)`, `e(cband)`, `e(cband_fallback)` (bootstrap only), `e(biters)`, `e(pointwise)`, `e(N_clusters)`,
 `e(anticipation)`,
 `e(pscoretrim)`, `e(time_first)`, `e(allow_unbalanced)`, `e(crit_val)`,
 `e(point_crit_val)`, and — when the pre-test ran — `e(wald_stat)`,
@@ -68,6 +68,10 @@ column's own limits were built from.
 
 `e(cband)` and `e(agg_cband)` answer different questions and are both stable.
 `e(cband)` is the estimation's band request and governs the ATT(g,t) table.
+After a bootstrap, `e(cband_fallback)` = 1 marks a request that could not be
+honored because no ATT(g,t) had a usable bootstrap standard error; the table
+is then pointwise. Under `analytical` the ATT(g,t) table is pointwise whatever
+`e(cband)` says, and `e(cband_fallback)` is not posted.
 `e(agg_cband)` reports the band the aggregation in `e(aggte)` actually carries,
 which is 0 whenever the aggregation is banded pointwise however the estimation
 was banded: `type(simple)`, whose single overall effect has no simultaneous

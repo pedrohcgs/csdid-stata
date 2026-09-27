@@ -2,7 +2,8 @@
 # RT046: a dead covariate period on a decimal time axis.
 # R removes incomplete rows before it reads the period list, so a period whose
 # covariate is missing in every row simply ceases to exist
-# (pre_process_did.R:162 then :215); a period with only some rows missing keeps
+# (pre_process_did2.R:150 then :194; slow path pre_process_did.R:162, :215);
+# a period with only some rows missing keeps
 # its survivors. On a float-stored axis (1.2 is 1.2000000476837158) or a
 # computed one (0.1 * 14 is 1.4000000000000001) the period must be found by
 # its value, not by a printed approximation of it.
@@ -53,7 +54,7 @@ write.csv(scenarios, file.path(out, "inputs/scenarios.csv"), row.names = FALSE, 
 inputs[[length(inputs) + 1L]] <- list(path = "inputs/scenarios.csv", sha256 = sha(file.path(out, "inputs/scenarios.csv")), rows = nrow(scenarios), columns = ncol(scenarios))
 outputs <- list(list(path = "expected/r/attgt.csv", schema = "attgt", sha256 = sha(file.path(out, "expected/r/attgt.csv"))))
 manifest <- list(matrix_id = "RT046", fixture_family = "r-dead-period-decimal-axis",
-  normative_source = "did 2.5.1 pre_process_did.R:162 (row-level complete cases) and :215 (period list read from the surviving rows)",
+  normative_source = "did 2.5.1 pre_process_did2.R:150 (row-level complete cases) and :194 (period list read from the surviving rows); slow path pre_process_did.R:162, :215",
   source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list("owner decision 2026-08-28: dead period deleted as R does and announced"),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt046/generate.R", path = "tools/parity/generators/rt046/generate.R", sha256 = sha(script_path))),

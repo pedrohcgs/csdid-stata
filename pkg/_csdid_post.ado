@@ -446,7 +446,7 @@ program define _csdid_post_replace_bv, eclass
     * now fails when csdid.ado posts a scalar this list does not carry, so the
     * next one added cannot vanish the same way.
     local scalar_names N N_units N_attgt N_groups N_time anticipation pscoretrim ///
-        bstrap biters cband pointwise fast_requested fast_auto fast_allowed fast_used crit_val point_crit_val ///
+        bstrap biters cband cband_fallback pointwise fast_requested fast_auto fast_allowed fast_used crit_val point_crit_val ///
         N_clusters level agg_level agg_cband N_aggte time_first ///
         allow_unbalanced mata_cache mata_cache_token ///
         wald_stat wald_df wald_pvalue

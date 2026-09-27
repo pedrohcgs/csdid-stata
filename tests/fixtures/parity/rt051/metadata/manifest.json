@@ -24,7 +24,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt051/generate.R",
       "path": "tools/parity/generators/rt051/generate.R",
-      "sha256": "56a6e7469a35b43e07df67a37eadbdd06dd6a24f0e82b2f1f1b22c329fda841a"
+      "sha256": "2e12fa3a011130df62912b0932a79c1094d5c3946b4d6a72ee75f039cd1ae363"
     }
   ],
   "runtimes": [
@@ -56,9 +56,12 @@
       "actual": "Stata ATT(2,2), methods ipw and dr, and every SE",
       "expected": "expected/r/attgt.csv",
       "tolerance_id": "ill-conditioning",
-      "note": "Approved ill-conditioning divergence (reports/postestimation-display-audit-2026-08-31.md): with a propensity-score hessian condition number near 1e14 the two logit solvers agree to about 5e-5 in the ATT; the reg ATT is stable to 1e-9 and is compared at TOL002; the ipw and dr ATTs are bounded at 1e-3 absolute and every SE at 1e-3 relative (measured gaps: 3e-5 in an ATT, 1e-4 relative in an SE). The same model with x2 dropped is 1e-2 away for ipw and 2.6e-3 for dr, so the bound separates the specified model from a re-specified one."
+      "note": "Ill-conditioning tolerance, recorded under approved_divergence: with a propensity-score hessian condition number near 1e14 the two logit solvers agree to about 5e-5 in the ATT; the reg ATT is stable to 1e-9 and is compared at TOL002; the ipw and dr ATTs are bounded at 1e-3 absolute and every SE at 1e-3 relative (measured gaps: 3e-5 in an ATT, 1e-4 relative in an SE). The same model with x2 dropped is 1e-2 away for ipw and 2.6e-3 for dr, so the bound separates the specified model from a re-specified one."
     }
   ],
-  "approved_divergence": null,
+  "approved_divergence": {
+    "status": "approved-ill-conditioning-tolerance",
+    "reason": "At a propensity-score hessian condition number near 1e14 the logit solvers of csdid and the reference implementation agree to about 5e-5 in the ipw and dr ATT and 1e-4 relative in the SE, below any tolerance of the registry. The ipw and dr ATTs are compared at 1e-3 absolute and every SE at 1e-3 relative; the reg ATT, which is stable to 1e-9, stays at TOL002. The bound still separates the specified model from a re-specified one (x2 dropped: 1e-2 away for ipw, 2.6e-3 for dr). Owner approval 2026-09-27 (AGENTS.md register)."
+  },
   "scope_note": "300-unit two-period panel, cohort 2 against never-treated units, covariates x1 and x2 = x1 + 10^(-k/10) z, universal base, analytical inference; k = 65 and k = 68, methods reg, ipw and dr."
 }

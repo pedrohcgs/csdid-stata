@@ -36,7 +36,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt072/generate.R",
       "path": "tools/parity/generators/rt072/generate.R",
-      "sha256": "347e6bfd9b680b8ecb7e6bf7e55cd98d2e7108c44aa8441d5a345b528627f2cb"
+      "sha256": "b16da707fe8ec8d44927b36de267fdd1a1cc4802fa5ca44812ae2c2f5cd56029"
     }
   ],
   "runtimes": [

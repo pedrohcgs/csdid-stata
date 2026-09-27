@@ -1,7 +1,7 @@
 {
   "matrix_id": "RT046",
   "fixture_family": "r-dead-period-decimal-axis",
-  "normative_source": "did 2.5.1 pre_process_did.R:162 (row-level complete cases) and :215 (period list read from the surviving rows)",
+  "normative_source": "did 2.5.1 pre_process_did2.R:150 (row-level complete cases) and :194 (period list read from the surviving rows); slow path pre_process_did.R:162, :215",
   "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
   "decision_refs": [
     "owner decision 2026-08-28: dead period deleted as R does and announced"
@@ -38,7 +38,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt046/generate.R",
       "path": "tools/parity/generators/rt046/generate.R",
-      "sha256": "8b08108e4ff0c0399aec98e758d1d8b3d838a2efbc19ec636c21aaa9532d3cb8"
+      "sha256": "c9d224c9ec1aa142d739ce5a2defdb9ae44a69b3822465e88b6510c199cfc711"
     }
   ],
   "runtimes": [

@@ -156,7 +156,11 @@ filename in front of it.
 {opt group(numlist)} restricts the plotted rows to the listed treatment
 cohorts, that is, to the listed values of the {cmd:gvar()} variable. It is
 useful when a design has many cohorts and you want one figure per subset. It
-applies to the drawn graph and to the {opt sav:ing()} export alike.
+applies to the drawn graph and to the {opt sav:ing()} export alike. A cohort
+must match exactly, and a {it:numlist} holds 13 significant digits, so a
+cohort that does not fit in 13 digits, such as a monthly date stored as
+2000 + 7/12, cannot be selected; write the plot data with {opt sav:ing()}
+and select those rows there.
 
 {phang2}
 On the ATT(g,t) plot, {cmd:group()} keeps the rows whose {cmd:group} value is
@@ -225,7 +229,8 @@ reverse-engineering a graph.
 {p2col :{it:inference requested}}{it:the critical value c}{p_end}
 {p2line}
 {p2col :bootstrap with bands (default)}{cmd:e(crit_val)}, the simultaneous
-(uniform) critical value{p_end}
+(uniform) critical value, or the normal quantile when the band falls back
+({cmd:e(cband_fallback)} = 1){p_end}
 {p2col :bootstrap with {cmd:pointwise}}{cmd:e(crit_val)}, which under
 {cmd:pointwise} is the normal quantile{p_end}
 {p2col :{cmd:analytical} (aggregations)}{cmd:e(crit_val)}, the simultaneous

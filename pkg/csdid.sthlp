@@ -378,9 +378,10 @@ unset {cmd:fix_weights()} uses, for each 2-by-2 comparison, the weight from the
 {it:earlier} of the two periods, that is the base period for post-treatment
 cells. {cmd:fix_weights(varying)} is a different rule and gives different
 numbers whenever the weights vary within a unit over time. When they do not,
-the unset, {cmd:base}, and {cmd:first} settings coincide, and
-{cmd:fix_weights(varying)} gives the same point estimates but, once covariates
-are present, different standard errors. {cmd:csdid} prints a note when it
+including when no {cmd:iweight}s are given, the unset, {cmd:base}, and
+{cmd:first} settings coincide, and {cmd:fix_weights(varying)} gives the same
+point estimates but, once covariates are present, can give different standard
+errors. {cmd:csdid} prints a note when it
 detects time-varying weights.
 
 {marker opt_control}{...}
@@ -515,8 +516,10 @@ between two otherwise identical runs.
 simultaneous ({it:uniform}) bands. Pointwise
 intervals are correct one at a time; the default bands cover the whole family
 of ATT(g,t) simultaneously and are what you want when reading a table or a
-plot as a whole. {cmd:e(cband)} and {cmd:e(pointwise)} record which was used,
-and {cmd:e(crit_val)} holds the critical value actually applied.
+plot as a whole. {cmd:e(cband)} and {cmd:e(pointwise)} record which was
+requested, {cmd:e(crit_val)} holds the critical value actually applied, and
+after a bootstrap {cmd:e(cband_fallback)} is 1 when a requested band could not
+be built and the intervals are pointwise.
 
 {phang}
 {opt analytical}, or equivalently {cmd:vce(analytical)}, replaces the
@@ -1006,6 +1009,18 @@ is applied to the estimation sample, so an outcome that is flat only under an
 by however little -- is estimated.
 
 {pstd}
+{bf:An outcome constant within each unit.} If the outcome varies across units
+but never changes over time within any unit of a panel, comparing a unit with
+itself carries no information: on a balanced panel, except as noted below,
+every ATT(g,t) is exactly 0 with no standard error. {cmd:csdid} estimates it
+and prints a warning naming the outcome and counting the ATT(g,t) that are 0,
+up to rounding, with no standard error. Under {cmd:bal(none)} on an
+unbalanced panel, or under {cmd:fix_weights(varying)}, some comparisons can
+still be nonzero or carry a standard error; the warning counts only those
+that are 0, up to rounding, with no standard error, and is not printed when
+there are none.
+
+{pstd}
 {bf:When every cell fails.} If all of the two-by-two comparisons fail, so that
 every ATT(g,t) is missing, {cmd:csdid} does not stop. It prints a warning
 naming
@@ -1208,7 +1223,10 @@ that the bands target simultaneous coverage of all ATT(g,t) at the nominal
 level. The critical value is usually larger than the pointwise 1.96 (at
 95%), depending on the number and correlation of the estimates. The finite
 bootstrap quantile for ATT(g,t) is not bounded below by 1.96; aggregation
-bands do impose the corresponding pointwise lower bound.
+bands do impose the corresponding pointwise lower bound. When no ATT(g,t)
+has a usable bootstrap standard error, no simultaneous critical value
+exists: {cmd:csdid} then reports pointwise intervals, says so in a warning
+and in the header, and sets {cmd:e(cband_fallback)} to 1.
 
 {pstd}
 Report the simultaneous bands when you display the whole table or an event
@@ -1241,7 +1259,7 @@ change slightly between runs and that {cmd:rseed(#)} reproduces them: because
 the multipliers are redrawn, two identical unseeded commands give standard
 errors that differ by a few percent. Seed with {cmd:rseed()} whenever a number
 will be reported. The same facts are stored in {cmd:e(vce)}, {cmd:e(reps)},
-{cmd:e(rseed)}, and {cmd:e(cband)}.
+{cmd:e(rseed)}, {cmd:e(cband)} and, after a bootstrap, {cmd:e(cband_fallback)}.
 
 {marker remarks_pretest}{...}
 {pstd}
@@ -1742,7 +1760,8 @@ cross sections) entering the influence function{p_end}
 {synopt:{cmd:e(level)}}confidence level{p_end}
 {synopt:{cmd:e(crit_val)}}critical value applied to the reported intervals:
 the simultaneous value under the default, the normal quantile under
-{cmd:pointwise} or {cmd:analytical}. An aggregation that computes its own
+{cmd:pointwise} or {cmd:analytical} or when the band falls back
+({cmd:e(cband_fallback)} = 1). An aggregation that computes its own
 critical values replaces this and {cmd:e(point_crit_val)} (see
 {helpb csdid_stats##results:csdid_stats}); under the bootstrap the ATT(g,t)
 value stays in the {cmd:crit_val} column of {cmd:e(boot_attgt)}{p_end}
@@ -1759,6 +1778,9 @@ whenever {cmd:pointwise} was not typed. Under {cmd:analytical} no simultaneous
 band is computed and {cmd:e(crit_val)} is the normal quantile, so before any
 aggregation read {cmd:e(crit_val)} against {cmd:e(point_crit_val)} to tell
 whether a band was actually built{p_end}
+{synopt:{cmd:e(cband_fallback)}}1 when a simultaneous band was requested and
+bootstrapped but no ATT(g,t) had a usable bootstrap standard error, so the
+ATT(g,t) intervals are pointwise; 0 otherwise {it:(conditional: bootstrap)}{p_end}
 {synopt:{cmd:e(pointwise)}}1 if pointwise intervals were requested{p_end}
 {synopt:{cmd:e(wald_stat)}}chi-squared statistic of the parallel-trends
 pre-test {it:(conditional: pre-test computable)}{p_end}
@@ -2266,14 +2288,17 @@ a Version 1.82 copy from SSC is the one installed from
 {cmd:http://fmwww.bc.edu/repec/bocode/c} -- then reinstall as above.
 
 {pstd}
-{bf:Pinning a version in a replication package.} A published version tag can
-replace {cmd:main} in the installation address to keep the code unchanged
-when someone re-runs your do-files. Use only a tag that exists on the
-{browse "https://github.com/pedrohcgs/csdid-stata/tags":package's tags page};
-a version number reported by {cmd:csdid version} does not by itself mean that
-a download tag has been published. Record both the full installation URL and
-the reported version in your replication package. Installing from {cmd:main}
-tracks future updates.
+{bf:Pinning a version in a replication package.} To keep the code unchanged
+when someone re-runs your do-files, replace {cmd:main} in the installation
+address with the full 40-character identifier of one revision of the package,
+as listed in its history on
+{browse "https://github.com/pedrohcgs/csdid-stata":GitHub}; that identifier
+always names the same code. A version tag listed on the
+{browse "https://github.com/pedrohcgs/csdid-stata/tags":package's tags page}
+can take the same place; a version number reported by {cmd:csdid version}
+does not by itself mean that a download tag has been published. Record both
+the full installation URL and the reported version in your replication
+package. Installing from {cmd:main} tracks future updates.
 
 {pstd}
 {bf:When something looks wrong, start here.} {cmd:which csdid, all} lists
@@ -2316,7 +2341,8 @@ problem is worth more than any description of it.
 redistribution, including commercial use, are permitted provided the copyright
 notice and permission notice are retained. The full text is in the
 {cmd:LICENSE} file at
-{browse "https://github.com/pedrohcgs/csdid-stata":github.com/pedrohcgs/csdid-stata}.
+{browse "https://github.com/pedrohcgs/csdid-stata":github.com/pedrohcgs/csdid-stata}
+and in {cmd:csdid_license.txt}, installed with the package.
 {p_end}
 
 

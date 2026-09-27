@@ -8,7 +8,7 @@
 # cell; balance_e = 1 admits no cohort), and a decimal axis whose cohort 1.5
 # is unobserved at 1.5, so under na.rm one cell survives at event time
 # 2.2 - 1.5 and balance_e = 0 truncates it away. A three-period mpdta cut,
-# where balance_e = 1 leaves one event time standing, is the control.
+# where balance_e = 1 leaves both event times (0 and 1) standing, is the control.
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt072/generate.R"

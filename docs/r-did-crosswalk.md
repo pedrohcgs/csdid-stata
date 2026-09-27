@@ -170,7 +170,7 @@ calendar, and `ATT` for simple.
 | `t` | `e(attgt)`, column `time` | Stata also exports `event_time` = `t - g`, which R computes on the fly. |
 | `att` | `e(attgt)`, column `att` | Also posted to `e(b)`, named `g<g>___<t>_<base>` where `base` is the period the cell was actually differenced against (e.g. `g2004___2005_2003`), which under a varying base period differs from cell to cell. The cell NOT posted is the normalised one, identified by `base_time == time` rather than by event time -1; cells with a missing ATT are not posted either, so `e(b)` can be shorter than `e(attgt)` has rows. See `docs/stored-results-api.md`. |
 | `se` | `e(attgt)`, column `se` | Bootstrap SE when `bstrap`, analytical otherwise - same rule as R. Under the bootstrap, `e(boot_attgt)` carries both `se_boot` and `se_analytic`. |
-| `c` | `e(crit_val)` | The simultaneous critical value under `cband`, the pointwise one otherwise. `e(point_crit_val)` always holds the normal quantile. |
+| `c` | `e(crit_val)` | The simultaneous critical value under `cband`, the pointwise one otherwise. `e(point_crit_val)` always holds the normal quantile. When no ATT(g,t) has a usable bootstrap scale, R returns `-Inf`; `csdid` keeps the pointwise value, reports pointwise intervals and, under the bootstrap, sets `e(cband_fallback)` = 1. |
 | `inffunc` | `e(inffunc)` under `storeall`, or `saverif()` as a dataset | One column per ATT(g,t), one row per unit (per observation for repeated cross sections), as in R. R identifies rows by `rownames`; Stata identifies them by the `id` column of `e(unit_group)`. Stored subject to the storage policy in `docs/stored-results-api.md`. |
 | `V_analytical` | `e(V)`, with a caveat | Under `analytical` / `vce(analytical)`, `e(V)` is the influence-function covariance, i.e. R's `V_analytical`. Under the bootstrap, `e(V)` is instead built from the bootstrap draws and rescaled to the reported SEs, so it is *not* R's `V_analytical`. R exposes `V_analytical`; Stata posts the covariance aligned with its reported standard errors. This row concerns the ATT(g,t) coefficients; the aggregation covariance uses the rule below. |
 | `n` | `e(N_units)` | `e(N)` is the number of observations, not units. |
@@ -318,7 +318,11 @@ value. The R table is not wrong, but it is indistinguishable at a glance from a
 precisely estimated null, and none of the warnings that do fire names this
 cause. The test is exact (`min == max`) and is applied to the estimation
 sample, so an outcome that varies by any amount, or that varies outside an
-`if`, still reaches R's answer.
+`if`, still reaches R's answer. An outcome that varies across units but never
+within one of a panel is estimated, with R's numbers (on a balanced panel
+without `fix_weights(varying)`, every ATT(g,t) exactly 0 with no standard error); `csdid` adds a warning naming
+the outcome and counting the ATT(g,t) that are 0, up to rounding, with no
+standard error.
 
 Legacy-Stata-facing divergences (options that exist only to ease migration from
 Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in

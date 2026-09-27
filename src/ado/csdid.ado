@@ -2066,6 +2066,7 @@ program define csdid, eclass sortpreserve
         local bootstrap_accelerator_status "mata-unseeded"
         local plugin_loaded 0
         local plugin_success 0
+        local attgt_cband_fallback 0
         * Clear the large-critical-value signal BEFORE any kernel can set it,
         * the way the aggregation twin does (csdid_stats.ado). The consume
         * below drops it only on the path that reads it, so a run whose kernel
@@ -2073,6 +2074,7 @@ program define csdid, eclass sortpreserve
         * it standing for the NEXT csdid, which would print the warning for a
         * band that never earned it.
         capture scalar drop CSDID_ATTGT_CRIT_LARGE
+        capture scalar drop CSDID_ATTGT_CRIT_FALLBACK
         if "$CSDID_BOOT_PLUGIN_DISABLE" == "1" {
             local bootstrap_accelerator_status "mata-plugin-disabled"
         }
@@ -2296,6 +2298,17 @@ program define csdid, eclass sortpreserve
         if !_rc {
             scalar drop CSDID_ATTGT_CRIT_LARGE
             display as error "warning: the simultaneous critical value for the ATT(g,t) bands is arguably too large to be reliable. This usually happens when the number of observations per group is small and/or there is not much variation in outcomes. Specify pointwise for pointwise intervals."
+        }
+        * No ATT(g,t) had a usable bootstrap scale, so no simultaneous band
+        * exists (R: a critical value of -Inf). The table reports pointwise
+        * intervals and says so; e(cband) keeps the request, which the
+        * aggregation reads, and e(cband_fallback) records the fallback
+        * (owner decision 2026-09-27, AGENTS.md register).
+        capture confirm scalar CSDID_ATTGT_CRIT_FALLBACK
+        if !_rc {
+            scalar drop CSDID_ATTGT_CRIT_FALLBACK
+            local attgt_cband_fallback 1
+            display as error "warning: the simultaneous critical value for the ATT(g,t) bands cannot be computed, because no ATT(g,t) has a usable bootstrap standard error; the ATT(g,t) table reports pointwise confidence intervals."
         }
         matrix colnames `boot_attgt' = group time event_time att se_boot se_analytic crit_val ci_low ci_high point_crit_val point_ci_low point_ci_high
         mata: st_matrix("`bootstrap_profile'", CSDID_BOOT_PROFILE)
@@ -2844,6 +2857,7 @@ program define csdid, eclass sortpreserve
     if `bstrap' {
         ereturn scalar crit_val = `boot_crit'
         ereturn scalar point_crit_val = `boot_pointcrit'
+        ereturn scalar cband_fallback = `attgt_cband_fallback'
         ereturn matrix boot_attgt = `boot_attgt'
         ereturn matrix boot_draws = `boot_draws'
         ereturn matrix bootstrap_profile = `bootstrap_profile'
@@ -3019,7 +3033,7 @@ program define Display
     * request is honored, by its own bootstrap).
     capture confirm scalar e(cband)
     if !_rc {
-        if e(cband) == 1 & e(bstrap) == 1 local band_kind "simultaneous"
+        if e(cband) == 1 & e(bstrap) == 1 & e(cband_fallback) != 1 local band_kind "simultaneous"
     }
     display as text "`inf_line'; `level'% `band_kind' bands"
     if `unseeded' {

@@ -21,7 +21,8 @@ designs <- list()
 # latest cohort (4) small: 3 rows per period on repeated cross sections
 r <- do.call(rbind, lapply(1:4, function(t) data.frame(t = t, g = rep(c(2, 3, 4), c(20, 20, 3)))))
 r$id <- seq_len(nrow(r)); designs$small_latest_rcs <- r
-# the same on an unbalanced panel: six cohort-4 units, each missing one period
+# the same on an unbalanced panel: six cohort-4 units, each missing one or two
+# periods (ids 41 and 44 miss two)
 p <- expand.grid(t = 1:4, id = 1:46)
 p$g <- ifelse(p$id <= 20, 2, ifelse(p$id <= 40, 3, 4))
 designs$small_latest_unbal <- p[!(p$g == 4 & ((p$id + p$t) %% 3 == 0)), ]
@@ -92,7 +93,7 @@ write.csv(scenarios, file.path(out, "inputs/scenarios.csv"), row.names = FALSE)
 inputs[[length(inputs) + 1L]] <- list(path = "inputs/scenarios.csv", sha256 = sha(file.path(out, "inputs/scenarios.csv")), rows = nrow(scenarios), columns = ncol(scenarios))
 outputs <- lapply(c("estimation_status", "attgt"), function(nm) list(path = paste0("expected/r/", nm, ".csv"), schema = nm, sha256 = sha(file.path(out, "expected/r", paste0(nm, ".csv")))))
 manifest <- list(matrix_id = "RT045", fixture_family = "r-settled-sample-refusals",
-  normative_source = "did 2.5.1 pre_process_did2.R:246-265 (latest cohort coerced, periods cut), :405-407 (No valid groups), :433-452 (never-treated group too small), compute.att_gt2.R:782-785 (no valid (g, t) cells)",
+  normative_source = "did 2.5.1 pre_process_did2.R:246-265 (latest cohort coerced, periods cut), :419-421 (No valid groups), :433-452 (never-treated group too small), compute.att_gt2.R:782-785 (no valid (g, t) cells)",
   source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt045/generate.R", path = "tools/parity/generators/rt045/generate.R", sha256 = sha(script_path))),

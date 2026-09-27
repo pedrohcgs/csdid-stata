@@ -1,0 +1,59 @@
+{
+  "matrix_id": "RT074",
+  "fixture_family": "r-fix-weights-varying-unweighted",
+  "normative_source": "did 2.5.1 compute.att_gt2.R:589 (force_rc <- !is.null(dp2$fix_weights) && dp2$fix_weights == \"varying\" && dp2$panel), whatever the weights",
+  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001"],
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "sha256": "10a856fb8ab62edcf5b08d69e03ebbad4d9f5db7a90571081c55c86ed0e11988",
+      "rows": 480,
+      "columns": 6
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "9fa6d564cbd77a03ef11ce97e24e0fc60c26126c5b3fdfdd6fb322dc2ba59b99",
+      "rows": 4,
+      "columns": 3
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt074/generate.R",
+      "path": "tools/parity/generators/rt074/generate.R",
+      "sha256": "775a1c7bb3fe08d7272d5b56a20a721b7c4d469ea12b3857556c3c534ae999cd"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.3.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "attgt",
+      "sha256": "1eaab0bef226d97dc06e1962d6ae59a8b9c3ead2027326e57d0baf05fba288ea"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Stata ATT(g,t) and standard errors",
+      "expected": "expected/r/attgt.csv",
+      "tolerance_id": "TOL001",
+      "key_columns": ["scenario", "group", "time"],
+      "note": "ATT(g,t) of rounding size (the flat outcome) is compared on an absolute scale."
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "A 120-unit, four-period balanced panel with a time-invariant covariate and no sampling weights, under fix_weights = \"varying\": dr, reg and ipw on an outcome that varies, and dr on an outcome constant within every unit. Every cell is compared."
+}

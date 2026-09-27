@@ -204,9 +204,11 @@ copy build/csdid.mata pkg/csdid.mata, replace
 capture erase build/lcsdid.mlib
 capture erase pkg/lcsdid.mlib
 copy build/lcsdid_v2.mlib pkg/lcsdid_v2.mlib, replace
-* The license travels with the installed files (MIT's notice condition), and
-* the example dataset ships as an ancillary a user retrieves with net get.
-copy LICENSE pkg/LICENSE, replace
+* The license travels with the installed files (MIT's notice condition) under
+* a name no other package claims: a bare LICENSE installs as PLUS/l/LICENSE,
+* which any other package shipping one also writes. The example dataset ships
+* as an ancillary a user retrieves with net get.
+copy LICENSE pkg/csdid_license.txt, replace
 copy src/data/mpdta.dta pkg/mpdta.dta, replace
 foreach f in csdid.sthlp csdid_postestimation.sthlp csdid_estat.sthlp csdid_stats.sthlp csdid_plot.sthlp ///
              csdid_legacy.sthlp csgvar.sthlp csdid_rif.sthlp csdid_table.sthlp dipt.sthlp tsvmat.sthlp ///

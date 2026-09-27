@@ -93,11 +93,14 @@ cap ado uninstall csdid
 net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata/COMMIT") replace
 ```
 
-Replace `COMMIT` with the full 40-character ID of the commit you installed,
-listed on the [commits page](https://github.com/pedrohcgs/csdid-stata/commits/main);
-everything else in the address is the same as for `main`. Record both the full
-installation URL and the version reported by `csdid version` in your
-replication package.
+Replace `COMMIT` with the full 40-character ID of a commit listed on the
+[commits page](https://github.com/pedrohcgs/csdid-stata/commits/main);
+everything else in the address is the same as for `main`, and that ID always
+names the same code. A version tag listed on the
+[tags page](https://github.com/pedrohcgs/csdid-stata/tags) can take the same
+place, but a version number reported by `csdid version` does not by itself
+mean that a download tag has been published. Record both the full installation
+URL and the version reported by `csdid version` in your replication package.
 
 ### Troubleshooting
 

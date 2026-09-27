@@ -490,7 +490,8 @@ ATT(g,t) estimates. To export ATT(g,t) after an aggregation, use
 {cmd:time}, {cmd:estimate}, {cmd:std_error}, {cmd:statistic}, {cmd:p_value},
 {cmd:conf_low}, {cmd:conf_high}, {cmd:point_conf_low}, and
 {cmd:point_conf_high}. The {cmd:conf_*} columns use the reported critical value
--- simultaneous under the default bootstrap -- and the {cmd:point_conf_*}
+-- simultaneous under the default bootstrap, unless the band falls back
+({cmd:e(cband_fallback)} = 1) -- and the {cmd:point_conf_*}
 columns use the pointwise one, so both bands are available without recomputing.
 
 {pstd}

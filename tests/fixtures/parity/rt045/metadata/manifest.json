@@ -1,7 +1,7 @@
 {
   "matrix_id": "RT045",
   "fixture_family": "r-settled-sample-refusals",
-  "normative_source": "did 2.5.1 pre_process_did2.R:246-265 (latest cohort coerced, periods cut), :405-407 (No valid groups), :433-452 (never-treated group too small), compute.att_gt2.R:782-785 (no valid (g, t) cells)",
+  "normative_source": "did 2.5.1 pre_process_did2.R:246-265 (latest cohort coerced, periods cut), :419-421 (No valid groups), :433-452 (never-treated group too small), compute.att_gt2.R:782-785 (no valid (g, t) cells)",
   "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001"],
@@ -48,7 +48,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt045/generate.R",
       "path": "tools/parity/generators/rt045/generate.R",
-      "sha256": "19bae5df608e3abff80682de7763f78184cb065cf749ebfd22869f679995fed8"
+      "sha256": "32a6a3b13d30df051256763ba86a4981565c3903ec2733721cfd9a5134f19fd7"
     }
   ],
   "runtimes": [

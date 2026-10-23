@@ -27,6 +27,7 @@ import collections
 import re
 import pathlib
 import sys
+import math
 
 # ---------------------------------------------------------------------------
 # Parameters
@@ -84,6 +85,82 @@ SCAN_LEVER = {
 
 def lever_of(scan):
     return SCAN_LEVER.get(scan, "n")
+
+
+
+def expected_results():
+    """The published grid: 142 main-tier rows and 30 legacy-ladder rows."""
+    result = {}
+    def cell(scan, n, t, g, packages, rows=None, scheme="", legacy_trials=None):
+        for package in packages.split():
+            trials = (legacy_trials if package == "csdid_182" else 7) if scan.startswith("F_") else 10
+            result[(scan, n, t, g, package, scheme)] = (rows if rows is not None else n*t, trials)
+    for n in (1000, 10000, 100000):
+        cell("G_bal",n,10,4,"csdid_analytical jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid")
+        cell("A_unbal",n,10,4,"csdid_balfull csdid_balpair csdid_balnone jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid",{1000:8496,10000:85219,100000:849905}[n])
+        cell("B_rcs",n,10,4,"csdid flexdid jwdid did_imputation hdid csdid_cov flexdid_cov jwdid_cov did_imputation_cov hdid_cov")
+    for t in (5,10,20,40):
+        cell("C_periods",10000,t,4,"csdid jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid")
+    for g in (3,6,12,18):
+        cell("D_cohorts",10000,20,g,"csdid jwdid did_imputation lpdid eventstudyinteract did_multiplegt_dyn xthdid")
+    for n in (100,1000,10000,100000):
+        cell("E_default",n,10,4,"csdid_analytical csdid_boot999")
+    for n,trials in ((1000,7),(5000,5),(20000,3),(50000,2),(100000,2)):
+        cell("F_n",n,10,4,"csdid_200 csdid_182",legacy_trials=trials)
+    for t,trials in ((5,7),(10,5),(20,3),(40,2)):
+        cell("F_T",5000,t,4,"csdid_200 csdid_182",legacy_trials=trials)
+    for g,trials in ((3,3),(6,3),(12,2)):
+        cell("F_G",5000,20,g,"csdid_200 csdid_182",legacy_trials=trials)
+    for scheme in ("balanced","unbalanced","rcs"):
+        cell("F_scheme",10000,10,4,"csdid_200 csdid_182",85219 if scheme=="unbalanced" else 100000,scheme,3)
+    return result
+
+
+def validate_complete_results(path):
+    expected, seen = expected_results(), set()
+    with open(path, newline="", encoding="utf-8") as stream:
+        reader = csv.DictReader(stream)
+        if reader.fieldnames != "scan,n_units,T,cohorts,rows,pkg,median_seconds,trials,ok,note".split(","):
+            raise SystemExit("invalid published speed-results schema")
+        for row in reader:
+            scheme = ""
+            if row["scan"] == "F_scheme":
+                match = re.search(r"scheme=(\w+)", row.get("note", ""))
+                scheme = match.group(1) if match else ""
+            key = (row["scan"],int(row["n_units"]),int(row["T"]),int(row["cohorts"]),row["pkg"],scheme)
+            if key not in expected or key in seen:
+                raise SystemExit(f"unexpected or duplicated speed observation: {key}")
+            seen.add(key)
+            rows, trials = expected[key]
+            if int(row["rows"]) != rows or row["ok"] not in ("-1","0","1"):
+                raise SystemExit(f"invalid speed design or result status: {key}")
+            observed_trials = int(row["trials"])
+            if row["ok"] == "1":
+                seconds = float(row["median_seconds"])
+                if not math.isfinite(seconds) or seconds <= 0 or observed_trials != trials:
+                    raise SystemExit(f"invalid timing or trial count: {key}")
+            else:
+                if row["median_seconds"] != ".":
+                    raise SystemExit(f"unsuccessful observation must not carry a timing: {key}")
+                if key[4].startswith("csdid") and key[4] != "csdid_182":
+                    raise SystemExit(f"current command has no successful timing: {key}")
+                if row["ok"] == "-1" and (observed_trials != 0 or "cap" not in row.get("note", "")):
+                    raise SystemExit(f"invalid capped speed observation: {key}")
+                if observed_trials not in (0,trials) or not row.get("note", "").strip():
+                    raise SystemExit(f"untimed observation lacks its prescribed trials or reason: {key}")
+    missing = set(expected)-seen
+    if missing:
+        raise SystemExit(f"incomplete published speed grid: {len(seen)} of {len(expected)} observations; first missing {sorted(missing)[0]}")
+    return len(seen)
+
+
+def all_requested_horizons_dropped(note):
+    horizon = re.search(r"(?:^|;\s*)H=(\d+)(?:;|$)", note)
+    dropped = re.search(r"(?:^|;\s*)autosample dropped:\s*([^;]*)", note)
+    if not horizon or not dropped:
+        return False
+    requested = {f"tau{h}" for h in range(int(horizon[1]) + 1)}
+    return requested <= set(re.findall(r"\btau\d+\b", dropped[1]))
 
 
 def load(results_path):
@@ -163,7 +240,7 @@ def row_label(scan, key, position):
     return f"{key[1]:,}"
 
 
-def build_gain_table(cells, meta, scan, title, unit_label):
+def build_gain_table(cells, meta, scan, title, unit_label, candidate_version="2.0.0"):
     """The Version 1.82 page's shape: 1.82, 2.0.0, and the ratio between them.
 
     A cell the legacy version could not run inside the time cap prints an em
@@ -183,7 +260,7 @@ def build_gain_table(cells, meta, scan, title, unit_label):
     head = unit_label + (" (" + ", ".join(fixed) + ")" if fixed else "")
 
     lines = [f'<p class="table-title" markdown="span">{title}</p>', "",
-             f"| {head} | rows | 1.82 | 2.0.0 | gain |",
+             f"| {head} | rows | 1.82 | {candidate_version} | gain |",
              "| --- | ---: | ---: | ---: | ---: |"]
 
     skipped = []
@@ -193,7 +270,7 @@ def build_gain_table(cells, meta, scan, title, unit_label):
         cand = row.get("csdid_200", (None,))[0]
         if cand is None:
             raise SystemExit(
-                f"{scan} {k}: no 2.0.0 timing -- the harness always runs 2.0.0 "
+                f"{scan} {k}: no candidate timing -- the harness always runs the candidate "
                 "first, so a missing one means the cell did not run at all")
         if "csdid_182" not in row:
             # A row that is ABSENT is not a row that was skipped. The harness
@@ -295,7 +372,11 @@ def build_table(cells, meta, scan, title, unit_label, note, pkg_filter=None):
     def emit(suffix):
         for i, k in enumerate(keys):
             row = cells[k]
-            vals = [fmt(row.get(p + suffix, (None,))[0]) for p in pkgs]
+            vals = []
+            for p in pkgs:
+                cell = row.get(p + suffix, (None, None, ""))
+                marker = "†" if cell[0] is not None and all_requested_horizons_dropped(cell[2]) else ""
+                vals.append(fmt(cell[0]) + marker)
             lines.append(f"| {row_label(scan, k, i)} | {meta[k]['rows']:,} | "
                          + " | ".join(vals) + " |")
 
@@ -326,6 +407,10 @@ def build_table(cells, meta, scan, title, unit_label, note, pkg_filter=None):
                 gaps.append(f"{DISPLAY[p_]} at {where}: "
                             + (m.group(1) if m else cell[2].strip() or "not recorded"))
     full = note
+    if any(cell[0] is not None and all_requested_horizons_dropped(cell[2])
+           for k in keys for cell in cells[k].values()):
+        full += (" Entries marked † record invocation time only: autosample dropped "
+                 "every requested horizon, so no requested effects or inference were returned.")
     if gaps:
         full = (note + " Cells with no entry were not timed &mdash; "
                 + "; ".join(gaps) + ".")
@@ -347,8 +432,8 @@ def ratio_facts(cells, scan, base="csdid"):
                 break
         if not b:
             continue
-        for p, (secs, _, _) in sorted(row.items(), key=lambda x: (x[1][0] is None, x[1][0] or 0)):
-            if secs and not p.startswith(CSDID_FIRST):
+        for p, (secs, _, note) in sorted(row.items(), key=lambda x: (x[1][0] is None, x[1][0] or 0)):
+            if secs and not p.startswith(CSDID_FIRST) and not all_requested_horizons_dropped(note):
                 out.append((k[1], p, secs, secs / b))
     return out
 
@@ -356,13 +441,21 @@ def ratio_facts(cells, scan, base="csdid"):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", required=True)
-    ap.add_argument("--outdir", required=True)
-    ap.add_argument("--stata", required=True)
-    ap.add_argument("--platform", required=True)
-    ap.add_argument("--date", required=True)
+    ap.add_argument("--outdir")
+    ap.add_argument("--validate-only", action="store_true")
+    ap.add_argument("--candidate-version", default="2.0.0")
+    ap.add_argument("--stata")
+    ap.add_argument("--platform")
+    ap.add_argument("--date")
     ap.add_argument("--trials", default="")
     args = ap.parse_args()
 
+    count = validate_complete_results(args.results)
+    if args.validate_only:
+        print(f"complete published speed grid: {count} observations")
+        return
+    if not all((args.outdir,args.stata,args.platform,args.date)) or not re.fullmatch(r"\d+\.\d+\.\d+",args.candidate_version):
+        ap.error("rendering requires --outdir, --stata, --platform, --date and a valid --candidate-version")
     cells, meta = load(args.results)
     outdir = pathlib.Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -383,8 +476,7 @@ def main():
         "Every entry is the median of the timed runs after a discarded warmup. "
         "Commands that deliver the event study in a second call &mdash; `csdid`, "
         "`jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that "
-        "call as well as the estimation call, so that every column buys the same "
-        "deliverable."
+        "call as well as the estimation call."
     )
 
     for scan, fname, title, unit in specs:
@@ -399,12 +491,12 @@ def main():
     for scan, fname, title, unit in F_SPECS:
         if scan not in scans:
             continue
-        frag = build_gain_table(cells, meta, scan, title, unit)
+        frag = build_gain_table(cells, meta, scan, title, unit, args.candidate_version)
         (outdir / fname).write_text(frag, encoding="utf-8")
         print(f"  wrote {fname}", file=sys.stderr)
 
     provenance = (
-        f"All timings in this section were measured on {args.date} with "
+        f"The timing campaign in this section completed on {args.date} with "
         f"{args.stata} on {args.platform}"
         + (f", {args.trials} timed runs per cell in the main tiers" if args.trials else "")
         + ". The main tiers use separate Stata processes; the Version 1.82 "

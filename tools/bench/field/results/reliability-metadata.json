@@ -1,26 +1,267 @@
 {
-  "date": "2026-08-08",
-  "script": "simmc.do 1000 500 mc.csv",
-  "units": 1000,
-  "draws": 500,
-  "stata": "StataNow/MP 19.5",
-  "platform": "Mac (Apple Silicon)",
-  "commit": "fee6f66363fb6610d7f7ca959614caf14c1fec60",
-  "note": "Every simulation behind a published table, re-run at 1000 units and 500 draws against the engine after the 2026-08-06 and 08-07 changes. Run three at a time: these are Monte Carlo simulations with fixed seeds, not wall-clock measurements, so concurrency changes duration and nothing else.",
-  "raw_rows": 126000,
-  "raw_not_committed": "The 72,000-row per-replication CSV is 4MB and is not committed; the summary this directory carries is what the checker reads. Regenerate the raw file with the script named above, from the bench folder of the code appendix.",
-  "scripts": [
-    "simmc.do",
-    "jwuncond.do",
-    "lpdidrw.do",
-    "bjswtr.do",
-    "sarun.do",
-    "simmc_cov.do",
-    "simmc_dr.do",
-    "simmc_ps2.do",
-    "simmc_ur.do",
-    "simmc_bands.do",
-    "master.do"
+  "date": "2026-10-23",
+  "source_commit": "159f36780443be013986e34efb0026811089f46d",
+  "source_tree_sha256": "6d2be6957d348919fe470cdbee6ee7a60afcbec4c4ed13930c18e8162c298b5b",
+  "status": "pass",
+  "jobs": 35,
+  "statistics": "website-statistics.json",
+  "prior_record_reference": "Previous published records remain in Git history; original files are retained in the private campaign archive.",
+  "engine": "*! csdid 2.0.1 23oct2026",
+  "designs": {
+    "bands": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 3000,
+      "source_jobs": [
+        "bands"
+      ]
+    },
+    "breakhunt": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 21000,
+      "source_jobs": [
+        "breakhunt"
+      ]
+    },
+    "cohorthet": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 15000,
+      "source_jobs": [
+        "cohorthet"
+      ]
+    },
+    "covariates_panel": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 140564,
+      "source_jobs": [
+        "dr",
+        "jw",
+        "lp",
+        "ps2",
+        "sa"
+      ]
+    },
+    "covariates_rc": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 26000,
+      "source_jobs": [
+        "cov"
+      ]
+    },
+    "ctvar": {
+      "n": 1000,
+      "reps": 100,
+      "rows": 5400,
+      "source_jobs": [
+        "ctvar"
+      ]
+    },
+    "hero": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 13500,
+      "source_jobs": [
+        "figdata"
+      ]
+    },
+    "lp4000": {
+      "n": 4000,
+      "reps": 500,
+      "rows": 18000,
+      "source_jobs": [
+        "lp4000"
+      ]
+    },
+    "master": {
+      "n": 2000,
+      "reps": 100,
+      "rows": 3900,
+      "source_jobs": [
+        "master"
+      ]
+    },
+    "sampling_main": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 111000,
+      "source_jobs": [
+        "bjs",
+        "core",
+        "fx",
+        "fxpanel",
+        "jw",
+        "lp",
+        "rv",
+        "sa"
+      ]
+    },
+    "smallnt": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 4500,
+      "source_jobs": [
+        "smallnt"
+      ]
+    },
+    "unitroot": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 16000,
+      "source_jobs": [
+        "ur"
+      ]
+    },
+    "ymiss": {
+      "n": 1000,
+      "reps": 500,
+      "rows": 9000,
+      "source_jobs": [
+        "ymiss"
+      ]
+    }
+  },
+  "raw_evidence": "Every per-job raw output and each deduplicated design dataset is retained as a content-verified .csv.gz file.",
+  "runtimes": [
+    {
+      "engine_stamp": "2.0.1|17",
+      "stata_born": "29 Jul 2026",
+      "stata_edition": "MP",
+      "stata_processors": "1",
+      "stata_version": "19.5"
+    }
   ],
-  "cells_verified": "17 of 17 published reliability cells"
+  "packages": {
+    "csdid": {
+      "path": "csdid.ado",
+      "sha256": "d814b04ee04962f2afc97eb7de8c79989e6d267fd331f4c82158dd483a06a174",
+      "header": [
+        "*! csdid 2.0.1 23oct2026",
+        "program define csdid, eclass sortpreserve",
+        "    * this guard used to sit BELOW `version 14', where it",
+        "    * could never fire - on Stata 13 the `version 14' statement itself aborts"
+      ]
+    },
+    "csdid_stats": {
+      "path": "csdid_stats.ado",
+      "sha256": "6f07656bc92c0d4fdd166b25d100ffa6a5d8814b6001e5a35272b6f0e971e08b",
+      "header": [
+        "*! csdid_stats 2.0.1 23oct2026",
+        "program define csdid_stats, eclass",
+        "    version 14",
+        "    * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale"
+      ]
+    },
+    "_csdid_engine_load": {
+      "path": "_csdid_engine_load.ado",
+      "sha256": "254ebf6a17345c7b3e40c756f3f68e695cc7df23c00a6ea88e635d7db1e34dbd",
+      "header": [
+        "*! _csdid_engine_load 2.0.1 23oct2026",
+        "* ---------------------------------------------------------------------------",
+        "* Bringing the Mata engine into the session.",
+        "*"
+      ]
+    },
+    "jwdid": {
+      "path": "jwdid.ado",
+      "sha256": "5211a9d76bb3468eba05e25d8cedbdb526861f8358371f31351eb75b423d44d5",
+      "header": [
+        "*!v2.21 Bug with trgvar",
+        "*v2.201 Index Option",
+        "*v2.2 Fixing issue with RCS ",
+        "*v2.13 Fixing Treatment Intensity"
+      ]
+    },
+    "did_imputation": {
+      "path": "did_imputation.ado",
+      "sha256": "ca5f40639db954212aac65db922647a241ac18f79cf6a2241c9b19434d42b4d6",
+      "header": [
+        "*! did_imputation: Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2023)",
+        "*! Version: November 22, 2023",
+        "*! Author: Kirill Borusyak",
+        "*! Recent updates: project() option can no longer be combined with autosample, which could lead to errors"
+      ]
+    },
+    "did_multiplegt_dyn": {
+      "path": "did_multiplegt_dyn.ado",
+      "sha256": "f1e7782f71304a4a15b7ac0c237b73197f667e3d72bb643dfff28d6c9b7e32db",
+      "header": [
+        "*\ufeff* did_multiplegt_dyn : did_multiplegt, robust to dynamic effects and with asymptotic variances",
+        "** Henceforth, \"the paper\" refers to \"Difference-in-Differences Estimators of Intertemporal",
+        "** Treatment Effects\", by Chaisemartin and D'Haultfoeuille.",
+        "** Henceforth, \"the companion paper\" refers to \"Estimators and Variance Estimators Computed by the"
+      ]
+    },
+    "lpdid": {
+      "path": "lpdid.ado",
+      "sha256": "f1711d2f15bdc0e2c0118fcf6dd3dd39ccc1482a48681d7e539facaa3c3fadc6",
+      "header": [
+        "* lpdid program, version 1.0.2",
+        "",
+        "* Authors: Alexander Busch (Massachusetts Institute of Technology, abusch@mit.edu) and Daniele Girardi (King's College London, daniele.girardi@kcl.ac.uk), in collaboration with Arin Dube, Oscar Jord\u00e0 and Alan M. Taylor",
+        ""
+      ]
+    },
+    "eventstudyinteract": {
+      "path": "eventstudyinteract.ado",
+      "sha256": "dcf01a334702e76254527beff4dac522fef8664327fe505121fca8651e7c04e9",
+      "header": [
+        "*! version 0.1  24jan2022  Liyang Sun, lsun20@mit.edu",
+        "",
+        "capture program drop eventstudyinteract",
+        "program define eventstudyinteract, eclass sortpreserve"
+      ]
+    },
+    "flexdid": {
+      "path": "flexdid.ado",
+      "sha256": "0cde17eacafe7550da60f51f5aee8b51b2395ce336811f1c0f0ea62058010de7",
+      "header": [
+        "*! version 2.5  06jun2026",
+        "**! version 2.2  04may2026",
+        "**! version 2.0  05feb2026",
+        "**! version 1.6  30nov2025"
+      ]
+    },
+    "reghdfe": {
+      "path": "reghdfe.ado",
+      "sha256": "0c700ea38de4ed110d0cbb57acd3e24351a5ab68b61dd84fcb0e5bc8f02d941a",
+      "header": [
+        "*! version 6.13.1 10Jan2026",
+        "program define reghdfe",
+        "\t",
+        "\t* Intercept storing alphas"
+      ]
+    },
+    "ftools": {
+      "path": "ftools.ado",
+      "sha256": "c7eba3272b5fcd1dfa157e65c37840a051c6e2bf327d5ee31d42df65cf330b00",
+      "header": [
+        "*! version 2.50.0 09jan2026",
+        "* This file is just used to compile ftools.mlib",
+        "",
+        "program define ftools"
+      ]
+    },
+    "drdid": {
+      "path": "drdid.ado",
+      "sha256": "242dd51923580cda80b28f1b00512b9f95666db989825c46a9fad21d87dcfc9f",
+      "header": [
+        "* Ver 1.91 Pedro Sant'Anna fixes some typos on IFs, trimming, and correct usage of weights.",
+        "* Ver 1.9 Scott Cunningham edits added a few lines of trimming propensity scores above 0.995 for the control groups ",
+        "* Ver 1.8 Trimming",
+        "* Ver 1.71 bug with weights"
+      ]
+    },
+    "lmoremata": {
+      "path": "MISSING"
+    }
+  },
+  "publication_source_annotations": {
+    "file": "source-annotations/source-comment-annotations.json",
+    "sha256": "0b18ed98a4a4be84c2ba85473e4a67db686981be2eeda285f3f8c67561b8a1e9",
+    "definition": "Eight current simulation sources have explanatory comment corrections. Executed collection files and all numerical commands remain unchanged; exact source identities and diffs are retained."
+  }
 }

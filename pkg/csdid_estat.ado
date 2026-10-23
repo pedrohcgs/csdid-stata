@@ -1,4 +1,4 @@
-*! csdid_estat 2.0.0 27sep2026
+*! csdid_estat 2.0.1 23oct2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {

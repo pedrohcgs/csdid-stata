@@ -1,6 +1,7 @@
 # Migrating from csdid Version 1.82
 
-This guide maps each option of Stata `csdid` Version 1.82 onto csdid 2.0.0.
+This guide maps each option of Stata `csdid` Version 1.82 onto csdid 2.0.1.
+The defaults and option mappings introduced in 2.0.0 remain in force.
 Version 1.82 is the last revision of the 1.8x line (November 2025; commit
 `fdbae255` of this repository). SSC distributes Version 1.81, dated
 2025-10-05, which differs from Version 1.82 in two places: its `method(ipw)`
@@ -10,6 +11,18 @@ sections differ slightly. Where 2.0.0 and Version 1.82 disagree on a number,
 2.0.0 follows R `did` 2.5.1, except for the two defaults described below. The
 [upgrading guide](https://psantanna.com/csdid/articles/upgrading-from-182.html)
 covers the same ground with runnable examples.
+
+## Changes from 2.0.0 to 2.0.1
+
+Version 2.0.1 corrects the pre-period outcome-regression contribution to
+covariate-adjusted `method(dr)` influence functions in repeated cross
+sections, including panel comparisons estimated through `bal(none)` or
+`fix_weights(varying)`. Point estimates are unchanged; standard errors,
+covariance, pre-tests, confidence bands and aggregation inference can change
+from 2.0.0. Re-estimate affected results and rewrite saved RIF files.
+
+The patch also identifies undersized 2×2 regressions by name. It preserves
+exactly identified full-rank designs and does not change any defaults.
 
 ## Defaults
 
@@ -54,9 +67,16 @@ a result from that version.
 To reproduce a Version 1.82 run, add `nevertreated base_period(varying)
 analytical pscoretrim(1)`, and `bal(pair)` on an unbalanced panel. The ATT(g,t)
 cells, their standard errors and the event-study, calendar and simple
-aggregations then agree with Version 1.82, except as the last item below says.
-Five differences remain, and no option removes them:
+aggregations then agree with Version 1.82, subject to the differences below.
+Six differences remain, and no option removes them:
 
+- Starting in 2.0.1, covariate-adjusted `method(dr)` inference in repeated cross
+  sections corrects the pre-period outcome-regression contribution to the
+  influence function.
+  The ATT(g,t) point estimates do not change, but standard errors, covariance,
+  pre-tests, confidence bands and aggregation inference can differ. The same
+  correction applies to panel comparisons estimated through `bal(none)` or
+  `fix_weights(varying)`.
 - `notyet` keeps a comparison unit when it is untreated in both periods of the
   comparison, which is Version 1.82's `asinr` rule. With a varying base
   period, Version 1.82's plain `notyet` compared a pre-treatment cell only

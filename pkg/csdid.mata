@@ -1,4 +1,4 @@
-*! csdid 2.0.0 27sep2026
+*! csdid 2.0.1 23oct2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -165,7 +165,7 @@ real scalar csdid__mean(real colvector x)
 // ---------------------------------------------------------------------------
 string scalar csdid_mlib_version()
 {
-    return("2.0.0|source")
+    return("2.0.1|source")
 }
 
 
@@ -896,16 +896,25 @@ real colvector csdid__logit_fit(real colvector d, real matrix x, real colvector 
         if (unit_w) ww = mumu
         else        ww = w :* mu :* omu
         z = eta :+ (d :- mu) :/ mumu
-        h = quadcross(x, ww, x)
-        h_inv = invsym(h)
-        if (csdid__valid_inverse(h_inv)) {
-            b = h_inv * quadcross(x, ww :* z)
+        if (rows(x) < cols(x)) {
+            // did's preliminary overlap fit uses method 0 even on a wide
+            // design. Zero rows make QR conformable without changing WLS;
+            // the estimator entry refuses this design after the overlap test.
+            b = qrsolve((sqrt(ww) :* x \ J(cols(x) - rows(x), cols(x), 0)),
+                        (sqrt(ww) :* z \ J(cols(x) - rows(x), 1, 0)))
         }
         else {
-            // fastglm's LDLT solve keeps every column; qrsolve() would zero a
-            // near-collinear one at its rank tolerance and fit a different
-            // model. Tolerance 0: only an exactly singular system is missing.
-            b = lusolve(h, quadcross(x, ww :* z), 0)
+            h = quadcross(x, ww, x)
+            h_inv = invsym(h)
+            if (csdid__valid_inverse(h_inv)) {
+                b = h_inv * quadcross(x, ww :* z)
+            }
+            else {
+                // fastglm's LDLT solve keeps every column; qrsolve() would zero a
+                // near-collinear one at its rank tolerance and fit a different
+                // model. Tolerance 0: only an exactly singular system is missing.
+                b = lusolve(h, quadcross(x, ww :* z), 0)
+            }
         }
         if (sum(b :>= .) > 0) return(J(cols(x), 1, .))
         eta = x * b
@@ -1128,6 +1137,11 @@ void csdid__fit_status_warning(
         errprintf("warning: no usable weights for group %g in time period %g; the supplied weights are missing or non-positive on this cell, or the propensity-score trim left no effective comparison mass. ATT(g,t) is not estimable\n", g, t)
         return
     }
+    if (fit_status == 7) {
+        // DRDID 1.4.0 fastglm_fit's strict physical-dimension guard.
+        errprintf("warning: Error computing internal 2x2 DiD for (g, t) = (%g, %g): The regression design matrix is singular: fewer observations than covariates. Consider removing some covariates.. The ATT for this cell will be set to NA.\n", g, t)
+        return
+    }
     if (fit_status >= 4 & fit_status <= 6) {
         // DRDID's stop on rcond(XpX) of an outcome-regression design, in the
         // form the ipw design refusal below takes; the repeated cross-section
@@ -1263,6 +1277,12 @@ real colvector csdid__ipw_panel_fit(
     dy = y1 :- y0
     w = csdid__normalize_weights(wraw)
     if (sum(w :>= .) > 0) return(. \ J(n, 1, .) \ 3)
+    if (n < cols(x)) {
+        // did tests unweighted overlap before DRDID's physical dimensions.
+        overlap_status = csdid__overlap_status(x, d)
+        if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
+        return(. \ J(n, 1, .) \ 7)
+    }
     nonconstant_w = csdid__nonconstant_weights(w)
     if (cols(x) == 1) {
         // The overlap refusal is did::overlap_check_fail(), which fits an
@@ -1456,17 +1476,10 @@ real colvector csdid__reg_rc_fit(
     m_cont_post = (d :== 0) :& (post :== 1)
     xpre = select(x, m_cont_pre)
     xpost = select(x, m_cont_post)
-    // DS-04, extended to the repeated-cross-section fits. This carried the
-    // `rows <= cols(x)' pre-test that DS-04 removed from the panel fits for
-    // R parity, and it is wrong here for the same reason: DRDID's reg_did_rc
-    // has no count test at all, gating on anyNA(coefficients) plus rcond on
-    // the per-block cross-products. Because the test used `<=', it bit at
-    // EXACT identification -- a block with as many observations as
-    // regressors, which is estimable and which the inverse guards below
-    // accept -- so csdid returned a missing ATT and SE where R returns finite
-    // values. csdid__rcond_fail plus csdid__inv_r_parity/csdid__valid_inverse
-    // on each block already refuse every genuinely rank-deficient design.
     if (csdid__rcond_fail(x, d)) return(. \ J(n, 1, .) \ 2)  // F-005: R rcond_check_fail on the control design
+    // DRDID 1.4.0 fastglm_fit checks each physical outcome-design block.
+    // Zero weights still count; DS-04's square blocks remain admissible.
+    if (rows(xpre) < cols(x) | rows(xpost) < cols(x)) return(. \ J(n, 1, .) \ 7)
     xtwx_pre = quadcross(xpre, select(w, m_cont_pre), xpre)
     xtwx_post = quadcross(xpost, select(w, m_cont_post), xpost)
     xtwx_inv_pre = csdid__inv_r_parity(xtwx_pre)  // F-005: R-parity inverse
@@ -1551,6 +1564,12 @@ real colvector csdid__ipw_rc_fit(
     n = rows(d)
     w = csdid__normalize_weights(wraw)
     if (sum(w :>= .) > 0) return(. \ J(n, 1, .) \ 3)
+    if (n < cols(x)) {
+        // did tests unweighted overlap before DRDID's physical dimensions.
+        overlap_status = csdid__overlap_status(x, d)
+        if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
+        return(. \ J(n, 1, .) \ 7)
+    }
     nonconstant_w = csdid__nonconstant_weights(w)
     if (cols(x) == 1) {
         // See csdid__ipw_panel_fit: the overlap refusal is R's unweighted
@@ -1713,11 +1732,11 @@ real colvector csdid__dr_rc_fit(
     xct = select(x, m_c_post)
     xtp = select(x, m_t_pre)
     xtt = select(x, m_t_post)
-    // DS-04, extended: no `rows <= cols(x)' pre-test. DRDID's drdid_rc gates
-    // on anyNA plus rcond on the four weighted cross-products, with no count
-    // test, and the four per-block inverse guards below reproduce that. See
-    // the note in csdid__reg_rc_fit.
     if (csdid__rcond_fail(x, d)) return(. \ J(n, 1, .) \ 2)  // F-005: R rcond_check_fail on the control design
+    // DRDID 1.4.0 fastglm_fit: all four outcome fits obey the same strict
+    // dimension check, before their weighted cross-products are inverted.
+    if (rows(xcp) < cols(x) | rows(xct) < cols(x) |
+        rows(xtp) < cols(x) | rows(xtt) < cols(x)) return(. \ J(n, 1, .) \ 7)
     xtwx_c_pre = quadcross(xcp, select(w, m_c_pre), xcp)
     xtwx_c_post = quadcross(xct, select(w, m_c_post), xct)
     xtwx_t_pre = quadcross(xtp, select(w, m_t_pre), xtp)
@@ -1899,8 +1918,11 @@ real colvector csdid__dr_rc_fit(
     inf_eff = (inf_eff1 - inf_eff2) - (inf_eff3 - inf_eff4)
     inf_or_post = ols_res_post_treat :* xgam[., 6] :- ols_res_post :* xgam[., 7]
     inf_or_pre = ols_res_pre_treat :* xgam[., 8] :- ols_res_pre :* xgam[., 9]
-    inf_treat_or = inf_treat_or_post + inf_treat_or_pre
-    inf_cont_or = inf_cont_or_post + inf_cont_or_pre
+    // DRDID::drdid_rc.R:337-339: pre-period outcome-regression
+    // estimation effects enter the ATT with the same subtraction as the
+    // pre-period residual means.
+    inf_treat_or = inf_treat_or_post - inf_treat_or_pre
+    inf_cont_or = inf_cont_or_post - inf_cont_or_pre
     inf_or = inf_or_post - inf_or_pre
     inf_treat = inf_treat_post - inf_treat_pre + inf_treat_or
     inf_cont = inf_cont_post - inf_cont_pre + inf_cont_ps + inf_cont_or

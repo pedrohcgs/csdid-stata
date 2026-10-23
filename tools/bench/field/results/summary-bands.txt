@@ -1,5 +1,20 @@
-Traceback (most recent call last):
-  File "bandsum.py", line 119, in <module>
-    main(sys.argv[1], sys.argv[2])
-                      ~~~~~~~~^^^
-IndexError: list index out of range
+== joint coverage of ES(0), ES(1), ES(2) ==
+  truths: 2.0, 2.5, 3.0
+
+  csdid uniform band                   0.966   (483 of 500 reps)
+  csdid three pointwise CIs            0.906   (453 of 500 reps)
+  csdid bal(none) pointwise            0.908   (454 of 500 reps)
+  jwdid pointwise                      0.888   (444 of 500 reps)
+  did_imputation pointwise             0.888   (444 of 500 reps)
+  did_multiplegt_dyn pointwise         0.862   (431 of 500 reps)
+  lpdid pointwise                      0.444   (222 of 500 reps)
+  flexdid pointwise                    0.994   (497 of 500 reps)
+
+== per-horizon pointwise coverage, same reps (diagnostic) ==
+  csdid (bands run)                    0.964   0.946   0.968   (n=500)
+  csdid bal(none)                      0.966   0.946   0.968   (n=500)
+  jwdid                                0.960   0.940   0.960   (n=500)
+  did_imputation                       0.960   0.940   0.960   (n=500)
+  did_multiplegt_dyn                   0.944   0.926   0.948   (n=500)
+  lpdid                                0.522   0.726   0.954   (n=500)
+  flexdid                              0.996   1.000   0.998   (n=500)

@@ -23,7 +23,7 @@ foreach n in 5000 20000 {
         use "`d'", clear
         capture bench_`pkg', horizons(5) cluster(cl) `sopt'
         local wok = _rc
-        if `wok' != 0 | r(ok) == 0 {
+        if `wok' != 0 | r(ok) != 1 {
             di "TIMED rcs `rows' `pkg' UNSUPPORTED"
         }
         else {
@@ -32,6 +32,10 @@ foreach n in 5000 20000 {
                 use "`d'", clear
                 quietly bench_`pkg', horizons(5) cluster(cl) `sopt'
                 local s = r(secs)
+                if r(ok) != 1 | missing(`s') | `s' <= 0 {
+                    display as error "timed `pkg' fit failed"
+                    exit 459
+                }
                 if `s' < `best' local best = `s'
             }
             di "TIMED rcs `rows' `pkg' best=" %8.4f `best'

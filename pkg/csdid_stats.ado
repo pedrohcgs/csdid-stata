@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.0 27sep2026
+*! csdid_stats 2.0.1 23oct2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -1813,7 +1813,7 @@ program define _csdid_stats_load_rif, eclass
     ereturn local marginsnotok "_ALL"
     ereturn local rif_file `"`using'"'
     ereturn local cmdline `"`cmdline'"'
-    ereturn local version "2.0.0"
+    ereturn local version "2.0.1"
     ereturn local panel_mode "`panel_mode'"
     ereturn local control_group "`control_group'"
     ereturn local method "`method'"

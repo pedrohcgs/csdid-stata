@@ -18,7 +18,7 @@ import csv, math, sys, collections
 
 ES_TRUTH = {0: 2.0, 1: 2.5, 2: 3.0}
 # field designs with their own closed-form targets (base, slope in event time)
-REGIME_TRUTH = {"master": (2.516667, 0.633333), "cohorthet": (2.516667, 0.633333),
+REGIME_TRUTH = {"master": (151 / 60, 19 / 30), "cohorthet": (151 / 60, 19 / 30),
                 "breakC": (2.0945, 0.556)}
 def es_truth(regime, h):
     base, slope = REGIME_TRUTH.get(regime, (2.0, 0.5))
@@ -141,11 +141,11 @@ def cells(rows, regs, pkgs):
                 sd = math.sqrt(sum((e - m) ** 2 for e in est) / (n - 1)) if n > 1 else float("nan")
                 ses = [s for _, s in v if s is not None]
                 mse = sum(ses) / len(ses) if ses else float("nan")
-                cov = [1 if abs(e - rtruth) <= 1.959964 * s else 0
+                cov = [1 if abs(e - truth) <= 1.959964 * s else 0
                        for e, s in v if s is not None and s > 0]
                 cvr = sum(cov) / len(cov) if cov else float("nan")
                 print(f"  {regime:<11}{label(pkg):<20}{f'ATT({g},{t})':>12}{n:>6}"
-                      f"{truth:>8.3f}{m-rtruth:>+9.4f}{sd:>8.4f}{mse:>8.4f}{cvr:>8.3f}")
+                      f"{truth:>8.3f}{m-truth:>+9.4f}{sd:>8.4f}{mse:>8.4f}{cvr:>8.3f}")
 
 def worst_cells(rows, regs, pkgs):
     print("\n== ATT(g,t) cells: worst |bias| over the post grid ==")

@@ -1,4 +1,4 @@
-*! tsvmat 2.0.0 27sep2026
+*! tsvmat 2.0.1 23oct2026
 
 *capture program drop tsvmat
 program define tsvmat, return

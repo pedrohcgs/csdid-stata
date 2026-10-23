@@ -1,0 +1,61 @@
+rows: 15000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  cohorthet  csdid dr              500  -0.0001  0.0857  0.0856  0.0907   0.960
+  cohorthet  csdid reg             500  -0.0019  0.0792  0.0791  0.0873   0.970
+  cohorthet  jwdid                 500  -0.0006  0.0637  0.0636  0.0600   0.928
+  cohorthet  did_imputation        500  -0.0006  0.0637  0.0636  0.0624   0.938
+  cohorthet  eventstudyinteract    500  +0.2926  0.0746  0.3020  0.0877   0.048
+  cohorthet  did_multiplegt_dyn    500  +0.1183  0.0738  0.1394  0.0723   0.632
+  cohorthet  csdid_dr_nt           500  +0.0000  0.0762  0.0762  0.0837   0.978
+  cohorthet  csdid_reg_nt          500  -0.0016  0.0706  0.0705  0.0802   0.976
+  cohorthet  lpdid_rw_ctl          500  -0.0015  0.0690  0.0690  0.0804   0.974
+  cohorthet  sa_xt                 500  -0.1219  0.0659  0.1386  0.0745   0.646
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  cohorthet  csdid dr              500  -0.0006  0.0994  0.0993  0.1048   0.962
+  cohorthet  csdid reg             500  -0.0015  0.0936  0.0935  0.1007   0.964
+  cohorthet  jwdid                 500  +0.0001  0.0837  0.0836  0.0690   0.884
+  cohorthet  did_imputation        500  +0.0001  0.0837  0.0836  0.0765   0.926
+  cohorthet  eventstudyinteract    500  +0.5868  0.1177  0.5984  0.1288   0.000
+  cohorthet  did_multiplegt_dyn    500  +0.4165  0.1108  0.4310  0.1047   0.018
+  cohorthet  csdid_dr_nt           500  -0.0009  0.0960  0.0959  0.1012   0.964
+  cohorthet  csdid_reg_nt          500  -0.0017  0.0899  0.0898  0.0976   0.964
+  cohorthet  lpdid_rw_ctl          500  -0.0016  0.0839  0.0839  0.0948   0.976
+  cohorthet  sa_xt                 500  -0.3375  0.0803  0.3470  0.0870   0.014
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  cohorthet  csdid dr              500  -0.0055  0.1101  0.1101  0.1221   0.978
+  cohorthet  csdid reg             500  -0.0066  0.1033  0.1034  0.1189   0.978
+  cohorthet  jwdid                 500  -0.0046  0.0966  0.0966  0.0738   0.862
+  cohorthet  did_imputation        500  -0.0046  0.0966  0.0966  0.0948   0.956
+  cohorthet  eventstudyinteract    500  +0.8758  0.1621  0.8907  0.1779   0.000
+  cohorthet  did_multiplegt_dyn    500  +0.8758  0.1621  0.8907  0.1592   0.000
+  cohorthet  csdid_dr_nt           500  -0.0055  0.1101  0.1101  0.1224   0.978
+  cohorthet  csdid_reg_nt          500  -0.0066  0.1033  0.1034  0.1186   0.974
+  cohorthet  lpdid_rw_ctl          500  -0.0069  0.0994  0.0996  0.1154   0.978
+  cohorthet  sa_xt                 500  -0.5945  0.0947  0.6020  0.1077   0.000
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  cohorthet  csdid dr                 500     500        0
+  cohorthet  csdid reg                500     500        0
+  cohorthet  jwdid                    500     500        0
+  cohorthet  did_imputation           500     500        0
+  cohorthet  eventstudyinteract       500     500        0
+  cohorthet  did_multiplegt_dyn       500     500        0
+  cohorthet  csdid_dr_nt              500     500        0
+  cohorthet  csdid_reg_nt             500     500        0
+  cohorthet  lpdid_rw_ctl             500     500        0
+  cohorthet  sa_xt                    500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+
+== ATT(g,t) cells: worst |bias| over the post grid ==

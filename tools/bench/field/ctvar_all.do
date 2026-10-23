@@ -2,8 +2,9 @@
 *      ctvar_all.do -- the calendar-time design, every command at every option
 *-----------------------------------------------------------------------------
 * Covariate trend effects vary with calendar time, identically across
-* cohorts: conditional parallel trends holds and every outcome model is
-* correctly specified cell by cell. Target ES(e) = 2.0 + 0.5 e.
+* cohorts. Conditional parallel trends holds; untreated changes are linear
+* in X within each period pair. Pooled restrictions need not hold.
+* Target ES(e) = 2.0 + 0.5 e.
 * Writes one CSV row per (regime, pkg, rep, horizon); summarize with
 * mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
 *   Usage: stata-mp -b do ctvar_all.do <nunits> <reps> <outfile>

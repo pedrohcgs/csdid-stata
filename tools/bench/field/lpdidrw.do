@@ -38,7 +38,7 @@ forvalues r = 1/`reps' {
         }
     }
 
-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
     foreach cell in ok owrong pwrong2 {
         local msp = cond("`cell'" == "ok", "", ///
             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))

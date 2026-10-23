@@ -1,4 +1,4 @@
-*! _csdid_engine_load 2.0.0 27sep2026
+*! _csdid_engine_load 2.0.1 23oct2026
 * ---------------------------------------------------------------------------
 * Bringing the Mata engine into the session.
 *
@@ -259,7 +259,7 @@ program define _csdid_engine_load
         local mlib_bar = strpos("`mlib_stamp'", "|")
         local mlib_pkg = substr("`mlib_stamp'", 1, `mlib_bar' - 1)
         local mlib_stata = substr("`mlib_stamp'", `mlib_bar' + 1, .)
-        local mlib_stale = ("`mlib_pkg'" != "2.0.0")
+        local mlib_stale = ("`mlib_pkg'" != "2.0.1")
         local mlib_newer = 0
         if !`mlib_stale' & "`mlib_stata'" != "source" {
             local mlib_newer = (real("`mlib_stata'") < . & real("`mlib_stata'") > c(stata_version))
@@ -472,7 +472,7 @@ program define _csdid_engine_source
     local src_rc = _rc
     local mlib_bar = strpos("`mlib_stamp'", "|")
     local mlib_pkg = substr("`mlib_stamp'", 1, `mlib_bar' - 1)
-    if `src_rc' | `mlib_bar' == 0 | "`mlib_pkg'" != "2.0.0" {
+    if `src_rc' | `mlib_bar' == 0 | "`mlib_pkg'" != "2.0.1" {
         display as error `"the file `mata_source' is not this csdid's engine source: a file with the same name, from another package or an older installation, is shadowing it on the adopath. Remove or rename that file, or move its directory off the adopath, and run csdid again."'
         exit 499
     }

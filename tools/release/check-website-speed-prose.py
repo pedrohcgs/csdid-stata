@@ -59,24 +59,30 @@ ARTICLES = {
     },
 }
 
-# Numbers in the speed prose that are not table cells. Each needs a reason.
-ALLOWED = {
-    # (article stem, literal as written): why it is not in a table
-    ("csdid-against-the-field", "120.1 seconds"):
-        "the warmup call that put xthdidregress past this harness's per-call "
-        "cap at T=40; it is recorded in that table's own note, which is why "
-        "the cell is empty",
-    ("speed-vs-182", "35x"):
-        "the top of the seven-trial A/B certification table shipped in the "
-        "package README, a different harness at fixed sample size; the page "
-        "cites that table's range rather than restating its rows",
-    ("csdid-against-the-field", "10x"):
-        "the low end of the Version 1.82 page's range, not this article's "
-        "tables; that cross-page claim is checked by "
-        "tests/meta/test-website-speed-claims.sh",
-    ("csdid-against-the-field", "308x"):
-        "the high end of the same range, checked by the same gate",
-}
+def allowed_numbers(fragments):
+    """Cross-page summaries and capped warmups retain their named evidence.
+
+    The summary-claims gate checks their scope and exact extrema separately.
+    The values come from this record rather than an earlier campaign's digits.
+    """
+    allowed = set()
+    gains = [row[-1] for path in pathlib.Path(fragments).glob("v182-*.md")
+             for row in cells_of(path.read_text()) if row[-1] is not None]
+    for value in (min(gains), max(gains)):
+        allowed.add(("csdid-against-the-field", f"{value:g}x"))
+    readme_path = ROOT / ("packaging/README.md" if (ROOT / "packaging").is_dir() else "README.md")
+    readme = readme_path.read_text()
+    fixed = re.search(r"## Speed\n(.*?)## Unbalanced panels\n", readme, re.S)
+    if not fixed:
+        raise SystemExit("README fixed-size speed section is missing")
+    fixed_gains = [float(value) for value in re.findall(r"^\|.*?\*\*(\d+(?:\.\d+)?)x\*\* \|$", fixed.group(1), re.M)]
+    if len(fixed_gains) != 15:
+        raise SystemExit("README fixed-size speed table is incomplete")
+    allowed.add(("speed-vs-182", f"{max(fixed_gains):g}x"))
+    raw = (RESULTS / "scalebench-results.csv").read_text()
+    for value in re.findall(r"single warmup call took (\d+(?:\.\d+)?)s", raw):
+        allowed.add(("csdid-against-the-field", f"{value} seconds"))
+    return allowed
 
 TIMING = re.compile(r"(?<![\d.])(\d+\.\d+)\s*(?:seconds|second|s\b)")
 RATIO_WORDS = re.compile(r"about (\d+(?:\.\d+)?) times")
@@ -88,11 +94,15 @@ def generate(tmp):
     mp = RESULTS / "metadata.json"
     if mp.exists():
         meta = json.loads(mp.read_text())
+    packaged = re.search(r"^\*! csdid ([0-9.]+) ", (ROOT / "pkg/csdid.ado").read_text())
+    if not packaged or meta.get("candidate_version") != packaged[1]:
+        sys.exit("current timing evidence does not identify the packaged release; run the full fresh campaign")
     proc = subprocess.run(
         [sys.executable, str(GEN), "--results", str(RESULTS / "scalebench-results.csv"),
          "--outdir", tmp, "--stata", meta.get("stata", "?"),
          "--platform", meta.get("platform", "?"), "--date", meta.get("date", "?"),
-         "--trials", str(meta.get("trials", ""))],
+         "--trials", str(meta.get("trials", "")),
+             "--candidate-version", meta.get("candidate_version", "2.0.0")],
         capture_output=True, text=True)
     if proc.returncode != 0:
         sys.exit(f"the table generator refused:\n{proc.stderr}")
@@ -128,6 +138,7 @@ def main():
     failures, checked = [], 0
     with tempfile.TemporaryDirectory() as tmp:
         generate(tmp)
+        allowed = allowed_numbers(tmp)
         for article, spec in ARTICLES.items():
             rows, values = [], set()
             for name in spec["fragments"]:
@@ -193,7 +204,7 @@ def main():
             for m in TIMING.finditer(prose):
                 checked += 1
                 x = float(m.group(1))
-                if (article.stem, m.group(0)) in ALLOWED or ok_value(x):
+                if (article.stem, m.group(0)) in allowed or ok_value(x):
                     continue
                 failures.append(f"{article.name}: prose says {m.group(0)!r}, "
                                 "which is not a cell in any of its tables")
@@ -201,7 +212,7 @@ def main():
                 for m in pat.finditer(prose):
                     checked += 1
                     x = float(m.group(1))
-                    if (article.stem, m.group(0)) in ALLOWED or ok_ratio(x):
+                    if (article.stem, m.group(0)) in allowed or ok_ratio(x):
                         continue
                     failures.append(f"{article.name}: prose says {m.group(0)!r}, "
                                     "which is not the ratio of two cells in any "

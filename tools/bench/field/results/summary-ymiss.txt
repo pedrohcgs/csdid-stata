@@ -1,0 +1,45 @@
+rows: 9000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  ymiss_drop csdid dr              500  -0.0076  0.2383  0.2382  0.2456   0.946
+  ymiss_drop jwdid                 500  -0.1641  0.0722  0.1793  0.0698   0.356
+  ymiss_drop did_imputation        500  -0.1645  0.0719  0.1795  0.0715   0.380
+  ymiss_ymisscsdid dr              500  -0.0076  0.2383  0.2382  0.2456   0.946
+  ymiss_ymissjwdid                 500  -0.1641  0.0722  0.1793  0.0698   0.356
+  ymiss_ymissdid_imputation        500  -0.1645  0.0719  0.1795  0.0715   0.380
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  ymiss_drop csdid dr              500  -0.0207  0.2584  0.2589  0.2592   0.954
+  ymiss_drop jwdid                 500  +0.0680  0.0836  0.1076  0.0798   0.864
+  ymiss_drop did_imputation        500  +0.0672  0.0854  0.1086  0.0816   0.854
+  ymiss_ymisscsdid dr              500  -0.0207  0.2584  0.2589  0.2592   0.954
+  ymiss_ymissjwdid                 500  +0.0680  0.0836  0.1076  0.0798   0.864
+  ymiss_ymissdid_imputation        500  +0.0672  0.0854  0.1086  0.0816   0.854
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  ymiss_drop csdid dr              500  -0.0165  0.2628  0.2631  0.2700   0.942
+  ymiss_drop jwdid                 500  +0.2321  0.0795  0.2453  0.0789   0.162
+  ymiss_drop did_imputation        500  +0.2318  0.0802  0.2452  0.0799   0.166
+  ymiss_ymisscsdid dr              500  -0.0165  0.2628  0.2631  0.2700   0.942
+  ymiss_ymissjwdid                 500  +0.2321  0.0795  0.2453  0.0789   0.162
+  ymiss_ymissdid_imputation        500  +0.2318  0.0802  0.2452  0.0799   0.166
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  ymiss_drop csdid dr                 500     500        0
+  ymiss_drop jwdid                    500     500        0
+  ymiss_drop did_imputation           500     500        0
+  ymiss_ymisscsdid dr                 500     500        0
+  ymiss_ymissjwdid                    500     500        0
+  ymiss_ymissdid_imputation           500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+
+== ATT(g,t) cells: worst |bias| over the post grid ==

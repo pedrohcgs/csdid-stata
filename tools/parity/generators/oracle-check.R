@@ -42,9 +42,9 @@ local({
          " but the parity contract is frozen on 2.5.1")
   }
   drdid_ver <- as.character(utils::packageVersion("DRDID"))
-  if (drdid_ver != "1.3.0") {
+  if (drdid_ver != "1.4.0") {
     stop("oracle gate: loaded DRDID reports version ", drdid_ver,
-         " but the parity contract is frozen on 1.3.0")
+         " but the parity contract is frozen on 1.4.0")
   }
   # Regeneration traces calls to attest their execution. Inspect each traced
   # function's original body, so instrumentation cannot change the fingerprint.
@@ -101,7 +101,7 @@ local({
     stop("oracle gate: loaded did/DRDID full code digest ", full_actual,
          " differs from the frozen fingerprint in ", full_digest_file)
   }
-  message("oracle gate: did 2.5.1 / DRDID 1.3.0 content-verified (", actual,
+  message("oracle gate: did 2.5.1 / DRDID 1.4.0 content-verified (", actual,
           "; all ", length(unlist(records, use.names = FALSE)), " R functions ",
           full_actual, ") at ", find.package("did"))
 })

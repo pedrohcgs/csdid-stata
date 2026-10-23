@@ -162,7 +162,8 @@ program define dgp_break
     if "`design'"=="B" {
         quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
             cond(mod(_n,4)==2, 4, 5)))
-        * ASYMMETRIC cohort means, common variance -> logit-linear pscore
+        * Asymmetric normal means and common variance give linear pairwise
+        * cohort log odds; pooled not-yet scores need not be linear logits.
         quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, ///
             cond(gvar==3, -0.8, cond(gvar==4, 0.0, 0.2)))
     }

@@ -40,7 +40,7 @@ program define bench_dgp
     * never-treated group. gvar = 0 is never treated.
     quietly generate double u = runiform()
     quietly generate int gvar = 0
-    local first_g = floor(`t' / 3) + 1
+    local first_g = max(2, floor(`t' / 3) + 1)
     forvalues k = 1/`cohorts' {
         local g = `first_g' + `k' - 1
         if `g' <= `t' {

@@ -573,12 +573,13 @@ STATA_OS="$(sed -n 's/^os=//p' "$LOGDIR/platform.txt")"
 STATA_MACHINE="$(sed -n 's/^machine_type=//p' "$LOGDIR/platform.txt")"
 
 # Which compiled library the suite ran against. src/build.do stamps the built
-# copy with the Stata that built it (`2.0.0|<version>`); the source fallback
-# keeps `2.0.0|source`. Reading the stamp out of the shipped file is the only
-# way the receipt can say the two agree.
+# copy as <package version>|<compiler version>; the source fallback keeps
+# <package version>|source. Read the shipped library's compiled stamp for the
+# version declared by the install manifest, including future patch releases.
 MLIB_STAMP="absent"
 if [ -f pkg/lcsdid_v2.mlib ]; then
-  MLIB_STAMP="$(strings pkg/lcsdid_v2.mlib | grep -o '2\.0\.0|[0-9.]*' | head -1)"
+  MLIB_PACKAGE_VERSION="$(sed -n 's/^d Version: \(.*\)/\1/p' csdid.pkg | head -1)"
+  MLIB_STAMP="$(strings pkg/lcsdid_v2.mlib | awk -v version="$MLIB_PACKAGE_VERSION" 'index($0, version "|") == 1 && $0 ~ /^[0-9]+[.][0-9]+[.][0-9]+[|][0-9]+([.][0-9]+)*$/ { print; exit }')"
   [ -n "$MLIB_STAMP" ] || MLIB_STAMP="unstamped"
 fi
 

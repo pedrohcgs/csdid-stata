@@ -1,7 +1,7 @@
 {
   "matrix_id": "RT039",
   "fixture_family": "r-dr-rc-outcome-qr",
-  "normative_source": "did 2.5.1 compute.att_gt.R; DRDID 1.3.0 drdid_rc/fastglm_fit: four Gaussian fits use method=0 (column-pivoted QR)",
+  "normative_source": "did 2.5.1 compute.att_gt.R; DRDID 1.4.0 drdid_rc/fastglm_fit: four Gaussian fits use method=0 (column-pivoted QR)",
   "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
@@ -60,7 +60,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt039/generate.R",
       "path": "tools/parity/generators/rt039/generate.R",
-      "sha256": "a257ceda467a82a9656dcaa2c73c62fdc7f422ed1bfc70d60be079a9b92fcff8"
+      "sha256": "c52e4f5a6964b628522acf61d63ff20bf67ffeb232ba7dd86dd346b27cf136da"
     }
   ],
   "runtimes": [
@@ -69,7 +69,7 @@
       "version": "4.6.0",
       "package_versions": {
         "did": "2.5.1",
-        "DRDID": "1.3.0",
+        "DRDID": "1.4.0",
         "fastglm": "0.1.1"
       }
     }
@@ -79,12 +79,12 @@
     {
       "path": "expected/r/attgt.csv",
       "schema": "attgt",
-      "sha256": "a47b083309cb3885680d0533b73274748247550c13ab08e8e92b71afca1e6c99"
+      "sha256": "3e6bbd3f379441eed3cf846603d26b39027fc9beb5d416735e060946db704ab0"
     },
     {
       "path": "expected/r/inffunc.csv",
       "schema": "full-influence-function",
-      "sha256": "07b490975124fc2784e5e3fc5434c48370efb92a5b546151bf0afbe71b38c335"
+      "sha256": "ff55183683805a07c19e45927e38032cb3ae5d15c0e19e1ebe9d6e449413dc7f"
     }
   ],
   "comparison_plan": [

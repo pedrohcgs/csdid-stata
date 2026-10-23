@@ -1,0 +1,16 @@
+scenario,comparison,trials,candidate_median_seconds,legacy_median_seconds,median_paired_time_ratio,time_ratio_upper95,candidate_median_peak_rss_mb,legacy_median_peak_rss_mb,median_paired_rss_ratio,rss_ratio_upper95,candidate_faster,candidate_lower_rss
+balanced_reg_analytical,like-for-like,7,0.068200000,2.063000000,0.033062,0.035078,685.094,704.203,0.972753,0.981374,1,1
+balanced_dr_covariates_analytical,like-for-like,7,0.101666667,2.577666667,0.040032,0.045649,503.375,519.641,0.972265,0.980517,1,1
+balanced_weighted_ipw_analytical,like-for-like,7,0.075600000,2.561000000,0.029290,0.034510,683.188,708.141,0.965694,0.973042,1,1
+balanced_cluster_reg_analytical,like-for-like,7,0.074000000,2.242600000,0.033393,0.034929,682.766,708.234,0.962362,0.968173,1,1
+balanced_reg_bootstrap,like-for-like,7,0.155000000,3.206500000,0.046988,0.052082,424.203,428.281,0.998087,1.010434,1,1
+balanced_dr_covariates_bootstrap,like-for-like,7,0.193500000,3.630000000,0.054168,0.055540,429.734,431.375,1.006770,1.026657,1,1
+balanced_weighted_ipw_bootstrap,like-for-like,7,0.165000000,3.435500000,0.047882,0.050419,424.938,421.422,1.004994,1.014423,1,1
+balanced_cluster_reg_bootstrap,like-for-like,7,0.103000000,3.028000000,0.034147,0.036730,429.688,420.703,1.015747,1.025277,1,1
+unbalanced_dr_weighted_analytical,like-for-like,7,0.161000000,2.808000000,0.056323,0.069737,397.938,419.297,0.953345,0.964104,1,1
+unbalanced_dr_weighted_bootstrap,like-for-like,7,0.240500000,3.355000000,0.072331,0.073262,421.359,420.297,1.005531,1.014560,1,1
+balanced_event_analytical,like-for-like,7,0.074333333,2.144333333,0.034665,0.043798,496.375,519.844,0.953828,0.976819,1,1
+balanced_event_bootstrap,like-for-like,7,0.274000000,3.648500000,0.075330,0.077661,437.406,422.062,1.018779,1.048984,1,1
+balanced_event_cband_bootstrap,like-for-like,7,0.340000000,3.722500000,0.091312,0.096217,430.469,429.234,1.011066,1.019714,1,1
+balanced_cluster_event_cband_bootstrap,like-for-like,7,0.160500000,3.618000000,0.045605,0.046240,433.156,419.734,1.030935,1.036713,1,1
+large_balanced_dr_weighted_analytical,like-for-like,7,0.494000000,11.213000000,0.044754,0.049139,151.672,248.141,0.612028,0.631049,1,1

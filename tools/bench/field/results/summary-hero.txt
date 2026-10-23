@@ -1,0 +1,57 @@
+rows: 13500   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  varmiss    csdid bal(none)       500  +0.0028  0.1042  0.1041  0.1046   0.954
+  varmiss    jwdid                 500  -0.1641  0.0722  0.1793  0.0698   0.356
+  varmiss    jwdid uncond          500  -0.1641  0.0722  0.1793  0.0802   0.480
+  varmiss    did_imputation        500  -0.1645  0.0719  0.1795  0.0715   0.380
+  varmiss    did_imputation wtr    500  +0.0071  0.0731  0.0733  0.0744   0.958
+  varmiss    eventstudyinteract    500  -0.1656  0.0809  0.1843  0.0877   0.508
+  varmiss    did_multiplegt_dyn    499  -0.2931  0.1012  0.3100  0.0967   0.156
+  varmiss    lpdid                 500  -0.3983  0.0985  0.4103  0.0994   0.018
+  varmiss    lpdid rw              500  -0.2931  0.1011  0.3100  0.1015   0.186
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  varmiss    csdid bal(none)       500  +0.0011  0.1129  0.1128  0.1109   0.944
+  varmiss    jwdid                 500  +0.0680  0.0836  0.1076  0.0798   0.864
+  varmiss    jwdid uncond          500  +0.0680  0.0836  0.1076  0.0906   0.908
+  varmiss    did_imputation        500  +0.0672  0.0854  0.1086  0.0816   0.854
+  varmiss    did_imputation wtr    500  +0.0055  0.0838  0.0839  0.0828   0.944
+  varmiss    eventstudyinteract    500  +0.0656  0.0923  0.1131  0.0974   0.912
+  varmiss    did_multiplegt_dyn    499  -0.2661  0.1349  0.2983  0.1288   0.435
+  varmiss    lpdid                 500  -0.3735  0.1429  0.3998  0.1459   0.272
+  varmiss    lpdid rw              500  -0.2511  0.1468  0.2908  0.1497   0.608
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  varmiss    csdid bal(none)       500  +0.0065  0.1061  0.1062  0.1089   0.960
+  varmiss    jwdid                 500  +0.2321  0.0795  0.2453  0.0789   0.162
+  varmiss    jwdid uncond          500  +0.2321  0.0795  0.2453  0.0867   0.208
+  varmiss    did_imputation        500  +0.2318  0.0802  0.2452  0.0799   0.166
+  varmiss    did_imputation wtr    500  +0.0076  0.0833  0.0836  0.0836   0.936
+  varmiss    eventstudyinteract    500  +0.2296  0.1002  0.2505  0.1023   0.384
+  varmiss    did_multiplegt_dyn    499  -0.0795  0.1343  0.1559  0.1284   0.894
+  varmiss    lpdid                 500  -0.0793  0.1448  0.1650  0.1478   0.932
+  varmiss    lpdid rw              500  -0.2139  0.1459  0.2588  0.1501   0.704
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  varmiss    csdid bal(none)          500     500        0
+  varmiss    jwdid                    500     500        0
+  varmiss    jwdid uncond             500     500        0
+  varmiss    did_imputation           500     500        0
+  varmiss    did_imputation wtr       500     500        0
+  varmiss    eventstudyinteract       500     500        0
+  varmiss    did_multiplegt_dyn       500     499        1
+  varmiss    lpdid                    500     500        0
+  varmiss    lpdid rw                 500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+
+== ATT(g,t) cells: worst |bias| over the post grid ==

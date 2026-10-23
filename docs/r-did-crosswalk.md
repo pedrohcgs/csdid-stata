@@ -504,8 +504,8 @@ Both the grid and the values match; the event-time truncation agrees with R to
 
 ## 9. How to reproduce this document
 
-Everything above was produced from R `did` 2.5.1 with `DRDID` 1.3.0 and this
-Stata tree. To regenerate the numbers in section 8:
+The reference environment is R `did` 2.5.1 with `DRDID` 1.4.0. To regenerate
+the numbers in section 8:
 
 ```bash
 Rscript -e 'args(did::att_gt)'    # section 2 signature

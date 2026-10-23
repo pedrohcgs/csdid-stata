@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "finished_utc": "2026-10-23T06:52:56.187006+00:00",
+  "source_commit": "329f5ec4f2b32e442b33ab3f4ee59b5f27bb8d4a",
+  "identity": {
+    "runtime": [
+      "19.5",
+      "MP",
+      "Unix",
+      "Mac (Apple Silicon)",
+      "29 Jul 2026",
+      "10"
+    ],
+    "packages": {
+      "packages": {
+        "jwdid": {
+          "file": "jwdid.ado",
+          "sha256": "5211a9d76bb3468eba05e25d8cedbdb526861f8358371f31351eb75b423d44d5",
+          "version_headers": [
+            "*!v2.21 Bug with trgvar"
+          ]
+        },
+        "did_imputation": {
+          "file": "did_imputation.ado",
+          "sha256": "ca5f40639db954212aac65db922647a241ac18f79cf6a2241c9b19434d42b4d6",
+          "version_headers": [
+            "*! did_imputation: Treatment effect estimation and pre-trend testing in staggered adoption diff-in-diff designs with an imputation approach of Borusyak, Jaravel, and Spiess (2023)",
+            "*! Version: November 22, 2023",
+            "*! Author: Kirill Borusyak",
+            "*! Recent updates: project() option can no longer be combined with autosample, which could lead to errors",
+            "*! Citation: Borusyak, Jaravel, and Spiess, \"Revisiting Event Study Designs: Robust and Efficient Estimation\" (2023)"
+          ]
+        },
+        "lpdid": {
+          "file": "lpdid.ado",
+          "sha256": "f1711d2f15bdc0e2c0118fcf6dd3dd39ccc1482a48681d7e539facaa3c3fadc6",
+          "version_headers": []
+        },
+        "eventstudyinteract": {
+          "file": "eventstudyinteract.ado",
+          "sha256": "dcf01a334702e76254527beff4dac522fef8664327fe505121fca8651e7c04e9",
+          "version_headers": [
+            "*! version 0.1  24jan2022  Liyang Sun, lsun20@mit.edu"
+          ]
+        },
+        "did_multiplegt_dyn": {
+          "file": "did_multiplegt_dyn.ado",
+          "sha256": "f1e7782f71304a4a15b7ac0c237b73197f667e3d72bb643dfff28d6c9b7e32db",
+          "version_headers": []
+        },
+        "flexdid": {
+          "file": "flexdid.ado",
+          "sha256": "0cde17eacafe7550da60f51f5aee8b51b2395ce336811f1c0f0ea62058010de7",
+          "version_headers": [
+            "*! version 2.5  06jun2026"
+          ]
+        },
+        "hdidregress": {
+          "file": "hdidregress.ado",
+          "sha256": "f3be860980e91c9ab76675e446b26bdab15a95b86665c7bfd88eb24eb5646ce1",
+          "version_headers": [
+            "*! version 1.3.1  24jun2026"
+          ]
+        },
+        "xthdidregress": {
+          "file": "xthdidregress.ado",
+          "sha256": "1d02c5bed75bf5f9b17d42c8117a97eebe8475f8e3d895f3c168c6eaeb87eea7",
+          "version_headers": [
+            "*! version 1.2.6  24jun2026"
+          ]
+        },
+        "drdid": {
+          "file": "drdid.ado",
+          "sha256": "242dd51923580cda80b28f1b00512b9f95666db989825c46a9fad21d87dcfc9f",
+          "version_headers": []
+        },
+        "reghdfe": {
+          "file": "reghdfe.ado",
+          "sha256": "0c700ea38de4ed110d0cbb57acd3e24351a5ab68b61dd84fcb0e5bc8f02d941a",
+          "version_headers": [
+            "*! version 6.13.1 10Jan2026"
+          ]
+        },
+        "ftools": {
+          "file": "ftools.ado",
+          "sha256": "c7eba3272b5fcd1dfa157e65c37840a051c6e2bf327d5ee31d42df65cf330b00",
+          "version_headers": [
+            "*! version 2.50.0 09jan2026"
+          ]
+        },
+        "lmoremata": {
+          "status": "not installed"
+        }
+      },
+      "engine_stamp": "2.0.1|17",
+      "engine_library_sha256": "a93e8c00463b059dff8906f5e5929a4ff37d5f27011578858149cb8e138d929c",
+      "processors": 10
+    }
+  },
+  "protocol": "original four appendix probes; optcost 5 trials, rcstime best of 3",
+  "measurement_sha256": {
+    "pkg/_csdid_engine_load.ado": "254ebf6a17345c7b3e40c756f3f68e695cc7df23c00a6ea88e635d7db1e34dbd",
+    "pkg/_csdid_post.ado": "e1646c63b5e3d8b34486f6738002a115fabeda91785d829a8af23202e83c5344",
+    "pkg/_gcsgvar.ado": "4f53225c8143f63802f7d5f47ff7530ce83610e50c767478ecda70e575c7808c",
+    "pkg/csdid.ado": "d814b04ee04962f2afc97eb7de8c79989e6d267fd331f4c82158dd483a06a174",
+    "pkg/csdid.mata": "1fa8d9a06893df1a645e661b5daf63c973d1bb1f3346db742fd8082d27816d33",
+    "pkg/csdid.sthlp": "5be1a0817496fb591ac76ddf804b320ef8a0f8c994755ca0184cf4bd0237bced",
+    "pkg/csdid_bootstrap_macosx.plugin": "6f28f42c3ec44d2de02731e3a90406be6324d1106354c047e9c2449d73f10f46",
+    "pkg/csdid_estat.ado": "653a72c0d824b3702c418adfa5146624639d9b15b34f85474e26c3be02a00c0b",
+    "pkg/csdid_estat.sthlp": "e109e3f7371424819052ca291003b83c4fd5104feab142d66863a44360c5a9b3",
+    "pkg/csdid_legacy.sthlp": "b2875aedc2abf9de2acfb7f8fe8dcdb9622823ced790e74d97d8a6037749af7f",
+    "pkg/csdid_license.txt": "9faa9f0d44d0c1e9ee7cd38d434e4e07f197176af5359807b8a71c347d579bd6",
+    "pkg/csdid_p.ado": "fc35c212dec7594454d61ebd61fedaee839fbd4fe9edd3dbe8de002dfc8dabb3",
+    "pkg/csdid_plot.ado": "716000d99723dfebc0e9fd70b1baa7616446f1d8273e741a42dfe4a6ccbc0680",
+    "pkg/csdid_plot.sthlp": "abbc0869d67f0e34e6421e75744613a8e355ead831bb29e13b149400b8b11d8d",
+    "pkg/csdid_postestimation.sthlp": "2f11a094db96470278e3fb980e4b8e98d61f21270b748562df46720718fbc380",
+    "pkg/csdid_rif.ado": "8389b0c6c563b65a8bf813d32f1e710dae46d4d0d699f96a658fbd15b1e946c6",
+    "pkg/csdid_rif.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "pkg/csdid_stats.ado": "6f07656bc92c0d4fdd166b25d100ffa6a5d8814b6001e5a35272b6f0e971e08b",
+    "pkg/csdid_stats.sthlp": "92a7e03624da353882d26ff72dc3013d7b34b9a3a6201cd03d7af6db25b42d18",
+    "pkg/csdid_table.ado": "e10e39a10c9f8f68455ca90957623cc9660dfc9c1d7c7e01fe0dc26cf8fbd675",
+    "pkg/csdid_table.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "pkg/csdid_whatsnew.sthlp": "0a8308221d1fc815533e47be7a90f53a09efef3964342709b0ef2ee5b9a703ec",
+    "pkg/csgvar.ado": "9c8caba38f99aba168597bf4201a97c2994b088b9f4f0033c9d099a498347a15",
+    "pkg/csgvar.sthlp": "fa0b96574d7d5785307d22e3acedb0bc62bb7778949566ebfb55002800355eb5",
+    "pkg/dipt.ado": "cab085ef32b1d627e0e8bcd9dcdc7a93f8b19a851b29b4a878beeb9c351015b1",
+    "pkg/dipt.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "pkg/lcsdid_v2.mlib": "a93e8c00463b059dff8906f5e5929a4ff37d5f27011578858149cb8e138d929c",
+    "pkg/mpdta.dta": "114e742ed979adb595e5642eda0262f00bd27f3570caa1ceecffa92d898326ae",
+    "pkg/tsvmat.ado": "3c42154c701ebee066d96339da546a015525c8a321f64f28fbdcf7d129cd0be5",
+    "pkg/tsvmat.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "src/ado/_csdid_engine_load.ado": "254ebf6a17345c7b3e40c756f3f68e695cc7df23c00a6ea88e635d7db1e34dbd",
+    "src/ado/_csdid_post.ado": "e1646c63b5e3d8b34486f6738002a115fabeda91785d829a8af23202e83c5344",
+    "src/ado/_gcsgvar.ado": "4f53225c8143f63802f7d5f47ff7530ce83610e50c767478ecda70e575c7808c",
+    "src/ado/csdid.ado": "d814b04ee04962f2afc97eb7de8c79989e6d267fd331f4c82158dd483a06a174",
+    "src/ado/csdid_estat.ado": "653a72c0d824b3702c418adfa5146624639d9b15b34f85474e26c3be02a00c0b",
+    "src/ado/csdid_p.ado": "fc35c212dec7594454d61ebd61fedaee839fbd4fe9edd3dbe8de002dfc8dabb3",
+    "src/ado/csdid_plot.ado": "716000d99723dfebc0e9fd70b1baa7616446f1d8273e741a42dfe4a6ccbc0680",
+    "src/ado/csdid_stats.ado": "6f07656bc92c0d4fdd166b25d100ffa6a5d8814b6001e5a35272b6f0e971e08b",
+    "src/ado/csgvar.ado": "9c8caba38f99aba168597bf4201a97c2994b088b9f4f0033c9d099a498347a15",
+    "src/build.do": "ff8b803de0787dc45b506071dff702a49f4847436596d5bda535e80624573bbf",
+    "src/data/mpdta.dta": "114e742ed979adb595e5642eda0262f00bd27f3570caa1ceecffa92d898326ae",
+    "src/help/csdid.sthlp": "5be1a0817496fb591ac76ddf804b320ef8a0f8c994755ca0184cf4bd0237bced",
+    "src/help/csdid_estat.sthlp": "e109e3f7371424819052ca291003b83c4fd5104feab142d66863a44360c5a9b3",
+    "src/help/csdid_legacy.sthlp": "b2875aedc2abf9de2acfb7f8fe8dcdb9622823ced790e74d97d8a6037749af7f",
+    "src/help/csdid_plot.sthlp": "abbc0869d67f0e34e6421e75744613a8e355ead831bb29e13b149400b8b11d8d",
+    "src/help/csdid_postestimation.sthlp": "2f11a094db96470278e3fb980e4b8e98d61f21270b748562df46720718fbc380",
+    "src/help/csdid_rif.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "src/help/csdid_stats.sthlp": "92a7e03624da353882d26ff72dc3013d7b34b9a3a6201cd03d7af6db25b42d18",
+    "src/help/csdid_table.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "src/help/csdid_whatsnew.sthlp": "0a8308221d1fc815533e47be7a90f53a09efef3964342709b0ef2ee5b9a703ec",
+    "src/help/csgvar.sthlp": "fa0b96574d7d5785307d22e3acedb0bc62bb7778949566ebfb55002800355eb5",
+    "src/help/dipt.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "src/help/tsvmat.sthlp": "df2990b8ac579a8f066b7e53ab15e170a457b5a48aadfae7f62fccae6ad738a5",
+    "src/install.do": "becdf5caae5e2b22efb643ffa572f8bdfdd04b4e2a2cc9ada9ece858b7dc00fa",
+    "src/legacy/csdid_rif.ado": "8389b0c6c563b65a8bf813d32f1e710dae46d4d0d699f96a658fbd15b1e946c6",
+    "src/legacy/csdid_table.ado": "e10e39a10c9f8f68455ca90957623cc9660dfc9c1d7c7e01fe0dc26cf8fbd675",
+    "src/legacy/dipt.ado": "cab085ef32b1d627e0e8bcd9dcdc7a93f8b19a851b29b4a878beeb9c351015b1",
+    "src/legacy/tsvmat.ado": "3c42154c701ebee066d96339da546a015525c8a321f64f28fbdcf7d129cd0be5",
+    "src/mata/csdid.mata": "1fa8d9a06893df1a645e661b5daf63c973d1bb1f3346db742fd8082d27816d33",
+    "src/plugin/csdid_bootstrap_plugin.c": "fc4cd80ea22d686ff7a09c35d1014a450d5f7e1f2aced70a7547d352bc33e624",
+    "tools/bench/field/dgp.do": "94b7d6ef22cf6bb8a6cbdd1071d43ed6c23d479db73083768aa1004fad0a41b2",
+    "tools/bench/field/fielddgp.do": "6f6853e1b40387de3f403d51378fb72abec86c89566fbef70c62a21ae3a27674",
+    "tools/bench/field/mbench.do": "0b2dd3a4e55ba241afed695bc82c21eee02d435a9c4c62bfe74f7aa9e6637df9",
+    "tools/bench/field/mbench2.do": "6cac6d19c3fd2ca079e006df7c358ed5017c908df2899402eb1e9a9d2ae61fac",
+    "tools/bench/field/optcost.do": "96dbfdd343a42d80130873d8ff654a70f98ce84298e5d030ea51a933e383680e",
+    "tools/bench/field/rcstime.do": "58ca21c80cf58a542ff955fae2759a5c367dee5296732cc4df10a037e110f875",
+    "tools/bench/field/runners.do": "8e6df8075b5dc05658be507780fe165e731dc43b5839e829857c7b0967728ce8"
+  },
+  "script_sha256": {
+    "fielddgp.do": "6f6853e1b40387de3f403d51378fb72abec86c89566fbef70c62a21ae3a27674",
+    "dgp.do": "94b7d6ef22cf6bb8a6cbdd1071d43ed6c23d479db73083768aa1004fad0a41b2",
+    "runners.do": "8e6df8075b5dc05658be507780fe165e731dc43b5839e829857c7b0967728ce8",
+    "optcost.do": "96dbfdd343a42d80130873d8ff654a70f98ce84298e5d030ea51a933e383680e",
+    "rcstime.do": "58ca21c80cf58a542ff955fae2759a5c367dee5296732cc4df10a037e110f875",
+    "mbench.do": "0b2dd3a4e55ba241afed695bc82c21eee02d435a9c4c62bfe74f7aa9e6637df9",
+    "mbench2.do": "6cac6d19c3fd2ca079e006df7c358ed5017c908df2899402eb1e9a9d2ae61fac"
+  },
+  "measurements": {
+    "optcost": {
+      "status": "pass",
+      "measurements": [
+        {
+          "n": 1000,
+          "rows": 10000,
+          "arm": "jw_default",
+          "median_seconds": 0.347
+        },
+        {
+          "n": 1000,
+          "rows": 10000,
+          "arm": "jw_uncond",
+          "median_seconds": 0.742
+        },
+        {
+          "n": 1000,
+          "rows": 10000,
+          "arm": "lp_default",
+          "median_seconds": 0.301
+        },
+        {
+          "n": 1000,
+          "rows": 10000,
+          "arm": "lp_rw",
+          "median_seconds": 0.344
+        },
+        {
+          "n": 10000,
+          "rows": 100000,
+          "arm": "jw_default",
+          "median_seconds": 1.714
+        },
+        {
+          "n": 10000,
+          "rows": 100000,
+          "arm": "jw_uncond",
+          "median_seconds": 3.061
+        },
+        {
+          "n": 10000,
+          "rows": 100000,
+          "arm": "lp_default",
+          "median_seconds": 1.004
+        },
+        {
+          "n": 10000,
+          "rows": 100000,
+          "arm": "lp_rw",
+          "median_seconds": 1.266
+        }
+      ]
+    },
+    "rcstime": {
+      "status": "pass",
+      "measurements": [
+        {
+          "rows": 100000,
+          "pkg": "csdid",
+          "status": "pass",
+          "best_seconds": 1.459
+        },
+        {
+          "rows": 100000,
+          "pkg": "bjs",
+          "status": "pass",
+          "best_seconds": 1.597
+        },
+        {
+          "rows": 100000,
+          "pkg": "dcdh",
+          "status": "pass",
+          "best_seconds": 0.216
+        },
+        {
+          "rows": 100000,
+          "pkg": "jwdid",
+          "status": "unsupported-by-this-published-invocation"
+        },
+        {
+          "rows": 100000,
+          "pkg": "lpdid",
+          "status": "unsupported-by-this-published-invocation"
+        },
+        {
+          "rows": 400000,
+          "pkg": "csdid",
+          "status": "pass",
+          "best_seconds": 5.108
+        },
+        {
+          "rows": 400000,
+          "pkg": "bjs",
+          "status": "pass",
+          "best_seconds": 7.637
+        },
+        {
+          "rows": 400000,
+          "pkg": "dcdh",
+          "status": "pass",
+          "best_seconds": 0.97
+        },
+        {
+          "rows": 400000,
+          "pkg": "jwdid",
+          "status": "unsupported-by-this-published-invocation"
+        },
+        {
+          "rows": 400000,
+          "pkg": "lpdid",
+          "status": "unsupported-by-this-published-invocation"
+        }
+      ],
+      "support_scope": "Invocation completion and elapsed time only; this probe does not check finite requested effects or inference. In particular, the BJS and DCDH calls do not certify usable repeated-cross-section estimates."
+    },
+    "mbench": {
+      "status": "pass",
+      "measurements": [
+        {
+          "n": 25000,
+          "st_matrix_write_seconds": 2.41,
+          "stata_copy_seconds": 2.35,
+          "colnames_seconds": 0.0
+        },
+        {
+          "n": 50000,
+          "st_matrix_write_seconds": 15.53,
+          "stata_copy_seconds": 16.75,
+          "colnames_seconds": 0.0
+        },
+        {
+          "n": 100000,
+          "st_matrix_write_seconds": 72.97,
+          "stata_copy_seconds": 75.59,
+          "colnames_seconds": 0.0
+        }
+      ]
+    },
+    "mbench2": {
+      "status": "pass",
+      "measurements": [
+        {
+          "n": 12500,
+          "read_into_mata_seconds": 0.0
+        },
+        {
+          "n": 25000,
+          "read_into_mata_seconds": 0.0
+        },
+        {
+          "n": 50000,
+          "read_into_mata_seconds": 0.0
+        }
+      ]
+    }
+  },
+  "support": {
+    "_extra_optcost.log": {
+      "sha256": "f7eea6a0255c76a8381dd9b8438c31bb8a0fe2be9349362410d50b2fc5e04922",
+      "uncompressed_sha256": "626ca67b629bd8b12738c3d8bc9a70ab8687db990e6673f48f69ef23b6503ffe",
+      "original_source_sha256": "92b12bb4aee8657d3559a0944240fd575629e433dbcd44b13dd968c91f7e04df",
+      "publication_transform": "Portable text view: license details removed, Stata continuation lines joined and workstation directories replaced by PROJECT_ROOT/USER_HOME. Original bytes and digest remain in the private campaign record; numeric CSVs are unchanged.",
+      "file": "_extra_optcost.log.gz"
+    },
+    "_extra_rcstime.log": {
+      "sha256": "a5230331629c216d52e78a5872f4e7900858db5bec99cde883cfed76a7f5d185",
+      "uncompressed_sha256": "123c128e3be720aa687504af056a0c3a90ef567750bc72513326ca242af1a1f1",
+      "original_source_sha256": "c0b471cef4e093e3fbd4097f1e57d983a1675505cc4f1108421d64c1d1ea7e14",
+      "publication_transform": "Portable text view: license details removed, Stata continuation lines joined and workstation directories replaced by PROJECT_ROOT/USER_HOME. Original bytes and digest remain in the private campaign record; numeric CSVs are unchanged.",
+      "file": "_extra_rcstime.log.gz"
+    },
+    "_extra_mbench.log": {
+      "sha256": "973d1cbed6b3c98cd4c4a135b7f61e5a3f7218af50e6c606c55126635fbd0968",
+      "uncompressed_sha256": "03ca002f64d6ef2d4b4f00389c36600fb160a6fc71dee454885686ffc3916946",
+      "original_source_sha256": "2fa2efaecb219375b9af567c3032c4cbc3f47b61b95b63d17bc943f72fa09733",
+      "publication_transform": "Portable text view: license details removed, Stata continuation lines joined and workstation directories replaced by PROJECT_ROOT/USER_HOME. Original bytes and digest remain in the private campaign record; numeric CSVs are unchanged.",
+      "file": "_extra_mbench.log.gz"
+    },
+    "_extra_mbench2.log": {
+      "sha256": "2747054beebf48567f9ca9d3ae6f34ea13c0047b2e4de217bc6dc1a8fdb905b3",
+      "uncompressed_sha256": "7437ba72126b95c1473645b6e4600f2e5e8bb54fc50405f2b0d0eef9b6c62501",
+      "original_source_sha256": "db385e8ce6a434960910be0238384f24f14e2df81ce0dbbe338ca421080528ee",
+      "publication_transform": "Portable text view: license details removed, Stata continuation lines joined and workstation directories replaced by PROJECT_ROOT/USER_HOME. Original bytes and digest remain in the private campaign record; numeric CSVs are unchanged.",
+      "file": "_extra_mbench2.log.gz"
+    },
+    "optcost.csv": {
+      "sha256": "4cad606e151f1f38a114c88f52420caa71b1cf12b24d05e81b00925d6d0c8f3e",
+      "uncompressed_sha256": "889941176a7eca1d8d67f6cdb762715fb1bf7c603d6b8eb1e3fb0189e7326dda",
+      "original_source_sha256": "889941176a7eca1d8d67f6cdb762715fb1bf7c603d6b8eb1e3fb0189e7326dda",
+      "file": "optcost.csv.gz"
+    }
+  }
+}

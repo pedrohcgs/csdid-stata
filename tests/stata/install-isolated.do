@@ -92,8 +92,8 @@ assert abs(A[1,4] - 2) < 1e-12
 *
 * The loader records what it resolved in $CSDID_ENGINE_RESOLVED, whose first
 * semicolon-delimited field is the engine's own stamp. The compiled library
-* carries `2.0.0|<the Stata that built it>'; the source copy ships reading
-* `2.0.0|source' and says so. So the assertion is on the half after the bar:
+* carries `2.0.1|<the Stata that built it>'; the source copy ships reading
+* `2.0.1|source' and says so. So the assertion is on the half after the bar:
 * a number means the library answered, the word `source' means it did not.
 * ---------------------------------------------------------------------------
 local resolved `"$CSDID_ENGINE_RESOLVED"'
@@ -109,10 +109,10 @@ assert `bar' > 1
 local pkg_half = substr("`stamp'", 1, `bar' - 1)
 local route    = substr("`stamp'", `bar' + 1, .)
 display as text "installed-package engine stamp: `stamp'"
-assert "`pkg_half'" == "2.0.0"
+assert "`pkg_half'" == "2.0.1"
 if "`route'" == "source" {
     display as error "the installed copy fell back to compiling csdid.mata: the shipped library did not answer"
-    display as error "engine stamp was `stamp'; a library-served run stamps 2.0.0|<stata version>"
+    display as error "engine stamp was `stamp'; a library-served run stamps 2.0.1|<stata version>"
     exit 9
 }
 if missing(real("`route'")) {

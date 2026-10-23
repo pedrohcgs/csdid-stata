@@ -1,0 +1,486 @@
+{
+  "matrix_id": "RT076",
+  "fixture_family": "r-undersized-glm-designs",
+  "normative_source": "DRDID 1.4.0 fastglm_fit.R:19-21; did 2.5.1 compute.att_gt/compute.att_gt2 catch and report estimator errors",
+  "source_commit": "eaac3b49cd225d0d7706c633858555a5f204e21e",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/rc_1_3_unit.csv",
+      "sha256": "7a43bf7ff738366154391e7b02c31bfdf6fe1ed5cf0f2d4dc2357093303b307b",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_3_varying.csv",
+      "sha256": "dc99c47d2503bfc23a28cc583d5d761f61b9a92bdc35732debb427fcca1be9bf",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_3_zero.csv",
+      "sha256": "871df5ced6270d826917089057f537a7cba96bd1fbae13cbf8b805928c0b4d01",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_4_unit.csv",
+      "sha256": "de0584c5e605027763cd66d5991d41ed948b919e4ce37c6bc9d149e5d11131cd",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_4_varying.csv",
+      "sha256": "d821c62d9502839fa838a28679169e5eeb1bf11963d74636b8de3d38f69083ef",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_4_zero.csv",
+      "sha256": "37eb3a8fcd27570cc152a21497deb584a644afb8b21dba00ad6aa84f9cbc2ad4",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_5_unit.csv",
+      "sha256": "a716e749d87a16cb48e00c831805cebe79dede385469e55f46857f1fb1d48632",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_5_varying.csv",
+      "sha256": "35b799c1501058e52a7dfe3b5d9634ea05fa0cb5043c0312c7ca7abd80e9da8a",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_1_5_zero.csv",
+      "sha256": "b4ea6483b30c4903edf56a97f9e5f8b0c153eb38f7c3d6cae4269edf223acda6",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_3_unit.csv",
+      "sha256": "048b11dab4793d7a1b2f4492081853c33dd3f03258324a5d53773746d4bd3611",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_3_varying.csv",
+      "sha256": "4a9c2fd330091ca7f054eff93c7e163fb1eb7a73869206eb54384322cbc14b0b",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_3_zero.csv",
+      "sha256": "7f5d3488acac3f2a5d5c04f43d7292758b6c1757934cc4a823df19e0c1ca6a9b",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_4_unit.csv",
+      "sha256": "a6d545e48176fd04654acc67874117926808a3bd75614ce238135b687033e946",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_4_varying.csv",
+      "sha256": "1aaf6fdaaf586082ce45bf1b417d798552fc04ec9fba177801c92c8b98c5b165",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_4_zero.csv",
+      "sha256": "8133f5a64043d00bdc49ff41852514703e4d5a7adcfc8376556d09bb434d9b80",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_5_unit.csv",
+      "sha256": "932bdec7a84f7462b68541267ed3a5e7961f54a94c9edfad70ebc6ced8d79229",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_5_varying.csv",
+      "sha256": "128b1e8bfa047d1cc4fd7011e61a8bf77a6380099eafc84475b480410dedb0e7",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_2_5_zero.csv",
+      "sha256": "fca93bdf34ecc30383878776c0f7ba46eaf66f1c1596d0276dfaf288663279b8",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_3_unit.csv",
+      "sha256": "dca3632c08907c5c18ddc6e2d6e3092f8509294bc9fbf3be8df0aed2b9aa3a84",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_3_varying.csv",
+      "sha256": "7e92a862e844f796eab43de7ee4c42fd88160d5c80d24c34fa61e32ee0b1f2b1",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_3_zero.csv",
+      "sha256": "1871577c61cfec75f93ec503af14fb974397a64deaeb605c5aa6bf5e0126bf9d",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_4_unit.csv",
+      "sha256": "a9a203f169551093bcb72cf777839aeb9d867ee723df27e95dfb5650bacd2fbd",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_4_varying.csv",
+      "sha256": "e9a2a9b2369592b648648557efeaf4162881e84af2e1b8fd2c14ac66dd4c0ac5",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_4_zero.csv",
+      "sha256": "7c943e059752d4254e91e4f7ac241f79ba6b20ebd23d805d9a388beaf30617a5",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_5_unit.csv",
+      "sha256": "08927fd71dfb1f39229781facd41bdb9e7e959590056e56a879f2ea2e40f1536",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_5_varying.csv",
+      "sha256": "d44aa9b78b3bc1d226bf99f380a0fc725cc4b04ffbdae21bb84e96a82d7480d3",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_3_5_zero.csv",
+      "sha256": "60769d9c1c9a1fe8858e57c665cc76a74d64c62cb2b3a60e0f55f24afb0cbb53",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_3_unit.csv",
+      "sha256": "0cca83b73cdd2313e8a3ccd1842f69b2635dafacd56770fd69ecd3e26d02dc04",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_3_varying.csv",
+      "sha256": "71ce47f26c8c36b2530cd09e8a01de51409621e684838e045342c0197f4144ce",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_3_zero.csv",
+      "sha256": "3f9b66e4d26e543ba816a2f97e49f261d632a926e6a3e8e8a38d562b27bafdb6",
+      "rows": 75,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_4_unit.csv",
+      "sha256": "23f8a7fec2a4cc125b65be9db724ce704125ea9ab00e8b469c7a59939096d118",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_4_varying.csv",
+      "sha256": "6ce628b1d7a6719c9584460538cc22ff563399b7e9f47ba574fd5fd954e61b88",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_4_zero.csv",
+      "sha256": "a841406595ae30a5b2e3f9884253fbe2dd5968c1cce14ab5e7bb35e76abb55b7",
+      "rows": 76,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_5_unit.csv",
+      "sha256": "eabab27140efeb6b3343d2eeb011deab8256938960de7de57932680f8831bb98",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_5_varying.csv",
+      "sha256": "81515ac9b0597edc31488528637068f1c792569b9743ddc08f8fbe160306deb4",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/rc_4_5_zero.csv",
+      "sha256": "2563bad64ce7cd28b4f6f40a2dafe97197178cbd8ec886c80b68fdd6815346f5",
+      "rows": 77,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_3_unit.csv",
+      "sha256": "72fdc5a2628bf7a3513b89f44475837cfe2d1519d82752b0c1fb5efadc1f231d",
+      "rows": 27,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_3_varying.csv",
+      "sha256": "2a1a04850301329c41e241d61b9b2944de1de3130e0de414f50132b15580a6a4",
+      "rows": 27,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_3_zero.csv",
+      "sha256": "b16cec8f9142a8f8ab7e0de9a6e9c27f787db9c64fd111e0bf57069d81bd59fd",
+      "rows": 27,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_4_unit.csv",
+      "sha256": "3cacacfea8cca1d4f70eeac569f5a394639aee93b4539ebaee262e28b68f1b49",
+      "rows": 28,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_4_varying.csv",
+      "sha256": "b33374558613ca554250688a89081538cbc0b10275a821c6529a4f333b6cb408",
+      "rows": 28,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_4_zero.csv",
+      "sha256": "5964a8502c6bdb185d097f582183ba441b9453675d1589e6ce5550ef452f340a",
+      "rows": 28,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_5_unit.csv",
+      "sha256": "83ea67472dd735bc82535d24529396cca43e5ee65ee7333196b647f7fef35ecc",
+      "rows": 29,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_5_varying.csv",
+      "sha256": "7006f49e40909c4bca2815d16f767f58cc18ee251976a4c2c124c96e29ddfd4e",
+      "rows": 29,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_1_5_zero.csv",
+      "sha256": "3d08258175da6bd8b70f40f0701ea5be7eb7e5829d98280a30465c1401f0f1a6",
+      "rows": 29,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_3_unit.csv",
+      "sha256": "3756eb1524bfc24a7b3678e0cfdcd890494f1f4e8c22b79dcf781cdcb4e4cd16",
+      "rows": 27,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_3_varying.csv",
+      "sha256": "5502cd6f0ae8421b13ec660459bde21ea5166caed4712e705eda0088015e0395",
+      "rows": 27,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_3_zero.csv",
+      "sha256": "c20e4c0c04737b20f783dff49ac585886197d157456dffb380c4b730f0597f37",
+      "rows": 27,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_4_unit.csv",
+      "sha256": "5e9d8c122098c47ef558c1206279be51de78b604ff96dbca2ae751318c0df9fe",
+      "rows": 28,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_4_varying.csv",
+      "sha256": "3c47a9b6ec19dc8c25d992c84d103a06f1b9b3f50bad59b25eb774ba6eb22c5c",
+      "rows": 28,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_4_zero.csv",
+      "sha256": "e6a6623cdbe1e9721c02ff4623ec69a17cbd43bef01d8ac8e817688418455047",
+      "rows": 28,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_5_unit.csv",
+      "sha256": "746225738c8b9ee83aff4a8e180ac631b4611b2a47f802dad6d75088d90aa313",
+      "rows": 29,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_5_varying.csv",
+      "sha256": "2eeb467b3d2956e41b67f4394e90cccd1bcaec8a8b4df5cebc8e494104eb87c1",
+      "rows": 29,
+      "columns": 10
+    },
+    {
+      "path": "inputs/panel_2_5_zero.csv",
+      "sha256": "dc6515e9b3593e8c80b31e0b34d79768cb026a1a726402f77f4d89ca98b34a19",
+      "rows": 29,
+      "columns": 10
+    },
+    {
+      "path": "inputs/wide_rc_pass_unit.csv",
+      "sha256": "f9fae4d2f70ecb1632063cad91f151e8e83e44ad96869a1d5f3b9215a8c832a6",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_rc_pass_varying.csv",
+      "sha256": "10623139665a92b9315d6d51cea9bf809c56c7d10bec0d7c96b5c85643b26bea",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_rc_pass_zero.csv",
+      "sha256": "c5c85b52f6cb05c28f894b511eff92a81eba67ca65617a111e2eab95fa50c506",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_rc_fail_unit.csv",
+      "sha256": "3febbbfa60608bf9a999a1d6c95ad079d7f298c3c2a9545c6c0061c88216285e",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_rc_fail_varying.csv",
+      "sha256": "a89035306c3564912aea0f21d4673f09ea1af526c6264fcb45660ae675d55dd9",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_rc_fail_zero.csv",
+      "sha256": "21cdfa4c67284ad0ea29b88776114b5f3f90ed77502497746f1624bd97f9b581",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_panel_pass_unit.csv",
+      "sha256": "f97aaac3eb7730a6a54752cb3af058457ce27bf9cf0e9928b0f996b9c9184ad1",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_panel_pass_varying.csv",
+      "sha256": "390658ce8146f9be7a6175800b0365f15ce1203dd15a4cf2b441eafd4087b07e",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_panel_pass_zero.csv",
+      "sha256": "653c088522bc2ef601e999ef371b079db29a60e6bb1d3c9f301b4682a968d73e",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_panel_fail_unit.csv",
+      "sha256": "255b527d17ffacf23507c1faa1c6d218a7d956b1eade7f11b7bf367d605c29b3",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_panel_fail_varying.csv",
+      "sha256": "839f114ddecdf1c4cec284996487cab2d269a857434961a4e31d82fa23e2d67c",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide_panel_fail_zero.csv",
+      "sha256": "6d05cc0c0f78a627de1980b798c7e367f38e26c1559418378856018d59c5a51f",
+      "rows": 8,
+      "columns": 13
+    },
+    {
+      "path": "inputs/wide-scenarios.csv",
+      "sha256": "57a07fcda25ec75fed2fda6ce2fef615e10f91d1e0cf0d84bb930e1333c19db2",
+      "rows": 12,
+      "columns": 7
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "09ae1c1604286f41b53d1ff15a2c65dcad955544c2133cf7121ff730ec083059",
+      "rows": 162,
+      "columns": 9
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt076/generate.R",
+      "path": "tools/parity/generators/rt076/generate.R",
+      "sha256": "5012e2a11cff0123352af6ef65ac27973532e26d3770e804d9566b9c09940ec9"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/fits.csv",
+      "schema": "rt076",
+      "sha256": "215f08e773c28f80d6c72ddf19418a708bc20506d420ed6b71097d16673fa715"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "rt076",
+      "sha256": "db91c5fcef74fa7756e1baf4686240c130b5e4d2ff60ff1304561d285a94be14"
+    },
+    {
+      "path": "expected/r/warnings.csv",
+      "schema": "rt076",
+      "sha256": "02b583426bfad2008f2d9d404b27e7b25f2f301a89c3b5feff0cbc825023e755"
+    },
+    {
+      "path": "expected/r/wide-warnings.csv",
+      "schema": "rt076",
+      "sha256": "3b93f4c0f48a2614debec3fb6d03f972d803ac669c4000148441ea38d63e9748"
+    },
+    {
+      "path": "expected/r/wide-attgt.csv",
+      "schema": "rt076",
+      "sha256": "f2c40359a29297f34b9dfd0737ff4b8662bc5c10bf2439d142a255c9ae1f31cc"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "all kernel ATT/SE/influence values or missing refusals after did preliminary feasibility guards",
+      "expected": "expected/r/fits.csv and inffunc.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "method", "id"]
+    },
+    {
+      "actual": "12 wide IPW kernel/public refusals with overlap precedence and exact fast/slow warnings",
+      "expected": "expected/r/wide-attgt.csv and wide-warnings.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "faster_mode", "group", "time"]
+    },
+    {
+      "actual": "physical undersize status and exact caught warning",
+      "expected": "expected/r/warnings.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": ["scenario", "method"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "54 designs, 162 low-level method fits with did preliminary feasibility guards: every RC corner and both panel arms at k-1/k/k+1 rows for k=4, unit/nonuniform/one-zero weights. The shortened block has half-scale H4 covariates so the propensity model remains regular; square outcome designs retain full rank. Every RC shape also runs did's fast and slow route. Square designs stay admissible when full rank; zero weights count physically, with effective rank left to existing guards. Twelve total-design IPW cases cross panel/RC, overlap pass/fail and three weight types at n<k=9, matching both public did modes."
+}

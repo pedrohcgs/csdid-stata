@@ -1,0 +1,13 @@
+scenario,mode,kind,weighting,n,k,want_status
+wide_rc_pass_unit,rc,pass,unit,8,9,7
+wide_rc_pass_varying,rc,pass,varying,8,9,7
+wide_rc_pass_zero,rc,pass,zero,8,9,7
+wide_rc_fail_unit,rc,fail,unit,8,9,1
+wide_rc_fail_varying,rc,fail,varying,8,9,1
+wide_rc_fail_zero,rc,fail,zero,8,9,1
+wide_panel_pass_unit,panel,pass,unit,4,9,7
+wide_panel_pass_varying,panel,pass,varying,4,9,7
+wide_panel_pass_zero,panel,pass,zero,4,9,7
+wide_panel_fail_unit,panel,fail,unit,4,9,1
+wide_panel_fail_varying,panel,fail,varying,4,9,1
+wide_panel_fail_zero,panel,fail,zero,4,9,1

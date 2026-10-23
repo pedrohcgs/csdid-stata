@@ -43,13 +43,13 @@ end
 capture program drop timeit
 program define timeit, rclass
     syntax , WHAT(string) TRIALS(integer)
-    capture noisily run_`what'
+    noisily run_`what'
     tempname T
     matrix `T' = J(`trials', 1, .)
     forvalues k = 1/`trials' {
         timer clear 9
         timer on 9
-        capture run_`what'
+        run_`what'
         timer off 9
         quietly timer list 9
         matrix `T'[`k',1] = r(t9)

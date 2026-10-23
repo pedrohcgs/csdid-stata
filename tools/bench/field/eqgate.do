@@ -35,6 +35,7 @@ foreach sd in 90001 90002 90003 {
         * ---- branch path ----
         use "`d'", clear
         set seed 7654321
+        set sortseed 7654321
         local covopt = cond(inlist("`arm'", "lpdid", "lpdid_rw"), "", "cov")
         capture sim_est3, pkg(`arm') regime(balanced) bal(none) `covopt'
         matrix RB = r(R)
@@ -42,6 +43,7 @@ foreach sd in 90001 90002 90003 {
         * ---- inline path: the literal command the old drivers ran ----
         use "`d'", clear
         set seed 7654321
+        set sortseed 7654321
         matrix RI = J(3, 2, .)
         if inlist("`arm'", "csdid_reg", "csdid_dr", "csdid_reg_nt") {
             local mth = cond(strpos("`arm'", "_dr"), "dr", "reg")

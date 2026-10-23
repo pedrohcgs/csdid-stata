@@ -25,12 +25,21 @@ program define mechA
     di "MECH A  csdid  = " %10.6f A[1,4]
     foreach pkg in jwdid bjs {
         use "`d'", clear
-        capture bench_`pkg', horizons(0) cluster(cl)
-        if _rc == 0 & r(ok) == 1 {
-            matrix E = r(ES)
-            di "MECH A  `pkg'  = " %10.6f E[1,2]
+        if "`pkg'" == "jwdid" {
+            quietly jwdid y, ivar(id) tvar(time) gvar(gvar) cluster(cl)
+            quietly estat event, window(0 0)
+            matrix J = r(table)
+            assert colsof(J) == 1
+            assert !missing(J[1,1], J[2,1])
+            di "MECH A  jwdid  = " %10.6f J[1,1]
         }
-        else di "MECH A  `pkg'  FAILED"
+        else {
+            capture bench_bjs, horizons(0) cluster(cl)
+            assert _rc == 0 & r(ok) == 1
+            matrix E = r(ES)
+            assert !missing(E[1,2], E[1,3])
+            di "MECH A  bjs  = " %10.6f E[1,2]
+        }
     }
 end
 mechA
@@ -57,7 +66,7 @@ program define mechB
         use "`d'", clear
         capture bench_`pkg', horizons(1) cluster(cl)
         matrix E = r(ES)
-        local out "`out'  `pkg'=" + string(E[1,2],"%9.6f")
+        local out = "`out'  `pkg'=" + string(E[1,2],"%9.6f")
     }
     di "MECH B  `struct' seed=`seed' `out'"
 end

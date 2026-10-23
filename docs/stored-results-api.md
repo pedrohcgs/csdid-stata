@@ -1,6 +1,6 @@
 # Stored Results API
 
-Status: public API policy for `2.0.0`.
+Status: public API policy for `2.0.1`; the stable surface introduced in `2.0.0` is unchanged.
 
 ## Stable Public Results
 

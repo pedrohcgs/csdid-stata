@@ -1,4 +1,4 @@
-*! csdid_p 2.0.0 27sep2026
+*! csdid_p 2.0.1 23oct2026
 *
 * predict has no meaning after csdid: e(b) holds treatment effects --
 * ATT(g,t), or an aggregation after estat ..., post -- not coefficients on

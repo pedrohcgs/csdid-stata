@@ -76,7 +76,14 @@ theme_fig <- function(base_size = 13) {
 #------------------------------------------------------------------------------
 # Load, restrict to the plotted horizon, compute the summary used by the gate
 #------------------------------------------------------------------------------
-raw <- read.csv(infile, stringsAsFactors = FALSE)
+raw <- read.csv(infile, stringsAsFactors = FALSE,
+                na.strings = c(".", "NA", ""))
+imputation_bias <- vapply(c(0, 2), function(horizon) {
+  estimates <- raw$est[raw$pkg == "bjs" & raw$h == horizon]
+  if (length(estimates) != 500 || any(!is.finite(estimates)))
+    stop("Incomplete imputation draws for the figure's horizon comparison.")
+  mean(estimates) - (2 + 0.5 * horizon)
+}, numeric(1))
 
 dat <- raw %>%
   filter(h == h_sel, !is.na(est), !is.na(se)) %>%
@@ -110,7 +117,7 @@ ridge_p <- ggplot(dat, aes(x = est, y = label, fill = label)) +
   scale_y_discrete(expand = c(0, 0.2)) +
   coord_cartesian(xlim = xlims, clip = "off") +
   labs(title = "Where the estimates land",
-       subtitle = "Density of the 500 estimates at e=0",
+       subtitle = "Density of the available estimates at e=0",
        x = NULL, y = NULL) +
   theme_fig() +
   theme(axis.text.y = element_text(color = navy, face = "bold", size = 11),
@@ -136,7 +143,8 @@ cov_anno <- summ %>%
   mutate(flabel = factor(html_lab[as.character(label)], levels = html_lab),
          run = -Inf, y_pos = Inf,
          lab = paste0("bias ", sprintf("%+.2f", bias), " &middot; coverage ",
-                      formatC(100 * coverage, format = "f", digits = 0), "%"))
+                      formatC(100 * coverage, format = "f", digits = 0),
+                      "% &middot; n = ", reps))
 
 zip_base <- ggplot(zdat, aes(x = rep)) +
   geom_linerange(aes(ymin = lower, ymax = upper,
@@ -150,7 +158,7 @@ zip_base <- ggplot(zdat, aes(x = rep)) +
   coord_flip() +
   scale_y_continuous(limits = xlims) +
   labs(title = "Whether the intervals cover the truth",
-       subtitle = "One 95% confidence interval per sample; black = does not cover the truth",
+       subtitle = "Available 95% intervals; black = does not cover the truth",
        x = NULL, y = NULL) +
   theme_fig() +
   ggtext::geom_richtext(
@@ -184,14 +192,15 @@ title_grob <- cowplot::ggdraw() +
     fontface = "bold", size = 19) +
   cowplot::draw_label(
     paste0("Staggered DiD with no covariates: 1,000 units, 7 periods, three treated cohorts plus a never-treated group; 500 simulated samples.\n",
-           "Each period keeps a different share of its units (45% to 95%), independent of everything else. Truth at e=0 is 2. Every command at its default."),
+           "Each period keeps 45% to 95% of its units. Truth at e=0 is 2. csdid uses analytical inference and bal(none); all settings follow the benchmark."),
     x = 0.012, y = 0.30, hjust = 0, vjust = 0.5, color = gray, size = 12,
     lineheight = 1.15)
 
 foot_grob <- cowplot::ggdraw() +
   cowplot::draw_label(
-    paste0("Same data-generating process and seeds as the Reliability I tables. Biases flip sign with the horizon (the imputation commands move from\n",
-           "-0.16 at e=0 to +0.23 at e=2), so averaging across horizons would cancel misses rather than reveal them. Non-default options are discussed in the text."),
+    paste0("Same data-generating process and seeds as the Reliability I tables. Imputation bias varies with the horizon (did_imputation moves from\n",
+           sprintf("%+.2f at e=0 to %+.2f at e=2). Read the horizons separately. Non-default options are discussed in the text.",
+                   imputation_bias[1], imputation_bias[2])),
     x = 0.012, y = 0.55, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
     lineheight = 1.2)
 

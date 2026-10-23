@@ -4,47 +4,49 @@ title: Code appendix
 
 # Code appendix
 
-Every number in [How csdid compares](articles/csdid-against-the-field.html)
-comes from one of the scripts on this page. They are reproduced in full.
-Five things were changed for publication: the file paths were shortened so
-that everything runs from a single folder, a two-line run header was added
-at the top of each script, a handful of copy-pasted or superseded header
-comments were corrected to describe what that script actually runs, one
-inert block of dead code was removed from `simdgp.do`, and
-`scalebench_f.sh` lost the loop that made it wait for our other benchmark
-tiers to finish before starting. That loop decided *when* the script began,
-never what it measured. Nothing else moved &mdash; every seed, parameter,
-regime, package option and line of executed logic is what produced the
-published tables.
+The scripts below reproduce the simulation and timing designs for
+`csdid` 2.0.1. The [design inventory](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/website-simulation-designs.json)
+records each statistical driver's sample size, replication count, arguments
+and seed convention. The [results record](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/results/website-statistics.json)
+identifies the software, raw outputs, usable draws and diagnostic evidence.
+The [missing-row diagnostic](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/missing_rows_diagnostic.do)
+and [combined diagnostic wrapper](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/publication_diagnostics.do)
+provide the additional fixed-draw comparisons in [How csdid compares](articles/csdid-against-the-field.html).
 
-The Version 1.82 comparison needs one thing this folder cannot carry: a
-checkout of Version 1.82 itself, which `scalebench_f_cell.do` expects at
-`../csdid-182` (commit `fdbae255` of the csdid-stata repository), and which requires `drdid`
-1.91 or later on the adopath. That script checks for both and stops rather
-than installing anything.
+The main simulation protocol is:
 
-The protocol is the same in every arm:
+- **Fixed baseline cohort counts.** `simdgp.do` assigns a quarter of units
+  to each cohort. This removes cohort-count sampling variation; random
+  cohort membership would still leave the population target fixed.
+- **Population targets from the DGP.** In the main designs,
+  ATT(g, g+h) = (g&minus;2) + 0.5h, giving event-study targets 2.0, 2.5
+  and 3.0. Combined designs and fixed diagnostics define their own targets.
+- **Recorded seeds and dimensions.** The main Monte Carlo drivers use
+  1,000 units, seven periods, 500 draws, and seed 90000 + replication.
+  Repeated cross sections use 7,000 distinct individuals. The combined
+  design uses 2,000 units and 100 draws; the calendar-time design uses
+  1,000 units and 100 draws. The auxiliary LP check uses 4,000 units and
+  500 draws. The band experiment uses seed 70000 + replication; fixed
+  diagnostics record their own seeds and dimensions.
+- **Separate attempts and usable results.** Declined fits remain in the
+  raw evidence. Coverage uses available intervals, with its denominator
+  reported. The [producer map](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/website-simulation-producers.json)
+  assigns baseline rows to their main drivers and added variants to option
+  drivers. Repeated fits are retained and compared, without averaging or
+  filling a missing baseline from another run.
+- **Identified software.** Package headers and file hashes record the
+  versions actually used. The benchmark harness pins the candidate engine
+  and records its loaded library, Stata runtime and processor setting.
+  Timing experiments run separately on a quiet machine, with their own
+  trial counts and caps.
 
-- **One population.** `simdgp.do` builds it. Cohorts are assigned
-  deterministically, a quarter of units each, so the target does not re-roll
-  from replication to replication.
-- **Targets computed by hand from the data-generating process**, never
-  re-derived from a draw: ATT(g, g+h) = (g&minus;2) + 0.5h, so the
-  event-study truths are exactly 2.0, 2.5 and 3.0.
-- **Fixed seeds.** Replication *r* uses seed 90000 + *r* everywhere, so the
-  same draw is handed to every package and the arms line up replication by
-  replication. The bootstrap arm uses 70000 + *r*.
-- **500 draws** per setting, 1,000 units and seven periods per draw.
-- **Rival packages at their current SSC releases**, each invoked as its own
-  documentation prescribes. Where a package does not claim to support a
-  setting, the attempt is still made and whatever it returns is recorded,
-  including nothing.
-- **csdid from source**, `src/ado` and `src/mata` pushed onto the adopath,
-  never an installed copy.
-
-To run them, put the files in one folder with the csdid source tree in
-`../src`, and give each driver a unit count, a replication count and an
-output file.
+Use the complete package checkout so that the replication folder can find
+`../src` and `../pkg`. Parameterized Monte Carlo drivers accept a unit
+count, replication count and output filename; fixed diagnostics and timing
+scripts use the invocation shown in their headers. The Version 1.82
+comparison additionally needs the archive at `../csdid-182` (commit
+`fdbae255`) and `drdid` 1.91 or later on the adopath. The comparison checks
+these prerequisites rather than installing them.
 
 <p class="fold-controls">
 <button type="button" onclick="foldAll(true)">Expand all</button>
@@ -60,14 +62,14 @@ function foldAll(open) {
 
 ## The population and the harness
 
-Every arm below draws from the same population and is scored against the same targets. These three files are what the drivers load.
+The main comparison drivers share the targets above. The combined designs and fixed diagnostics define their populations and targets separately. These helpers generate data, invoke estimators, and summarize the raw draws.
 
 <details class="code-fold">
 <summary><code>simdgp.do</code> &mdash; the population: one DGP, one set of targets, every sampling regime and misspecification design</summary>
 <pre><code>* Run from the bench/ folder of the replication package. Not run on its
 * own: the drivers load it with -do-.  It defines sim_dgp.
 * ---------------------------------------------------------------------------
-* ONE population, ONE set of target parameters, three ways the sample arrives.
+* ONE population, ONE set of target parameters, several sampling schemes.
 *
 * Y_it = mu_i + 0.3 t + tau(G_i, t) 1{t &gt;= G_i} + eps_it
 *   mu_i ~ N(0,1) iid, eps_it ~ N(0,1) iid
@@ -84,9 +86,9 @@ Every arm below draws from the same population and is scored against the same ta
 * depend on T -- missingness and period assignment are independent of G:
 *   balanced    every unit in every period
 *   unbalanced  each (i,t) kept with prob 1-delta, MCAR
-*   rcs         n*T individuals, each observed in exactly ONE period, period
-*               drawn independently of G. Same rows and same per-period sample
-*               size as the balanced panel, so precision is comparable.
+*   rcs         n*T individuals, each observed in exactly ONE period.
+*               Period labels cycle through 1..T; published settings have
+*               n rows per period, with independent individuals across waves.
 * ---------------------------------------------------------------------------
 capture program drop sim_dgp
 program define sim_dgp
@@ -124,9 +126,9 @@ program define sim_dgp
         quietly set obs `n'
         generate long id = _n
     }
-    * Cohorts assigned deterministically, exactly a quarter of units each.
-    * Drawing them at random re-rolls the TARGET every replication, which is
-    * the one thing this study must hold fixed.
+    * Cohort counts are fixed at one quarter each for published sample sizes.
+    * Random assignment would leave the population target fixed but add
+    * sampling variation in cohort counts.
     quietly generate int gvar = cond(mod(_n, 4) == 0, 0, cond(mod(_n, 4) == 1, 3, ///
         cond(mod(_n, 4) == 2, 4, 5)))
     quietly generate double mu = rnormal()
@@ -137,23 +139,20 @@ program define sim_dgp
         * conditional rather than vacuous.
         quietly generate byte x1 = runiform() &lt; cond(gvar == 0, .35, .15 + .10 * gvar)
         if "`misspec'" == "pscore" {
-            * cohorts differ in the VARIANCE of x2: P(G|x2) depends on x2
-            * squared, so a logit linear in (x1, x2) is misspecified while
-            * the outcome stays linear in X - dr and reg survive, ipw not.
-            * MEASURED NULL: the even-function pscore error is orthogonal to
-            * the linear trend under symmetric x2, so nothing breaks here.
-            * pscore2 is the design whose error loads on the trend.
+            * Cohort-specific variances make selection nonlinear in x2.
+            * Untreated outcome changes remain linear in observed X.
+            * Score misspecification alone does not determine IPW bias;
+            * its interaction with the untreated outcome trend matters.
             quietly generate double x2 = (0.55 + 0.22 * cond(gvar == 0, 0, gvar - 2)) * rnormal()
         }
         else if "`misspec'" == "pscore2" {
-            * selection is logit-LINEAR in a latent index w (same cohort
-            * mean-shifts as the clean cell, so overlap is bounded by
-            * construction); the researcher observes x2 = standardized
-            * exp(0.8 w). P(G|x2) is a logit in log, so a logit linear in
-            * (x1, x2) is misspecified AND its error is skewed with x2 -
-            * it loads on the linear trend. The outcome stays linear in the
-            * OBSERVED x2, so reg/dr and every imputation rival keep a
-            * correct outcome model: only ipw's one chance is the wrong one.
+            * Observed x2 is a standardized exponential of latent normal w.
+            * Pairwise cohort log odds are linear in (x1, w); pooled not-yet
+            * comparisons need not have that form. Selection is nonlinear
+            * in observed x2, and no uniform overlap bound is imposed.
+            * Untreated changes remain linear in observed X, supplying the
+            * outcome-model protection for reg and dr. Other commands can
+            * impose additional restrictions across cohorts and periods.
             * Standardized to mean 0, var 1 in population (closed form over
             * the four equal-share cohort shifts). Curvature tunable via
             * global PS2CURV; default 0.8.
@@ -171,12 +170,10 @@ program define sim_dgp
             quietly drop w
         }
         else if "`misspec'" == "pscore3" {
-            * bounded-nonlinearity alternative: x2 | G is a two-normal
-            * mixture whose weight varies by cohort. The cross-cohort log
-            * density ratio is a smooth sigmoid in x2 - nonlinear (logit
-            * linear in x2 misspecified) but FLAT in the tails, so overlap
-            * is safe by construction. Monotone-in-x2 selection makes the
-            * pscore error load on the linear trend. Outcome linear in x2.
+            * x2 | G is a two-normal mixture with cohort-specific weights.
+            * Shared components and strictly positive mixture weights bound
+            * the cross-cohort density ratios. Selection is nonlinear in x2;
+            * untreated outcome changes remain linear in observed X.
             * pmix must be a VARIABLE: a local cond() on gvar evaluates the
             * first observation only and hands every cohort one mixture
             quietly generate double pmix = cond(gvar == 0, 0.75, 0.80 - 0.15 * (gvar - 3))
@@ -193,10 +190,9 @@ program define sim_dgp
         quietly bysort id: generate int time = _n
     }
     if "`errors'" == "unitroot" {
-        * within-unit random-walk errors: eps_t = eps_{t-1} + nu_t. This is
-        * the covariance structure under which base-period differencing is
-        * the efficient construction and pre-period pooling is not - the
-        * mirror image of the iid case. Panel regimes only.
+        * Within-unit random-walk errors: eps_t = eps_{t-1} + nu_t.
+        * Base-period differencing and pre-period pooling have different
+        * sampling variances under this covariance. Panel regimes only.
         quietly bysort id (time): generate double nu = rnormal()
         quietly bysort id (time): generate double epsrw = sum(nu)
         quietly generate double y = mu + 0.30 * time + epsrw
@@ -263,7 +259,8 @@ program define sim_dgp
             exit 459
         }
     }
-end</code></pre>
+end
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -329,7 +326,7 @@ program define sim_est3, rclass
             capture csdid y `xv', time(time) gvar(gvar) notyet analytical base_period(varying) rcs `mth'
         }
         else {
-            local bm = cond("`regime'" == "unbalanced", "`bal'", "none")
+            local bm = cond(inlist("`regime'", "unbalanced", "varmiss") &amp; "`bal'" != "", "`bal'", "none")
             capture csdid y `xv', ivar(id) time(time) gvar(gvar) notyet analytical ///
                 base_period(varying) bal(`bm') `mth'
         }
@@ -712,7 +709,8 @@ program define sim_est3, rclass
     }
     return scalar ok = `ok'
     return matrix R = `R'
-end</code></pre>
+end
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -913,12 +911,21 @@ program define mechA
     di "MECH A  csdid  = " %10.6f A[1,4]
     foreach pkg in jwdid bjs {
         use "`d'", clear
-        capture bench_`pkg', horizons(0) cluster(cl)
-        if _rc == 0 &amp; r(ok) == 1 {
-            matrix E = r(ES)
-            di "MECH A  `pkg'  = " %10.6f E[1,2]
+        if "`pkg'" == "jwdid" {
+            quietly jwdid y, ivar(id) tvar(time) gvar(gvar) cluster(cl)
+            quietly estat event, window(0 0)
+            matrix J = r(table)
+            assert colsof(J) == 1
+            assert !missing(J[1,1], J[2,1])
+            di "MECH A  jwdid  = " %10.6f J[1,1]
         }
-        else di "MECH A  `pkg'  FAILED"
+        else {
+            capture bench_bjs, horizons(0) cluster(cl)
+            assert _rc == 0 &amp; r(ok) == 1
+            matrix E = r(ES)
+            assert !missing(E[1,2], E[1,3])
+            di "MECH A  bjs  = " %10.6f E[1,2]
+        }
     }
 end
 mechA
@@ -945,14 +952,15 @@ program define mechB
         use "`d'", clear
         capture bench_`pkg', horizons(1) cluster(cl)
         matrix E = r(ES)
-        local out "`out'  `pkg'=" + string(E[1,2],"%9.6f")
+        local out = "`out'  `pkg'=" + string(E[1,2],"%9.6f")
     }
     di "MECH B  `struct' seed=`seed' `out'"
 end
 mechB balanced 101
 mechB unbalanced 101
 mechB balanced 202
-mechB unbalanced 202</code></pre>
+mechB unbalanced 202
+</code></pre>
 </details>
 
 
@@ -1327,15 +1335,15 @@ display "MCDONE `outfile'"</code></pre>
 
 ## Misspecification
 
-The covariates are real and parallel trends is conditional. These arms break the outcome model, then the propensity score, and record what each estimator does about it.
+Covariates make parallel trends conditional. These designs vary the untreated outcome trend and the distribution of the observed covariates. A linear propensity logit need not be exact for pooled not-yet-treated comparisons; the article distinguishes the working models that are correct in each design.
 
 <details class="code-fold">
-<summary><code>simmc_dr.do</code> &mdash; the three misspecification cells: both models right, outcome model wrong, propensity score wrong</summary>
+<summary><code>simmc_dr.do</code> &mdash; linear untreated trend, nonlinear trend, and cohort-specific covariate variances</summary>
 <pre><code>* Run from the bench/ folder of the replication package, with the csdid
 * source tree in ../src.  Usage:  stata-mp -b do simmc_dr.do 1000 500 mc_dr.csv
-* Monte Carlo: one DGP, one fixed target (2.0 / 2.5 / 3.0), balanced panel
-* with covariates. Three misspecification cells -- both models right, the
-* outcome model wrong, the propensity score wrong.
+* Monte Carlo: fixed targets (2.0 / 2.5 / 3.0), balanced panel with covariates.
+* Cells use a linear untreated trend, a nonlinear trend, or variance-shift
+* selection. A linear pooled not-yet propensity logit need not be exact.
 * Writes one row per (regime, package, rep, horizon) so nothing is aggregated
 * before it is inspected.
 args nunits reps outfile
@@ -1409,7 +1417,8 @@ forvalues r = 1/`reps' {
     if mod(`r', 10) == 0 display "MCPROG rep `r' of `reps' done"
 }
 file close out
-display "MCDONE `outfile'"</code></pre>
+display "MCDONE `outfile'"
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -1516,7 +1525,7 @@ display "TNP done"</code></pre>
 Two designs where commands agree on the point estimate and disagree on the standard error, so the difference that remains is the inference convention and nothing else. Both are single draws at a stated seed, not replication studies.
 
 <details class="code-fold">
-<summary><code>hetx.do</code> &mdash; jwdid and did_imputation on one draw with covariate-varying effects: identical point estimates, standard errors that are not (seed 4242, n = 50,000)</summary>
+<summary><code>hetx.do</code> &mdash; jwdid and did_imputation: point estimates and standard errors under covariate heterogeneity (seed4242,n=50,000)</summary>
 <pre><code>* Run from the bench/ folder of the replication package, with the csdid
 * source tree in ../src.  Usage:  stata-mp -b do hetx.do
 adopath ++ "../src/ado"
@@ -1573,7 +1582,7 @@ di "HXSE jwdid cluster(id): se0=" %8.6f J2[2,1] " se1=" %8.6f J2[2,2] " se2=" %8
 </details>
 
 <details class="code-fold">
-<summary><code>dcdhse.do</code> &mdash; csdid and did_multiplegt_dyn on a design where their point estimates coincide, so only the inference convention separates them (seed 31415)</summary>
+<summary><code>dcdhse.do</code> &mdash; csdid and did_multiplegt_dyn: point-estimate and standard-error comparison on a balanced panel (seed31415)</summary>
 <pre><code>* Run from the bench/ folder of the replication package, with the csdid
 * source tree in ../src.  Usage:  stata-mp -b do dcdhse.do
 adopath ++ "../src/ado"
@@ -1606,7 +1615,7 @@ di "DC dcdh  : e0=" %7.4f M[1,1] " (se " %6.4f sqrt(V[1,1]) ")  e1=" %7.4f M[2,1
 What changes when the error process is not iid, and whether an interval read across the whole event-study path covers at its nominal level.
 
 <details class="code-fold">
-<summary><code>simmc_ur.do</code> &mdash; the error-process arm: within-unit random-walk errors, where base-period differencing is the efficient construction</summary>
+<summary><code>simmc_ur.do</code> &mdash; within-unit random-walk errors: comparing sampling dispersion under a different covariance structure</summary>
 <pre><code>* Run from the bench/ folder of the replication package, with the csdid
 * source tree in ../src.  Usage:  stata-mp -b do simmc_ur.do 1000 500 mc_ur.csv
 * Monte Carlo: one DGP, one fixed target (2.0 / 2.5 / 3.0), balanced panel
@@ -1893,7 +1902,8 @@ program define dgp_break
     if "`design'"=="B" {
         quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
             cond(mod(_n,4)==2, 4, 5)))
-        * ASYMMETRIC cohort means, common variance -&gt; logit-linear pscore
+        * Asymmetric normal means and common variance give linear pairwise
+        * cohort log odds; pooled not-yet scores need not be linear logits.
         quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, ///
             cond(gvar==3, -0.8, cond(gvar==4, 0.0, 0.2)))
     }
@@ -2003,6 +2013,7 @@ foreach sd in 90001 90002 90003 {
         * ---- branch path ----
         use "`d'", clear
         set seed 7654321
+        set sortseed 7654321
         local covopt = cond(inlist("`arm'", "lpdid", "lpdid_rw"), "", "cov")
         capture sim_est3, pkg(`arm') regime(balanced) bal(none) `covopt'
         matrix RB = r(R)
@@ -2010,6 +2021,7 @@ foreach sd in 90001 90002 90003 {
         * ---- inline path: the literal command the old drivers ran ----
         use "`d'", clear
         set seed 7654321
+        set sortseed 7654321
         matrix RI = J(3, 2, .)
         if inlist("`arm'", "csdid_reg", "csdid_dr", "csdid_reg_nt") {
             local mth = cond(strpos("`arm'", "_dr"), "dr", "reg")
@@ -2152,7 +2164,7 @@ forvalues r = 1/`reps' {
         }
     }
 
-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
     foreach cell in ok owrong pwrong2 {
         local msp = cond("`cell'" == "ok", "", ///
             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
@@ -2227,7 +2239,7 @@ forvalues r = 1/`reps' {
         }
     }
 
-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
     foreach cell in ok owrong pwrong2 {
         local msp = cond("`cell'" == "ok", "", ///
             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
@@ -2373,7 +2385,7 @@ forvalues r = 1/`reps' {
         }
     }
 
-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
+    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
     foreach cell in ok owrong pwrong2 {
         local msp = cond("`cell'" == "ok", "", ///
             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
@@ -2453,13 +2465,13 @@ end
 capture program drop timeit
 program define timeit, rclass
     syntax , WHAT(string) TRIALS(integer)
-    capture noisily run_`what'
+    noisily run_`what'
     tempname T
     matrix `T' = J(`trials', 1, .)
     forvalues k = 1/`trials' {
         timer clear 9
         timer on 9
-        capture run_`what'
+        run_`what'
         timer off 9
         quietly timer list 9
         matrix `T'[`k',1] = r(t9)
@@ -2861,8 +2873,9 @@ foreach pair in tau_c33:1.0 tau_c45:2.5 tau_c57:4.0 {
 *      ctvar_all.do -- the calendar-time design, every command at every option
 *-----------------------------------------------------------------------------
 * Covariate trend effects vary with calendar time, identically across
-* cohorts: conditional parallel trends holds and every outcome model is
-* correctly specified cell by cell. Target ES(e) = 2.0 + 0.5 e.
+* cohorts. Conditional parallel trends holds; untreated changes are linear
+* in X within each period pair. Pooled restrictions need not hold.
+* Target ES(e) = 2.0 + 0.5 e.
 * Writes one CSV row per (regime, pkg, rep, horizon); summarize with
 * mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
 *   Usage: stata-mp -b do ctvar_all.do &lt;nunits&gt; &lt;reps&gt; &lt;outfile&gt;
@@ -2980,9 +2993,10 @@ display "MCDONE `outfile'"
 <pre><code>*-----------------------------------------------------------------------------
 *      breakhunt.do -- designs probing lpdid's covariate adjustment
 *-----------------------------------------------------------------------------
-* Design B: untreated trend nonlinear in x2 with asymmetric cohort means --
-* every linear-outcome model is misspecified while the propensity score
-* stays logit-linear, so csdid ipw/dr survive. Target ES(e) = 2.0 + 0.5 e.
+* Design B: untreated trend nonlinear in x2 with asymmetric cohort means.
+* Linear outcome regressions omit the quadratic term; a linear pooled
+* not-yet propensity logit need not be exact. This is not a guaranteed
+* single-correct-model case. Target ES(e) = 2.0 + 0.5 e.
 * Design C: unequal cohort sizes (50/30/20) with cohort-specific tau(X)
 * profiles. Target ES(e) = 2.0945 + 0.556 e (closed form in mcsum.py).
 * Writes one CSV row per (regime, pkg, rep, horizon); summarize with
@@ -3266,7 +3280,7 @@ program define bench_dgp
     * never-treated group. gvar = 0 is never treated.
     quietly generate double u = runiform()
     quietly generate int gvar = 0
-    local first_g = floor(`t' / 3) + 1
+    local first_g = max(2, floor(`t' / 3) + 1)
     forvalues k = 1/`cohorts' {
         local g = `first_g' + `k' - 1
         if `g' &lt;= `t' {
@@ -3402,7 +3416,8 @@ program define bench_structure
 
     display as error "unknown structure: `structure'"
     exit 198
-end</code></pre>
+end
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -4069,6 +4084,10 @@ program define bench_time, rclass
         use "`data'", clear
         quietly bench_`pkg', horizons(`horizons') cluster(`cluster') ///
             covariates(`covariates') mode(`mode') `sopt'
+        if r(ok) != 1 | missing(r(secs)) | r(secs) &lt;= 0 {
+            display as error "timed `pkg' fit failed"
+            exit 459
+        }
         matrix `T'[`i', 1] = r(secs)
         * runners that deliver the event study in the estimation call return
         * no split; their aggregation cost is already inside column 1
@@ -4099,7 +4118,8 @@ program define bench_time, rclass
     return scalar hi = `hi'
     return scalar medagg = `medagg'
     return local note "`note'"
-end</code></pre>
+end
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -4937,7 +4957,7 @@ display as text "F ROW `scan' `impl' n=`n' T=`t' G=`g' rows=`rows' med=`medstr' 
 # the fit's 21% over-prediction at n=10000. Each launch also carries a hard
 # timeout so a projection that is wrong cannot run away with the wall clock.
 # ---------------------------------------------------------------------------
-set -u
+set -euo pipefail
 B="."
 STATA=/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp
 CSV="$B/scalebench-results.csv"
@@ -4952,12 +4972,36 @@ skip_row () { # scan n t g rows pkg note
 
 run_cell () { # impl scan n t g structure trials cap
   local impl=$1 scan=$2 n=$3 t=$4 g=$5 st=$6 tr=$7 cap=$8
-  timeout "$cap" "$STATA" -b do scalebench_f_cell.do "$impl" "$scan" "$n" "$t" "$g" "$st" "$tr" "$CSV" &gt;/dev/null 2&gt;&amp;1
-  local rc=$?
-  if [ $rc -ne 0 ]; then
-    local rows=$((n * t))
-    skip_row "$scan" "$n" "$t" "$g" "$rows" "$impl" "launch failed or exceeded the ${cap}s cap; rc=$rc"
+  local rc=0
+  # Batch Stata names this log after the final filename argument, the CSV.
+  local log="${CSV%.csv}.log"
+  : &gt; "$log"
+  timeout "$cap" "$STATA" -b do scalebench_f_cell.do "$impl" "$scan" "$n" "$t" "$g" "$st" "$tr" "$CSV" &gt;/dev/null 2&gt;&amp;1 || rc=$?
+  if [ "$rc" -eq 124 ] &amp;&amp; [ "$impl" = "csdid_182" ]; then
+    local rows
+    rows=$(awk -F, -v scan="$scan" -v n="$n" -v t="$t" -v g="$g" -v scheme="$st" '
+      $1==scan &amp;&amp; $2==n &amp;&amp; $3==t &amp;&amp; $4==g &amp;&amp; $6=="csdid_200" &amp;&amp;
+      (scan!="F_scheme" || index($10,"scheme=" scheme)) {print $5}
+    ' "$CSV" | tail -1)
+    [ -n "$rows" ] || { echo "capped legacy cell has no completed candidate design" &gt;&amp;2; exit 1; }
+    [ ! -f "$log" ] || cp "$log" "$B/scalebench-f-$scan-$impl-$n-$t-$g-$st-capped.log"
+    skip_row "$scan" "$n" "$t" "$g" "$rows" "$impl" "scheme=$st; exceeded the ${cap}s cap; rc=$rc"
+    return
   fi
+  [ "$rc" -eq 0 ] || { echo "timing launch failed: $impl $scan n=$n T=$t G=$g rc=$rc" &gt;&amp;2; exit 1; }
+  [ -f "$log" ] &amp;&amp; awk '
+    NF &amp;&amp; $0 !~ /^[[:space:]]*\.[[:space:]]*$/ { last = $0 }
+    END { exit(last !~ /^[[:space:]]*end of do-file[[:space:]]*$/) }
+  ' "$log" || {
+    echo "incomplete or failed timing log: $impl $scan n=$n T=$t G=$g" &gt;&amp;2; exit 1;
+  }
+  local grep_status=0
+  grep -qE '^r\([0-9]+\);$' "$log" || grep_status=$?
+  [ "$grep_status" -eq 1 ] || { echo "failed or unreadable timing log: $log" &gt;&amp;2; exit 1; }
+  grep -q "^F ROW $scan $impl n=$n T=$t G=$g " "$log" || {
+    echo "timing cell has no completed result marker: $impl $scan" &gt;&amp;2; exit 1;
+  }
+  cp "$log" "$B/scalebench-f-$scan-$impl-$n-$t-$g-$st.log"
 }
 
 # csdid_200 first in every cell, so a legacy overrun never costs us the 2.0 row.
@@ -5002,7 +5046,8 @@ pair F_scheme 10000 10 4 unbalanced 3 600
 pair F_scheme 10000 10 4 rcs        3 600
 echo "F_scheme done $(date +%H:%M)" &gt;&gt; "$PROG"
 
-echo "TIER F DONE $(date +%H:%M) rows=$(wc -l &lt; "$CSV")" &gt;&gt; "$PROG"</code></pre>
+echo "TIER F DONE $(date +%H:%M) rows=$(wc -l &lt; "$CSV")" &gt;&gt; "$PROG"
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -5032,7 +5077,7 @@ foreach n in 5000 20000 {
         use "`d'", clear
         capture bench_`pkg', horizons(5) cluster(cl) `sopt'
         local wok = _rc
-        if `wok' != 0 | r(ok) == 0 {
+        if `wok' != 0 | r(ok) != 1 {
             di "TIMED rcs `rows' `pkg' UNSUPPORTED"
         }
         else {
@@ -5041,12 +5086,17 @@ foreach n in 5000 20000 {
                 use "`d'", clear
                 quietly bench_`pkg', horizons(5) cluster(cl) `sopt'
                 local s = r(secs)
+                if r(ok) != 1 | missing(`s') | `s' &lt;= 0 {
+                    display as error "timed `pkg' fit failed"
+                    exit 459
+                }
                 if `s' &lt; `best' local best = `s'
             }
             di "TIMED rcs `rows' `pkg' best=" %8.4f `best'
         }
     }
-}</code></pre>
+}
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -5118,7 +5168,7 @@ import csv, math, sys, collections
 
 ES_TRUTH = {0: 2.0, 1: 2.5, 2: 3.0}
 # field designs with their own closed-form targets (base, slope in event time)
-REGIME_TRUTH = {"master": (2.516667, 0.633333), "cohorthet": (2.516667, 0.633333),
+REGIME_TRUTH = {"master": (151 / 60, 19 / 30), "cohorthet": (151 / 60, 19 / 30),
                 "breakC": (2.0945, 0.556)}
 def es_truth(regime, h):
     base, slope = REGIME_TRUTH.get(regime, (2.0, 0.5))
@@ -5241,11 +5291,11 @@ def cells(rows, regs, pkgs):
                 sd = math.sqrt(sum((e - m) ** 2 for e in est) / (n - 1)) if n &gt; 1 else float("nan")
                 ses = [s for _, s in v if s is not None]
                 mse = sum(ses) / len(ses) if ses else float("nan")
-                cov = [1 if abs(e - rtruth) &lt;= 1.959964 * s else 0
+                cov = [1 if abs(e - truth) &lt;= 1.959964 * s else 0
                        for e, s in v if s is not None and s &gt; 0]
                 cvr = sum(cov) / len(cov) if cov else float("nan")
                 print(f"  {regime:&lt;11}{label(pkg):&lt;20}{f'ATT({g},{t})':&gt;12}{n:&gt;6}"
-                      f"{truth:&gt;8.3f}{m-rtruth:&gt;+9.4f}{sd:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
+                      f"{truth:&gt;8.3f}{m-truth:&gt;+9.4f}{sd:&gt;8.4f}{mse:&gt;8.4f}{cvr:&gt;8.3f}")
 
 def worst_cells(rows, regs, pkgs):
     print("\n== ATT(g,t) cells: worst |bias| over the post grid ==")
@@ -5278,7 +5328,8 @@ def main(path):
     worst_cells(rows, regs, pkgs)
 
 if __name__ == "__main__":
-    main(sys.argv[1])</code></pre>
+    main(sys.argv[1])
+</code></pre>
 </details>
 
 <details class="code-fold">
@@ -5578,7 +5629,14 @@ theme_fig &lt;- function(base_size = 13) {
 #------------------------------------------------------------------------------
 # Load, restrict to the plotted horizon, compute the summary used by the gate
 #------------------------------------------------------------------------------
-raw &lt;- read.csv(infile, stringsAsFactors = FALSE)
+raw &lt;- read.csv(infile, stringsAsFactors = FALSE,
+                na.strings = c(".", "NA", ""))
+imputation_bias &lt;- vapply(c(0, 2), function(horizon) {
+  estimates &lt;- raw$est[raw$pkg == "bjs" &amp; raw$h == horizon]
+  if (length(estimates) != 500 || any(!is.finite(estimates)))
+    stop("Incomplete imputation draws for the figure's horizon comparison.")
+  mean(estimates) - (2 + 0.5 * horizon)
+}, numeric(1))
 
 dat &lt;- raw %&gt;%
   filter(h == h_sel, !is.na(est), !is.na(se)) %&gt;%
@@ -5612,7 +5670,7 @@ ridge_p &lt;- ggplot(dat, aes(x = est, y = label, fill = label)) +
   scale_y_discrete(expand = c(0, 0.2)) +
   coord_cartesian(xlim = xlims, clip = "off") +
   labs(title = "Where the estimates land",
-       subtitle = "Density of the 500 estimates at e=0",
+       subtitle = "Density of the available estimates at e=0",
        x = NULL, y = NULL) +
   theme_fig() +
   theme(axis.text.y = element_text(color = navy, face = "bold", size = 11),
@@ -5638,7 +5696,8 @@ cov_anno &lt;- summ %&gt;%
   mutate(flabel = factor(html_lab[as.character(label)], levels = html_lab),
          run = -Inf, y_pos = Inf,
          lab = paste0("bias ", sprintf("%+.2f", bias), " &amp;middot; coverage ",
-                      formatC(100 * coverage, format = "f", digits = 0), "%"))
+                      formatC(100 * coverage, format = "f", digits = 0),
+                      "% &amp;middot; n = ", reps))
 
 zip_base &lt;- ggplot(zdat, aes(x = rep)) +
   geom_linerange(aes(ymin = lower, ymax = upper,
@@ -5652,7 +5711,7 @@ zip_base &lt;- ggplot(zdat, aes(x = rep)) +
   coord_flip() +
   scale_y_continuous(limits = xlims) +
   labs(title = "Whether the intervals cover the truth",
-       subtitle = "One 95% confidence interval per sample; black = does not cover the truth",
+       subtitle = "Available 95% intervals; black = does not cover the truth",
        x = NULL, y = NULL) +
   theme_fig() +
   ggtext::geom_richtext(
@@ -5686,14 +5745,15 @@ title_grob &lt;- cowplot::ggdraw() +
     fontface = "bold", size = 19) +
   cowplot::draw_label(
     paste0("Staggered DiD with no covariates: 1,000 units, 7 periods, three treated cohorts plus a never-treated group; 500 simulated samples.\n",
-           "Each period keeps a different share of its units (45% to 95%), independent of everything else. Truth at e=0 is 2. Every command at its default."),
+           "Each period keeps 45% to 95% of its units. Truth at e=0 is 2. csdid uses analytical inference and bal(none); all settings follow the benchmark."),
     x = 0.012, y = 0.30, hjust = 0, vjust = 0.5, color = gray, size = 12,
     lineheight = 1.15)
 
 foot_grob &lt;- cowplot::ggdraw() +
   cowplot::draw_label(
-    paste0("Same data-generating process and seeds as the Reliability I tables. Biases flip sign with the horizon (the imputation commands move from\n",
-           "-0.16 at e=0 to +0.23 at e=2), so averaging across horizons would cancel misses rather than reveal them. Non-default options are discussed in the text."),
+    paste0("Same data-generating process and seeds as the Reliability I tables. Imputation bias varies with the horizon (did_imputation moves from\n",
+           sprintf("%+.2f at e=0 to %+.2f at e=2). Read the horizons separately. Non-default options are discussed in the text.",
+                   imputation_bias[1], imputation_bias[2])),
     x = 0.012, y = 0.55, hjust = 0, vjust = 0.5, color = gray, size = 10.5,
     lineheight = 1.2)
 
@@ -5701,7 +5761,8 @@ combo &lt;- cowplot::plot_grid(title_grob, panels, foot_grob, ncol = 1,
                             rel_heights = c(0.155, 1, 0.085))
 
 ggsave(file.path(outdir, "field-hero-varmiss.png"), combo,
-       width = 13, height = 7.6, dpi = 200, bg = "white")</code></pre>
+       width = 13, height = 7.6, dpi = 200, bg = "white")
+</code></pre>
 </details>
 
 <details class="code-fold">

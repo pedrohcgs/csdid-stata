@@ -63,6 +63,10 @@ program define bench_time, rclass
         use "`data'", clear
         quietly bench_`pkg', horizons(`horizons') cluster(`cluster') ///
             covariates(`covariates') mode(`mode') `sopt'
+        if r(ok) != 1 | missing(r(secs)) | r(secs) <= 0 {
+            display as error "timed `pkg' fit failed"
+            exit 459
+        }
         matrix `T'[`i', 1] = r(secs)
         * runners that deliver the event study in the estimation call return
         * no split; their aggregation cost is already inside column 1

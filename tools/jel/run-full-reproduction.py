@@ -26,7 +26,8 @@ from pathlib import Path
 EXPECTED_JEL_COMMIT = "50f4f183783d2344f85bc4f39bcbcc1b7eba6466"
 EXPECTED_DID_VERSION = "2.5.1"
 EXPECTED_DID_COMMIT = "9aba07d054a798558ac9b551887f5cb592d8db10"
-EXPECTED_DRDID_VERSION = "1.3.0"
+EXPECTED_DRDID_VERSION = "1.4.0"
+EXPECTED_DRDID_COMMIT = "eaac3b49cd225d0d7706c633858555a5f204e21e"
 # Home-relative, and overridable: an absolute path here only worked on one
 # machine and hardcoded the maintainer's layout into a public repository.
 # Same order as the R generators under tools/parity/generators: env var, then
@@ -756,7 +757,7 @@ def patch_jel_r_oracle_lock(worktree: Path, summary: dict[str, object]) -> None:
     packages["DRDID"] = {
         "Package": "DRDID",
         "Version": EXPECTED_DRDID_VERSION,
-        "Source": "Repository",
+        "Source": "GitHub",
         "Type": "Package",
         "Title": "Doubly Robust Difference-in-Differences Estimators",
         "URL": "https://psantanna.com/DRDID/, https://github.com/pedrohcgs/DRDID",
@@ -767,12 +768,17 @@ def patch_jel_r_oracle_lock(worktree: Path, summary: dict[str, object]) -> None:
         "Imports": [
             "stats",
             "trust",
-            "BMisc (>= 1.4.1)",
+            "BMisc (>= 1.4.8)",
             "Rcpp (>= 1.0.12)",
             "fastglm (>= 0.0.3)",
         ],
         "LinkingTo": ["Rcpp (>= 1.0.12)"],
-        "Repository": "CRAN",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteRepo": "DRDID",
+        "RemoteUsername": "pedrohcgs",
+        "RemoteRef": "HEAD",
+        "RemoteSha": EXPECTED_DRDID_COMMIT,
         "NeedsCompilation": "yes",
     }
 
@@ -781,6 +787,7 @@ def patch_jel_r_oracle_lock(worktree: Path, summary: dict[str, object]) -> None:
         "did": EXPECTED_DID_VERSION,
         "did_remote_sha": EXPECTED_DID_COMMIT,
         "DRDID": EXPECTED_DRDID_VERSION,
+        "DRDID_remote_sha": EXPECTED_DRDID_COMMIT,
         "scope": "copied JEL worktree only",
     }
 
@@ -2040,7 +2047,7 @@ def main() -> int:
         oracle_digest = (port_root / "inst/spec/r-oracle-full-code-digest.txt").read_text().strip()
         r_log = Path(summary.get("r_log", logs_dir / "r-master.log"))
         authenticated = re.compile(
-            r"oracle gate: did 2\.5\.1 / DRDID 1\.3\.0 content-verified \([^\n]*"
+            r"oracle gate: did 2\.5\.1 / DRDID 1\.4\.0 content-verified \([^\n]*"
             r" R functions " + re.escape(oracle_digest) + r"\) at ")
         if not re.fullmatch(r"[0-9a-f]{64}", oracle_digest) or not authenticated.search(r_log.read_text()):
             raise RuntimeError("R master did not authenticate the restored did/DRDID code")

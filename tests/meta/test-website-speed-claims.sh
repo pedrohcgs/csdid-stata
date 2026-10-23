@@ -13,6 +13,9 @@ import math
 from pathlib import Path
 import re
 import sys
+import datetime
+import importlib.util
+import gzip
 
 root = Path(sys.argv[1])
 checked = 0
@@ -89,6 +92,10 @@ def unique_fields(pairs):
 
 number = r"(\d+(?:\.\d+)?)"
 try:
+    current_meta = json.loads(read("tools/bench/field/results/metadata.json"))
+    package_version = re.search(r"^\*! csdid ([0-9.]+) ", read("pkg/csdid.ado"))
+    if not package_version or current_meta.get("candidate_version") != package_version[1]:
+        raise ValueError("current timing evidence does not identify the packaged release; historical measurements cannot certify it")
     ladder = read("website/articles/speed-vs-182.md")
     field = read("website/articles/csdid-against-the-field.md")
     index = section(read("website/index.md"), "## Speed", "## Also in R and Python")
@@ -110,7 +117,7 @@ try:
                         ("upgrading guide", upgrading)]:
         expect(range_pattern, body, bounds, label)
     expect(rf"{number}x there against {number}x at forty periods", ladder, bounds, "ladder extrema")
-    expect(rf"up to {number}x", readme, [bounds[1]], "README ladder ceiling", minimum=2)
+    expect(rf"up to {number}x", readme, [bounds[1]], "README ladder ceiling")
     fixed_gains = [gain(row) for row in table("## Speed" + readme, "## Speed").values()]
     if len(fixed_gains) != 15 or None in fixed_gains:
         raise ValueError("README fixed-size table must retain its fifteen measured gains")
@@ -122,7 +129,10 @@ try:
            [min(fixed_gains), max(fixed_gains)], "upgrading guide fixed-size range")
     if "seven timed trials per workload after one discarded warmup" not in plain(readme):
         raise ValueError("README must distinguish seven timed trials from the discarded warmup")
-    if "7 August 2026" not in readme:
+    fixed_meta = root / "tools/bench/field/results/legacy-candidate-ab/metadata.json"
+    fixed_date = json.loads(fixed_meta.read_text())["generated_date"] if fixed_meta.is_file() else "2026-08-07"
+    fixed_day = datetime.date.fromisoformat(fixed_date)
+    if f"{fixed_day.day} {fixed_day:%B} {fixed_day.year}" not in readme:
         raise ValueError("README must date its separate fixed-size measurement")
 
     generator = read("tools/bench/make-field-speed-tables.py")
@@ -192,7 +202,62 @@ try:
         if value != actual:
             raise ValueError(f"speed figure does not match recorded source/input/image: {relative}")
 
-    timing_rows = list(csv.DictReader(read("tools/bench/field/results/news-timings.csv").splitlines()))
+    # The separate option-cost sentence has its own five-trial instrument.
+    extra_dir = root/"tools/bench/field/results/appendix-timings"
+    extra = json.loads((extra_dir/"metadata.json").read_text())
+    expected_extra = {"optcost":8,"rcstime":10,"mbench":3,"mbench2":3}
+    if extra.get("status") != "pass" or set(extra.get("measurements",{})) != set(expected_extra):
+        raise ValueError("incomplete appendix timing-probe record")
+    for name,count in expected_extra.items():
+        probe = extra["measurements"][name]
+        if probe.get("status") != "pass" or len(probe.get("measurements",[])) != count:
+            raise ValueError(f"incomplete appendix timing probe: {name}")
+    if "does not check finite requested effects or inference" not in extra["measurements"]["rcstime"].get("support_scope",""):
+        raise ValueError("appendix RCS call times must disclose their unassessed effect support")
+    if extra["identity"]["packages"]["packages"] != current_meta["packages"] or int(extra["identity"]["runtime"][-1]) != current_meta["processors"]:
+        raise ValueError("appendix and main timing package/processor identities differ")
+    for relative,digest in extra["measurement_sha256"].items():
+        if Path(relative).is_absolute() or ".." in Path(relative).parts or hashlib.sha256((root/relative).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"appendix timing source changed: {relative}")
+    for name,record in extra["support"].items():
+        path = extra_dir/record["file"]
+        if path.parent != extra_dir or hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError(f"appendix timing support hash differs: {name}")
+        payload = gzip.decompress(path.read_bytes())
+        if hashlib.sha256(payload).hexdigest() != record["uncompressed_sha256"]:
+            raise ValueError(f"appendix timing support content differs: {name}")
+    option_rows = list(csv.DictReader(gzip.decompress((extra_dir/extra["support"]["optcost.csv"]["file"]).read_bytes()).decode().splitlines()))
+    options = {(int(r["n"]),r["arm"]):float(r["median_seconds"]) for r in option_rows}
+    if len(option_rows) != 8 or set(options) != {(n,arm) for n in (1000,10000) for arm in ("jw_default","jw_uncond","lp_default","lp_rw")} or any(not math.isfinite(v) or v<=0 for v in options.values()):
+        raise ValueError("invalid eight-cell appendix option-cost CSV")
+    expect(rf"lpdid with rw adds about {number}% to the run time",field,
+           [round(100*(options[10000,"lp_rw"]/options[10000,"lp_default"]-1))],"LP-DID option cost")
+    expect(rf"jwdid unconditional route costs roughly {number} times the default at 100,000 rows",field,
+           [round(options[10000,"jw_uncond"]/options[10000,"jw_default"],1)],"JWDID option cost")
+
+    # The 2.0.0 release notes retain their dated measurements when the current
+    # website is refreshed. Bind them to the original record, never today's CSV.
+    archive = "tools/bench/field/historical-results/2026-08-21-speed/"
+    historical_hashes = {
+        "scalebench-results.csv": "084ed6f83945195f6506e6797a6085035b5db16a718fea7276efe6d4287f1642",
+        "metadata.json": "e6602529c73e0b0f6a9a7404dd1a93b12f9b90cd4ab981710ef55615a15c8eed",
+        "news-timings.csv": "ab92dbeba2ddf06724b702924168cb4c2d5f2c62cb52777df6a3e34132b08290",
+    }
+    for name, digest in historical_hashes.items():
+        if hashlib.sha256((root / archive / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"dated 2.0.0 timing evidence changed: {name}")
+    spec = importlib.util.spec_from_file_location("historical_speed_tables", root / "tools/bench/make-field-speed-tables.py")
+    renderer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(renderer)
+    cells, historical_meta = renderer.load(root / archive / "scalebench-results.csv")
+    old_tables = {}
+    for scan, _, title, unit in renderer.F_SPECS:
+        old_tables[scan[2:]] = table(renderer.build_gain_table(cells, historical_meta, scan, title, unit), f'>{title}</p>')
+    old_gains = [gain(row) for values in old_tables.values() for row in values.values() if gain(row) is not None]
+    old_bounds = (min(old_gains), max(old_gains))
+    default = cells[("E_default", 100000, 10, 4, 1000000, "")]
+    old_field_times = [float(renderer.fmt(default[pkg][0])) for pkg in ("csdid_analytical", "csdid_boot999")]
+    timing_rows = list(csv.DictReader(read(archive + "news-timings.csv").splitlines()))
     timings = {}
     for row in timing_rows:
         key = (row["claim"], row["detail"])
@@ -203,19 +268,19 @@ try:
     panel = [timings[("panel350k", f"{method} cov={cov}")]
              for method in ("dr", "reg", "ipw") for cov in ("none", "x")]
     for relative in ("NEWS.md", "website/news.md"):
-        news = section(read(relative), "### Performance", "### Legacy commands")
-        expect(range_pattern, news, bounds, relative + " ladder range")
+        news = section(section(read(relative), "## csdid 2.0.0\n"), "### Performance", "### Legacy commands")
+        expect(range_pattern, news, old_bounds, relative + " dated ladder range")
         expect(rf"{number}x at five periods and {number}x at forty", news,
-               [gain(tables["T"]["5"]), gain(tables["T"]["40"])], relative + " period designs")
+               [gain(old_tables["T"]["5"]), gain(old_tables["T"]["40"])], relative + " period designs")
         expect(rf"{number}x at three cohorts and {number}x at six", news,
-               [gain(tables["G"]["3"]), gain(tables["G"]["6"])], relative + " cohort designs")
+               [gain(old_tables["G"]["3"]), gain(old_tables["G"]["6"])], relative + " cohort designs")
         expect(rf"smallest on repeated cross sections,.*?at {number}x\.", news,
-               [gain(tables["scheme"]["repeated cross sections"])], relative + " sampling scheme")
+               [gain(old_tables["scheme"]["repeated cross sections"])], relative + " sampling scheme")
         expect(rf"where 2\.0\.0 takes {number} seconds", news,
-               [float(tables["n"]["100,000"][2].rstrip("s"))], relative + " million-row ladder")
+               [float(old_tables["n"]["100,000"][2].rstrip("s"))], relative + " million-row ladder")
         expect(rf"one-million-row panel estimates and aggregates the event study in {number} seconds "
                rf"with analytical standard errors, and in {number} seconds", news,
-               field_times, relative + " million-row complete workflow")
+               old_field_times, relative + " million-row complete workflow")
         expect(rf"350,000-row panel takes between {number} and {number} seconds", news,
                [round(min(panel), 2), round(max(panel), 2)], relative + " separate panel timings")
         expect(rf"400,000-observation repeated cross section with 20 periods and 12 cohorts "

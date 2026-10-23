@@ -1,0 +1,292 @@
+rows: 111000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0044  0.0671  0.0672  0.0721   0.966
+  balanced   jwdid                 500  +0.0042  0.0522  0.0523  0.0537   0.960
+  balanced   jwdid uncond          500  +0.0042  0.0522  0.0523  0.0616   0.982
+  balanced   did_imputation        500  +0.0042  0.0522  0.0523  0.0536   0.960
+  balanced   did_imputation wtr    500  +0.0042  0.0522  0.0523  0.0536   0.960
+  balanced   eventstudyinteract    500  +0.0042  0.0590  0.0591  0.0669   0.972
+  balanced   did_multiplegt_dyn    500  +0.0044  0.0671  0.0672  0.0656   0.944
+  balanced   lpdid                 500  -0.1265  0.0664  0.1428  0.0676   0.522
+  balanced   lpdid rw              500  +0.0044  0.0671  0.0672  0.0686   0.952
+  balanced   flexdid               500  +0.0042  0.0590  0.0591  0.0895   0.996
+  varmiss    csdid bal(none)       500  +0.0028  0.1042  0.1041  0.1046   0.954
+  varmiss    csdid bal(pair)       500  +0.0067  0.1122  0.1123  0.1146   0.954
+  varmiss    jwdid                 500  -0.1641  0.0722  0.1793  0.0698   0.356
+  varmiss    jwdid uncond          500  -0.1641  0.0722  0.1793  0.0802   0.480
+  varmiss    did_imputation        500  -0.1645  0.0719  0.1795  0.0715   0.380
+  varmiss    did_imputation wtr    500  +0.0071  0.0731  0.0733  0.0744   0.958
+  varmiss    eventstudyinteract    500  -0.1656  0.0809  0.1843  0.0877   0.508
+  varmiss    did_multiplegt_dyn    499  -0.2930  0.1012  0.3099  0.0967   0.156
+  varmiss    lpdid                 500  -0.3983  0.0985  0.4103  0.0994   0.018
+  varmiss    lpdid rw              500  -0.2931  0.1011  0.3100  0.1015   0.186
+  varmiss    flexdid               500  -0.1677  0.0909  0.1907  0.1139   0.732
+  unbalanced csdid bal(none)       500  +0.0017  0.0931  0.0930  0.0942   0.944
+  unbalanced csdid bal(pair)       500  +0.0061  0.0940  0.0941  0.0983   0.952
+  unbalanced jwdid                 500  +0.0321  0.0698  0.0768  0.0674   0.910
+  unbalanced jwdid uncond          500  +0.0321  0.0698  0.0768  0.0768   0.958
+  unbalanced did_imputation        500  +0.0315  0.0706  0.0773  0.0693   0.928
+  unbalanced did_imputation wtr    500  +0.0315  0.0681  0.0750  0.0693   0.940
+  unbalanced eventstudyinteract    500  +0.0051  0.0783  0.0784  0.0824   0.962
+  unbalanced did_multiplegt_dyn    499  +0.0063  0.0968  0.0969  0.0938   0.954
+  unbalanced lpdid                 500  -0.1245  0.0956  0.1569  0.0970   0.738
+  unbalanced lpdid rw              500  +0.0068  0.0974  0.0975  0.0985   0.958
+  unbalanced flexdid               500  +0.0027  0.0867  0.0867  0.1072   0.986
+  rcs        csdid bal(none)       500  -0.0043  0.0988  0.0988  0.0931   0.926
+  rcs        jwdid                 500  -0.0035  0.0831  0.0831  0.0760   0.906
+  rcs        did_imputation        500  -0.0035  0.0831  0.0831  0.0758   0.906
+  rcs        did_multiplegt_dyn      - unsupported/empty
+  rcs        lpdid                   - unsupported/empty
+  rcs        flexdid               500  -0.0060  0.0912  0.0913  0.0896   0.928
+  rcsvar     csdid bal(none)       500  +0.0039  0.1081  0.1081  0.1028   0.942
+  rcsvar     jwdid                 500  -0.1635  0.0898  0.1865  0.0812   0.460
+  rcsvar     did_imputation        500  -0.1635  0.0898  0.1865  0.0810   0.468
+  rcsvar     flexdid               500  -0.1647  0.1003  0.1927  0.0974   0.602
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0067  0.0748  0.0750  0.0760   0.946
+  balanced   jwdid                 500  +0.0073  0.0625  0.0629  0.0603   0.940
+  balanced   jwdid uncond          500  +0.0073  0.0625  0.0629  0.0674   0.964
+  balanced   did_imputation        500  +0.0073  0.0625  0.0629  0.0602   0.940
+  balanced   did_imputation wtr    500  +0.0073  0.0625  0.0629  0.0602   0.940
+  balanced   eventstudyinteract    500  +0.0065  0.0706  0.0709  0.0732   0.958
+  balanced   did_multiplegt_dyn    500  +0.0067  0.0748  0.0750  0.0699   0.926
+  balanced   lpdid                 500  -0.0939  0.0738  0.1194  0.0717   0.726
+  balanced   lpdid rw              500  +0.0067  0.0748  0.0750  0.0720   0.932
+  balanced   flexdid               500  +0.0065  0.0706  0.0709  0.0990   1.000
+  varmiss    csdid bal(none)       500  +0.0011  0.1129  0.1128  0.1109   0.944
+  varmiss    csdid bal(pair)       500  +0.0013  0.1122  0.1121  0.1181   0.954
+  varmiss    jwdid                 500  +0.0680  0.0836  0.1076  0.0798   0.864
+  varmiss    jwdid uncond          500  +0.0680  0.0836  0.1076  0.0906   0.908
+  varmiss    did_imputation        500  +0.0672  0.0854  0.1086  0.0816   0.854
+  varmiss    did_imputation wtr    500  +0.0055  0.0838  0.0839  0.0828   0.944
+  varmiss    eventstudyinteract    500  +0.0656  0.0923  0.1131  0.0974   0.912
+  varmiss    did_multiplegt_dyn    499  -0.2663  0.1349  0.2984  0.1288   0.435
+  varmiss    lpdid                 500  -0.3735  0.1429  0.3998  0.1459   0.272
+  varmiss    lpdid rw              500  -0.2511  0.1468  0.2908  0.1497   0.608
+  varmiss    flexdid               500  +0.0631  0.1053  0.1226  0.1261   0.954
+  unbalanced csdid bal(none)       500  +0.0044  0.0971  0.0971  0.0999   0.970
+  unbalanced csdid bal(pair)       500  +0.0084  0.1055  0.1057  0.1043   0.958
+  unbalanced jwdid                 500  +0.0359  0.0771  0.0850  0.0755   0.926
+  unbalanced jwdid uncond          500  +0.0359  0.0771  0.0850  0.0841   0.950
+  unbalanced did_imputation        500  +0.0354  0.0807  0.0880  0.0771   0.906
+  unbalanced did_imputation wtr    500  +0.0354  0.0788  0.0864  0.0771   0.920
+  unbalanced eventstudyinteract    500  +0.0073  0.0867  0.0869  0.0904   0.960
+  unbalanced did_multiplegt_dyn    499  +0.0124  0.1151  0.1157  0.1112   0.944
+  unbalanced lpdid                 500  -0.0886  0.1218  0.1505  0.1234   0.880
+  unbalanced lpdid rw              500  +0.0310  0.1226  0.1264  0.1245   0.954
+  unbalanced flexdid               500  +0.0047  0.0940  0.0940  0.1185   0.986
+  rcs        csdid bal(none)       500  +0.0007  0.1029  0.1028  0.0994   0.944
+  rcs        jwdid                 500  +0.0019  0.0862  0.0861  0.0853   0.948
+  rcs        did_imputation        500  +0.0019  0.0862  0.0861  0.0852   0.950
+  rcs        did_multiplegt_dyn      - unsupported/empty
+  rcs        lpdid                   - unsupported/empty
+  rcs        flexdid               500  -0.0005  0.0976  0.0975  0.0992   0.946
+  rcsvar     csdid bal(none)       500  +0.0022  0.1108  0.1107  0.1094   0.950
+  rcsvar     jwdid                 500  +0.0660  0.0974  0.1176  0.0924   0.888
+  rcsvar     did_imputation        500  +0.0660  0.0974  0.1176  0.0921   0.884
+  rcsvar     flexdid               500  +0.0639  0.1085  0.1258  0.1077   0.906
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0046  0.0743  0.0743  0.0787   0.968
+  balanced   jwdid                 500  +0.0053  0.0646  0.0648  0.0650   0.960
+  balanced   jwdid uncond          500  +0.0053  0.0646  0.0648  0.0716   0.980
+  balanced   did_imputation        500  +0.0053  0.0646  0.0648  0.0649   0.960
+  balanced   did_imputation wtr    500  +0.0053  0.0646  0.0648  0.0649   0.960
+  balanced   eventstudyinteract    500  +0.0046  0.0743  0.0743  0.0789   0.968
+  balanced   did_multiplegt_dyn    500  +0.0046  0.0743  0.0743  0.0729   0.948
+  balanced   lpdid                 500  +0.0046  0.0743  0.0743  0.0744   0.954
+  balanced   lpdid rw              500  +0.0046  0.0743  0.0743  0.0744   0.954
+  balanced   flexdid               500  +0.0046  0.0743  0.0743  0.1075   0.998
+  varmiss    csdid bal(none)       500  +0.0065  0.1061  0.1062  0.1089   0.960
+  varmiss    csdid bal(pair)       500  +0.0033  0.1082  0.1081  0.1129   0.952
+  varmiss    jwdid                 500  +0.2321  0.0795  0.2453  0.0789   0.162
+  varmiss    jwdid uncond          500  +0.2321  0.0795  0.2453  0.0867   0.208
+  varmiss    did_imputation        500  +0.2318  0.0802  0.2452  0.0799   0.166
+  varmiss    did_imputation wtr    500  +0.0076  0.0833  0.0836  0.0836   0.936
+  varmiss    eventstudyinteract    500  +0.2296  0.1002  0.2505  0.1023   0.384
+  varmiss    did_multiplegt_dyn    499  -0.0796  0.1341  0.1558  0.1284   0.894
+  varmiss    lpdid                 500  -0.0793  0.1448  0.1650  0.1478   0.932
+  varmiss    lpdid rw              500  -0.2139  0.1459  0.2588  0.1501   0.704
+  varmiss    flexdid               500  +0.2292  0.1075  0.2532  0.1355   0.630
+  unbalanced csdid bal(none)       500  +0.0009  0.0978  0.0977  0.1036   0.966
+  unbalanced csdid bal(pair)       500  -0.0008  0.1089  0.1088  0.1082   0.944
+  unbalanced jwdid                 500  +0.0310  0.0831  0.0887  0.0810   0.924
+  unbalanced jwdid uncond          500  +0.0310  0.0831  0.0887  0.0890   0.948
+  unbalanced did_imputation        500  +0.0302  0.0838  0.0890  0.0824   0.930
+  unbalanced did_imputation wtr    500  +0.0301  0.0831  0.0883  0.0824   0.930
+  unbalanced eventstudyinteract    500  +0.0027  0.0958  0.0957  0.0974   0.948
+  unbalanced did_multiplegt_dyn    499  -0.0002  0.1202  0.1201  0.1152   0.928
+  unbalanced lpdid                 500  -0.0022  0.1248  0.1247  0.1287   0.954
+  unbalanced lpdid rw              500  -0.0015  0.1254  0.1253  0.1289   0.954
+  unbalanced flexdid               500  +0.0010  0.0980  0.0979  0.1286   0.992
+  rcs        csdid bal(none)       500  +0.0047  0.1018  0.1018  0.1036   0.954
+  rcs        jwdid                 500  +0.0066  0.0892  0.0893  0.0922   0.958
+  rcs        did_imputation        500  +0.0066  0.0892  0.0893  0.0920   0.958
+  rcs        did_multiplegt_dyn      - unsupported/empty
+  rcs        lpdid                   - unsupported/empty
+  rcs        flexdid               500  +0.0047  0.1018  0.1018  0.1076   0.968
+  rcsvar     csdid bal(none)       500  +0.0013  0.1147  0.1145  0.1096   0.954
+  rcsvar     jwdid                 500  +0.2277  0.0982  0.2479  0.0927   0.336
+  rcsvar     did_imputation        500  +0.2277  0.0982  0.2479  0.0925   0.338
+  rcsvar     flexdid               500  +0.2246  0.1169  0.2531  0.1159   0.510
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   csdid bal(none)       500  +0.0052  0.0627  0.0629  0.0666   0.966
+  balanced   flexdid               500  +0.1298  0.0593  0.1427  0.0844   0.732
+  varmiss    csdid bal(none)       500  +0.0035  0.0928  0.0927  0.0937   0.954
+  varmiss    csdid bal(pair)       500  +0.0038  0.0868  0.0868  0.0900   0.968
+  varmiss    flexdid               500  +0.2234  0.0768  0.2362  0.0995   0.366
+  unbalanced csdid bal(none)       500  +0.0023  0.0823  0.0823  0.0865   0.960
+  unbalanced csdid bal(pair)       500  +0.0046  0.0824  0.0825  0.0833   0.956
+  unbalanced flexdid               500  +0.1276  0.0797  0.1505  0.1010   0.826
+  rcs        csdid bal(none)       500  +0.0004  0.0884  0.0883  0.0849   0.938
+  rcs        flexdid               500  +0.1250  0.0855  0.1514  0.0845   0.668
+  rcsvar     csdid bal(none)       500  +0.0025  0.0969  0.0969  0.0920   0.938
+  rcsvar     flexdid               500  +0.2238  0.0877  0.2403  0.0851   0.276
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  balanced   csdid bal(none)          500     500        0
+  balanced   jwdid                    500     500        0
+  balanced   jwdid uncond             500     500        0
+  balanced   did_imputation           500     500        0
+  balanced   did_imputation wtr       500     500        0
+  balanced   eventstudyinteract       500     500        0
+  balanced   did_multiplegt_dyn       500     500        0
+  balanced   lpdid                    500     500        0
+  balanced   lpdid rw                 500     500        0
+  balanced   flexdid                  500     500        0
+  varmiss    csdid bal(none)          500     500        0
+  varmiss    csdid bal(pair)          500     500        0
+  varmiss    jwdid                    500     500        0
+  varmiss    jwdid uncond             500     500        0
+  varmiss    did_imputation           500     500        0
+  varmiss    did_imputation wtr       500     500        0
+  varmiss    eventstudyinteract       500     500        0
+  varmiss    did_multiplegt_dyn       500     499        1
+  varmiss    lpdid                    500     500        0
+  varmiss    lpdid rw                 500     500        0
+  varmiss    flexdid                  500     500        0
+  unbalanced csdid bal(none)          500     500        0
+  unbalanced csdid bal(pair)          500     500        0
+  unbalanced jwdid                    500     500        0
+  unbalanced jwdid uncond             500     500        0
+  unbalanced did_imputation           500     500        0
+  unbalanced did_imputation wtr       500     500        0
+  unbalanced eventstudyinteract       500     500        0
+  unbalanced did_multiplegt_dyn       500     499        1
+  unbalanced lpdid                    500     500        0
+  unbalanced lpdid rw                 500     500        0
+  unbalanced flexdid                  500     500        0
+  rcs        csdid bal(none)          500     500        0
+  rcs        jwdid                    500     500        0
+  rcs        did_imputation           500     500        0
+  rcs        did_multiplegt_dyn       500       0      500
+  rcs        lpdid                    500       0      500
+  rcs        flexdid                  500     500        0
+  rcsvar     csdid bal(none)          500     500        0
+  rcsvar     jwdid                    500     500        0
+  rcsvar     did_imputation           500     500        0
+  rcsvar     flexdid                  500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+  balanced   csdid bal(none)         ATT(3,3)   500   1.000  -0.0007  0.1011  0.1033   0.940
+  balanced   csdid bal(none)         ATT(3,4)   500   1.500  +0.0009  0.1097  0.1095   0.946
+  balanced   csdid bal(none)         ATT(3,5)   500   2.000  +0.0066  0.1196  0.1264   0.958
+  balanced   csdid bal(none)         ATT(3,6)   500   2.500  +0.0084  0.1290  0.1264   0.938
+  balanced   csdid bal(none)         ATT(3,7)   500   3.000  -0.0005  0.1158  0.1262   0.968
+  balanced   csdid bal(none)         ATT(4,4)   500   2.000  +0.0071  0.1165  0.1091   0.948
+  balanced   csdid bal(none)         ATT(4,5)   500   2.500  +0.0097  0.1290  0.1262   0.936
+  balanced   csdid bal(none)         ATT(4,6)   500   3.000  +0.0088  0.1295  0.1263   0.960
+  balanced   csdid bal(none)         ATT(4,7)   500   3.500  +0.0042  0.1277  0.1258   0.934
+  balanced   csdid bal(none)         ATT(5,5)   500   3.000  +0.0067  0.1287  0.1266   0.948
+  balanced   csdid bal(none)         ATT(5,6)   500   3.500  +0.0093  0.1320  0.1262   0.944
+  balanced   csdid bal(none)         ATT(5,7)   500   4.000  -0.0015  0.1332  0.1261   0.924
+  varmiss    csdid bal(none)         ATT(3,3)   500   1.000  -0.0028  0.1251  0.1268   0.950
+  varmiss    csdid bal(none)         ATT(3,4)   500   1.500  +0.0035  0.1588  0.1549   0.942
+  varmiss    csdid bal(none)         ATT(3,5)   500   2.000  +0.0213  0.2040  0.1958   0.946
+  varmiss    csdid bal(none)         ATT(3,6)   500   2.500  +0.0061  0.1583  0.1654   0.948
+  varmiss    csdid bal(none)         ATT(3,7)   500   3.000  +0.0038  0.1349  0.1432   0.960
+  varmiss    csdid bal(none)         ATT(4,4)   500   2.000  +0.0050  0.1657  0.1600   0.946
+  varmiss    csdid bal(none)         ATT(4,5)   500   2.500  -0.0003  0.2102  0.2020   0.934
+  varmiss    csdid bal(none)         ATT(4,6)   500   3.000  +0.0050  0.1658  0.1724   0.956
+  varmiss    csdid bal(none)         ATT(4,7)   500   3.500  +0.0068  0.1482  0.1514   0.946
+  varmiss    csdid bal(none)         ATT(5,5)   500   3.000  +0.0064  0.2246  0.2202   0.948
+  varmiss    csdid bal(none)         ATT(5,6)   500   3.500  +0.0003  0.1996  0.1937   0.942
+  varmiss    csdid bal(none)         ATT(5,7)   500   4.000  -0.0067  0.1818  0.1751   0.942
+  varmiss    csdid bal(pair)         ATT(3,3)   500   1.000  +0.0019  0.1263  0.1291   0.952
+  varmiss    csdid bal(pair)         ATT(3,4)   500   1.500  +0.0059  0.1598  0.1602   0.948
+  varmiss    csdid bal(pair)         ATT(3,5)   500   2.000  +0.0102  0.1989  0.2045   0.948
+  varmiss    csdid bal(pair)         ATT(3,6)   500   2.500  +0.0086  0.1673  0.1696   0.958
+  varmiss    csdid bal(pair)         ATT(3,7)   500   3.000  -0.0000  0.1394  0.1441   0.968
+  varmiss    csdid bal(pair)         ATT(4,4)   500   2.000  +0.0156  0.1751  0.1691   0.928
+  varmiss    csdid bal(pair)         ATT(4,5)   500   2.500  -0.0036  0.2210  0.2171   0.948
+  varmiss    csdid bal(pair)         ATT(4,6)   500   3.000  +0.0055  0.1836  0.1802   0.948
+  varmiss    csdid bal(pair)         ATT(4,7)   500   3.500  +0.0081  0.1594  0.1532   0.930
+  varmiss    csdid bal(pair)         ATT(5,5)   500   3.000  +0.0026  0.2567  0.2537   0.946
+  varmiss    csdid bal(pair)         ATT(5,6)   500   3.500  +0.0016  0.2098  0.2105   0.948
+  varmiss    csdid bal(pair)         ATT(5,7)   500   4.000  -0.0059  0.1865  0.1790   0.944
+  unbalanced csdid bal(none)         ATT(3,3)   500   1.000  -0.0021  0.1422  0.1409   0.936
+  unbalanced csdid bal(none)         ATT(3,4)   500   1.500  +0.0044  0.1534  0.1493   0.938
+  unbalanced csdid bal(none)         ATT(3,5)   500   2.000  +0.0073  0.1760  0.1722   0.930
+  unbalanced csdid bal(none)         ATT(3,6)   500   2.500  +0.0059  0.1710  0.1722   0.948
+  unbalanced csdid bal(none)         ATT(3,7)   500   3.000  -0.0039  0.1712  0.1720   0.936
+  unbalanced csdid bal(none)         ATT(4,4)   500   2.000  +0.0078  0.1523  0.1489   0.950
+  unbalanced csdid bal(none)         ATT(4,5)   500   2.500  +0.0038  0.1739  0.1725   0.946
+  unbalanced csdid bal(none)         ATT(4,6)   500   3.000  +0.0061  0.1647  0.1716   0.964
+  unbalanced csdid bal(none)         ATT(4,7)   500   3.500  +0.0063  0.1701  0.1719   0.948
+  unbalanced csdid bal(none)         ATT(5,5)   500   3.000  -0.0005  0.1719  0.1723   0.954
+  unbalanced csdid bal(none)         ATT(5,6)   500   3.500  +0.0049  0.1739  0.1719   0.956
+  unbalanced csdid bal(none)         ATT(5,7)   500   4.000  -0.0108  0.1799  0.1720   0.950
+  unbalanced csdid bal(pair)         ATT(3,3)   500   1.000  -0.0013  0.1480  0.1474   0.946
+  unbalanced csdid bal(pair)         ATT(3,4)   500   1.500  +0.0084  0.1606  0.1565   0.948
+  unbalanced csdid bal(pair)         ATT(3,5)   500   2.000  +0.0052  0.1744  0.1806   0.962
+  unbalanced csdid bal(pair)         ATT(3,6)   500   2.500  +0.0100  0.1785  0.1802   0.950
+  unbalanced csdid bal(pair)         ATT(3,7)   500   3.000  -0.0062  0.1847  0.1800   0.948
+  unbalanced csdid bal(pair)         ATT(4,4)   500   2.000  +0.0140  0.1590  0.1556   0.936
+  unbalanced csdid bal(pair)         ATT(4,5)   500   2.500  +0.0048  0.1880  0.1807   0.946
+  unbalanced csdid bal(pair)         ATT(4,6)   500   3.000  +0.0107  0.1842  0.1797   0.942
+  unbalanced csdid bal(pair)         ATT(4,7)   500   3.500  +0.0100  0.1933  0.1799   0.930
+  unbalanced csdid bal(pair)         ATT(5,5)   500   3.000  +0.0056  0.1785  0.1808   0.952
+  unbalanced csdid bal(pair)         ATT(5,6)   500   3.500  +0.0120  0.1807  0.1800   0.942
+  unbalanced csdid bal(pair)         ATT(5,7)   500   4.000  -0.0182  0.1984  0.1802   0.922
+  rcs        csdid bal(none)         ATT(3,3)   500   1.000  -0.0082  0.1538  0.1456   0.922
+  rcs        csdid bal(none)         ATT(3,4)   500   1.500  -0.0102  0.1610  0.1546   0.940
+  rcs        csdid bal(none)         ATT(3,5)   500   2.000  -0.0063  0.1747  0.1785   0.952
+  rcs        csdid bal(none)         ATT(3,6)   500   2.500  -0.0099  0.1710  0.1785   0.960
+  rcs        csdid bal(none)         ATT(3,7)   500   3.000  +0.0006  0.1784  0.1784   0.950
+  rcs        csdid bal(none)         ATT(4,4)   500   2.000  -0.0017  0.1628  0.1545   0.932
+  rcs        csdid bal(none)         ATT(4,5)   500   2.500  +0.0017  0.1818  0.1787   0.940
+  rcs        csdid bal(none)         ATT(4,6)   500   3.000  +0.0077  0.1793  0.1783   0.950
+  rcs        csdid bal(none)         ATT(4,7)   500   3.500  +0.0150  0.1817  0.1783   0.942
+  rcs        csdid bal(none)         ATT(5,5)   500   3.000  -0.0030  0.1819  0.1783   0.926
+  rcs        csdid bal(none)         ATT(5,6)   500   3.500  +0.0106  0.1795  0.1783   0.942
+  rcs        csdid bal(none)         ATT(5,7)   500   4.000  +0.0128  0.1775  0.1782   0.956
+  rcsvar     csdid bal(none)         ATT(3,3)   500   1.000  +0.0051  0.1402  0.1398   0.950
+  rcsvar     csdid bal(none)         ATT(3,4)   500   1.500  +0.0016  0.1654  0.1618   0.942
+  rcsvar     csdid bal(none)         ATT(3,5)   500   2.000  +0.0104  0.2113  0.1987   0.944
+  rcsvar     csdid bal(none)         ATT(3,6)   500   2.500  +0.0036  0.1800  0.1777   0.946
+  rcsvar     csdid bal(none)         ATT(3,7)   500   3.000  +0.0078  0.1611  0.1632   0.956
+  rcsvar     csdid bal(none)         ATT(4,4)   500   2.000  +0.0054  0.1624  0.1658   0.954
+  rcsvar     csdid bal(none)         ATT(4,5)   500   2.500  +0.0052  0.2077  0.2032   0.956
+  rcsvar     csdid bal(none)         ATT(4,6)   500   3.000  -0.0092  0.1875  0.1826   0.952
+  rcsvar     csdid bal(none)         ATT(4,7)   500   3.500  +0.0022  0.1696  0.1687   0.948
+  rcsvar     csdid bal(none)         ATT(5,5)   500   3.000  +0.0011  0.2304  0.2165   0.930
+  rcsvar     csdid bal(none)         ATT(5,6)   500   3.500  -0.0001  0.1879  0.1974   0.966
+  rcsvar     csdid bal(none)         ATT(5,7)   500   4.000  +0.0026  0.1759  0.1846   0.948
+
+== ATT(g,t) cells: worst |bias| over the post grid ==
+  balanced   csdid bal(none)     max|bias|=0.0097 at ATT(4,5)
+  varmiss    csdid bal(none)     max|bias|=0.0213 at ATT(3,5)
+  varmiss    csdid bal(pair)     max|bias|=0.0156 at ATT(4,4)
+  unbalanced csdid bal(none)     max|bias|=0.0108 at ATT(5,7)
+  unbalanced csdid bal(pair)     max|bias|=0.0182 at ATT(5,7)
+  rcs        csdid bal(none)     max|bias|=0.0150 at ATT(4,7)
+  rcsvar     csdid bal(none)     max|bias|=0.0104 at ATT(3,5)

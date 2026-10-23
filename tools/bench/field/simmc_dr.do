@@ -1,8 +1,8 @@
 * Run from the bench/ folder of the replication package, with the csdid
 * source tree in ../src.  Usage:  stata-mp -b do simmc_dr.do 1000 500 mc_dr.csv
-* Monte Carlo: one DGP, one fixed target (2.0 / 2.5 / 3.0), balanced panel
-* with covariates. Three misspecification cells -- both models right, the
-* outcome model wrong, the propensity score wrong.
+* Monte Carlo: fixed targets (2.0 / 2.5 / 3.0), balanced panel with covariates.
+* Cells use a linear untreated trend, a nonlinear trend, or variance-shift
+* selection. A linear pooled not-yet propensity logit need not be exact.
 * Writes one row per (regime, package, rep, horizon) so nothing is aggregated
 * before it is inspected.
 args nunits reps outfile

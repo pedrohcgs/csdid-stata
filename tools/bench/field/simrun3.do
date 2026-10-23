@@ -59,7 +59,7 @@ program define sim_est3, rclass
             capture csdid y `xv', time(time) gvar(gvar) notyet analytical base_period(varying) rcs `mth'
         }
         else {
-            local bm = cond("`regime'" == "unbalanced", "`bal'", "none")
+            local bm = cond(inlist("`regime'", "unbalanced", "varmiss") & "`bal'" != "", "`bal'", "none")
             capture csdid y `xv', ivar(id) time(time) gvar(gvar) notyet analytical ///
                 base_period(varying) bal(`bm') `mth'
         }

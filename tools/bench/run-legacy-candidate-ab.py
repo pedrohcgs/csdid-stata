@@ -8,6 +8,7 @@ import math
 import os
 import platform
 import random
+import re
 import statistics
 import subprocess
 import textwrap
@@ -82,14 +83,16 @@ def run_one(stata, legacy_root, implementation, scenario, inner, trial):
     with output.open(newline="") as handle:
         rows = list(csv.DictReader(handle))
     fields = {"implementation", "scenario", "seconds", "observations", "inner",
-              "accelerator", "stata_version", "stata_flavor", "os", "machine_type"}
+              "accelerator", "stata_version", "stata_flavor", "stata_processors", "os", "machine_type"}
     if len(rows) != 1 or set(rows[0]) != fields:
         raise RuntimeError(f"incomplete or duplicated benchmark observation: {output}")
     row = rows[0]
     values = [float(row[name]) for name in ("seconds", "observations", "inner")]
+    processors = float(row["stata_processors"])
     if (row["implementation"] != implementation or row["scenario"] != scenario
             or any(not math.isfinite(value) or value <= 0 for value in values)
             or values[1] != int(values[1]) or values[2] != inner
+            or not math.isfinite(processors) or processors <= 0 or processors != int(processors)
             or any(not row[name].strip() for name in fields)):
         raise RuntimeError(f"invalid or misattributed benchmark observation: {output}")
     row.update(
@@ -216,6 +219,23 @@ def sha256(path):
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def candidate_fingerprints():
+    paths = [p for p in (ROOT / "src").rglob("*") if p.is_file() and p.suffix != ".plugin"]
+    artifacts = sorted((ROOT / "pkg").glob("*.ado"))
+    artifacts += [ROOT / "pkg" / name for name in ("csdid.mata", "lcsdid_v2.mlib")]
+    artifacts += sorted((ROOT / "pkg").glob("csdid_bootstrap_*.plugin"))
+    for payload in artifacts:
+        source = ROOT / ("src/mata" if payload.suffix == ".mata" else "src/ado") / payload.name
+        if payload.suffix == ".ado" and not source.is_file():
+            source = ROOT / "src/legacy" / payload.name
+        for alias in (ROOT / "build" / payload.name, source):
+            if alias.is_file() and sha256(alias) != sha256(payload):
+                raise ValueError(f"measured artifact differs from the install payload: {alias}")
+    paths += artifacts
+    paths += [ROOT / "tools/bench/legacy-candidate-ab-workload.do"]
+    return {str(p.relative_to(ROOT)): sha256(p) for p in sorted(paths)}
 
 
 def write_report(summaries, metadata):
@@ -350,6 +370,10 @@ def main():
     legacy_root = args.legacy_root.resolve()
     legacy_commit = verify_legacy_root(legacy_root)
     prepare_build(ROOT)
+    measured_fingerprints = candidate_fingerprints()
+    version = re.search(r"^\*! csdid ([0-9.]+) ", (ROOT / "build/csdid.ado").read_text())
+    if not version:
+        raise SystemExit("built candidate has no version stamp")
     scenarios = args.scenario or list(SCENARIOS)
     all_rows = []
     for scenario in scenarios:
@@ -395,8 +419,20 @@ def main():
         summaries.append(summarize(scenario, SCENARIOS[scenario], scenario_rows))
     write_csv(OUTDIR / "runs.csv", all_rows)
     write_csv(OUTDIR / "summary.csv", summaries)
+    if candidate_fingerprints() != measured_fingerprints:
+        raise SystemExit("candidate source or artifacts changed during measurement")
+    runtimes = {tuple(row[key] for key in ("stata_version", "stata_flavor", "stata_processors", "os", "machine_type"))
+                for row in all_rows}
+    if len(runtimes) != 1:
+        raise SystemExit("benchmark observations use different Stata runtimes")
+    runtime = dict(zip(("version", "edition", "processors", "os", "machine_type"), runtimes.pop()))
     metadata = {
         "generated_date": date.today().isoformat(),
+        "candidate_version": version.group(1),
+        "measurement_sha256": measured_fingerprints,
+        "runs_sha256": sha256(OUTDIR / "runs.csv"),
+        "summary_sha256": sha256(OUTDIR / "summary.csv"),
+        "runtime": runtime,
         "candidate_root": str(ROOT),
         "legacy_root": str(legacy_root),
         "legacy_commit": legacy_commit,

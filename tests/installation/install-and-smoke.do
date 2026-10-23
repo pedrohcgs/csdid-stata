@@ -46,7 +46,7 @@ generate double treated = first_treat > 0 & year >= first_treat
 generate double y = 1 + .2 * x1 - .1 * x2 + .05 * year + .4 * treated + rnormal()
 
 csdid y x1 x2, id(id) time(year) gvar(first_treat) reps(31) rseed(20260708)
-assert "`e(version)'" == "2.0.0"
+assert "`e(version)'" == "2.0.1"
 assert "`e(method)'" == "dr"
 assert e(bstrap) == 1
 assert e(cband) == 1

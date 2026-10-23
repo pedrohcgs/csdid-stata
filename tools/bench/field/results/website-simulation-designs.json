@@ -1,0 +1,587 @@
+{
+  "schema_version": 1,
+  "description": "Complete statistical experiments published with the csdid comparison article; wall-clock speed experiments run separately.",
+  "source_appendix": "website/code-appendix.md",
+  "published_script_count": 52,
+  "seed_rule": "90000 + replication",
+  "band_seed_rule": "70000 + replication",
+  "jobs": [
+    {
+      "id": "core",
+      "script": "simmc.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "sampling_main",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "cov",
+      "script": "simmc_cov.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "covariates_rc",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "dr",
+      "script": "simmc_dr.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "covariates_panel",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "ps2",
+      "script": "simmc_ps2.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "covariates_panel",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "rv",
+      "script": "simmc_rv.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "sampling_main",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "fx",
+      "script": "simmc_fx.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "sampling_main",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "fxpanel",
+      "script": "simmc_fxpanel.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "sampling_main",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "lp",
+      "script": "lpdidrw.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "options",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "jw",
+      "script": "jwuncond.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "options",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "bjs",
+      "script": "bjswtr.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "sampling_main",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "sa",
+      "script": "sarun.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "options",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "ur",
+      "script": "simmc_ur.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "unitroot",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "bands",
+      "script": "simmc_bands.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "bands",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "figdata",
+      "script": "figdata.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "hero",
+      "parameter_basis": "Appendix protocol: 1,000 units, 500 draws; seed 90000 + replication.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "master",
+      "script": "master.do",
+      "kind": "monte_carlo",
+      "units": 2000,
+      "reps": 100,
+      "args": [
+        2000,
+        100,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "master",
+      "parameter_basis": "Article One design that tells them apart explicitly states 2,000 units and 100 replications.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "ctvar",
+      "script": "ctvar_all.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 100,
+      "args": [
+        1000,
+        100,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "ctvar",
+      "parameter_basis": "Article calendar-time experiment explicitly states 100 replications; units follow its global 1,000-unit protocol.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "cohorthet",
+      "script": "cohorthet.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "cohorthet",
+      "parameter_basis": "No historical CLI invocation recovered. Apply the appendix global 1,000-unit/500-draw protocol; retain this attribution rather than claiming a recovered command.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "breakhunt",
+      "script": "breakhunt.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "breakhunt",
+      "parameter_basis": "No historical CLI invocation recovered. Apply the appendix global 1,000-unit/500-draw protocol; retain this attribution rather than claiming a recovered command.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "smallnt",
+      "script": "smallnt.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "smallnt",
+      "parameter_basis": "No historical CLI invocation recovered. Apply the appendix global 1,000-unit/500-draw protocol; retain this attribution rather than claiming a recovered command.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "ymiss",
+      "script": "ymiss.do",
+      "kind": "monte_carlo",
+      "units": 1000,
+      "reps": 500,
+      "args": [
+        1000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "ymiss",
+      "parameter_basis": "No historical CLI invocation recovered. Apply the appendix global 1,000-unit/500-draw protocol; retain this attribution rather than claiming a recovered command.",
+      "smoke_parameters": true
+    },
+    {
+      "id": "simtruth",
+      "script": "simtruth.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Fixed 40,000-unit draws; seed 11; balanced/unbalanced/RC.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "wts",
+      "script": "wts.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Fixed lopsided-cohort experiment; 1,100 units; seed 99.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "wts2",
+      "script": "wts2.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Three fixed cohort-size splits; seed 99.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "mech",
+      "script": "mech.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Fixed single-pre-period and balanced/unbalanced pooling experiments.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "tnptest",
+      "script": "tnptest.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [
+        "tnptest.csv"
+      ],
+      "completion": "TNP done",
+      "parameter_basis": "Fixed 100 replications, 1,000 units; two trends_nonparam arms.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "hetx",
+      "script": "hetx.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Fixed 50,000-unit covariate-heterogeneity draw; seed 4242.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "dcdhse",
+      "script": "dcdhse.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Fixed 20,000-unit draw; seed 31415.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "eqgate",
+      "script": "eqgate.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [
+        "eqgate.csv"
+      ],
+      "completion": null,
+      "parameter_basis": "Literal-command equivalence; 2,000 units, seeds 90001\u201390003.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "sa_equiv",
+      "script": "sa_equiv.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [
+        "sa_equiv.csv"
+      ],
+      "completion": "MCDONE",
+      "parameter_basis": "2,000 units, seed 90007; three sampling regimes.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "sa_se",
+      "script": "sa_se.do",
+      "kind": "diagnostic",
+      "args": [
+        200
+      ],
+      "outputs": [
+        "sa_se.csv"
+      ],
+      "completion": "MCDONE",
+      "parameter_basis": "200 draws at 1,000 units; seed 90000 + replication.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "sa_scale",
+      "script": "sa_scale.do",
+      "kind": "diagnostic",
+      "args": [
+        20
+      ],
+      "outputs": [
+        "sa_scale.csv"
+      ],
+      "completion": "MCDONE",
+      "parameter_basis": "20 draws at n=500,2000,8000,32000; seed 90000 + replication.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "cell_compare",
+      "script": "cell_compare.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [
+        "cell_compare.csv"
+      ],
+      "completion": "MCDONE",
+      "parameter_basis": "Fixed 4,000-unit covariate draw; seed 90001.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "wtr_cells",
+      "script": "wtr_cells.do",
+      "kind": "diagnostic",
+      "args": [],
+      "outputs": [],
+      "completion": null,
+      "parameter_basis": "Fixed 4,000-unit draw; seed 90001.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "target_check",
+      "script": "fielddgp.do",
+      "kind": "target_check",
+      "units": 200000,
+      "reps": 1,
+      "args": [],
+      "outputs": [
+        "target-check.csv"
+      ],
+      "completion": null,
+      "parameter_basis": "Article promises one 200,000-unit master-DGP target check. Seed 90001 follows the common seed rule; empirical-minus-population differences are reported, with no invented acceptance tolerance.",
+      "smoke_parameters": false
+    },
+    {
+      "id": "lp4000",
+      "script": "lpdidrw.do",
+      "kind": "monte_carlo",
+      "units": 4000,
+      "reps": 500,
+      "args": [
+        4000,
+        500,
+        "raw.csv"
+      ],
+      "outputs": [
+        "raw.csv"
+      ],
+      "completion": "MCDONE",
+      "dataset": "lp4000",
+      "parameter_basis": "Published auxiliary large-sample LP bias check: repeat the unchanged LP driver at 4,000 units and 500 replications, with seeds 90000 + replication.",
+      "smoke_parameters": true
+    }
+  ],
+  "historical_parameter_gaps": [
+    "No historical CLI invocations recovered for cohorthet, breakhunt, smallnt or ymiss; global appendix protocol applied explicitly.",
+    "Article mentions an n=4000 lpdid bias check without a uniquely identified producing invocation; this ancillary claim requires a separately reviewed run or removal.",
+    "The 200,000-unit empirical target check has no published acceptance tolerance; runner reports its differences without inventing one."
+  ],
+  "excluded_wall_clock_scripts": [
+    "optcost.do",
+    "scalebench.do",
+    "scalebench_f_cell.do",
+    "scalebench_f.sh",
+    "rcstime.do",
+    "mbench.do",
+    "mbench2.do"
+  ],
+  "dataset_aliases": {
+    "bal_pwrong2": "bal_ps2"
+  },
+  "duplicate_policy": "Within a dataset, identical (regime,pkg,rep,h) rows collapse only when both exported numeric doubles match exactly (float.hex), with all missing encodings canonicalized. Conflicts abort; no numerical tolerance or averaging. Distinct covariate and no-covariate RC designs remain separate."
+}

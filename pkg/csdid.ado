@@ -1,4 +1,4 @@
-*! csdid 2.0.0 27sep2026
+*! csdid 2.0.1 23oct2026
 program define csdid, eclass sortpreserve
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
@@ -12,7 +12,7 @@ program define csdid, eclass sortpreserve
     version 14
 
     if `"`0'"' == "version" {
-        display as text "csdid version 2.0.0"
+        display as text "csdid version 2.0.1"
         * A diagnostic, and ONLY a diagnostic: no e() (the help guarantees
         * it, and an e(cmd) stub posted here once let csdid_estat print a
         * fabricated table in a session that had estimated nothing), and no
@@ -2731,7 +2731,7 @@ program define csdid, eclass sortpreserve
     * produces a message that names the reason.
     ereturn local marginsnotok "_ALL"
     ereturn local cmdline `"`cmdline'"'
-    ereturn local version "2.0.0"
+    ereturn local version "2.0.1"
     * the conventional Stata estimation macros were all empty,
     * which is what estout/etable/esttab read to label a column and its standard
     * errors. didregress sets e(depvar), e(vce), e(vcetype) and e(predict); set

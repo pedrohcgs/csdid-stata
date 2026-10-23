@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "definition": "Baseline comparison drivers own their baseline arms. Option drivers contribute their additional named variants; their repeated baseline fits are cross-run diagnostics. This purpose-based rule does not depend on observed truth, precision or success.",
+  "numeric_policy": "No tolerance, rounding, averaging or backfilling. Missing or refused canonical rows remain missing or refused. Within-file duplicate keys and unregistered cross-producer overlaps refuse. All full per-job raw outputs remain retained.",
+  "overlaps": [
+    {
+      "dataset_id": "covariates_panel",
+      "regime": "bal_ok",
+      "pkg": "jwdid",
+      "canonical_producer": "dr",
+      "registered_producers": [
+        "dr",
+        "jw"
+      ]
+    },
+    {
+      "dataset_id": "covariates_panel",
+      "regime": "bal_ok",
+      "pkg": "lpdid",
+      "canonical_producer": "dr",
+      "registered_producers": [
+        "dr",
+        "lp"
+      ]
+    },
+    {
+      "dataset_id": "covariates_panel",
+      "regime": "bal_owrong",
+      "pkg": "jwdid",
+      "canonical_producer": "dr",
+      "registered_producers": [
+        "dr",
+        "jw"
+      ]
+    },
+    {
+      "dataset_id": "covariates_panel",
+      "regime": "bal_owrong",
+      "pkg": "lpdid",
+      "canonical_producer": "dr",
+      "registered_producers": [
+        "dr",
+        "lp"
+      ]
+    },
+    {
+      "dataset_id": "covariates_panel",
+      "regime": "bal_ps2",
+      "pkg": "jwdid",
+      "canonical_producer": "ps2",
+      "registered_producers": [
+        "jw",
+        "ps2"
+      ]
+    },
+    {
+      "dataset_id": "covariates_panel",
+      "regime": "bal_ps2",
+      "pkg": "lpdid",
+      "canonical_producer": "ps2",
+      "registered_producers": [
+        "lp",
+        "ps2"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "balanced",
+      "pkg": "bjs",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "bjs",
+        "core"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "balanced",
+      "pkg": "jwdid",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "core",
+        "jw"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "balanced",
+      "pkg": "lpdid",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "core",
+        "lp"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "unbalanced",
+      "pkg": "bjs",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "bjs",
+        "core"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "unbalanced",
+      "pkg": "jwdid",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "core",
+        "jw"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "unbalanced",
+      "pkg": "lpdid",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "core",
+        "lp"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "varmiss",
+      "pkg": "bjs",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "bjs",
+        "core"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "varmiss",
+      "pkg": "jwdid",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "core",
+        "jw"
+      ]
+    },
+    {
+      "dataset_id": "sampling_main",
+      "regime": "varmiss",
+      "pkg": "lpdid",
+      "canonical_producer": "core",
+      "registered_producers": [
+        "core",
+        "lp"
+      ]
+    }
+  ],
+  "cross_run_policy": "Repeated baseline fits in separate scripts are retained as measured cross-run comparisons. Canonical ownership follows the stated script purpose and does not require cross-run equality of floating-point results."
+}

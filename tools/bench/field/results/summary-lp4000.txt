@@ -1,0 +1,69 @@
+rows: 18000   reps: 500
+
+== event study ES(0)   default truth = 2.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   lpdid                 500  -0.1322  0.0328  0.1362  0.0338   0.014
+  balanced   lpdid rw              500  -0.0020  0.0334  0.0334  0.0343   0.958
+  varmiss    lpdid                 500  -0.4068  0.0503  0.4099  0.0498   0.000
+  varmiss    lpdid rw              500  -0.3026  0.0528  0.3072  0.0508   0.000
+  unbalanced lpdid                 500  -0.1339  0.0473  0.1420  0.0485   0.204
+  unbalanced lpdid rw              500  -0.0035  0.0492  0.0493  0.0493   0.944
+  bal_ok     lpdid                 500  -0.1390  0.0324  0.1427  0.0338   0.016
+  bal_ok     lpdid rw              500  -0.0001  0.0334  0.0334  0.0362   0.968
+  bal_owrong lpdid                 500  -0.1637  0.0358  0.1675  0.0373   0.004
+  bal_owrong lpdid rw              500  -0.0108  0.0361  0.0377  0.0391   0.962
+  bal_ps2    lpdid                 500  -0.1356  0.0324  0.1394  0.0338   0.018
+  bal_ps2    lpdid rw              500  -0.0001  0.0333  0.0332  0.0361   0.968
+
+== event study ES(1)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   lpdid                 500  -0.1037  0.0334  0.1090  0.0358   0.148
+  balanced   lpdid rw              500  -0.0035  0.0334  0.0336  0.0360   0.960
+  varmiss    lpdid                 500  -0.3782  0.0755  0.3856  0.0732   0.000
+  varmiss    lpdid rw              500  -0.2542  0.0785  0.2660  0.0749   0.090
+  unbalanced lpdid                 500  -0.1053  0.0618  0.1221  0.0618   0.628
+  unbalanced lpdid rw              500  +0.0154  0.0632  0.0650  0.0622   0.946
+  bal_ok     lpdid                 500  -0.1231  0.0341  0.1277  0.0365   0.060
+  bal_ok     lpdid rw              500  +0.0016  0.0356  0.0356  0.0392   0.956
+  bal_owrong lpdid                 500  -0.1582  0.0510  0.1662  0.0532   0.154
+  bal_owrong lpdid rw              500  +0.0096  0.0504  0.0513  0.0540   0.966
+  bal_ps2    lpdid                 500  -0.1111  0.0339  0.1161  0.0362   0.100
+  bal_ps2    lpdid rw              500  +0.0016  0.0350  0.0350  0.0387   0.954
+
+== event study ES(2)   default truth = 3.0000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+  balanced   lpdid                 500  -0.0015  0.0364  0.0364  0.0372   0.952
+  balanced   lpdid rw              500  -0.0015  0.0364  0.0364  0.0372   0.952
+  varmiss    lpdid                 500  -0.0850  0.0701  0.1102  0.0739   0.800
+  varmiss    lpdid rw              500  -0.2212  0.0720  0.2326  0.0748   0.148
+  unbalanced lpdid                 500  -0.0007  0.0601  0.0601  0.0643   0.960
+  unbalanced lpdid rw              500  -0.0009  0.0614  0.0613  0.0644   0.958
+  bal_ok     lpdid                 500  -0.0330  0.0387  0.0508  0.0390   0.864
+  bal_ok     lpdid rw              500  -0.0002  0.0403  0.0402  0.0420   0.958
+  bal_owrong lpdid                 500  +0.0287  0.0751  0.0803  0.0776   0.938
+  bal_owrong lpdid rw              500  +0.2040  0.0813  0.2196  0.0844   0.350
+  bal_ps2    lpdid                 500  -0.0154  0.0379  0.0409  0.0382   0.926
+  bal_ps2    lpdid rw              500  -0.0003  0.0389  0.0389  0.0409   0.960
+
+== post-treatment average (window 0-2)   default truth = 2.5000 (field designs use their own) ==
+  regime     estimator            reps     bias      sd    rmse  meanSE cover95
+
+== usable replications (attempted / usable / declined) ==
+  regime     estimator            attempt  usable declined
+  balanced   lpdid                    500     500        0
+  balanced   lpdid rw                 500     500        0
+  varmiss    lpdid                    500     500        0
+  varmiss    lpdid rw                 500     500        0
+  unbalanced lpdid                    500     500        0
+  unbalanced lpdid rw                 500     500        0
+  bal_ok     lpdid                    500     500        0
+  bal_ok     lpdid rw                 500     500        0
+  bal_owrong lpdid                    500     500        0
+  bal_owrong lpdid rw                 500     500        0
+  bal_ps2    lpdid                    500     500        0
+  bal_ps2    lpdid rw                 500     500        0
+
+== ATT(g,t) cells: bias and mean reported SE ==
+  regime     estimator                   cell  reps   truth     bias      sd  meanSE cover95
+
+== ATT(g,t) cells: worst |bias| over the post grid ==

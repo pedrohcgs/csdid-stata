@@ -22,7 +22,7 @@ if c(stata_version) != 17 {
 * ---------------------------------------------------------------------------
 * The library's stamp.
 *
-* csdid_mlib_version() ships in the source reading "2.0.0|source". The copy
+* csdid_mlib_version() ships in the source reading "2.0.1|source". The copy
 * compiled into the library says which Stata compiled it instead, because that
 * is what csdid.ado cannot find out any other way and what it has to know: a
 * library built by a newer Stata than the one running has every name the
@@ -37,7 +37,7 @@ capture erase build/lcsdid_v2.mlib
 capture erase pkg/lcsdid_v2.mlib
 tempfile stamped
 filefilter "src/mata/csdid.mata" "`stamped'", ///
-    from("2.0.0|source") to("2.0.0|`c(stata_version)'") replace
+    from("2.0.1|source") to("2.0.1|`c(stata_version)'") replace
 mata: mata clear
 * All three compile-time settings are pinned, not just strictness. matalnum
 * keeps line numbers in the compiled code and DEFEATS the optimizer; a build
@@ -76,7 +76,7 @@ if `compile_notes' > 0 {
     exit 459
 }
 mata: st_local("built_stamp", csdid_mlib_version())
-assert "`built_stamp'" == "2.0.0|`c(stata_version)'"
+assert "`built_stamp'" == "2.0.1|`c(stata_version)'"
 
 * ---------------------------------------------------------------------------
 * Precompiled Mata library.

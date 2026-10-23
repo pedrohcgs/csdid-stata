@@ -302,7 +302,7 @@ writeLines(jsonlite::toJSON(divergence, dataframe = "rows", auto_unbox = TRUE, p
 manifest <- list(
   matrix_id = "F033",
   fixture_family = "drdid-boundary",
-  normative_source = "R DRDID 1.3.0 as used by R did 2.5.1",
+  normative_source = "R DRDID 1.4.0 as used by R did 2.5.1",
   source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10",
   decision_refs = c("D001"),
   tolerance_ids = c("TOL001"),

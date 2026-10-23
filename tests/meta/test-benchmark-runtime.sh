@@ -115,7 +115,7 @@ else:
         Path(customlog).write_text('inner diagnostic log\\n')
         rows = [dict(implementation=implementation, scenario=scenario, seconds=1, observations=5000,
                      inner=inner, accelerator='not-applicable', stata_version='19.5', stata_flavor='MP',
-                     os='Unix', machine_type='Macintosh (Intel 64-bit)')]
+                     stata_processors='4', os='Unix', machine_type='Macintosh (Intel 64-bit)')]
         if mode == 'wrong-inner': rows[0]['inner'] = 999
         output(Path(result), rows)
     time.sleep(0.05)
@@ -292,8 +292,10 @@ with Path('build/f049/r-results.csv').open('w', newline='') as stream:
                 checks += 1
             else:
                 raise SystemExit('legacy gate accepted unavailable or invalid RSS: ' + rss)
-    for name in ('csdid.ado', 'csdid.mata', 'csdid_stats.ado'):
-        (root / 'build' / name).write_text('fixture artifact\n')
+    for name in ('csdid.ado', 'csdid.mata', 'csdid_stats.ado', 'lcsdid_v2.mlib'):
+        (root / 'build' / name).write_text('*! csdid 2.0.1 23oct2026\n' if name == 'csdid.ado' else 'fixture artifact\n')
+        shutil.copy2(root / 'build' / name, root / 'pkg' / name)
+    shutil.copy2(source / 'tools/bench/legacy-candidate-ab-workload.do', root / 'tools/bench')
     with patch.dict(os.environ, dict(env, STATA_CMD=str(root / 'bin/stata-mp'), CSDID_TEST_MODE='complete'), clear=True), \
          patch.object(legacy, 'verify_legacy_root', return_value=legacy.LEGACY_COMMIT), \
          patch.object(sys, 'argv', ['run-legacy-candidate-ab.py', '--trials', '3',

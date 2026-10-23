@@ -18,7 +18,7 @@
 # the fit's 21% over-prediction at n=10000. Each launch also carries a hard
 # timeout so a projection that is wrong cannot run away with the wall clock.
 # ---------------------------------------------------------------------------
-set -u
+set -euo pipefail
 B="."
 STATA=/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp
 CSV="$B/scalebench-results.csv"
@@ -33,12 +33,36 @@ skip_row () { # scan n t g rows pkg note
 
 run_cell () { # impl scan n t g structure trials cap
   local impl=$1 scan=$2 n=$3 t=$4 g=$5 st=$6 tr=$7 cap=$8
-  timeout "$cap" "$STATA" -b do scalebench_f_cell.do "$impl" "$scan" "$n" "$t" "$g" "$st" "$tr" "$CSV" >/dev/null 2>&1
-  local rc=$?
-  if [ $rc -ne 0 ]; then
-    local rows=$((n * t))
-    skip_row "$scan" "$n" "$t" "$g" "$rows" "$impl" "launch failed or exceeded the ${cap}s cap; rc=$rc"
+  local rc=0
+  # Batch Stata names this log after the final filename argument, the CSV.
+  local log="${CSV%.csv}.log"
+  : > "$log"
+  timeout "$cap" "$STATA" -b do scalebench_f_cell.do "$impl" "$scan" "$n" "$t" "$g" "$st" "$tr" "$CSV" >/dev/null 2>&1 || rc=$?
+  if [ "$rc" -eq 124 ] && [ "$impl" = "csdid_182" ]; then
+    local rows
+    rows=$(awk -F, -v scan="$scan" -v n="$n" -v t="$t" -v g="$g" -v scheme="$st" '
+      $1==scan && $2==n && $3==t && $4==g && $6=="csdid_200" &&
+      (scan!="F_scheme" || index($10,"scheme=" scheme)) {print $5}
+    ' "$CSV" | tail -1)
+    [ -n "$rows" ] || { echo "capped legacy cell has no completed candidate design" >&2; exit 1; }
+    [ ! -f "$log" ] || cp "$log" "$B/scalebench-f-$scan-$impl-$n-$t-$g-$st-capped.log"
+    skip_row "$scan" "$n" "$t" "$g" "$rows" "$impl" "scheme=$st; exceeded the ${cap}s cap; rc=$rc"
+    return
   fi
+  [ "$rc" -eq 0 ] || { echo "timing launch failed: $impl $scan n=$n T=$t G=$g rc=$rc" >&2; exit 1; }
+  [ -f "$log" ] && awk '
+    NF && $0 !~ /^[[:space:]]*\.[[:space:]]*$/ { last = $0 }
+    END { exit(last !~ /^[[:space:]]*end of do-file[[:space:]]*$/) }
+  ' "$log" || {
+    echo "incomplete or failed timing log: $impl $scan n=$n T=$t G=$g" >&2; exit 1;
+  }
+  local grep_status=0
+  grep -qE '^r\([0-9]+\);$' "$log" || grep_status=$?
+  [ "$grep_status" -eq 1 ] || { echo "failed or unreadable timing log: $log" >&2; exit 1; }
+  grep -q "^F ROW $scan $impl n=$n T=$t G=$g " "$log" || {
+    echo "timing cell has no completed result marker: $impl $scan" >&2; exit 1;
+  }
+  cp "$log" "$B/scalebench-f-$scan-$impl-$n-$t-$g-$st.log"
 }
 
 # csdid_200 first in every cell, so a legacy overrun never costs us the 2.0 row.

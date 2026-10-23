@@ -103,7 +103,7 @@ program define f026_assert_common_macros
     syntax , PANELMODE(string) [IDVAR(string) CLUSTERVAR(string)]
 
     assert "`e(cmd)'" == "csdid"
-    assert "`e(version)'" == "2.0.0"
+    assert "`e(version)'" == "2.0.1"
     assert "`e(yname)'" == "y"
     assert "`e(timevar)'" == "time"
     assert "`e(gvar)'" == "g"

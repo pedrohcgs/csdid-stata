@@ -1,5 +1,21 @@
 # csdid news
 
+## csdid 2.0.1 — 23 October 2026
+
+**Covariate-adjusted inference in repeated cross sections.** Under `method(dr)`,
+Version 2.0.1 corrects the pre-period outcome-regression contribution to the
+influence function. Point estimates are unchanged; standard errors, covariance,
+confidence bands, pre-tests and aggregation inference can differ from 2.0.0.
+This also applies to panels estimated through `bal(none)` or
+`fix_weights(varying)`. The correction matters particularly when the propensity
+score model is misspecified and the outcome regressions are correctly specified.
+Re-estimate affected results, including saved influence-function files.
+
+**Clearer diagnostics for undersized regressions.** A failed 2×2 regression
+now identifies when it has fewer observations than regression coefficients.
+A square, full-rank design remains estimable. Reduce the covariate list if
+this diagnostic appears.
+
 ## csdid 2.0.0
 
 A rewritten estimation engine. Everything below is what changes for someone

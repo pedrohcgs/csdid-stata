@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.0 27sep2026}{...}
+{* *! version 2.0.1 23oct2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -2183,7 +2183,7 @@ Sant'Anna. 2026. Difference-in-differences designs: A practitioner's guide.
 {phang}
 Callaway, B., F. Rios-Avila, and P. H. C. Sant'Anna. 2026. csdid:
 Difference-in-Differences with Multiple Time Periods in Stata. Stata module,
-version 2.0.0.
+version 2.0.1.
 {browse "https://github.com/pedrohcgs/csdid-stata"}.
 {p_end}
 

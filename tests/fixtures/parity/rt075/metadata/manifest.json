@@ -1,0 +1,3740 @@
+{
+  "matrix_id": "RT075",
+  "fixture_family": "r-drdid-140-rc-pre-or-sign",
+  "normative_source": "DRDID 1.4.0 drdid_rc.R:337-339; did 2.5.1 att_gt and aggte",
+  "source_commit": "eaac3b49cd225d0d7706c633858555a5f204e21e",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002", "TOL003"],
+  "inputs": [
+    {
+      "path": "inputs/rc_none.csv",
+      "sha256": "0a2a16670d2d882d8268ee765c37cd6e6557a2390542a6645896da3f55b03ddb",
+      "rows": 448,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rc_w.csv",
+      "sha256": "89198647e24ca6e1e4719fd5771c9a97fc363c11d7c52076a485bffed54ca757",
+      "rows": 448,
+      "columns": 9
+    },
+    {
+      "path": "inputs/rc_wzero.csv",
+      "sha256": "bb756ef2c689bba7f60bd6e104eb29715eeb3e41941f3f8117c62a0a28636e53",
+      "rows": 448,
+      "columns": 9
+    },
+    {
+      "path": "inputs/unbal_none.csv",
+      "sha256": "8250d147bde4c1c2c26d4179a7b2048957eabd6a7c662b35e23a65a1ab3ed2d1",
+      "rows": 410,
+      "columns": 9
+    },
+    {
+      "path": "inputs/unbal_w.csv",
+      "sha256": "889582fe324e803d35726f4fe1edefa5945724a5b6af97c74760e7cc701e7bc4",
+      "rows": 410,
+      "columns": 9
+    },
+    {
+      "path": "inputs/unbal_wzero.csv",
+      "sha256": "d96a9c574f052866144b878ed553b1684507bdfade7026cf703006c41a8f4b9d",
+      "rows": 410,
+      "columns": 9
+    },
+    {
+      "path": "inputs/vary_none.csv",
+      "sha256": "67d2c48a9d0dbb85dfe183668ad0a7e14d10a8f27c30d4ebc7e5cb5092cb0396",
+      "rows": 448,
+      "columns": 9
+    },
+    {
+      "path": "inputs/vary_w.csv",
+      "sha256": "1a5981e571ba549d7cfcd9ec997c3e575f7c8769f79af42c76e455aceae3bca1",
+      "rows": 448,
+      "columns": 9
+    },
+    {
+      "path": "inputs/vary_wzero.csv",
+      "sha256": "cee733ae6e0ec4a480edd00d71853ec0f19e121c3ea33c45c0485815a0133298",
+      "rows": 448,
+      "columns": 9
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "5d7aa5b4577e7402f13ccd881d8578146e4b3f937358d25c0a2936af7d0bd723",
+      "rows": 39,
+      "columns": 10
+    },
+    {
+      "path": "inputs/finite-difference.csv",
+      "sha256": "cb265ab8934b9b208e6b3fc465157fe227823896363216a1a20897a34520c576",
+      "rows": 320,
+      "columns": 6
+    }
+  ],
+  "expected_outputs": [
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-attgt.csv",
+      "sha256": "5bb08166fea33062f42ab0a796d34e8bf4d7db0b902bef11eda8d0a02286aac6",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-if.csv",
+      "sha256": "cb1ef00f316b9a035a614f6d4b872607d9a06757af971d05c596b5d62f7a8e09",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-v.csv",
+      "sha256": "6b6dbdb454fdcd8d74f0bbb4e606428e0bcc7b4fd886195bcc9f47c60c154eab",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "a111b1d5e206aa80152abf2063c8be308d16353dab2a960a07bd1d86d5d440ab",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "f68b659f7448b4f1513a239c6e540bfcf7b1aafbdf5ff143d605b3d7c19547f6",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-group.csv",
+      "sha256": "06d45d6d2ed73274e55a631e074dac2291615a0ce757830255890c46b15f4215",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-group-if.csv",
+      "sha256": "a01f6434365ca218cf32243ad95af7a6d811bba9794a6c9999c36ad69ff8e40c",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-calendar.csv",
+      "sha256": "1c1314df8b2a163328352a87a408a30feac9716c1ca080e6f9be2202a4b421d1",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "21bd3ab49f6dc7641c0941807936a95cddac40ce29c4823ed954502b0e63268e",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-simple.csv",
+      "sha256": "e1596812ab0c6e2f3f0b9d6e640404efaccd564c0b41d5231bed72a0f881f930",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "e9e511a802e53b22d5f0bcbf32334e5b1d4bb1b8ebf36e66f0ed20bdbd6ed42d",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-attgt.csv",
+      "sha256": "ff2394fb626ea810cd40d82a268eecb9071c8442baa91ec7e110457731f47900",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-if.csv",
+      "sha256": "1624e11491a41fc20473c7d47abff868f010ec29bb5cb707127313653b7cb7d1",
+      "rows": 448,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-v.csv",
+      "sha256": "469e92d4839c8ca1fe09c0f11beb5031df8805e1785adbcd26bc8a56ec957fcc",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-dynamic.csv",
+      "sha256": "f655d92ca0c8c3a99c60231e8a36062f6529c233ded356a2c27b400bce793514",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-dynamic-if.csv",
+      "sha256": "87dc90baf34002716b58cd1acfdb3d8c6b4ecbb60b356ea4a0fa68eae031011e",
+      "rows": 448,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-group.csv",
+      "sha256": "06d45d6d2ed73274e55a631e074dac2291615a0ce757830255890c46b15f4215",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-group-if.csv",
+      "sha256": "a01f6434365ca218cf32243ad95af7a6d811bba9794a6c9999c36ad69ff8e40c",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-calendar.csv",
+      "sha256": "1c1314df8b2a163328352a87a408a30feac9716c1ca080e6f9be2202a4b421d1",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-calendar-if.csv",
+      "sha256": "21bd3ab49f6dc7641c0941807936a95cddac40ce29c4823ed954502b0e63268e",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-simple.csv",
+      "sha256": "e1596812ab0c6e2f3f0b9d6e640404efaccd564c0b41d5231bed72a0f881f930",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_nevertreated_dr-simple-if.csv",
+      "sha256": "e9e511a802e53b22d5f0bcbf32334e5b1d4bb1b8ebf36e66f0ed20bdbd6ed42d",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-attgt.csv",
+      "sha256": "faf4c2428bdcb7889411934d7d94c8ad92d5184b8ecc9260fea7918f6bd41f8c",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-if.csv",
+      "sha256": "956425d8e342c5ca54ccff647026191aeb245ad44a6261f0ae95bf17f895250d",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-v.csv",
+      "sha256": "b0cad860c35e8d8e14a3191d8f51895e2045896179201386217a20a23dd7f411",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-dynamic.csv",
+      "sha256": "fe61edbec0905dcdba59642b1e34fc83bf36bdbbae06187369513dcfbfecbefe",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-dynamic-if.csv",
+      "sha256": "efbbbfafe79873409d7199102f0cdb644a85ca0dcb1a3dcffc63923ac0e180b6",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-group.csv",
+      "sha256": "661911ba212cea9d9c450819d55a73e71ab9fd75087dc1842f46b32a185e04f9",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-group-if.csv",
+      "sha256": "fcd1373d7f64591800eabe3ad5cee32c349b850f2929502f3fd7bee710cdac8c",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-calendar.csv",
+      "sha256": "429811bdbe3838d63513a11996411db44bb7368cb595e5db25b2d1b205bc2b77",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-calendar-if.csv",
+      "sha256": "0a59d3daf64fb5930a0b31b0897b0b1f87fe1200a8bc00c92815c0140a2d5177",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-simple.csv",
+      "sha256": "71220079aa458d01caaaf9b6df41e74a1477eb7a99f4388979929f7473b4b974",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_universal_notyettreated_dr-simple-if.csv",
+      "sha256": "6293512bf84f4902268541323a554a7b2d540300c510e454aca317fde4898178",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-attgt.csv",
+      "sha256": "514e1a8730dcf71bc9aad2d8d5d9a529ee6f10ff457d44e33e100a3a1da7b099",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-if.csv",
+      "sha256": "41c74ff435a093e21b9b72b013fb8524df4818a6e1bc8c9a1d90837aef2e8e69",
+      "rows": 448,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-v.csv",
+      "sha256": "d592b2a5fb4199bbc376ef9f9051f50595bf8c79038b9330b19b651d2822f1f8",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "bbfb314db7cc53eed6c40699e4f29655a1ba85c1841099a24a5c1ff5e0e89c2d",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "38d808da69be3f35e674346c163b0ccd2a8d2d563f7944d3a20c08814f0c9615",
+      "rows": 448,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-group.csv",
+      "sha256": "661911ba212cea9d9c450819d55a73e71ab9fd75087dc1842f46b32a185e04f9",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-group-if.csv",
+      "sha256": "fcd1373d7f64591800eabe3ad5cee32c349b850f2929502f3fd7bee710cdac8c",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-calendar.csv",
+      "sha256": "429811bdbe3838d63513a11996411db44bb7368cb595e5db25b2d1b205bc2b77",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "0a59d3daf64fb5930a0b31b0897b0b1f87fe1200a8bc00c92815c0140a2d5177",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-simple.csv",
+      "sha256": "71220079aa458d01caaaf9b6df41e74a1477eb7a99f4388979929f7473b4b974",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_none_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "6293512bf84f4902268541323a554a7b2d540300c510e454aca317fde4898178",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-attgt.csv",
+      "sha256": "09bdc97f8a1cd94e69baf8874a2e7031b9937d979a9d7f1f7793a9e21201e8ad",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-if.csv",
+      "sha256": "924041c5191793bdb8cd6f4be0cd39e2b80be1a91c55be339923038bca4fb014",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-v.csv",
+      "sha256": "4f184de495b28e64ad4d48764cfb1f7b5df6686c3e2bfb8661abcf2854190c1a",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "b2da1c03f6b4c3308db905a56b319b2c21b6d600901d31c44b1a770f986df144",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "a336e640aceb5e85e0bbe7aef7689aa8cd75aec514b648f89b17fd3c763c1c50",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-group.csv",
+      "sha256": "b88f911029be9e49f6aee1bd2f2721ec7ca67b5362f2508935ed29b07e402d3c",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-group-if.csv",
+      "sha256": "cd0da37f7c33a6df2585b2575560a8bbc5dca401eaa7ecda0728db6fea514325",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-calendar.csv",
+      "sha256": "38b109065eccceade35627e3cc7c68f0387a67ec9ae1f45284b0cc08b47cc7cd",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "31b3d96f961bf0ad864dd6acfd919861d805e3e2b16fb4c0c13d90007bcb8531",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-simple.csv",
+      "sha256": "430d8eb622bddf60c90d551856f86122589361183d7c5e0bdefed96ca1dda947",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "a7d1d43311d747fd44efc07dbf02d7207046a7e5a727d04af2414ec9444ffa51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-attgt.csv",
+      "sha256": "6cf77d411c7f5ae8bfa1cdd1ef9a2d8ad43876604a6429322fa4fab232710d85",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-if.csv",
+      "sha256": "924041c5191793bdb8cd6f4be0cd39e2b80be1a91c55be339923038bca4fb014",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-dynamic.csv",
+      "sha256": "4f1d5d7e161b2aa880e9528b0a0429cca81c0a0220c08f6a21556ba4f94a7dd7",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-dynamic-if.csv",
+      "sha256": "a336e640aceb5e85e0bbe7aef7689aa8cd75aec514b648f89b17fd3c763c1c50",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-dynamic-crit.csv",
+      "sha256": "65f373854cf89b2faa9791a546ec11f5e9d83b2778716787c4208062785f9b8e",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-group.csv",
+      "sha256": "f90413b9f840ccb338f18e7d9947a26ab7891fa2942a3e7d095861b7d47219d5",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-group-if.csv",
+      "sha256": "cd0da37f7c33a6df2585b2575560a8bbc5dca401eaa7ecda0728db6fea514325",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-group-crit.csv",
+      "sha256": "ebf5fd25f6eff2a0bd0338c630ceda8729b0a349ff353b6b73568908ab0e9018",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-calendar.csv",
+      "sha256": "0e46ce00f05ff7461da9af033cf1057fa6d7bcff1ba3ac368cddfad5a2d22751",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-calendar-if.csv",
+      "sha256": "31b3d96f961bf0ad864dd6acfd919861d805e3e2b16fb4c0c13d90007bcb8531",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-calendar-crit.csv",
+      "sha256": "3e2f979692cb44ab86f1b58fd293ece071e084e6b3610c8f5294b657ccd7c471",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-simple.csv",
+      "sha256": "e89ce58e4f8a0f84622f6bfdf789c3a6fe46912f8647041be6f1c864571cad77",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-simple-if.csv",
+      "sha256": "a7d1d43311d747fd44efc07dbf02d7207046a7e5a727d04af2414ec9444ffa51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_boot-simple-crit.csv",
+      "sha256": "7ef14617cc57718fa958ece2140ff84f13b7a62f265533c1ee8e38ab10015fbb",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-attgt.csv",
+      "sha256": "cb1030e75169a37133fec7b839474c00bd7d1ae62928bb12f830e4c4f24866dd",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-if.csv",
+      "sha256": "e23cfa92d735ccfa1c984f5944f468b76fb84a2fb06a7965f314c885a02e405d",
+      "rows": 448,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-v.csv",
+      "sha256": "4dba4c495dac9a6750a940b28e386f158d71dbc5490e38adb80c142933b3cea5",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-dynamic.csv",
+      "sha256": "9d14bb840a86f60fcd93242e6c4c6442c0c060abe273e1bb34eeb4627b6d8188",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-dynamic-if.csv",
+      "sha256": "59fd006b199d0366878f6a046fe8d44889cb66294f2ea8df66e2ff293d51a99c",
+      "rows": 448,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-group.csv",
+      "sha256": "b88f911029be9e49f6aee1bd2f2721ec7ca67b5362f2508935ed29b07e402d3c",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-group-if.csv",
+      "sha256": "cd0da37f7c33a6df2585b2575560a8bbc5dca401eaa7ecda0728db6fea514325",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-calendar.csv",
+      "sha256": "38b109065eccceade35627e3cc7c68f0387a67ec9ae1f45284b0cc08b47cc7cd",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-calendar-if.csv",
+      "sha256": "31b3d96f961bf0ad864dd6acfd919861d805e3e2b16fb4c0c13d90007bcb8531",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-simple.csv",
+      "sha256": "430d8eb622bddf60c90d551856f86122589361183d7c5e0bdefed96ca1dda947",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_nevertreated_dr-simple-if.csv",
+      "sha256": "a7d1d43311d747fd44efc07dbf02d7207046a7e5a727d04af2414ec9444ffa51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-attgt.csv",
+      "sha256": "519dc9231dd4b8251cb8c1c74306d41b1e3d2a006d53c1e6d07920b3a76e87e0",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-if.csv",
+      "sha256": "71f952835edf95eab3c8f7e7f415272239f7ef08a66ea4211794aa19085fb22f",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-v.csv",
+      "sha256": "722ec57af8544a005f4158a8b87132831834dcb20398b4315c42f6744747b33d",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-dynamic.csv",
+      "sha256": "345f4c9e912205665ed4f48e5427464ae9b57b99ac7d2575b72fe86e7c367adc",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-dynamic-if.csv",
+      "sha256": "327a46191bc4ff009689a95487aab33865cca1b149e291ca59b7b2b71613bed5",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-group.csv",
+      "sha256": "9812613a9cd303e3324d1a95cc99dfdad99a848d6b3410e53c6b8c850548c6e0",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-group-if.csv",
+      "sha256": "e37d56a46178bf6f54e4697999e771d49796a42af72b776a7325350936623a7e",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-calendar.csv",
+      "sha256": "f848f7220d8d94457e59d8ffb1269bb223a1d64f284dbb7fd14ed6e08005f8cb",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-calendar-if.csv",
+      "sha256": "9cbfa873dfc326e0cd0a60a6a76b3e0615667572551565d520b372fca37c3d50",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-simple.csv",
+      "sha256": "761bc4567cbff1dec04e4e8f92dcb0ff93c26940a3fb3b7a23c1f5bb3a648333",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_notyettreated_dr-simple-if.csv",
+      "sha256": "cf80aad547afb8f110af9ad066a18de4f05225480d3c53fd30e8bb16f6d2cc51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-attgt.csv",
+      "sha256": "e81f292c89b608dda7f7fc69d07273b9a802329230d0046fd189206f962b1149",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-if.csv",
+      "sha256": "3efe453bbb095e6779cd678f039f62dbf0f6d26d1e3b5957ae7e611630606567",
+      "rows": 448,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-v.csv",
+      "sha256": "e6cc7388ad9c4fe1f34e035d6844d0e8ffe69f46550cec805317ceb59d336370",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "f740726f7b525e13da48a27c1950bfc738624de54a3e5be9f05ffb55cec296d2",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "f07e017407922e55a78dd4479eead7ce1f7f74657a996c7b9a4d76f49162c4a1",
+      "rows": 448,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-group.csv",
+      "sha256": "9812613a9cd303e3324d1a95cc99dfdad99a848d6b3410e53c6b8c850548c6e0",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-group-if.csv",
+      "sha256": "e37d56a46178bf6f54e4697999e771d49796a42af72b776a7325350936623a7e",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-calendar.csv",
+      "sha256": "f848f7220d8d94457e59d8ffb1269bb223a1d64f284dbb7fd14ed6e08005f8cb",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "9cbfa873dfc326e0cd0a60a6a76b3e0615667572551565d520b372fca37c3d50",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-simple.csv",
+      "sha256": "761bc4567cbff1dec04e4e8f92dcb0ff93c26940a3fb3b7a23c1f5bb3a648333",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "cf80aad547afb8f110af9ad066a18de4f05225480d3c53fd30e8bb16f6d2cc51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-attgt.csv",
+      "sha256": "1032a62f8c5ea4cccc7f286c3e38f6b6a724b59ae460a8037ac1402fd636e059",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-if.csv",
+      "sha256": "c8cd731f49fc2a7d954f7a65f249cd1a43809a9c713b25d5be63f1e92539a81c",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-v.csv",
+      "sha256": "94ea4cdaa9694510cfa5bc25400939d21fdf971e47d432d127a60e2e8b3b3b75",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "379c31a64d0887b4abc6ced97f869228ed49b69a3efbb9e655e687b75dad1604",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "e9673ecbb51e0063bb07b3f16e6d687ca99624d5d12565c8f50bb1caa6ff7b1b",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-group.csv",
+      "sha256": "af3ba6cc3143c901ac03d1c432c4bfd0ec240f6eb5c5f89996de675c66511da4",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-group-if.csv",
+      "sha256": "e01f46c60cc46b23588e469ba0231272fb88432f5e6a056071fb8a9100b3e145",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-calendar.csv",
+      "sha256": "76b0790272a2b4e2877446035e85a2a5ccd18c82e0ef92d9eece445c4350d977",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "ec45f8a8710bf28c06fe6459d23d1d3f91e58bca62542c0df146a71f996ee23f",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-simple.csv",
+      "sha256": "24a8a661a84fdf69f9384b8fc508fb569895fa89a12d8539ad0982eeb9bbb3c4",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "6382f13a0b977db26ca7b1bdcd813a95cffad5acaa9803251b9f2f3244fb4d1f",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-attgt.csv",
+      "sha256": "5466d4dc161aa84dd57458f63de2504857ca16d8f257e1b51e8abbd6bc704efa",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-if.csv",
+      "sha256": "3a8ae0ec956850ea7983312daace5380368895996ae36954de1ac166ae5a3e16",
+      "rows": 448,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-v.csv",
+      "sha256": "f61a352fb68ff9b6dc0424fb82dd72a3a8285bc6e4af4a17bc35b4fccf4ea687",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "c0a900135a424d7eff77af8367e207f199b6d0e112db05ce2d636e6ea08eb9d8",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "bbd7e5ceda0abc9551da53e8bc47fd643194740ca51558d2315d9440d9312481",
+      "rows": 448,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-group.csv",
+      "sha256": "9d4fd2b348931b8f35a6c9c6c5bfb89f4fc1dd13308c7572155dae6f7bbd7101",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-group-if.csv",
+      "sha256": "1ee2585992baaae558f8f092b80546c7e37d785f1dd79a809c2d999b1e9e98ab",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-calendar.csv",
+      "sha256": "8ede346b6ca5442352bd5df6ed4187256a5b53a8b42dfd1273fe697582fde9e4",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "afdc6677e998324443862c67c5624e13d45a1f854c23cf07517289bad5d23325",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-simple.csv",
+      "sha256": "6f961a18869d1ad171d1e108ddcfbedf3f12bb0f5ea1b9a265e0c0459ea22287",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_wzero_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "673a254c4ea9a6c97b32247fb6bfae63a199ec9e346f8213aea81410ad7de737",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-attgt.csv",
+      "sha256": "57447c9a160b3150cf1021cac0f8b0b03cc423691be9f583efc70ef6ba8a0e37",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-if.csv",
+      "sha256": "479b8f140d1f809eaff1660690033043ee3918835b509397fd55861d7df203af",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-v.csv",
+      "sha256": "bad5d3f927f1bbdf9db59fdc847725f73054385dd85e839f2737c4f0acd7c1ec",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-dynamic.csv",
+      "sha256": "5cdcf1ec67bd3ba1566bdf99288ce3d0cf3e8ecbd1153f6d33c0bfa82c96aad6",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-dynamic-if.csv",
+      "sha256": "18020912efe3b601838fbe721edeacef38225f10a97dd7573702f44e4362dfbf",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-group.csv",
+      "sha256": "6826be3da64738ff1ae535835d7dafb3bdd0cd578488d1e4ec0f1b6452b682d2",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-group-if.csv",
+      "sha256": "8d00243b5260dba13f116bca3b105762e03844f80820c4093dee56b249a51232",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-calendar.csv",
+      "sha256": "cf4e3616797344a95afdfcabf3ad7272886c02752ca6f2d4dc5a465673f466b2",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-calendar-if.csv",
+      "sha256": "98fa97fbd37baf28cd4bf2eb880121e7d23687d99b0866156cad606c94796031",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-simple.csv",
+      "sha256": "8abbfc97d90756f66dddd70caaf7e19594209a9dd06b637b39cfc518c442f6b6",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_reg-simple-if.csv",
+      "sha256": "21ed7dc0a72802295d5dd06e5e95039240c88ac7307bd4a54586ece00e1fafe6",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-attgt.csv",
+      "sha256": "4e48c0b30ddd9fe670c43608f6ecc65bec293e2fe9738f671dda9f3a9c8b6023",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-if.csv",
+      "sha256": "b6cdca0837afc5251a06e669f5dd33e850d4531d0afbcc9aacb70c168af50a36",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-v.csv",
+      "sha256": "a3f5f2874b6d88bafd0ff0c491b383c1eaa67dfeb5521d43d0482492ff5a7df6",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-dynamic.csv",
+      "sha256": "fe676f59a84121c90744a64df41530307e2e142f778d1e64e084efdff0b97b0e",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-dynamic-if.csv",
+      "sha256": "61b1f3a5469553803e091d1db11710b4b29c68989b6889e1bb0a56dc1742fc41",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-group.csv",
+      "sha256": "da3bd2bc43ab973b666068c39538f14b8a8dda02ef0e4891fdf8970a2b4eda17",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-group-if.csv",
+      "sha256": "cf3569d18ab1169d04ddd620531d32314b23aa8dbc6d2cc8aa2c06c8d1671fbe",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-calendar.csv",
+      "sha256": "b11dbe64bdda60883248e0d2c31c52261699be7cdf9fcb9633053fe601c89f99",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-calendar-if.csv",
+      "sha256": "a0de55b644e97401c0c982ac79188784443dc1dff25aae7c1bdf0209fd9f584b",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-simple.csv",
+      "sha256": "089b1449745debb6eeed2f34180ec0cf8c5e968dcd2b206d978118a25afd602a",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_ipw-simple-if.csv",
+      "sha256": "cb306feded333eba6f902b6d4a44906307552abd4c8da372a82c565b0cc48173",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-attgt.csv",
+      "sha256": "6e1a1e04c8ad38a9bddd8097a4a53cf867e67cb0b630e0744385b34e8e2d6353",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-if.csv",
+      "sha256": "88d6c16166205e72b2bd3aedd5aaf67302c72cfdabdb5d1a4d3c79a03fb3be99",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-v.csv",
+      "sha256": "01dc110f2daa80b6217c54e5f5f5ab9252c689daa83dcc9ddd249ff8f5f98efb",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "39f5fdaddb7c2a5d15130adb643491db698c85d8d2181b7f9b17abd2dc3aa346",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "a3ca7e6161c13e77f55bc03f0ba16cf8f264d88055f8adbe721310a9216a58a7",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-group.csv",
+      "sha256": "65ca5fafa1b8b176c113cbafda2a6f433864f283057347786cda3faf6e28ee1a",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-group-if.csv",
+      "sha256": "492e2b76b5bfdec55e2cc634ca7a0f24bda93ead461969f127c5e5e936a36c08",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-calendar.csv",
+      "sha256": "59822f7c4330bb02ffac678e0b67b0eedbbd1a39a2b7e0c8b4413ff500d013a8",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "855c213bc0765a7b59ec664a6ab56358a64ee3b92fb4540d2fa957cd189af021",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-simple.csv",
+      "sha256": "bcf1fbcd840e1f698566126b37d8195d56d349fc25af7a350de420a3a915f95e",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "54f79325b443d32711c6fd69551727ea8c7bcee2972a39b62eb2125b837d3f05",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-attgt.csv",
+      "sha256": "75f6212d5c607832a6fed1ebe58cb02a3ee74985da26fa2a9ee1b747de2b7bf3",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-if.csv",
+      "sha256": "16ce1c10465fd75e343c916f1701727539425f49e6ea971c2c0d92c46bb6152e",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-v.csv",
+      "sha256": "683af8f68c527687f280092de733c1814162737163e67c10e7459e892cd3925a",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-dynamic.csv",
+      "sha256": "4258e9cc85bee576c1d41d73e0c2f775ef84b0ee17f2fd0d9b29108122811845",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-dynamic-if.csv",
+      "sha256": "5bc6a14a850b61d9e32efa6a732d57fbd21b7754bcf61668346be865913dcf76",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-group.csv",
+      "sha256": "65ca5fafa1b8b176c113cbafda2a6f433864f283057347786cda3faf6e28ee1a",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-group-if.csv",
+      "sha256": "492e2b76b5bfdec55e2cc634ca7a0f24bda93ead461969f127c5e5e936a36c08",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-calendar.csv",
+      "sha256": "59822f7c4330bb02ffac678e0b67b0eedbbd1a39a2b7e0c8b4413ff500d013a8",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-calendar-if.csv",
+      "sha256": "855c213bc0765a7b59ec664a6ab56358a64ee3b92fb4540d2fa957cd189af021",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-simple.csv",
+      "sha256": "bcf1fbcd840e1f698566126b37d8195d56d349fc25af7a350de420a3a915f95e",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_nevertreated_dr-simple-if.csv",
+      "sha256": "54f79325b443d32711c6fd69551727ea8c7bcee2972a39b62eb2125b837d3f05",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-attgt.csv",
+      "sha256": "4c6f4c4fc135130b454a10d1349eb03ccc9e727429ee8a50af86e092db7386d4",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-if.csv",
+      "sha256": "60940e1f220792a5079e0fed47fe6a34183b7a1756cfcfc2420a248fa807d92a",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-v.csv",
+      "sha256": "88a6d1cc3b1780ff646616582f39a03413a8fc0160af77c91d2689206010ea26",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-dynamic.csv",
+      "sha256": "90ce7a23842789d1de32b02faecc12648c6206fcf1efaf7eaee40365434a91a2",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-dynamic-if.csv",
+      "sha256": "bf3d6de8750a4cb026050a988fea52c0b9049c560d0f2bad00d50b618606e472",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-group.csv",
+      "sha256": "f2624f71f6c8c25e6df379021bf7faf39a449dd7397a6c7d7417b87d0517d741",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-group-if.csv",
+      "sha256": "d02e5ee56ec02fa866e52b3fb5b37f8481e755d585dcf3cbf9bab0cb2f766005",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-calendar.csv",
+      "sha256": "a5402423d23916f0d2a888a83c0139c9303365c394fc58af027e38053bad6828",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-calendar-if.csv",
+      "sha256": "a3b5bc460a0a01c002071320689b2fe12add54e39e6243087207a8348076cb37",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-simple.csv",
+      "sha256": "07153acb1be4ae3db78f6487cb393d066f02539853e189141f40c9b01d49e561",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_universal_notyettreated_dr-simple-if.csv",
+      "sha256": "7ef9be4971c68551df543ea2f46a59792d6f81e9a14529246930ff6294cedcc2",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-attgt.csv",
+      "sha256": "adc8b9dbdbf5aa4b1c8f2a7d76a724cdad07416197cd2f77add01c46d9c34702",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-if.csv",
+      "sha256": "dc3939a5ce4068d49675726aa52dd29173ef1a25cba40126dbed1f21fd669822",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-v.csv",
+      "sha256": "417c7d9622898a8c34ee098846b06bd3fc181595963f7e5121cc8d2c8385389d",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "cd6347992e69a7e19cf2901afa72d78f0483694c0aec54e589f5b0291c925721",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "39b9afcad0c3a29ed07d27ad79d9392d9f2a5e0ff98b2421265190579cc644b8",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-group.csv",
+      "sha256": "f2624f71f6c8c25e6df379021bf7faf39a449dd7397a6c7d7417b87d0517d741",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-group-if.csv",
+      "sha256": "d02e5ee56ec02fa866e52b3fb5b37f8481e755d585dcf3cbf9bab0cb2f766005",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-calendar.csv",
+      "sha256": "a5402423d23916f0d2a888a83c0139c9303365c394fc58af027e38053bad6828",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "a3b5bc460a0a01c002071320689b2fe12add54e39e6243087207a8348076cb37",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-simple.csv",
+      "sha256": "07153acb1be4ae3db78f6487cb393d066f02539853e189141f40c9b01d49e561",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_none_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "7ef9be4971c68551df543ea2f46a59792d6f81e9a14529246930ff6294cedcc2",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-attgt.csv",
+      "sha256": "a8007f9592711d5de58138e047ec26ddb0e871b08cc0fbd10cc967f323d2d78f",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-if.csv",
+      "sha256": "14c0bcb0d442774be6f38dff5c549f165a09d046c7c81e15bd48254bbfae7da3",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-v.csv",
+      "sha256": "f5688b6c72849670a6375884c22236df138ebefe2abed604e68a061ad9cb1647",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "af1cf51c5a584c273f96f021e246735679ec36979842e7e1b8989310736d2787",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "fedfedafe0ade1c53e3329b8e9b30f2bd2265f691695b4ceae05c9bf1091f809",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-group.csv",
+      "sha256": "df771ef78b4f55387187e35f5448c90af1784fce2d2c6d1c51403099d71fe8af",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-group-if.csv",
+      "sha256": "e7c5400324fc3dd22b1e431d24ba5f8f037db780aab481afc2277983aaabdbf2",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-calendar.csv",
+      "sha256": "19273223997bfebc732ed5bd03af1edb9fc78df1dbdf2132a6ae05ba94cd941b",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "a992ee926044421e4893c9e70e60e3f41dbe5a23d318b480d60397956b2e8dd8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-simple.csv",
+      "sha256": "30523a89ae09b1597e13d7e45119cf2ffb95697270e80a001378cc42feb9c74b",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "c42981ce01fd3a2df0e9651843d56d03affce861d1e77618160267ef0cfe249d",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-attgt.csv",
+      "sha256": "e704ec4815a534a2fdaadb3e7b859482116da533f155a1bb3d3b7e30064c57bb",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-if.csv",
+      "sha256": "14c0bcb0d442774be6f38dff5c549f165a09d046c7c81e15bd48254bbfae7da3",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-dynamic.csv",
+      "sha256": "20adcad996fd85644daf38b2b454a727636b7ee8171cfc3bcc3ed98273e8b765",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-dynamic-if.csv",
+      "sha256": "fedfedafe0ade1c53e3329b8e9b30f2bd2265f691695b4ceae05c9bf1091f809",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-dynamic-crit.csv",
+      "sha256": "0d37f2347d44426b1f1704853105dfd4ed1960ed72400e368d04bd13406e3955",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-group.csv",
+      "sha256": "dd9f15e914864899ed1ef9960b6e5b19aab49f0153cee99d509b11b445e408da",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-group-if.csv",
+      "sha256": "e7c5400324fc3dd22b1e431d24ba5f8f037db780aab481afc2277983aaabdbf2",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-group-crit.csv",
+      "sha256": "a0f49409e98697dd05c4014b68c6e3485e43ed7beacf05fd0f642205db2a0ee8",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-calendar.csv",
+      "sha256": "a098f801fe11822f5fd31cc7243d6242a3081a738a42e6f83da9432bab5ee2c4",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-calendar-if.csv",
+      "sha256": "a992ee926044421e4893c9e70e60e3f41dbe5a23d318b480d60397956b2e8dd8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-calendar-crit.csv",
+      "sha256": "c716a39aa1937fced3556a3f01cb7b0b5e8af19db1029de25a6c120e020f87f1",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-simple.csv",
+      "sha256": "8cd9f85f4f7e4ad558a23266e99fce4c8ef28c78be833fb545c3df2c1c388f2b",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-simple-if.csv",
+      "sha256": "c42981ce01fd3a2df0e9651843d56d03affce861d1e77618160267ef0cfe249d",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_boot-simple-crit.csv",
+      "sha256": "7ef14617cc57718fa958ece2140ff84f13b7a62f265533c1ee8e38ab10015fbb",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-attgt.csv",
+      "sha256": "1f3749c6f774cd250cb78489cc4b3be19a37cb5c71c4657c1c095cd9205eb9ea",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-if.csv",
+      "sha256": "4c47dcc0a4125b4f953944a04e3fdf8ae0a2741056c9f3474039697c96b5f232",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-v.csv",
+      "sha256": "8336057e96bd5a48ccd66641dc8815e8bbf3692734891178a7fa54c2fe97402f",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-dynamic.csv",
+      "sha256": "34cd56e7ca70fbaa6ac95da4b3c5e9f8727240dea27ac429ee574b618c819841",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-dynamic-if.csv",
+      "sha256": "1281061d9e6a9adcdf302d8c71c14bb0e3e25ac5a2c732de5cee5fcbf5b0931d",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-group.csv",
+      "sha256": "df771ef78b4f55387187e35f5448c90af1784fce2d2c6d1c51403099d71fe8af",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-group-if.csv",
+      "sha256": "e7c5400324fc3dd22b1e431d24ba5f8f037db780aab481afc2277983aaabdbf2",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-calendar.csv",
+      "sha256": "19273223997bfebc732ed5bd03af1edb9fc78df1dbdf2132a6ae05ba94cd941b",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-calendar-if.csv",
+      "sha256": "a992ee926044421e4893c9e70e60e3f41dbe5a23d318b480d60397956b2e8dd8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-simple.csv",
+      "sha256": "30523a89ae09b1597e13d7e45119cf2ffb95697270e80a001378cc42feb9c74b",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_nevertreated_dr-simple-if.csv",
+      "sha256": "c42981ce01fd3a2df0e9651843d56d03affce861d1e77618160267ef0cfe249d",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-attgt.csv",
+      "sha256": "5eb3ea1ecf2741e8f9026280b8d45f255e2840c9b31a330e5569091ff5326b22",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-if.csv",
+      "sha256": "47963b6c3a5514968f7c9876571a86aa6f44926edb7899b4e8814572a52b08cc",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-v.csv",
+      "sha256": "ead1fb01a244a7f3e58f04e82757877b697bf4f5aabd11acd62f26354d7b4673",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-dynamic.csv",
+      "sha256": "9e3f8f616c401ba16d1fe222f07c46c9d7c3b39684c814054924b81ad6c03946",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-dynamic-if.csv",
+      "sha256": "b2a7c38f808c79534da7a2cc5c9f17bc2d62cd48d975c9d5e8ef4b52455bafe6",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-group.csv",
+      "sha256": "408514b8ef8b0aa7da593ebf12b4b2c0699999d2efff6040a0159e832b036cbc",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-group-if.csv",
+      "sha256": "2b83fb9e2bcff9233f28aa3e112e6d9e8d51bafbf8acc27ef9c3b3fd4816d3dd",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-calendar.csv",
+      "sha256": "d0126f123cfdaf3cfd9a0297cfb6647602d6ec54797bb1f7385712be0e9d868e",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-calendar-if.csv",
+      "sha256": "dd6915ea741aa170e1716d70f6aa3fa5b42a2b9248e93c8042aef5ca2658e211",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-simple.csv",
+      "sha256": "0f8989eca2ce66ae66542cd61ade6172b4c26d432f1900985cffc030e694f5d6",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_notyettreated_dr-simple-if.csv",
+      "sha256": "189d16955b8b24262f13bb98459a74c6180d1fb2c452a98d0794ecbc3a3f0b20",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-attgt.csv",
+      "sha256": "07d222250dac01241f0762ef2a91acd3634f0dc9d8cfb8453343e986ac300978",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-if.csv",
+      "sha256": "d2d17de242979cf9d6820ca222cc3e2f6906f86243d7ab7d35a03fe529cafedd",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-v.csv",
+      "sha256": "5d2da591b1462bf8ab9ba625d24c7519717ec28169599e2a766913ac286e195e",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "2b940b56437f0e3c922a13554b0691368537a2b3fd1f3f4fde1ebaf218ee90d0",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "94743658637710e6ba47add8b8453251875a82f6a66fa104bb14244b8e61b0d8",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-group.csv",
+      "sha256": "408514b8ef8b0aa7da593ebf12b4b2c0699999d2efff6040a0159e832b036cbc",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-group-if.csv",
+      "sha256": "2b83fb9e2bcff9233f28aa3e112e6d9e8d51bafbf8acc27ef9c3b3fd4816d3dd",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-calendar.csv",
+      "sha256": "d0126f123cfdaf3cfd9a0297cfb6647602d6ec54797bb1f7385712be0e9d868e",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "dd6915ea741aa170e1716d70f6aa3fa5b42a2b9248e93c8042aef5ca2658e211",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-simple.csv",
+      "sha256": "0f8989eca2ce66ae66542cd61ade6172b4c26d432f1900985cffc030e694f5d6",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "189d16955b8b24262f13bb98459a74c6180d1fb2c452a98d0794ecbc3a3f0b20",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-attgt.csv",
+      "sha256": "05a804496dd7001a781d879cd42c5c965bb6b32544d6dc02f6134266e84a7cf3",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-if.csv",
+      "sha256": "8ca0a8f6c7e206f92f4d5b09179dacd8dd3eaef65bf374175440f3f897e8373d",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-v.csv",
+      "sha256": "71973ebd7da00f3d5f0672ff955598eec82c13dac3924927b8f5984e590586b0",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "3a3ca88fbf48191e610e1ea890e7960fd3e88ebdedc3cce794f8310a97c186f5",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "14d127458148714f8af8b7928065045b2fdb2e5be40b32d9fc46b112060e5230",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-group.csv",
+      "sha256": "22348cf25d6a492acb16bc594a064066a21ebee8753981abaf8fd8a341963f0f",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-group-if.csv",
+      "sha256": "156d3deff6843dec26a0533be28e42e2d0ef4a92ce41985893998d6b51dd6547",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-calendar.csv",
+      "sha256": "517f329e7cb432cc6bb64dd9e90cb68659a487556b4de521ebd0c297398c9b07",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "c710599646b4f0d1b566dd22f5ad00755e44498dbc14db2f0df5ef8f1b42e4b6",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-simple.csv",
+      "sha256": "a82488fdc268ee99f3f9d15cb4d4f1d3faae58d663025b8937f7473b97e1bac5",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "9ae81aa0be4377a3c9fde2b52e7700ed6b8600cdee8cb3e4f0f3ee2c11df5b3e",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-attgt.csv",
+      "sha256": "f7bbd39cec346ec4958ce06ab5186869acda63fcc3cbf17a1bc806792cd05497",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-if.csv",
+      "sha256": "5ce39491214278acb724ebb470271145f8981c7007a9903dc7617422a55f5e8f",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-v.csv",
+      "sha256": "36fc0ad1cd9f9243442a7cc88a787c14dd81b84d28eff17ba9f9ef2fcb0f8b2d",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "6c90579712c77c1d05627eb01c4d4a27ee90b422fad5a252eb3c11b741a04c31",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "2b63a98303e02cc196eacbbf669d45f356b3bf316d6e773c863a5cb78a70a71d",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-group.csv",
+      "sha256": "149031780059f8896262a50eaae83ef6a57a9b15f8129a6242872f5f0613fead",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-group-if.csv",
+      "sha256": "a387d38b78741f5f93a9a1f4fc10479262b29cfb0fd7927483f24e4fe0428e85",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-calendar.csv",
+      "sha256": "033ed1e5cbd93694ddb9bd88d447e2c97ebd1724b8e94ef474ea1e2d5eb975b0",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "856849dfcf61e30c18298b416b459c81e41fa93b2143d8f84c47e6820c85dc77",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-simple.csv",
+      "sha256": "2afe872da68e2da4d85b5df9b7805c03c95366a6e0f07169fe67ab846e5b8439",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_wzero_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "18c3197c4f028b61e3ad7817a485cd4c328ae4547e01f0f2ac78336cb5c950f7",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-attgt.csv",
+      "sha256": "f8ea9a8b9df74e8301b844e3cb73a64f5f4ea579198b497fd6ffc14a1084aeee",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-if.csv",
+      "sha256": "dff2d8b7da7861a6425c8831e87812207c2ecad7fab7f3c2d17128b6ed92c915",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-v.csv",
+      "sha256": "7a52217b348329731a7cf1985e332d82311fa4f1be3a4c702ddc065b294cd06b",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-dynamic.csv",
+      "sha256": "6bdc0b60d9731aebbead05ccd763f714b02d60635533901e6d26f2098fb60f06",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-dynamic-if.csv",
+      "sha256": "c3dba244cc824215fcd066939203ec67ef810233238948314abb9e047a498ca9",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-group.csv",
+      "sha256": "b4d396c49b7db855c0ca09cf39e8bda81b03946955cbf7d8c1baefbfc5d4b4fb",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-group-if.csv",
+      "sha256": "7aaa60e1e00f571ee5ea01dae4447d3ce585acc65dd9f628c78c134682afc9c3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-calendar.csv",
+      "sha256": "a052d54949a064db7d2a70bf5ef4a31f6645b1894bf5ccc44f204938524f6d01",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-calendar-if.csv",
+      "sha256": "e2937c7cba50da535cee4b57c26043e6dc75c7978f581c8acd2af58c20551da5",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-simple.csv",
+      "sha256": "941e3434ebd88326a0c8f8d20db46337c82fab0dc251151a7f036bbcbbbeb9bc",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_reg-simple-if.csv",
+      "sha256": "00a8abde73593370fbf313a048b595c8ed01250015e38bf07ae56d69d2d433f3",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-attgt.csv",
+      "sha256": "dd277ca50f30baa36416f30dd35500b80b51d534a3c07672fbd6033b2a5d30b8",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-if.csv",
+      "sha256": "3442f5f0ff0106d3ba9fbeb367c85f51a4b50ddc71eb00eebd5125046fcfe17f",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-v.csv",
+      "sha256": "15e125902c2eb8ae6fe2e5f6e750a94fa9496eb8319ec5f89dacd9fc8a9a1841",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-dynamic.csv",
+      "sha256": "177a5cfb5c3f295eedb41156af46711058926972db1ceccad3ec71c6623bf2fa",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-dynamic-if.csv",
+      "sha256": "6b4bce037d6ff363f49fc4a980c028232209897cca917bed8550d7861081d8b1",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-group.csv",
+      "sha256": "d6389df015d4b325968f87541faa9c05c238c077b83acb46541edea96758f6ef",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-group-if.csv",
+      "sha256": "41823ee9e084360abbbebcf20c01b55c16e2f2db287de46de18833349e889fc0",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-calendar.csv",
+      "sha256": "49e7b26181dc101f3fbf7abed2d0d63cbd8189a392a9ab4160dc53d20a8fa0d3",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-calendar-if.csv",
+      "sha256": "028c512ca8d72b66daf1491c0c0084978be2b0337f76a27bcfcac6936336276a",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-simple.csv",
+      "sha256": "637243d4e576106f2feed3ee57227399fb1c58186c4eb70e698bea93cd1802ec",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_ipw-simple-if.csv",
+      "sha256": "1b064f87c6d14a115f22ed3c12ea2e86f1e0d64e8b50c1da7890b857f7ab5fa7",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-attgt.csv",
+      "sha256": "b8c087dece578af0c3f3f62d75d46e6c1da91f6c50015a4c3232e1b547c898aa",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-if.csv",
+      "sha256": "0c40d843588f5576769ce7c4776bd15c270acee7339dd07a3228de9a7ff750a6",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-v.csv",
+      "sha256": "0a5b062b2b12f64cd8b159a7c1363e11bf3f1ff0a4a79d123da095bebad69ad0",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "0dbea7abcfe6edaff2837943fbee5d572dfe930ec8c6fd01a17e8d59b9e15d0a",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "45b5cda180488cd92eaa6956aef7a5ed5d4fcca013d784752bb0d01ebc4f4c7d",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-group.csv",
+      "sha256": "d469532ded9bfacb6a5b555423ef19ec3db93fdccfc276de5be18625a6e2a52c",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-group-if.csv",
+      "sha256": "7ce53b889060d62db039813f41e9b12b92218fdb81f09117187d7b7a18a08c4b",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-calendar.csv",
+      "sha256": "429bc1e958105cfc68bec79086652e250201e8ef40867c43276b89bc1b6e48b7",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "6cf4b2df6785f94940676d10f2824607dc8b25bd1f951c9d170e84682f15218a",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-simple.csv",
+      "sha256": "537c72e49dcb1cde0065def8766a565b0ac43b3d9414e3667041115c9ad458cd",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "51b9ca695ebdf8cd273ec3162608ad27579446e1cb591fa4cdf5d62542ad1f52",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-attgt.csv",
+      "sha256": "3876e31b6fd1c0145a05bc211c4713bf4ca132a5523d67ff83e4d38c248837e2",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-if.csv",
+      "sha256": "229d346ec88044064b7c1beb1850a5477651cdc262ceaacfcbf4a418eedcc637",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-v.csv",
+      "sha256": "525f0379ab1f20399955e9cd98d29f29eef17a02edea29c30a06a3caf3741117",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-dynamic.csv",
+      "sha256": "ed8f27bbffc08f1651c8fb0cc6b6e26692e7431d0e68f44912f8f8e777486987",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-dynamic-if.csv",
+      "sha256": "199b87739e075538a3594b20eea09af4af2f5b75063dd9e28dafdb70bb603f48",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-group.csv",
+      "sha256": "d469532ded9bfacb6a5b555423ef19ec3db93fdccfc276de5be18625a6e2a52c",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-group-if.csv",
+      "sha256": "7ce53b889060d62db039813f41e9b12b92218fdb81f09117187d7b7a18a08c4b",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-calendar.csv",
+      "sha256": "429bc1e958105cfc68bec79086652e250201e8ef40867c43276b89bc1b6e48b7",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-calendar-if.csv",
+      "sha256": "6cf4b2df6785f94940676d10f2824607dc8b25bd1f951c9d170e84682f15218a",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-simple.csv",
+      "sha256": "537c72e49dcb1cde0065def8766a565b0ac43b3d9414e3667041115c9ad458cd",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_nevertreated_dr-simple-if.csv",
+      "sha256": "51b9ca695ebdf8cd273ec3162608ad27579446e1cb591fa4cdf5d62542ad1f52",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-attgt.csv",
+      "sha256": "5e6abd10dbcda5d60ff6a348eb054f886812e5bd647c1fde6828948863565080",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-if.csv",
+      "sha256": "71057f9887dbfd1fa3b69f88b840e04980fb8f9a57fae8f01ac848122600fee5",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-v.csv",
+      "sha256": "e379995a588b675c2bd3d7bc1f1233293bb61badce35097d45dacd3469ff310d",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-dynamic.csv",
+      "sha256": "8421bc0a1de339b6549fd95d0a35aeaa8bf29463b756407e89f3d00661a1124c",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-dynamic-if.csv",
+      "sha256": "244a7202f85834f9be890ddda133a914008624e088455c13062289f5d3021572",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-group.csv",
+      "sha256": "c2a442f9b07dc2af13e5477a06e839884e5375b98e60420a2cdda79518bab73a",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-group-if.csv",
+      "sha256": "c1275a15a6253877ace84b482c5a50bb17ede0e91486fe1ba1c3ccf7e0e39128",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-calendar.csv",
+      "sha256": "e07d49a5c03e4b65f1e01467149cc5e03667c71006c8bf6821dbb5664360e475",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-calendar-if.csv",
+      "sha256": "449e7c2f3fb424fa8bca3d863d934fa1dcedceec07640f2b2b230a1bbffa3489",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-simple.csv",
+      "sha256": "50f7239ab0f8be24a1f7c7e31a4e7f271961994287a862dfd31ab09899410419",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_universal_notyettreated_dr-simple-if.csv",
+      "sha256": "229609ef988e8aa05925bebc15f0937c4dc95910ae62c3a580710fdfca00d6c7",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-attgt.csv",
+      "sha256": "eb9e3ff7c6d561979642c6d78c4d5a9f1c87e46d1d3604527abca659a03f1fbc",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-if.csv",
+      "sha256": "be39d06cd0e1dd897b9772c9191aea847e73ed2f45e558feb4c5cc8b009f9c90",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-v.csv",
+      "sha256": "8eb24f5ce07d7c1dda3c83a136e87223ac70d5231f2e144fa4e9d9adafaeaadc",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "bf216118538541d2e53fa3288fb4bcc9ad1c58ef8539703544f7fa82e84e4e21",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "0a02eccf8f7a41ad0e6bddf854981b419869508053f82d672b6585a526104170",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-group.csv",
+      "sha256": "c2a442f9b07dc2af13e5477a06e839884e5375b98e60420a2cdda79518bab73a",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-group-if.csv",
+      "sha256": "c1275a15a6253877ace84b482c5a50bb17ede0e91486fe1ba1c3ccf7e0e39128",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-calendar.csv",
+      "sha256": "e07d49a5c03e4b65f1e01467149cc5e03667c71006c8bf6821dbb5664360e475",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "449e7c2f3fb424fa8bca3d863d934fa1dcedceec07640f2b2b230a1bbffa3489",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-simple.csv",
+      "sha256": "50f7239ab0f8be24a1f7c7e31a4e7f271961994287a862dfd31ab09899410419",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_none_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "229609ef988e8aa05925bebc15f0937c4dc95910ae62c3a580710fdfca00d6c7",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-attgt.csv",
+      "sha256": "7176ea2642726f138d08f42209e4b9946ddfe169ef77e9a325e8a51a0be0d989",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-if.csv",
+      "sha256": "505c26395a7d906b0d22a48e330b9bfe5a6787b955650b7941200f10948bc684",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-v.csv",
+      "sha256": "d0c76aaba750ad6ab9cd8cbefd7f0f96f837177b55516a31b028bcd26a74ca3c",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "ab532018ab0afda6ebe0eec67779117a3162290d972d6f76a719680ca94e56a5",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "8b5da3444a7502c95b4063993f2993fe3fb235a6cac63e902c4aed2163e8d162",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-group.csv",
+      "sha256": "bd5d605399f52120e67f6a97180412d2d696d6d85c52193af519d65efdff0353",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-group-if.csv",
+      "sha256": "835ee47eef01075e7ee5b5557389be42196f2365a989fdee76bb475d8d56d3f8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-calendar.csv",
+      "sha256": "aed6c2cd4ae8ce87588ab4ea0126f26a82c6a1a5d0397f55a3fba61c194039bc",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "28b07e4cfac58c55989aef949a4745804dd98be5205368f0a042d8a1deb4b7d3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-simple.csv",
+      "sha256": "3a67844116d4ea3b9be131df82b9339144742212eeb068155a33f5a3fd6ec40c",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "010fe9d404bb3dabc647c809346640160bdc51de34646a2878aeea51c0683323",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-attgt.csv",
+      "sha256": "b5b5139fc5babaf9ce1b1e215deacd41ad779508f2ae6e349fdde4ebeab6019c",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-if.csv",
+      "sha256": "505c26395a7d906b0d22a48e330b9bfe5a6787b955650b7941200f10948bc684",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-dynamic.csv",
+      "sha256": "7db2f38acd5092f03ef3f5688d21e62676860e5ae012fa46eeeca6f5e345eec5",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-dynamic-if.csv",
+      "sha256": "8b5da3444a7502c95b4063993f2993fe3fb235a6cac63e902c4aed2163e8d162",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-dynamic-crit.csv",
+      "sha256": "a5b0478cdeaa90388c7b1fab62413d2202ae685e3882dfb8f02c8111c17df9c6",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-group.csv",
+      "sha256": "8e0d11695519afc2984913a1df67253d30e1db375ccde017c21c9eacffbd8a3f",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-group-if.csv",
+      "sha256": "835ee47eef01075e7ee5b5557389be42196f2365a989fdee76bb475d8d56d3f8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-group-crit.csv",
+      "sha256": "47a0f1f4b43d2da652d089d7f2cf8ea851c888e22b71d0bf55a237af4b6bc5e9",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-calendar.csv",
+      "sha256": "b5743f1991135611b9b0113baee40e9341aeadfd40224ca6bea9410e26dc6a61",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-calendar-if.csv",
+      "sha256": "28b07e4cfac58c55989aef949a4745804dd98be5205368f0a042d8a1deb4b7d3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-calendar-crit.csv",
+      "sha256": "50af708ade3f4fad380c965ae243b7e5ddf7c7d720411c8394dff44f730c0420",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-simple.csv",
+      "sha256": "12a40cb350dd2f542f246a029c833f526c42834134ff93b19572a77351382f5a",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-simple-if.csv",
+      "sha256": "010fe9d404bb3dabc647c809346640160bdc51de34646a2878aeea51c0683323",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_boot-simple-crit.csv",
+      "sha256": "7ef14617cc57718fa958ece2140ff84f13b7a62f265533c1ee8e38ab10015fbb",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-attgt.csv",
+      "sha256": "3b258c6f29fd29350f5ee440476fab9e7cf912515ed54636223c100ae94b427e",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-if.csv",
+      "sha256": "36e0aa64c2a5402d7075d871c5d45f03a990a08a999968a170cd069080f99a4e",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-v.csv",
+      "sha256": "cf8a31eb9f4b248219090763767afa0eaf1377ff7be44d60fa82c22e49c76808",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-dynamic.csv",
+      "sha256": "0840f5b5be134519120cef4536929031634f534cfc566bc2cc755c1f5a1d1c17",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-dynamic-if.csv",
+      "sha256": "0159b4fc8de618209aeb28af85038eeb50fac998ba7a83ba25302a4ea79bbd40",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-group.csv",
+      "sha256": "bd5d605399f52120e67f6a97180412d2d696d6d85c52193af519d65efdff0353",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-group-if.csv",
+      "sha256": "835ee47eef01075e7ee5b5557389be42196f2365a989fdee76bb475d8d56d3f8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-calendar.csv",
+      "sha256": "aed6c2cd4ae8ce87588ab4ea0126f26a82c6a1a5d0397f55a3fba61c194039bc",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-calendar-if.csv",
+      "sha256": "28b07e4cfac58c55989aef949a4745804dd98be5205368f0a042d8a1deb4b7d3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-simple.csv",
+      "sha256": "3a67844116d4ea3b9be131df82b9339144742212eeb068155a33f5a3fd6ec40c",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_nevertreated_dr-simple-if.csv",
+      "sha256": "010fe9d404bb3dabc647c809346640160bdc51de34646a2878aeea51c0683323",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-attgt.csv",
+      "sha256": "9d3a22cab4afe34b1078ea412096b5f689aff42aadae769ab6d1cab79cbd76a9",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-if.csv",
+      "sha256": "9e0fb5b9abda703bf11233f190f4b3be512a60f8705199c56687278882e07a71",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-v.csv",
+      "sha256": "db8a772a3b415a9d2cd15e45686bf8dba19af10fe7677b3a4ceeb9ce25bf06d4",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-dynamic.csv",
+      "sha256": "b8b9c930516f4209a49173c2b965b7f64d93ba5510bbed11a406d3b145bec577",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-dynamic-if.csv",
+      "sha256": "a7190e9ee749015a9922091629534416482f15406143ea618a2bb5fd2cf5fb16",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-group.csv",
+      "sha256": "1256ba3f2234e28abf2be387dee9c9652d4289b26dc64dd42c59df657743f8ff",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-group-if.csv",
+      "sha256": "7c60332a13ac9ae85ac2d7ed94a12b314856e36e661f6a6960161b74364ab044",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-calendar.csv",
+      "sha256": "f394dc45ad35fb3e1a7b63f056af1ce12af0c4b752a139614055fcfbfdc3989f",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-calendar-if.csv",
+      "sha256": "8a6ab5a2d3855fca59cf790265e85eb73fef1072c0198e39e10356242727f4b5",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-simple.csv",
+      "sha256": "d95a82a250eeb60cc3fc4cf1e085d457f396e73760295ea2898f92de206b8480",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_notyettreated_dr-simple-if.csv",
+      "sha256": "bfafb89ccee1ad881b54cd65d34e9ff112ff7193165e00f606f006c7050d9c39",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-attgt.csv",
+      "sha256": "23e52736f23961cbcca52244e69bec7b42fdf0ead3ee333cd2b4abec598b0096",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-if.csv",
+      "sha256": "bd03f1add2f7c36aadcd5b77ede2094f4afcc238ee2979c126a418c71a3cf760",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-v.csv",
+      "sha256": "4d900a786790d06f7c3585702158f72b889bd42159c0bcda379afd9129aee7d9",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "5d2ba58e6b1b3f7e0ca81df40a6796c12757f776eae8ff5e781816e9c102cdb5",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "ae9bbed23195eab325b2dc8aedab5d309a315a7e3ea92e2da079bcdee3b8596e",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-group.csv",
+      "sha256": "1256ba3f2234e28abf2be387dee9c9652d4289b26dc64dd42c59df657743f8ff",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-group-if.csv",
+      "sha256": "7c60332a13ac9ae85ac2d7ed94a12b314856e36e661f6a6960161b74364ab044",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-calendar.csv",
+      "sha256": "f394dc45ad35fb3e1a7b63f056af1ce12af0c4b752a139614055fcfbfdc3989f",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "8a6ab5a2d3855fca59cf790265e85eb73fef1072c0198e39e10356242727f4b5",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-simple.csv",
+      "sha256": "d95a82a250eeb60cc3fc4cf1e085d457f396e73760295ea2898f92de206b8480",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "bfafb89ccee1ad881b54cd65d34e9ff112ff7193165e00f606f006c7050d9c39",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-attgt.csv",
+      "sha256": "9cdfe6f44ab34f9e20c082d8dc12f42c89957526094135e73c19e9a08ae808cd",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-if.csv",
+      "sha256": "563ad618e97c39398711ae3e9d74cc73ef0c65e1a71a870fe59ce09b5672bc2b",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-v.csv",
+      "sha256": "daeade36b9ed21d9402c20163daf3f308e0d22fc63dd1f78d951b6140b001e9b",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-dynamic.csv",
+      "sha256": "bcf60e19bb657bb934823421733eb66e7c15354954cd33cf2cf05ae4a502615d",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-dynamic-if.csv",
+      "sha256": "de1fed9ea994bd5d4270ae908f09d52000cc02e07676df65555b2ef5854c5b74",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-group.csv",
+      "sha256": "fc0972efe154ce2f2b1724a313aacb454525f1573215db59fa952dff5d9723d1",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-group-if.csv",
+      "sha256": "b19afd5dc26c52c08f3ff88e0d8135ac4637a5d97050df0c7db03604cec5c6a8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-calendar.csv",
+      "sha256": "464803cbb47161c763a02173e924824a3ae1fa3d7a4818e554c2d4cf4c5cb375",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-calendar-if.csv",
+      "sha256": "bec1237dfcfddc20f4edb78e39587e1b44c0340bc25f3738920bda0b2f4bd563",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-simple.csv",
+      "sha256": "287921a040c7fa5852be74a479cc34ddb42b7998749b09ed828e24ae36e5831e",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_universal_nevertreated_dr-simple-if.csv",
+      "sha256": "8fc2966c06a99f3c630763f43f9a0b09f7c5336d05979697e45c3d8f2fd591d5",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-attgt.csv",
+      "sha256": "ff1d6e8c67ad551882d7e65cfe7cc5d4a5ec0ad8dd4b7d869b14a6b95d7b9f57",
+      "rows": 9,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-if.csv",
+      "sha256": "38a495692b0fcde78a6331cc64e628311fa72f977bc9d3f73c54f6a4baa730ea",
+      "rows": 112,
+      "columns": 10,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-v.csv",
+      "sha256": "e50d552badf91f403b7ad66b0345c1fe1f48443f125dfa5aef504671f4b4cc36",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-dynamic.csv",
+      "sha256": "a7b7ed88017f4150560e0b862fff3c628742173224d99351c60b293e9997ab2d",
+      "rows": 5,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-dynamic-if.csv",
+      "sha256": "1e32ca7345e6fa01308a010a15ca888acd158b7b778554cf8b91d9406f0269bc",
+      "rows": 112,
+      "columns": 7,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-group.csv",
+      "sha256": "64de4cd57bf9365a1f30e0cdf1903295ed433e6c8f60f8f77990f839e5888633",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-group-if.csv",
+      "sha256": "d9af3638c3f9a68074b253f2988efd4106d0007c5f1befcf598bee13147c9a1b",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-calendar.csv",
+      "sha256": "ba5bb60c948c9e1f7d74ca35c19ded9040ad8ff84620bfaaff6ead70b8ae3dcd",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-calendar-if.csv",
+      "sha256": "61116fc5baad1bfff09f1fb872822ba9e6b9d6e019b4cb717bc214ca606670c1",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-simple.csv",
+      "sha256": "6e0e8739a83d3538bfb84950aa57b04dba95dd2d99e4f581860788b8441e439f",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_wzero_varying_notyettreated_dr-simple-if.csv",
+      "sha256": "a3d1defd3c89da4599512ad770c08673611eea77872f977a8b771125df68ed3d",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-attgt.csv",
+      "sha256": "31dc857933b86a6a23f48179ebc3bb819e147a09e7938aa501faeb7ddac19c5d",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-if.csv",
+      "sha256": "adfb53bc0f47cb36e56ec42ce05341ea578de93a2366bca9265d732649ceb0e3",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-v.csv",
+      "sha256": "8aabb5ce51eb00565978aebb83416ed0ac253dbd1744eb17d43ae4a7451a4d81",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-dynamic.csv",
+      "sha256": "f6b295f192913bf73063d1e35103464e48f70596dfc2be554e89a1646a5500af",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-dynamic-if.csv",
+      "sha256": "81bd68305bc43caae1eb6464b79805c4b90b178a3da4ff11ce65b10b02fbf65d",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-group.csv",
+      "sha256": "0e8e35da81e8d974f82d6c3428b5efe524d440e26cf0a8d50317d7563fc5234c",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-group-if.csv",
+      "sha256": "a357ebfb3c9cf134dbccd6b28f2a9623cd92472bfe6a6f51faaa433dfac28ae3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-calendar.csv",
+      "sha256": "681fe33a05ccc604a9e396b2c8b2daa00f17a0868aa77f98959ca91df6a5e0e2",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-calendar-if.csv",
+      "sha256": "68024b810581ca5e3d04fe8dd029b442c28acd0b65afdfc4a115810e3baea68c",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-simple.csv",
+      "sha256": "bfd58c62dc24224130771c1ebc204947ecdadd4974c6f84865da25317a678c79",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_reg-simple-if.csv",
+      "sha256": "0aca17164b3343ec6007a63323e3ff08d2b6039e0d95e1d6528baf33e8003162",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-attgt.csv",
+      "sha256": "b54c2d31474eac8b8e583cd8d3bbc9c0c53fe63d9e069be3cfc242ba3ab203ec",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-if.csv",
+      "sha256": "018def530c103ade3b9057754a67471170379f4c74fac0c259babd09dac70d2d",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-v.csv",
+      "sha256": "b3d64539496e76e92b8bfaaf38ff7127c0f6ce3a346dc7fa27c174588d3f3f6a",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-dynamic.csv",
+      "sha256": "247ed47f82c94e9e407f505203ab65b8c69095c6b40c3d4a165149afbfcfdbaf",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-dynamic-if.csv",
+      "sha256": "d8dbc7dcd7d7d6e12d778cc9eeec1655c778ab5ce7ab8372b7daf31c70b1de31",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-group.csv",
+      "sha256": "ebd05fd15f630bc58d7e3fea278008f51a2a7290c9530ab7ee8002b170028d9e",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-group-if.csv",
+      "sha256": "adae6205a04ec294f1f7a3fbdf41140c8a5b100efd8b7481fa84d71004ed0ade",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-calendar.csv",
+      "sha256": "10604f0804123d1d7a402150900f61e9727a97968d3a0bf81e06bf762a72aa09",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-calendar-if.csv",
+      "sha256": "8c9f684c3f7e51afe453a04ea08acb1fe16e47d448f84e2f103bd973a8a113d1",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-simple.csv",
+      "sha256": "5064f0ced6125beaab88e333034ca060489768898f8606605db2af13dc54390c",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_ipw-simple-if.csv",
+      "sha256": "33ac490f717a984380193174ed2d9be2af8ecc48e82a1be1c6911428f7fcaf5f",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-attgt.csv",
+      "sha256": "8b873350a85b35037a610ccb1e01bf59e6dea535764a6bea1d42bb0a425f98ee",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-if.csv",
+      "sha256": "924041c5191793bdb8cd6f4be0cd39e2b80be1a91c55be339923038bca4fb014",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-v.csv",
+      "sha256": "ff39a2ca5c9e36fda2c37b77aadfe43087ea9d84f53db5e7ce2bae0baa2ac799",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-dynamic.csv",
+      "sha256": "96fd98e1b5f10e57afa7a931a3ac2e1fac01ef63cc062642adab4055c7dc8fa4",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-dynamic-if.csv",
+      "sha256": "a336e640aceb5e85e0bbe7aef7689aa8cd75aec514b648f89b17fd3c763c1c50",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-group.csv",
+      "sha256": "ab8aa727c6c0524a533a199606c3ca56addb27420be817da1fbcd602caff2c65",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-group-if.csv",
+      "sha256": "cd0da37f7c33a6df2585b2575560a8bbc5dca401eaa7ecda0728db6fea514325",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-calendar.csv",
+      "sha256": "1e0f86d1a8f22970d4ea812ca1ee192c4801de141a27b52709259e307e606640",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-calendar-if.csv",
+      "sha256": "31b3d96f961bf0ad864dd6acfd919861d805e3e2b16fb4c0c13d90007bcb8531",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-simple.csv",
+      "sha256": "131b1130281e9f25030fad7f9d9f1f8aab17f761bd84543c7da8fb223e51b960",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster-simple-if.csv",
+      "sha256": "a7d1d43311d747fd44efc07dbf02d7207046a7e5a727d04af2414ec9444ffa51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-attgt.csv",
+      "sha256": "6cdac32fd554819a743311510e5e969e4423f17fa2f871b09a578c86d5d3bef4",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-if.csv",
+      "sha256": "924041c5191793bdb8cd6f4be0cd39e2b80be1a91c55be339923038bca4fb014",
+      "rows": 448,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-dynamic.csv",
+      "sha256": "0661dc3042cd1756deab57dcd818238aea6b9f4c79b8d3dd2caeb4dc85cecd72",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-dynamic-if.csv",
+      "sha256": "a336e640aceb5e85e0bbe7aef7689aa8cd75aec514b648f89b17fd3c763c1c50",
+      "rows": 448,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-dynamic-crit.csv",
+      "sha256": "818e6406145220413dcfb962a207d48e594e0266505864a372e7001884c01d48",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-group.csv",
+      "sha256": "7c1583bbb966b5f77982f92ddbc52ad7b2f4fc8dd199d87dc875bd991894e424",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-group-if.csv",
+      "sha256": "cd0da37f7c33a6df2585b2575560a8bbc5dca401eaa7ecda0728db6fea514325",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-group-crit.csv",
+      "sha256": "65f3760696edff19330f814d285e8662d2862a70da64cf5230b8baf191434458",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-calendar.csv",
+      "sha256": "889fb4f73fb80f4b0105687b79b00721567d3a528b75c50e106517a8f13ec153",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-calendar-if.csv",
+      "sha256": "31b3d96f961bf0ad864dd6acfd919861d805e3e2b16fb4c0c13d90007bcb8531",
+      "rows": 448,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-calendar-crit.csv",
+      "sha256": "cc06cb879763eabead377d11e9817cbaa6d7e4adc8a5483db884f06fe968ebe7",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-simple.csv",
+      "sha256": "101c5de10e36fe39f1355a9a5e3103697ec2112f2d1f412d0f55b46f8159ba9a",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-simple-if.csv",
+      "sha256": "a7d1d43311d747fd44efc07dbf02d7207046a7e5a727d04af2414ec9444ffa51",
+      "rows": 448,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/rc_w_universal_nevertreated_dr_cluster_boot-simple-crit.csv",
+      "sha256": "7ef14617cc57718fa958ece2140ff84f13b7a62f265533c1ee8e38ab10015fbb",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-attgt.csv",
+      "sha256": "e3a253e574c0cbed4d583e4e5c7dd3a8a891b5726a80cd547155adf7a10b99a2",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-if.csv",
+      "sha256": "14c0bcb0d442774be6f38dff5c549f165a09d046c7c81e15bd48254bbfae7da3",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-v.csv",
+      "sha256": "0e4a28b62bc27648795e2be8972385a7fedfc577320cc2852c06a2a8ac156834",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-dynamic.csv",
+      "sha256": "9163030ac2a285daff4d35f747e2d4811b8fa36937dc74a55d37c879f71935d6",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-dynamic-if.csv",
+      "sha256": "fedfedafe0ade1c53e3329b8e9b30f2bd2265f691695b4ceae05c9bf1091f809",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-group.csv",
+      "sha256": "eda1f7346113500a07e92810285c485287fbb1c0c28d263ffc221c0e27cd2c2d",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-group-if.csv",
+      "sha256": "e7c5400324fc3dd22b1e431d24ba5f8f037db780aab481afc2277983aaabdbf2",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-calendar.csv",
+      "sha256": "1bc51568b109a42d47b6ced581343d7752fce5c4d9b752bfc30bfaa632bff53d",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-calendar-if.csv",
+      "sha256": "a992ee926044421e4893c9e70e60e3f41dbe5a23d318b480d60397956b2e8dd8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-simple.csv",
+      "sha256": "9fd2510c221909f1c2f93054ad21b056d8c8445c5cb1afa7cb1cdd74e682a980",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster-simple-if.csv",
+      "sha256": "c42981ce01fd3a2df0e9651843d56d03affce861d1e77618160267ef0cfe249d",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-attgt.csv",
+      "sha256": "882b1beee878b5f0b8fe999ebb478a75eec8fa4cb359fe04c704a40a359a694d",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-if.csv",
+      "sha256": "14c0bcb0d442774be6f38dff5c549f165a09d046c7c81e15bd48254bbfae7da3",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-dynamic.csv",
+      "sha256": "f4e66137ea0fc0448c0ce0ea30d2413cc0a41892197216969541f344e8e52e1d",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-dynamic-if.csv",
+      "sha256": "fedfedafe0ade1c53e3329b8e9b30f2bd2265f691695b4ceae05c9bf1091f809",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-dynamic-crit.csv",
+      "sha256": "3eb056b9487f1f2981a0c83aa703b6ca8791940cce0bf52f932ac50548c0164d",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-group.csv",
+      "sha256": "c2fd56c40ca0119c5653d52488578c19b1fc3d1dabc272f8bfad28bde2d1ea13",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-group-if.csv",
+      "sha256": "e7c5400324fc3dd22b1e431d24ba5f8f037db780aab481afc2277983aaabdbf2",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-group-crit.csv",
+      "sha256": "826daddd4a524425155b290c71049c0d6897eb6a6cd20c2a62a01c6a89f46086",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-calendar.csv",
+      "sha256": "7702765675f640c59b7587936d59fe6fbca3f1dc161f6ef09b7018008521be0a",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-calendar-if.csv",
+      "sha256": "a992ee926044421e4893c9e70e60e3f41dbe5a23d318b480d60397956b2e8dd8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-calendar-crit.csv",
+      "sha256": "26e47800b8ce44428f23a3eb4dba554c3e16f8cfd332db8147e63833ecfaf1c8",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-simple.csv",
+      "sha256": "1682a5e47e220f7260c7fabc7c122d05f986c6be7bdfab08377e775a1333fcda",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-simple-if.csv",
+      "sha256": "c42981ce01fd3a2df0e9651843d56d03affce861d1e77618160267ef0cfe249d",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/unbal_w_universal_nevertreated_dr_cluster_boot-simple-crit.csv",
+      "sha256": "7ef14617cc57718fa958ece2140ff84f13b7a62f265533c1ee8e38ab10015fbb",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-attgt.csv",
+      "sha256": "2655402841c8b8b7dcc82bcc56ee2d1599a32da246e96533bddec5db10756bdd",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-if.csv",
+      "sha256": "505c26395a7d906b0d22a48e330b9bfe5a6787b955650b7941200f10948bc684",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-v.csv",
+      "sha256": "9d55a01d7dea5c86fcefb761a04a855d8770a639091bf7f5771ec3d3709ca6e1",
+      "rows": 9,
+      "columns": 9,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-dynamic.csv",
+      "sha256": "be07c6a70f6dd69c89b249f74d9a55db0f002de848773039ba981dec8d89f445",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-dynamic-if.csv",
+      "sha256": "8b5da3444a7502c95b4063993f2993fe3fb235a6cac63e902c4aed2163e8d162",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-group.csv",
+      "sha256": "9169b3d43328d201b7b6679ec949ba7964e54d0c5c274ed22accace73d26e4d5",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-group-if.csv",
+      "sha256": "835ee47eef01075e7ee5b5557389be42196f2365a989fdee76bb475d8d56d3f8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-calendar.csv",
+      "sha256": "652a7f2c9952606c4cc229e50a94d368890f47fd541af4c64c5f9046e520988b",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-calendar-if.csv",
+      "sha256": "28b07e4cfac58c55989aef949a4745804dd98be5205368f0a042d8a1deb4b7d3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-simple.csv",
+      "sha256": "48d1a53eda898a793ae7af29b746a7c2c0d05766e2b9c7a524d12ed0c1a97279",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster-simple-if.csv",
+      "sha256": "010fe9d404bb3dabc647c809346640160bdc51de34646a2878aeea51c0683323",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-attgt.csv",
+      "sha256": "0e7ab891366217340d519b914e4fe7bc0a12243e6ccb01d40e9240853a2a058b",
+      "rows": 12,
+      "columns": 4,
+      "schema": "attgt"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-if.csv",
+      "sha256": "505c26395a7d906b0d22a48e330b9bfe5a6787b955650b7941200f10948bc684",
+      "rows": 112,
+      "columns": 13,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-dynamic.csv",
+      "sha256": "b8b6ed278ac84755cd4709a1643bb405a178491fbd76d697d76a038750da2408",
+      "rows": 6,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-dynamic-if.csv",
+      "sha256": "8b5da3444a7502c95b4063993f2993fe3fb235a6cac63e902c4aed2163e8d162",
+      "rows": 112,
+      "columns": 8,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-dynamic-crit.csv",
+      "sha256": "daaf5af5bbe7fd2facc8aa2cb8c87a85b20c9505d378a7a032496e7782e934b8",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-group.csv",
+      "sha256": "05ca8460ded44cd3e531f4bc730a6dd28fa234e6a7e06cf3c7ac52be09a97c5e",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-group-if.csv",
+      "sha256": "835ee47eef01075e7ee5b5557389be42196f2365a989fdee76bb475d8d56d3f8",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-group-crit.csv",
+      "sha256": "5fb825ad4a63a8a7330f11265c5273074766ba333a83aceec6641bd52d54b6c6",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-calendar.csv",
+      "sha256": "fde2581a8fa97d03fccd48e71b3fa1c762dd23d215fbb17b8920622810ae1be0",
+      "rows": 3,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-calendar-if.csv",
+      "sha256": "28b07e4cfac58c55989aef949a4745804dd98be5205368f0a042d8a1deb4b7d3",
+      "rows": 112,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-calendar-crit.csv",
+      "sha256": "b17eac9a2ca37445bec1f2756a3fab843e8916a22ee9484d98945fd8f2741891",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-simple.csv",
+      "sha256": "99bd8bc47c29b69bb0f09c1a0f8e64582b468f39183123988eb7c6bfadc7d771",
+      "rows": 1,
+      "columns": 5,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-simple-if.csv",
+      "sha256": "010fe9d404bb3dabc647c809346640160bdc51de34646a2878aeea51c0683323",
+      "rows": 112,
+      "columns": 3,
+      "schema": "matrix"
+    },
+    {
+      "path": "expected/r/vary_w_universal_nevertreated_dr_cluster_boot-simple-crit.csv",
+      "sha256": "7ef14617cc57718fa958ece2140ff84f13b7a62f265533c1ee8e38ab10015fbb",
+      "rows": 1,
+      "columns": 1,
+      "schema": "bootstrap-critical-value"
+    },
+    {
+      "path": "expected/r/diagnostics.csv",
+      "sha256": "89b521fba7550083d4ec6e52837620374936329b8c0e098cfa8bc84d6e84d8eb",
+      "rows": 45,
+      "columns": 4,
+      "schema": "wald-and-critical-values"
+    },
+    {
+      "path": "expected/r/finite-difference.csv",
+      "sha256": "a287c36b637f3f85eb2d84cab662c7850b96aeae61c3760b85bbadfcac319706",
+      "rows": 24,
+      "columns": 4,
+      "schema": "independent-weight-derivative"
+    },
+    {
+      "path": "expected/r/sign-sensitivity.csv",
+      "sha256": "cfac89cd80c562cd8f83b1c2e67fca950e9b288181ed34728559abf7e98799af",
+      "rows": 3,
+      "columns": 6,
+      "schema": "old-versus-corrected-sign"
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt075/generate.R",
+      "path": "tools/parity/generators/rt075/generate.R",
+      "sha256": "2406bc3d228390f4d7cbd8cafd96a39967c8265b5eb0990a0fe1c1bc59b2ae47"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": {
+    "data_seeds": [20261021, 20261022, 20261023, 20261024],
+    "bootstrap_seed": 20261025,
+    "biters": 199,
+    "distribution": "rademacher",
+    "exact_draw_parity": true,
+    "boundary": "Raw draws are not exported; all seeded cell/aggregation standard errors and critical values are checked at matched stream positions. Aggregation order: dynamic, group, calendar, simple."
+  },
+  "comparison_plan": [
+    {
+      "actual": "Every cell/SE, Wald statistic and rounded p-value; every aggregate effect/overall/SE",
+      "expected": "expected/r/*-attgt.csv, diagnostics.csv, *-{dynamic,group,calendar,simple}.csv",
+      "tolerance_id": "TOL001"
+    },
+    {
+      "actual": "Every ATT and aggregation influence entry; ATT covariance",
+      "expected": "expected/r/*-if.csv, *-v.csv",
+      "tolerance_id": "TOL002"
+    },
+    {
+      "actual": "Independent Richardson observation-weight derivatives",
+      "expected": "expected/r/finite-difference.csv",
+      "tolerance_id": "TOL002"
+    },
+    {
+      "actual": "Seeded multiplier inference through all four aggregations",
+      "expected": "expected/r/*_boot-*",
+      "tolerance_id": "TOL003"
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "39 scenarios on repeated cross sections, unbalanced bal(none) panels and balanced fix_weights(varying) panels; both bases and control groups, unweighted/weighted/zero-weight samples, three seeds, reg/ipw negative controls. Three additional clustered scenarios use cl distinct from id, with unbalanced cluster sizes 3/5/7, under analytical and bootstrap inference. The registered cluster+bootstrap Wald divergence compares against the analytical clustered R fit. All four aggregations and saved-RIF analytical roundtrips are exercised. Nonlinear propensity and outcome trends, covariate composition changes, heteroskedastic pre-control errors. Independent 2x2 weight derivatives and an old-sign mutant demonstrate sensitivity."
+}

@@ -1,9 +1,10 @@
 *-----------------------------------------------------------------------------
 *      breakhunt.do -- designs probing lpdid's covariate adjustment
 *-----------------------------------------------------------------------------
-* Design B: untreated trend nonlinear in x2 with asymmetric cohort means --
-* every linear-outcome model is misspecified while the propensity score
-* stays logit-linear, so csdid ipw/dr survive. Target ES(e) = 2.0 + 0.5 e.
+* Design B: untreated trend nonlinear in x2 with asymmetric cohort means.
+* Linear outcome regressions omit the quadratic term; a linear pooled
+* not-yet propensity logit need not be exact. This is not a guaranteed
+* single-correct-model case. Target ES(e) = 2.0 + 0.5 e.
 * Design C: unequal cohort sizes (50/30/20) with cohort-specific tau(X)
 * profiles. Target ES(e) = 2.0945 + 0.556 e (closed form in mcsum.py).
 * Writes one CSV row per (regime, pkg, rep, horizon); summarize with

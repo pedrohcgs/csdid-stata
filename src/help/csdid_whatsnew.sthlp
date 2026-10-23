@@ -1,11 +1,12 @@
 {smcl}
-{* *! version 2.0.0 27sep2026}{...}
+{* *! version 2.0.1 23oct2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_plot" "help csdid_plot"}{...}
 {vieweralsosee "csdid legacy utilities" "help csdid_legacy"}{...}
+{viewerjumpto "csdid 2.0.1" "csdid_whatsnew##v201"}{...}
 {viewerjumpto "csdid 2.0.0" "csdid_whatsnew##v200"}{...}
 {viewerjumpto "Also see" "csdid_whatsnew##alsosee"}{...}
 
@@ -16,13 +17,33 @@
 {p2colreset}{...}
 
 {pstd}
-This is what changed for someone upgrading from csdid Version 1.82, the last
-revision of the 1.8x line; {cmd:ssc install csdid} installs Version 1.81,
+Version 2.0.1 is a patch to 2.0.0. Its changes appear first below. The 2.0.0
+section describes what changed for someone upgrading from csdid Version 1.82,
+the last revision of the 1.8x line; {cmd:ssc install csdid} installs Version 1.81,
 whose two further differences are listed in {helpb csdid}. The command surface
 is deliberately the same, so most existing do-files run unchanged. The entries
 below summarize where they do not, and the things that are new;
 {help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82} in
 {helpb csdid} lists every change with what replaces it.
+
+
+{marker v201}{...}
+{hline 8} {hi:csdid 2.0.1} {hline}
+
+{pstd}
+{bf:Corrected covariate-adjusted inference in repeated cross sections.}
+Under {cmd:method(dr)}, the pre-period outcome-regression contribution to
+the influence function is corrected. Point estimates are unchanged;
+standard errors, covariance, confidence bands, pre-tests and aggregation
+inference can differ from 2.0.0. This also applies to panels estimated
+through {cmd:bal(none)} or {cmd:fix_weights(varying)}. Re-estimate affected
+results, including saved influence-function files.
+
+{pstd}
+{bf:Clearer diagnostics for undersized regressions.}
+The diagnostic identifies a failed 2x2 regression with fewer observations
+than regression coefficients. A square, full-rank design remains estimable. Reduce the
+covariate list if this diagnostic appears.
 
 
 {marker v200}{...}

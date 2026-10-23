@@ -197,21 +197,21 @@ log close dow
 dow_count lemp
 assert r(n_zero) == r(n_est)
 assert strpos(fileread("`lg'"), "so every estimated ATT(g,t) is 0 (up to rounding) with no standard error") > 0
-* ...but not with a covariate under dr: the stacked comparison then has
-* standard errors (R's too), so nothing is 0 with no SE and nothing is said
+* A covariate constant within each unit leaves this comparison degenerate:
+* its outcome-regression influence corrections cancel too (RT074).
 log using "`lg'", text replace name(dow)
 csdid lemp lpop [iw = wt], ivar(countyreal) time(year) gvar(first_treat) analytical fix_weights(varying) method(dr)
 log close dow
 dow_count lemp
-assert r(n_zero) == 0
-assert strpos(fileread("`lg'"), "`flat_msg'") == 0
+assert r(n_zero) == r(n_est)
+assert strpos(fileread("`lg'"), "so every estimated ATT(g,t) is 0 (up to rounding) with no standard error") > 0
 * and the same without weights: fix_weights(varying) stacks the periods
 * either way, as R does (RT074)
 log using "`lg'", text replace name(dow)
 csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) analytical fix_weights(varying) method(dr)
 log close dow
 dow_count lemp
-assert r(n_zero) == 0
-assert strpos(fileread("`lg'"), "`flat_msg'") == 0
+assert r(n_zero) == r(n_est)
+assert strpos(fileread("`lg'"), "so every estimated ATT(g,t) is 0 (up to rounding) with no standard error") > 0
 
 display as text "test-degenerate-outcome-warnings: a within-unit constant outcome and a band with no usable column are reported"

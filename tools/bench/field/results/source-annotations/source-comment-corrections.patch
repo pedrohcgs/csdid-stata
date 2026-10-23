@@ -1,0 +1,192 @@
+--- a/tools/bench/field/simdgp.do
++++ b/tools/bench/field/simdgp.do
+@@ -1,7 +1,7 @@
+ * Run from the bench/ folder of the replication package. Not run on its
+ * own: the drivers load it with -do-.  It defines sim_dgp.
+ * ---------------------------------------------------------------------------
+-* ONE population, ONE set of target parameters, three ways the sample arrives.
++* ONE population, ONE set of target parameters, several sampling schemes.
+ *
+ * Y_it = mu_i + 0.3 t + tau(G_i, t) 1{t >= G_i} + eps_it
+ *   mu_i ~ N(0,1) iid, eps_it ~ N(0,1) iid
+@@ -18,9 +18,9 @@
+ * depend on T -- missingness and period assignment are independent of G:
+ *   balanced    every unit in every period
+ *   unbalanced  each (i,t) kept with prob 1-delta, MCAR
+-*   rcs         n*T individuals, each observed in exactly ONE period, period
+-*               drawn independently of G. Same rows and same per-period sample
+-*               size as the balanced panel, so precision is comparable.
++*   rcs         n*T individuals, each observed in exactly ONE period.
++*               Period labels cycle through 1..T; published settings have
++*               n rows per period, with independent individuals across waves.
+ * ---------------------------------------------------------------------------
+ capture program drop sim_dgp
+ program define sim_dgp
+@@ -58,9 +58,9 @@
+         quietly set obs `n'
+         generate long id = _n
+     }
+-    * Cohorts assigned deterministically, exactly a quarter of units each.
+-    * Drawing them at random re-rolls the TARGET every replication, which is
+-    * the one thing this study must hold fixed.
++    * Cohort counts are fixed at one quarter each for published sample sizes.
++    * Random assignment would leave the population target fixed but add
++    * sampling variation in cohort counts.
+     quietly generate int gvar = cond(mod(_n, 4) == 0, 0, cond(mod(_n, 4) == 1, 3, ///
+         cond(mod(_n, 4) == 2, 4, 5)))
+     quietly generate double mu = rnormal()
+@@ -71,23 +71,20 @@
+         * conditional rather than vacuous.
+         quietly generate byte x1 = runiform() < cond(gvar == 0, .35, .15 + .10 * gvar)
+         if "`misspec'" == "pscore" {
+-            * cohorts differ in the VARIANCE of x2: P(G|x2) depends on x2
+-            * squared, so a logit linear in (x1, x2) is misspecified while
+-            * the outcome stays linear in X - dr and reg survive, ipw not.
+-            * MEASURED NULL: the even-function pscore error is orthogonal to
+-            * the linear trend under symmetric x2, so nothing breaks here.
+-            * pscore2 is the design whose error loads on the trend.
++            * Cohort-specific variances make selection nonlinear in x2.
++            * Untreated outcome changes remain linear in observed X.
++            * Score misspecification alone does not determine IPW bias;
++            * its interaction with the untreated outcome trend matters.
+             quietly generate double x2 = (0.55 + 0.22 * cond(gvar == 0, 0, gvar - 2)) * rnormal()
+         }
+         else if "`misspec'" == "pscore2" {
+-            * selection is logit-LINEAR in a latent index w (same cohort
+-            * mean-shifts as the clean cell, so overlap is bounded by
+-            * construction); the researcher observes x2 = standardized
+-            * exp(0.8 w). P(G|x2) is a logit in log, so a logit linear in
+-            * (x1, x2) is misspecified AND its error is skewed with x2 -
+-            * it loads on the linear trend. The outcome stays linear in the
+-            * OBSERVED x2, so reg/dr and every imputation rival keep a
+-            * correct outcome model: only ipw's one chance is the wrong one.
++            * Observed x2 is a standardized exponential of latent normal w.
++            * Pairwise cohort log odds are linear in (x1, w); pooled not-yet
++            * comparisons need not have that form. Selection is nonlinear
++            * in observed x2, and no uniform overlap bound is imposed.
++            * Untreated changes remain linear in observed X, supplying the
++            * outcome-model protection for reg and dr. Other commands can
++            * impose additional restrictions across cohorts and periods.
+             * Standardized to mean 0, var 1 in population (closed form over
+             * the four equal-share cohort shifts). Curvature tunable via
+             * global PS2CURV; default 0.8.
+@@ -105,12 +102,10 @@
+             quietly drop w
+         }
+         else if "`misspec'" == "pscore3" {
+-            * bounded-nonlinearity alternative: x2 | G is a two-normal
+-            * mixture whose weight varies by cohort. The cross-cohort log
+-            * density ratio is a smooth sigmoid in x2 - nonlinear (logit
+-            * linear in x2 misspecified) but FLAT in the tails, so overlap
+-            * is safe by construction. Monotone-in-x2 selection makes the
+-            * pscore error load on the linear trend. Outcome linear in x2.
++            * x2 | G is a two-normal mixture with cohort-specific weights.
++            * Shared components and strictly positive mixture weights bound
++            * the cross-cohort density ratios. Selection is nonlinear in x2;
++            * untreated outcome changes remain linear in observed X.
+             * pmix must be a VARIABLE: a local cond() on gvar evaluates the
+             * first observation only and hands every cohort one mixture
+             quietly generate double pmix = cond(gvar == 0, 0.75, 0.80 - 0.15 * (gvar - 3))
+@@ -127,10 +122,9 @@
+         quietly bysort id: generate int time = _n
+     }
+     if "`errors'" == "unitroot" {
+-        * within-unit random-walk errors: eps_t = eps_{t-1} + nu_t. This is
+-        * the covariance structure under which base-period differencing is
+-        * the efficient construction and pre-period pooling is not - the
+-        * mirror image of the iid case. Panel regimes only.
++        * Within-unit random-walk errors: eps_t = eps_{t-1} + nu_t.
++        * Base-period differencing and pre-period pooling have different
++        * sampling variances under this covariance. Panel regimes only.
+         quietly bysort id (time): generate double nu = rnormal()
+         quietly bysort id (time): generate double epsrw = sum(nu)
+         quietly generate double y = mu + 0.30 * time + epsrw
+--- a/tools/bench/field/lpdidrw.do
++++ b/tools/bench/field/lpdidrw.do
+@@ -38,7 +38,7 @@
+         }
+     }
+ 
+-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
++    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
+     foreach cell in ok owrong pwrong2 {
+         local msp = cond("`cell'" == "ok", "", ///
+             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
+--- a/tools/bench/field/fielddgp.do
++++ b/tools/bench/field/fielddgp.do
+@@ -162,7 +162,8 @@
+     if "`design'"=="B" {
+         quietly generate int gvar = cond(mod(_n,4)==0, 0, cond(mod(_n,4)==1, 3, ///
+             cond(mod(_n,4)==2, 4, 5)))
+-        * ASYMMETRIC cohort means, common variance -> logit-linear pscore
++        * Asymmetric normal means and common variance give linear pairwise
++        * cohort log odds; pooled not-yet scores need not be linear logits.
+         quietly generate double x2 = rnormal() + cond(gvar==0, -0.5, ///
+             cond(gvar==3, -0.8, cond(gvar==4, 0.0, 0.2)))
+     }
+--- a/tools/bench/field/jwuncond.do
++++ b/tools/bench/field/jwuncond.do
+@@ -38,7 +38,7 @@
+         }
+     }
+ 
+-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
++    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
+     foreach cell in ok owrong pwrong2 {
+         local msp = cond("`cell'" == "ok", "", ///
+             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
+--- a/tools/bench/field/sarun.do
++++ b/tools/bench/field/sarun.do
+@@ -38,7 +38,7 @@
+         }
+     }
+ 
+-    * ---- covariate cells: both models right, outcome wrong, pscore wrong ----
++    * ---- covariate cells: linear trend, nonlinear trend, transformed X ----
+     foreach cell in ok owrong pwrong2 {
+         local msp = cond("`cell'" == "ok", "", ///
+             cond("`cell'" == "owrong", "misspec(outcome)", "misspec(pscore2)"))
+--- a/tools/bench/field/simmc_dr.do
++++ b/tools/bench/field/simmc_dr.do
+@@ -1,8 +1,8 @@
+ * Run from the bench/ folder of the replication package, with the csdid
+ * source tree in ../src.  Usage:  stata-mp -b do simmc_dr.do 1000 500 mc_dr.csv
+-* Monte Carlo: one DGP, one fixed target (2.0 / 2.5 / 3.0), balanced panel
+-* with covariates. Three misspecification cells -- both models right, the
+-* outcome model wrong, the propensity score wrong.
++* Monte Carlo: fixed targets (2.0 / 2.5 / 3.0), balanced panel with covariates.
++* Cells use a linear untreated trend, a nonlinear trend, or variance-shift
++* selection. A linear pooled not-yet propensity logit need not be exact.
+ * Writes one row per (regime, package, rep, horizon) so nothing is aggregated
+ * before it is inspected.
+ args nunits reps outfile
+--- a/tools/bench/field/ctvar_all.do
++++ b/tools/bench/field/ctvar_all.do
+@@ -2,8 +2,9 @@
+ *      ctvar_all.do -- the calendar-time design, every command at every option
+ *-----------------------------------------------------------------------------
+ * Covariate trend effects vary with calendar time, identically across
+-* cohorts: conditional parallel trends holds and every outcome model is
+-* correctly specified cell by cell. Target ES(e) = 2.0 + 0.5 e.
++* cohorts. Conditional parallel trends holds; untreated changes are linear
++* in X within each period pair. Pooled restrictions need not hold.
++* Target ES(e) = 2.0 + 0.5 e.
+ * Writes one CSV row per (regime, pkg, rep, horizon); summarize with
+ * mcsum.py. Seeds replication r at 90000 + r. Run from the bench/ folder.
+ *   Usage: stata-mp -b do ctvar_all.do <nunits> <reps> <outfile>
+--- a/tools/bench/field/breakhunt.do
++++ b/tools/bench/field/breakhunt.do
+@@ -1,9 +1,10 @@
+ *-----------------------------------------------------------------------------
+ *      breakhunt.do -- designs probing lpdid's covariate adjustment
+ *-----------------------------------------------------------------------------
+-* Design B: untreated trend nonlinear in x2 with asymmetric cohort means --
+-* every linear-outcome model is misspecified while the propensity score
+-* stays logit-linear, so csdid ipw/dr survive. Target ES(e) = 2.0 + 0.5 e.
++* Design B: untreated trend nonlinear in x2 with asymmetric cohort means.
++* Linear outcome regressions omit the quadratic term; a linear pooled
++* not-yet propensity logit need not be exact. This is not a guaranteed
++* single-correct-model case. Target ES(e) = 2.0 + 0.5 e.
+ * Design C: unequal cohort sizes (50/30/20) with cohort-specific tau(X)
+ * profiles. Target ES(e) = 2.0945 + 0.556 e (closed form in mcsum.py).
+ * Writes one CSV row per (regime, pkg, rep, horizon); summarize with

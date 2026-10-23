@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # RT052: DRDID's own rcond guards on the outcome-regression designs.
 # did 2.5.1 tests rcond(crossprod(.)) of the pooled, unweighted control design
-# (rcond_check_fail). DRDID 1.3.0 then tests rcond(XpX) < .Machine$double.eps
+# (rcond_check_fail). DRDID 1.4.0 then tests rcond(XpX) < .Machine$double.eps
 # on the design it actually inverts: the weighted control XpX in reg_did_panel
 # and drdid_panel, and each period's block in reg_did_rc and drdid_rc (control
 # pre, control post, then treated pre and post in drdid_rc). A block or a
@@ -75,7 +75,7 @@ res <- do.call(rbind, res)
 write.csv(res, file.path(out, "expected/r/attgt.csv"), row.names = FALSE, quote = FALSE, na = "")
 outputs <- list(list(path = "expected/r/attgt.csv", schema = "attgt", sha256 = sha(file.path(out, "expected/r/attgt.csv"))))
 manifest <- list(matrix_id = "RT052", fixture_family = "r-regression-design-rcond-guards",
-  normative_source = "DRDID 1.3.0 reg_did_panel and drdid_panel (rcond(XpX) < eps, XpX weighted), reg_did_rc and drdid_rc (rcond of each pre/post block < eps); did 2.5.1 compute.att_gt2.R:590-596 (slow path compute.att_gt.R:678/944) (the stop becomes an NA cell with a warning)",
+  normative_source = "DRDID 1.4.0 reg_did_panel and drdid_panel (rcond(XpX) < eps, XpX weighted), reg_did_rc and drdid_rc (rcond of each pre/post block < eps); did 2.5.1 compute.att_gt2.R:590-596 (slow path compute.att_gt.R:678/944) (the stop becomes an NA cell with a warning)",
   source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL002"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt052/generate.R", path = "tools/parity/generators/rt052/generate.R", sha256 = sha(script_path))),

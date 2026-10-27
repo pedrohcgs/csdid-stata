@@ -112,10 +112,10 @@ csdid mrate, ivar(county_code) time(year) gvar(gvar) notyet anticipation(1) anal
 estat event
 ```
 
-The reported joint Wald pre-test still tests estimable cells before the
-nominal treatment date, including those inside the anticipation window. It
-is not a test restricted to the periods before anticipation begins. Inspect
-those earlier cells when assessing the no-anticipation assumption.
+The reported joint Wald pre-test uses estimable cells strictly before
+anticipation begins: periods with `t < g - anticipation`. Effects inside the
+anticipation window remain in the results table but are excluded from the
+pre-test. Inspect the earlier cells when assessing the identifying assumptions.
 
 See [Comparison groups](comparison-groups.html) for the choice itself, and
 [Pre-testing](pre-testing.html) for reading the pre-treatment cells that remain.

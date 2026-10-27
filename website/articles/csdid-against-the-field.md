@@ -1,5 +1,6 @@
 ---
 title: "How csdid compares with other DiD Stata commands"
+benchmark_version: 2.0.1
 permalink: /articles/comparing-did-commands.html
 math: true
 ---

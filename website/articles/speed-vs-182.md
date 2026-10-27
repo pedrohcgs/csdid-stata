@@ -1,5 +1,6 @@
 ---
 title: "Speed against Version 1.82"
+benchmark_version: 2.0.1
 ---
 
 # Speed against Version 1.82

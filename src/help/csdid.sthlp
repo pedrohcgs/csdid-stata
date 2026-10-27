@@ -420,10 +420,10 @@ resolved choice is recorded in
 {opt base_period(rule)} chooses the period each ATT(g,t) differences against.
 
 {p2colset 12 26 28 2}{...}
-{p2col:{cmd:varying}}for post-treatment periods, {it:t >= g}, the base period
-is the last observed period before {it:g - anticipation}; for pre-treatment
+{p2col:{cmd:varying}}for periods with {it:t >= g - anticipation}, the base
+period is the last observed period before {it:g - anticipation}; for earlier
 periods the base period is the observed period immediately before {it:t}.
-Pre-treatment estimates are then short-differences and are the natural placebo
+Earlier-period estimates are then short-differences and are the natural placebo
 checks.{p_end}
 {p2col:{cmd:universal}}(the default) every ATT(g,t), pre and post, differences
 against a single base period, the last observed period before
@@ -444,10 +444,11 @@ are reported and how an event study lines up.
 {opt anticipation(#)} allows units to respond up to {it:#} units of
 {cmd:time()} before their nominal treatment date. The no-anticipation
 restriction then applies only to periods {it:t < g - #}; responses are allowed
-from {it:g - #} onward. Post-treatment comparisons and every comparison under
-{cmd:base_period(universal)} use the last observed period before that boundary
-as their base. Varying-base pre-treatment comparisons still use the
-preceding observed period. {it:#} must be a nonnegative integer; the default is
+from {it:g - #} onward. Post-treatment comparisons, comparisons inside the
+anticipation window, and every comparison under {cmd:base_period(universal)}
+use the last observed period before that boundary as their base. Varying-base
+comparisons before anticipation begins use the preceding observed period.
+{it:#} must be a nonnegative integer; the default is
 {cmd:anticipation(0)}. Cohorts left without a usable base period, that is
 cohorts with {it:g - # } at or before the first period in the sample, are
 dropped with a message.
@@ -674,17 +675,18 @@ computation with the matching standard-error accounting.{p_end}
 {p2colreset}{...}
 
 {phang2}
-With {cmd:notyet}, the usable calendar is chosen before whole-unit balancing.
-If all never-treated units disappear only during balancing, surviving treated
-cohorts keep their eligible pre-treatment comparisons, including those of the
-latest cohort. Comparisons with no eligible controls are reported missing.
-If {cmd:nevertreated} finds no never-treated units in the balanced sample,
-it instead announces a fallback to the latest cohort and its shorter horizon.
+With either comparison-group choice, comparison availability is checked again
+after whole-unit balancing. If that removes every never-treated unit or the
+latest cohort serving as the comparison group, the latest surviving cohort
+becomes the comparison group and the usable horizon is shortened. The cutoff
+also accounts for {cmd:anticipation()}. Read the sample and comparison-group
+messages together.
 
 {phang2}
-If balancing removes every unit from an eligible treated cohort, estimation
-stops and names that cohort. Correct the missing observations or use
-{cmd:bal(none)} to estimate on the unbalanced panel.
+If balancing removes every unit from an eligible treated cohort, that cohort
+is dropped with a warning and estimation continues with the surviving cohorts.
+The run refuses if no usable treated cohort remains. Correct the missing
+observations or use {cmd:bal(none)} to retain the unbalanced panel.
 
 {phang2}
 Whenever a mode discards observations, {cmd:csdid} reports how many units and
@@ -2123,10 +2125,10 @@ note is printed instead, when {it:q = 0}, when {it:V_PP} contains missing
 values, or when {it:V_PP} is numerically singular. {it:V} here is always the
 analytical matrix, never the bootstrap one, so the pre-test is the same under
 {cmd:analytical} and under the default bootstrap. With {cmd:anticipation(#)},
-the test still selects cells by {it:t < g}; it does not restrict itself to
-{it:t < g - #}. A rejection can therefore involve responses allowed inside
-the anticipation window. Inspect the earlier cells when assessing the
-no-anticipation restriction.
+the test selects estimable cells with {it:t < g - #}, strictly before
+anticipation begins. Effects inside the anticipation window remain in the
+results table but are excluded from the pre-test. Inspect the earlier cells
+when assessing the identifying assumptions.
 
 {marker random}{...}
 {pstd}

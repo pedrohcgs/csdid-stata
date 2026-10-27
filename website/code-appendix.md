@@ -1,16 +1,17 @@
 ---
 title: Code appendix
+benchmark_version: 2.0.1
 ---
 
 # Code appendix
 
 The scripts below reproduce the simulation and timing designs for
-`csdid` 2.0.1. The [design inventory](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/website-simulation-designs.json)
+`csdid` 2.0.1. The [design inventory](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/website-simulation-designs.json)
 records each statistical driver's sample size, replication count, arguments
-and seed convention. The [results record](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/results/website-statistics.json)
+and seed convention. The [results record](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/field/results/website-statistics.json)
 identifies the software, raw outputs, usable draws and diagnostic evidence.
-The [missing-row diagnostic](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/missing_rows_diagnostic.do)
-and [combined diagnostic wrapper](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/publication_diagnostics.do)
+The [missing-row diagnostic](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/field/missing_rows_diagnostic.do)
+and [combined diagnostic wrapper](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/field/publication_diagnostics.do)
 provide the additional fixed-draw comparisons in [How csdid compares](articles/csdid-against-the-field.html).
 
 The main simulation protocol is:
@@ -30,7 +31,7 @@ The main simulation protocol is:
   diagnostics record their own seeds and dimensions.
 - **Separate attempts and usable results.** Declined fits remain in the
   raw evidence. Coverage uses available intervals, with its denominator
-  reported. The [producer map](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/website-simulation-producers.json)
+  reported. The [producer map](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/website-simulation-producers.json)
   assigns baseline rows to their main drivers and added variants to option
   drivers. Repeated fits are retained and compared, without averaging or
   filling a missing baseline from another run.
@@ -40,8 +41,9 @@ The main simulation protocol is:
   Timing experiments run separately on a quiet machine, with their own
   trial counts and caps.
 
-Use the complete package checkout so that the replication folder can find
-`../src` and `../pkg`. Parameterized Monte Carlo drivers accept a unit
+Use the complete [version 2.0.1 package checkout](https://github.com/pedrohcgs/csdid-stata/tree/v2.0.1)
+so that the replication folder can find `../src` and `../pkg`. This pins the
+estimator to the version used for the published results. Parameterized Monte Carlo drivers accept a unit
 count, replication count and output filename; fixed diagnostics and timing
 scripts use the invocation shown in their headers. The Version 1.82
 comparison additionally needs the archive at `../csdid-182` (commit

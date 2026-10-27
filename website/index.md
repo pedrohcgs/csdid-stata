@@ -21,6 +21,8 @@ averages, or one overall summary. Effects may differ across cohorts and over
 time. Inference uses a multiplier bootstrap with simultaneous confidence bands
 by default; analytical and clustered inference are also available.
 
+See [what changed in version 2.0.2](news.html#csdid-202).
+
 ## How to install
 
 Version 2.0.2 installs from GitHub. It replaces an earlier `csdid` under the
@@ -74,6 +76,9 @@ from 11x to 304x as the design's size, periods, and cohorts vary. See
 machine, matched settings, and runnable code. The
 [comparison with other commands](articles/csdid-against-the-field.html)
 reports both runtime and differences in what each command estimates.
+
+These published timings describe version 2.0.1. Version 2.0.2 has not been
+remeasured for these comparisons.
 
 ## Also in R and Python
 

@@ -19,7 +19,8 @@ number: the post-treatment effects are identical under either setting.
 Here *g-1* means the last observed period before treatment, with no
 anticipation. With `anticipation(#)`, the reference is the last observed
 period before *g - anticipation*; it need not be exactly *g-1* on a gapped
-calendar. `e(attgt)` records each cell's reference in `base_time`.
+calendar. Periods inside the allowed anticipation window use that same clean
+base under either setting. `e(attgt)` records each cell's reference in `base_time`.
 
 Universal is the default because it is the layout an event-study plot assumes,
 and event studies are how these results are almost always presented. R `did`

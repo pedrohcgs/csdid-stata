@@ -27,13 +27,13 @@
     </nav>
   </header>
   <main class="content">
-    {% if page.benchmark_version %}
+{% if page.benchmark_version %}
     <div class="note benchmark-scope">
       <p>The results on this page were collected with <code>csdid {{ page.benchmark_version }}</code>.
       <a href="{{ '/news.html#csdid-202' | relative_url }}">Version 2.0.2</a> is available;
       its performance has not been remeasured for these comparisons.</p>
     </div>
-    {% endif %}
+{% endif %}
     {{ content }}
   </main>
   <footer class="site-footer">

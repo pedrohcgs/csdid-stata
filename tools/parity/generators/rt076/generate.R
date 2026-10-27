@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# RT076: strict physical GLM dimensions; square blocks remain estimable.
+# RT076: physical GLM dimensions and did's normalized RC support guard.
 args <- commandArgs(trailingOnly = FALSE)
 farg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(farg)) sub("^--file=", "", farg[1L]) else "tools/parity/generators/rt076/generate.R"
@@ -43,18 +43,23 @@ add_case <- function(mode, block, count, weighting) {
                                   else f(y1, y0, D, X, w, inffunc = TRUE)), error = function(e) conditionMessage(e))
     # csdid kernels also enforce did's outer feasibility checks. A finite
     # standalone DRDID result is not a finite did target after those refuse.
-    overlap_fail <- method %in% c("dr", "ipw") && suppressWarnings(did:::overlap_check_fail(X, D, FALSE))
-    rank_fail <- !overlap_fail && method %in% c("dr", "reg") && did:::rcond_check_fail(X, D, FALSE)
-    if (overlap_fail) a <- "did preliminary overlap condition violated"
+    support_fail <- mode == "rc" && method %in% c("dr", "reg") &&
+      did:::rc_outcome_has_too_few_obs(D, post, w, ncol(X), method == "dr")
+    overlap_fail <- !support_fail && method %in% c("dr", "ipw") && suppressWarnings(did:::overlap_check_fail(X, D, FALSE, w))
+    rank_fail <- !support_fail && !overlap_fail && method %in% c("dr", "reg") && did:::rcond_check_fail(X, D, FALSE, w)
+    if (support_fail) a <- "did preliminary outcome support has fewer positive-weight observations than covariates"
+    else if (overlap_fail) a <- "did preliminary overlap condition violated"
     else if (rank_fail) a <- "did preliminary control design is singular"
     error <- if (is.character(a)) a else ""
     good <- !is.character(a) && is.finite(a$ATT) && all(is.finite(a$att.inf.func))
-    # did's preliminary pooled-control rcond guard still has priority.
-    pooled_pass <- rcond(crossprod(X[D == 0, , drop = FALSE])) >= .Machine$double.eps
+    # On panel designs the preliminary weighted pooled-control guard precedes
+    # backend physical dimensions; RC support is checked before either guard.
+    pooled_pass <- !did:::rcond_check_fail(X, D, FALSE, w)
     physical <- count < ncol(X) && ((method == "dr" && (mode == "rc" || block == 1L)) || (method == "reg" && (mode == "panel" && block == 1L || mode == "rc" && block <= 2L)))
-    status7 <- physical && pooled_pass && !overlap_fail
+    status7 <- !support_fail && physical && pooled_pass && !overlap_fail
+    guard_status <- if (support_fail) 8L else if (status7) 7L else 0L
     specs[[length(specs)+1L]] <<- data.frame(scenario, mode, block, count, weighting, method,
-       n = nrow(z), physical = as.integer(status7), good = as.integer(good))
+       n = nrow(z), physical = as.integer(guard_status > 0L), guard_status, good = as.integer(good))
     results[[length(results)+1L]] <<- data.frame(scenario, method, att = fmt(if (good) a$ATT else NA_real_),
        se = fmt(if (good) a$se else NA_real_), error = error)
     if (good) influences[[length(influences)+1L]] <<- data.frame(scenario, method, id = seq_len(nrow(z)), value = fmt(as.vector(a$att.inf.func)))
@@ -68,8 +73,9 @@ add_case <- function(mode, block, count, weighting) {
           est_method=method, bstrap=FALSE, cband=FALSE, faster_mode=fast), warning=function(e) {
             msgs <<- c(msgs, conditionMessage(e)); invokeRestart("muffleWarning")
           }), error=function(e) conditionMessage(e))
-      wanted <- msgs[grepl("fewer observations than covariates", msgs, fixed=TRUE)]
-      if (status7) stopifnot(length(wanted)==1L)
+      wanted <- msgs[grepl("fewer positive-weight observations than covariates", msgs, fixed=TRUE) |
+                       grepl("fewer observations than covariates", msgs, fixed=TRUE)]
+      if (guard_status > 0L) stopifnot(length(wanted)==1L)
       if (length(wanted)) warnings[[length(warnings)+1L]] <<- data.frame(scenario, method, faster_mode=as.integer(fast), message=wanted)
     }
   }
@@ -98,8 +104,8 @@ for (mode in c("rc", "panel")) for (kind in c("pass", "fail")) for (weighting in
   inputs[[length(inputs)+1L]] <- list(path=input,sha256=sha(file.path(out,input)),rows=nrow(z),columns=ncol(z))
   zz <- if (mode == "rc") z else z[z$t==1,]
   X <- model.matrix(~x1+x2+x3+x4+x5+x6+x7+x8,zz)
-  overlap <- suppressWarnings(did:::overlap_check_fail(X,as.numeric(zz$g==2),FALSE))
-  stopifnot(identical(overlap,kind=="fail"),nrow(X)<ncol(X))
+  overlap <- suppressWarnings(did:::overlap_check_fail(X,as.numeric(zz$g==2),FALSE,zz$w))
+  stopifnot(nrow(X)<ncol(X))
   wide_specs[[length(wide_specs)+1L]] <- data.frame(scenario,mode,kind,weighting,n=nrow(X),k=ncol(X),want_status=if(overlap)1L else 7L)
   cell_messages <- character()
   for (fast in c(FALSE,TRUE)) {
@@ -132,13 +138,13 @@ write.csv(do.call(rbind,influences),file.path(out,"expected/r/inffunc.csv"),row.
 write.csv(do.call(rbind,warnings),file.path(out,"expected/r/warnings.csv"),row.names=FALSE)
 outputs <- lapply(c("fits.csv","inffunc.csv","warnings.csv","wide-warnings.csv","wide-attgt.csv"),function(n)list(path=paste0("expected/r/",n),schema="rt076",sha256=sha(file.path(out,"expected/r",n))))
 manifest <- list(matrix_id="RT076",fixture_family="r-undersized-glm-designs",
- normative_source="DRDID 1.4.0 fastglm_fit.R:19-21; did 2.5.1 compute.att_gt/compute.att_gt2 catch and report estimator errors",
- source_commit="eaac3b49cd225d0d7706c633858555a5f204e21e", decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
+ normative_source="DRDID 1.4.0 fastglm_fit.R:19-21; did compute.att_gt/compute.att_gt2 normalized RC outcome support before overlap and pooled rank",
+ source_commit="48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
  generators=list(list(runtime="R",command="Rscript tools/parity/generators/rt076/generate.R",path="tools/parity/generators/rt076/generate.R",sha256=sha(script_path))),
  runtimes=list(list(name="R",version=as.character(getRversion()),package_versions=list(did=as.character(packageVersion("did")),DRDID=as.character(packageVersion("DRDID"))))),rng=NULL,expected_outputs=outputs,
  comparison_plan=list(list(actual="all kernel ATT/SE/influence values or missing refusals after did preliminary feasibility guards",expected="expected/r/fits.csv and inffunc.csv",tolerance_id="TOL002",key_columns=c("scenario","method","id")),
  list(actual="12 wide IPW kernel/public refusals with overlap precedence and exact fast/slow warnings",expected="expected/r/wide-attgt.csv and wide-warnings.csv",tolerance_id="EXACT",key_columns=c("scenario","faster_mode","group","time")),
  list(actual="physical undersize status and exact caught warning",expected="expected/r/warnings.csv",tolerance_id="EXACT",key_columns=c("scenario","method"))),approved_divergence=NULL,
- scope_note="54 designs, 162 low-level method fits with did preliminary feasibility guards: every RC corner and both panel arms at k-1/k/k+1 rows for k=4, unit/nonuniform/one-zero weights. The shortened block has half-scale H4 covariates so the propensity model remains regular; square outcome designs retain full rank. Every RC shape also runs did's fast and slow route. Square designs stay admissible when full rank; zero weights count physically, with effective rank left to existing guards. Twelve total-design IPW cases cross panel/RC, overlap pass/fail and three weight types at n<k=9, matching both public did modes.")
+ scope_note="54 designs, 162 low-level method fits with did preliminary feasibility guards: every RC corner and both panel arms at k-1/k/k+1 rows for k=4, unit/nonuniform/one-zero weights. The shortened block has half-scale H4 covariates so the propensity model remains regular. RC support counts positive locally normalized weights before overlap or pooled rank; square positive-support designs remain admissible. Every RC shape also runs did's fast and slow route. Twelve total-design IPW cases cross panel/RC, overlap pass/fail and three weight types at n<k=9, matching both public did modes.")
 jsonlite::write_json(manifest,file.path(out,"metadata/manifest.json"),pretty=TRUE,auto_unbox=TRUE,null="null")
 cat("RT076 written:",nrow(specs),"fits;",sum(specs$physical),"explicit physical refusals;",sum(specs$good),"finite fits;",nrow(wide_specs),"wide IPW refusals.\n")

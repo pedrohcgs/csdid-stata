@@ -1,8 +1,9 @@
 SHAPE: s08_dead_anticip
 faster_mode: TRUE
 ERROR: <none>
-N_WARNINGS: 1
+N_WARNINGS: 2
 WARNING[1]: dropped 90 rows from original data due to missing or non-finite data
+WARNING[2]: No pre-treatment periods available for the Wald pre-test of parallel trends. This can happen when all groups are first treated early in the panel (e.g., in the second time period) so that no pre-treatment ATT(g,t) estimates exist. Note: anticipation=1 further reduces the number of available pre-treatment periods.
 N_MESSAGES: 1
 MESSAGE[1]: Note: anticipation = 1. Never-treated units (with group status 0 or Inf) are assumed to never anticipate treatment. Anticipation only applies to eventually-treated units.
 tlist: 1 3 4 5

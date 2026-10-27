@@ -9,7 +9,7 @@
       "macros": {
         "cmd": "csdid",
         "cmdline": "csdid y, ivar(id) time(time) gvar(g) method(reg)",
-        "version": "2.0.1",
+        "version": "2.0.2",
         "yname": "y",
         "timevar": "time",
         "gvar": "g",
@@ -72,7 +72,7 @@
       "macros": {
         "cmd": "csdid",
         "cmdline": "csdid y, time(time) gvar(g) method(reg)",
-        "version": "2.0.1",
+        "version": "2.0.2",
         "yname": "y",
         "timevar": "time",
         "gvar": "g",
@@ -135,7 +135,7 @@
       "macros": {
         "cmd": "csdid",
         "cmdline": "csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl)",
-        "version": "2.0.1",
+        "version": "2.0.2",
         "yname": "y",
         "timevar": "time",
         "gvar": "g",

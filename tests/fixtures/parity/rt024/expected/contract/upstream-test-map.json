@@ -1,7 +1,7 @@
 [
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "duplicate (id, period) rows are rejected identically by both modes",
     "mapped_scenario": "duplicate-id-period.csv",
     "assertion_family": "duplicate ivar-time rows rejected before estimation for baseline and fast requests",
@@ -9,7 +9,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "negative / zero-mean weights are rejected identically by both modes",
     "mapped_scenario": "negative-weights.csv;zero-weights.csv",
     "assertion_family": "negative and zero-mean weights rejected for baseline and fast requests",
@@ -17,7 +17,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "valid positive weights are still accepted in both modes",
     "mapped_scenario": "positive-weights.csv",
     "assertion_family": "positive weights accepted for baseline and fast requests with finite ATT cells",
@@ -25,7 +25,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "fast RC path returns NA instead of crashing when a cell has no treated post observations",
     "mapped_scenario": "rc-missing-treated-post.csv",
     "assertion_family": "repeated-cross-section cell with no treated post observations returns missing cells without crashing",
@@ -33,7 +33,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "never-treated small-group stop fires in both modes when multiple groups are small",
     "mapped_scenario": "small-never-treated.csv",
     "assertion_family": "never-treated control group too small for covariate dimension is rejected",
@@ -41,7 +41,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "slow unbalanced influence aggregation handles fractional numeric ids",
     "mapped_scenario": "fractional-unbalanced.csv",
     "assertion_family": "fractional numeric ids in unbalanced data produce identical baseline and fast-requested results",
@@ -49,7 +49,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "fast path preserves user columns named weights",
     "mapped_scenario": "column-named-weights.csv",
     "assertion_family": "user columns named like weights remain usable as outcome and covariate names",
@@ -57,7 +57,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "transformed non-finite covariates are dropped before RC overlap checks",
     "mapped_scenario": "transformed-nonfinite.csv",
     "assertion_family": "precomputed transformed non-finite covariate rows are dropped before overlap checks",
@@ -65,7 +65,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "overlap_logit_fit matches fastglm::fastglm exactly, including the 0.999 decision",
     "mapped_scenario": "overlap_logit_fit_internal",
     "assertion_family": "R-only overlap_logit_fit helper bit identity",
@@ -73,7 +73,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "slow panel path converts estimator NaN cells to NA like fast mode",
     "mapped_scenario": "panel-nan-cells.csv",
     "assertion_family": "zero-weight panel cells are represented as missing, not NaN, and baseline/fast missingness agrees",
@@ -81,7 +81,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "never-treated units coded as gname = Inf are NOT dropped (Inf is a valid never-treated code)",
     "mapped_scenario": "inf_gname_never_treated",
     "assertion_family": "R Inf-coded never-treated group semantics",
@@ -89,7 +89,7 @@
   },
   {
     "source_file": "tests/testthat/test-robustness-guards.R",
-    "source_sha256": "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da",
+    "source_sha256": "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68",
     "source_test": "NA / NaN gname rows are still dropped while Inf is preserved",
     "mapped_scenario": "complete_finite_cases_internal",
     "assertion_family": "R-only complete_finite_cases helper",

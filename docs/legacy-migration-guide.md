@@ -1,6 +1,6 @@
 # Migrating from csdid Version 1.82
 
-This guide maps each option of Stata `csdid` Version 1.82 onto csdid 2.0.1.
+This guide maps each option of Stata `csdid` Version 1.82 onto csdid 2.0.2.
 The defaults and option mappings introduced in 2.0.0 remain in force.
 Version 1.82 is the last revision of the 1.8x line (November 2025; commit
 `fdbae255` of this repository). SSC distributes Version 1.81, dated

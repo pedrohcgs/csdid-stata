@@ -1,8 +1,8 @@
 {
   "matrix_id": "RT044",
   "fixture_family": "r-single-fold-before-balance",
-  "normative_source": "did 2.5.1 pre_process_did2.R:207-214 (as-if-never fold on the raw period list), :246-265 (latest cohort coerced, periods from its date removed), :356-384 (balancing afterwards)",
-  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "normative_source": "did 2.5.1.904 pre_process_did2.R: as-if-never folding and latest-cohort fallback precede balancing; post-balancing checks preserve a comparison cohort that survives",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001"],
   "inputs": [
@@ -30,7 +30,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt044/generate.R",
       "path": "tools/parity/generators/rt044/generate.R",
-      "sha256": "45d1254bdf951e5ca749ffe1c04bd42a48cd267a6bb87e07264dc012b8204ebc"
+      "sha256": "5dcc4c9db633b7dd0494b57a75713696b963c49c124d0a62392f93e43ba16507"
     }
   ],
   "runtimes": [
@@ -38,7 +38,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }

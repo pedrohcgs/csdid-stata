@@ -1,4 +1,4 @@
-# did 2.5.1 @ 3dcafe3e6bafcd10d42a25b061a051662ac0a484
+# did 2.5.1.904 @ 48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e
 source_file,source_sha256,source_test
 tests/testthat/test-aggte-clustervars-override.R,6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6,inherited clustering and same-variable override are honored without warning
 tests/testthat/test-aggte-clustervars-override.R,6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6,aggte warns and falls back to i.i.d. when att_gt was not clustered (analytic)
@@ -32,6 +32,14 @@ tests/testthat/test-aggte-comprehensive.R,99cf542b7b8dc91ca403cdd5b12028256631d4
 tests/testthat/test-aggte-comprehensive.R,99cf542b7b8dc91ca403cdd5b12028256631d48f4095997012dcf2b4211741ae,aggte group default (max_e = Inf) is unchanged by the gnotna max_e filter
 tests/testthat/test-aggte-edge-coverage.R,774a712a6c3c035c4330658a3078b57b6e0031676c034331a6852cb197cb8065,aggte handles a single treated group for every aggregation type
 tests/testthat/test-aggte-edge-coverage.R,774a712a6c3c035c4330658a3078b57b6e0031676c034331a6852cb197cb8065,aggte dynamic with min_e / max_e windows returns a consistent event-time set
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,"aggte(type='simple', min_e=) equals the hand-computed restricted weighted mean"
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,the default min_e = -Inf leaves simple and group aggregations unchanged
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,"aggte(type='group', min_e=) restricts each group's average to the window"
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,a min_e window that excludes every post-treatment cell errors clearly
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,"a window that empties only some groups errors clearly, naming them"
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,min_e/max_e for simple and group are in original time units on irregularly spaced panels
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,the min_e/max_e window boundary is inclusive: an existing e = max_e cell is kept
+tests/testthat/test-aggte-min-e-window.R,724cb56e0b1d5b2bd03d54a7fc9a03ad2fec5a4cd8c9304cdd8c54700d504ccb,balance_e warns that it is ignored for the simple and group aggregations
 tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec,"Invariant A holds under P1 (always-treated cohort, no never-treated)"
 tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec,Invariant A holds under P2 (anticipation>=1 promotes earliest cohort)
 tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec,Invariant A holds under P3 (anticipation un-coerces a late cohort)
@@ -39,78 +47,89 @@ tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa3
 tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec,fast and slow paths agree in the no-never + always-treated regime
 tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec,"latest cohort is retained as a control, not deleted, when always-treated present"
 tests/testthat/test-always-treated-invariance.R,8c9632da1dc7d453cea1c6acc2766fa35d93a644e2c77cab39ed3f3130f062ec,control_group='nevertreated' is invariant to always-treated presence
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,"att_gt works w/o dynamics, time effects, or group effects"
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,att_gt works using ipw
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,two period case
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,no covariates case
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,repeated cross section
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,ipw repeated cross sections
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,repeated cross sections dynamic effects
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,unbalanced panel
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,not yet treated comparison group
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,aggregations
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,unequally spaced groups
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,some units treated in first period
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,min and max length of exposures
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,anticipation
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,significance level and uniform confidence bands
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,malformed data
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,varying or universal base period
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,small groups
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,small comparison group
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,custom estimation method
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,sampling weights
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,works when user column is literally named 'gname'
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,works when user column is literally named 'gname' with faster_mode
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,time-varying weights: faster_mode matches slow mode (default fix_weights=NULL)
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,fix_weights options: faster_mode matches slow mode (balanced panel)
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,time-invariant weights: all fix_weights options produce identical ATTs
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,message emitted for time-varying weights in balanced panel
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,no message for time-invariant weights
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,notyettreated with time-varying weights: faster_mode matches
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,RC with time-varying weights: faster_mode matches
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,fix_weights validation
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,unbalanced panel fix_weights with units missing from reference period
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,"IF consistency: balanced panel, all fix_weights x est_method x base_period"
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,"IF consistency: balanced panel, notyettreated control group"
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,"IF consistency: repeated cross-sections, default weights x est_method"
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,"IF consistency: unbalanced panel, default weights x est_method"
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,"IF consistency: no covariates (xformla=~1), all data types"
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,clustered standard errors
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster mode enabled for panel data
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster model enabled for repeated cross sectional data
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster model enabled for unbalanced panel data and time-varying covariates
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster_mode = TRUE matches baseline on filtered sim dataset when there are not subsequent cohort and time periods
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster_mode time indexing matches baseline with repeated cross-sections
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster_mode time indexing matches baseline with panel data and varying base period
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster_mode time indexing with non-consecutive time periods
-tests/testthat/test-att_gt.R,ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c,faster_mode time indexing with universal base period
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,fix_weights='varying' SE is not 2x too large on a balanced panel
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,fix_weights='varying' fast and slow paths agree (balanced panel)
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,fix_weights='varying' aggregations inherit the corrected SE
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,aggte() normal aggregations still work (no regression)
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,"aggte(type='calendar', na.rm=TRUE) drops all-NA calendar periods instead of crashing"
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,"aggte() empty post-treatment windows give clean errors, not cryptic crashes"
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,negative gname is rejected with a clear error in both code paths
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,parallel multiplier bootstrap is reproducible under a fixed seed
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,parallel bootstrap chunking never produces negative chunks (biters < cores)
-tests/testthat/test-audit-fixes.R,c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4,"aggte(type='calendar') warns that min_e/max_e/balance_e are ignored, returns unrestricted"
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,anticipation periods use the base period g - anticipation - 1 under both base periods
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,the pre-test uses only cells with t < g - anticipation
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,declared anticipation no longer makes the pre-test reject true parallel trends
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,the pretest-only cell filter follows the same rule
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,event-study aggregation reports the anticipation effects; the overall ATT averages t >= g only
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,anticipation = 0 keeps the plain definitions (pseudo-ATTs with base t - 1; pre-test over t < g)
+tests/testthat/test-anticipation-window.R,95613760495201b6f50cab4f2591269237fcf1ec9a865afafd34e598376b46d5,universal-base diagnostics use the actual base on irregular grids
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,"att_gt works w/o dynamics, time effects, or group effects"
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,att_gt works using ipw
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,two period case
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,no covariates case
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,repeated cross section
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,ipw repeated cross sections
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,repeated cross sections dynamic effects
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,unbalanced panel
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,not yet treated comparison group
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,aggregations
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,unequally spaced groups
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,some units treated in first period
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,min and max length of exposures
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,anticipation
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,significance level and uniform confidence bands
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,malformed data
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,varying or universal base period
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,small groups
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,small comparison group
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,custom estimation method
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,sampling weights
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,works when user column is literally named 'gname'
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,works when user column is literally named 'gname' with faster_mode
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,time-varying weights: faster_mode matches slow mode (default fix_weights=NULL)
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,fix_weights options: faster_mode matches slow mode (balanced panel)
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,time-invariant weights: all fix_weights options produce identical ATTs
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,message emitted for time-varying weights in balanced panel
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,no message for time-invariant weights
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,notyettreated with time-varying weights: faster_mode matches
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,RC with time-varying weights: faster_mode matches
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,fix_weights validation
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,unbalanced panel fix_weights with units missing from reference period
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,"IF consistency: balanced panel, all fix_weights x est_method x base_period"
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,"IF consistency: balanced panel, notyettreated control group"
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,"IF consistency: repeated cross-sections, default weights x est_method"
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,"IF consistency: unbalanced panel, default weights x est_method"
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,"IF consistency: no covariates (xformla=~1), all data types"
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,clustered standard errors
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster mode enabled for panel data
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster model enabled for repeated cross sectional data
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster model enabled for unbalanced panel data and time-varying covariates
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster_mode = TRUE matches baseline on filtered sim dataset when there are not subsequent cohort and time periods
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster_mode time indexing matches baseline with repeated cross-sections
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster_mode time indexing matches baseline with panel data and varying base period
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster_mode time indexing with non-consecutive time periods
+tests/testthat/test-att_gt.R,463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d,faster_mode time indexing with universal base period
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,fix_weights='varying' SE is not 2x too large on a balanced panel
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,fix_weights='varying' fast and slow paths agree (balanced panel)
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,fix_weights='varying' aggregations inherit the corrected SE
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,aggte() normal aggregations still work (no regression)
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,"aggte(type='calendar', na.rm=TRUE) drops all-NA calendar periods instead of crashing"
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,"aggte() empty post-treatment windows give clean errors, not cryptic crashes"
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,negative gname is rejected with a clear error in both code paths
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,parallel multiplier bootstrap is reproducible under a fixed seed
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,parallel bootstrap chunking never produces negative chunks (biters < cores)
+tests/testthat/test-audit-fixes.R,8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868,"aggte(type='calendar') warns that min_e/max_e/balance_e are ignored, returns unrestricted"
 tests/testthat/test-cluster-analytic.R,6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56,analytical (no-bootstrap) clustered SE for att_gt equals the cluster-sum CRVE (faster_mode TRUE and FALSE)
 tests/testthat/test-cluster-analytic.R,6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56,analytical cluster SE agrees with the bootstrap cluster SE (multiple DGPs)
 tests/testthat/test-cluster-analytic.R,6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56,"analytical clustered SE for repeated cross-sections (idname omitted/provided, faster_mode TRUE/FALSE)"
 tests/testthat/test-cluster-analytic.R,6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56,clustered bootstrap and analytical SE agree for repeated cross-sections (idname omitted)
 tests/testthat/test-cluster-analytic.R,6f7d7bd4ba73c1f92826c799bac176c3a4bfdc6be91a3505625ab602d6c04a56,analytical clustered SE flows through aggte at all levels (simple/group/dynamic)
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,compute_inffunc = FALSE gives point estimates identical to a full run
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,compute_inffunc = FALSE forces bstrap/cband off and yields a valid MP object
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,aggte() errors clearly on a compute_inffunc = FALSE object
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,compute_inffunc must be a single logical
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,compute_inffunc = FALSE matches a full run with fix_weights = 'varying'
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,"compute_inffunc = FALSE matches a full run with anticipation, universal base period, not-yet-treated controls, and clustering"
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,compute_inffunc = FALSE matches a full run on an unbalanced panel
-tests/testthat/test-compute-inffunc.R,9dea0d0943c8fd425f6757a2d47fd6c67a4aa549ac0bc6785e4fccbb3a4ab59d,custom est_method receives inffunc = FALSE and may return a NULL influence function
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,compute_inffunc = FALSE gives point estimates identical to a full run
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,compute_inffunc = FALSE forces bstrap/cband off and yields a valid MP object
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,aggte() errors clearly on a compute_inffunc = FALSE object
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,compute_inffunc must be a single logical
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,compute_inffunc = FALSE matches a full run with fix_weights = 'varying'
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,"compute_inffunc = FALSE matches a full run with anticipation, universal base period, not-yet-treated controls, and clustering"
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,compute_inffunc = FALSE matches a full run on an unbalanced panel
+tests/testthat/test-compute-inffunc.R,1d93fb91e5358cb0e5be5b291ce30bb456fb461bbd890b5f0e96418972def75c,custom est_method receives inffunc = FALSE and may return a NULL influence function
 tests/testthat/test-conditional-did-pretest.R,c09ea5dce40d692776f14ac6b53de39100f9d25f38bd5db87ea182daafdc83b7,conditional did pre-test
 tests/testthat/test-conditional-did-pretest.R,c09ea5dce40d692776f14ac6b53de39100f9d25f38bd5db87ea182daafdc83b7,pretest setup-bundle/y-override path is bit-identical to the legacy data-copy loop
 tests/testthat/test-conditional-did-pretest.R,c09ea5dce40d692776f14ac6b53de39100f9d25f38bd5db87ea182daafdc83b7,conditional pre-test CvM is on the bootstrap scale (R>=4.0 orientation regression)
+tests/testthat/test-conditional-ipw-only.R,fff9638c233c462943c2fa6cad5c59f1043ffe9058b2b5a9d52c0d70d03d504b,conditional pre-test rejects unsupported methods before processing data
+tests/testthat/test-conditional-ipw-only.R,fff9638c233c462943c2fa6cad5c59f1043ffe9058b2b5a9d52c0d70d03d504b,correct original outcome regression cannot validate the legacy regression test
+tests/testthat/test-conditional-ipw-only.R,fff9638c233c462943c2fa6cad5c59f1043ffe9058b2b5a9d52c0d70d03d504b,default and explicit IPW conditional pre-tests remain identical
+tests/testthat/test-conditional-ipw-only.R,fff9638c233c462943c2fa6cad5c59f1043ffe9058b2b5a9d52c0d70d03d504b,conditional pre-test uses the resolved panel structure
 tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3,single treated group produces valid att_gt
 tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3,single treated group works with all 4 aggte types
 tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3,two-period data with universal base period
@@ -122,59 +141,59 @@ tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2
 tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3,allow_unbalanced_panel=TRUE with balanced data proceeds normally
 tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3,allow_unbalanced_panel=TRUE with truly unbalanced data
 tests/testthat/test-edge-cases.R,1250ee7e6675d809fc65d98c83f81ec9f8af42b0e297af2b82ae05f3d905a2a3,single post-treatment period produces valid results
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on invalid est_method string
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on non-character non-function est_method
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on invalid fix_weights value
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt rejects non-exact control_group and base_period values in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt rejects negative or non-numeric anticipation in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt rejects invalid scalar logical controls before base R errors
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt rejects invalid cores before parallel code sees it
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt rejects argument-referenced internal variable names in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt rejects invalid xformla before formula internals in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,slow path rejects malformed column-name arguments before ambiguous indexing
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt drops rows with missing gname and non-finite numeric inputs in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on panel=TRUE without idname in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt still runs with panel=FALSE and no idname in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on invalid alp
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on invalid biters when bootstrapping
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,simulation helpers reject invalid scalar controls before raw R errors
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,trimmer rejects malformed exported utility arguments
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,test.mboot rejects malformed bootstrap inputs before recycling
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,mboot rejects malformed direct helper inputs before raw errors
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,process_attgt rejects malformed group-time result lists
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,aggte rejects invalid scalar controls before base R errors
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,plotting helpers reject invalid scalar controls before ggplot errors
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,mboot rejects invalid scalar controls before bootstrap internals
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on fix_weights with panel=FALSE
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt warns on extra args with built-in est_method
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt messages about anticipation
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt computes clustered SEs without the bootstrap (no 'requires bootstrap' warning)
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on missing column name (slower mode)
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on missing column name (faster_mode)
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on non-numeric tname
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on non-numeric gname
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on non-numeric outcome variable in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt still accepts logical and integer outcomes in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt errors on treatment reversals (faster_mode)
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt warns on missing data dropped
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt warns on small groups
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt handles data with .w column (slower mode)
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt messages on time-varying weights (panel)
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,clustervars contract enforced in all faster_mode x bstrap combinations
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,one extra cluster variable still works in all faster_mode x bstrap combinations
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,aggte errors on invalid type
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,aggte errors when ATTs contain NA and na.rm=FALSE
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt handles singular covariance for Wald test gracefully
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt warns on overlap violations
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,"slow path warns once per failed cell, matching fast-path wording, with accurate Wald diagnosis"
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,att_gt warns when no pre-treatment periods for Wald test
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,empty-cell warning names the actually-empty base period under base_period='universal' in both modes
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,'no never-treated group' warning is identical across modes and discloses the period filtering
-tests/testthat/test-error-handling.R,66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7,balanced-panel coercion warning counts dropped units identically in both modes
-tests/testthat/test-faster-mode-consistency.R,caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172,consistency with anticipation > 0
-tests/testthat/test-faster-mode-consistency.R,caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172,consistency without covariates
-tests/testthat/test-faster-mode-consistency.R,caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172,aggte consistency across faster_mode for all types
-tests/testthat/test-faster-mode-consistency.R,caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172,partial-NA influence functions propagate identically across modes (unbalanced panel)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on invalid est_method string
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on non-character non-function est_method
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on invalid fix_weights value
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt rejects non-exact control_group and base_period values in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt rejects negative or non-numeric anticipation in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt rejects invalid scalar logical controls before base R errors
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt rejects invalid cores before parallel code sees it
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt rejects argument-referenced internal variable names in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt rejects invalid xformla before formula internals in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,slow path rejects malformed column-name arguments before ambiguous indexing
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt drops rows with missing gname and non-finite numeric inputs in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on panel=TRUE without idname in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt still runs with panel=FALSE and no idname in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on invalid alp
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on invalid biters when bootstrapping
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,simulation helpers reject invalid scalar controls before raw R errors
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,trimmer rejects malformed exported utility arguments
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,test.mboot rejects malformed bootstrap inputs before recycling
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,mboot rejects malformed direct helper inputs before raw errors
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,process_attgt rejects malformed group-time result lists
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,aggte rejects invalid scalar controls before base R errors
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,plotting helpers reject invalid scalar controls before ggplot errors
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,mboot rejects invalid scalar controls before bootstrap internals
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on fix_weights with panel=FALSE
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt warns on extra args with built-in est_method
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt messages about anticipation
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt computes clustered SEs without the bootstrap (no 'requires bootstrap' warning)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on missing column name (slower mode)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on missing column name (faster_mode)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on non-numeric tname
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on non-numeric gname
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on non-numeric outcome variable in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt still accepts logical and integer outcomes in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt errors on treatment reversals (faster_mode)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt warns on missing data dropped
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt warns on small groups
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt handles data with .w column (slower mode)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt messages on time-varying weights (panel)
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,clustervars contract enforced in all faster_mode x bstrap combinations
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,one extra cluster variable still works in all faster_mode x bstrap combinations
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,aggte errors on invalid type
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,aggte errors when ATTs contain NA and na.rm=FALSE
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt handles singular covariance for Wald test gracefully
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt warns on overlap violations
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,"slow path warns once per failed cell, matching fast-path wording, with accurate Wald diagnosis"
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,att_gt warns when no pre-treatment periods for Wald test
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,empty-cell warning names the actually-empty base period under base_period='universal' in both modes
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,'no never-treated group' warning is identical across modes and discloses the period filtering
+tests/testthat/test-error-handling.R,37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515,balanced-panel coercion warning counts dropped units identically in both modes
+tests/testthat/test-faster-mode-consistency.R,fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48,consistency with anticipation > 0
+tests/testthat/test-faster-mode-consistency.R,fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48,consistency without covariates
+tests/testthat/test-faster-mode-consistency.R,fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48,aggte consistency across faster_mode for all types
+tests/testthat/test-faster-mode-consistency.R,fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48,partial-NA influence functions propagate identically across modes (unbalanced panel)
 tests/testthat/test-ggdid.R,5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3,ggdid.MP returns a ggplot object
 tests/testthat/test-ggdid.R,5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3,ggdid.MP accepts group parameter
 tests/testthat/test-ggdid.R,5752409812175f8f659750b50d2f57844bc78a0715beb6be98ade666f44838e3,ggdid.MP warns for non-existent group values
@@ -204,6 +223,12 @@ tests/testthat/test-glance.R,eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b4
 tests/testthat/test-glance.R,eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3,nobs.AGGTEobj works when DIDparams lacks faster_mode
 tests/testthat/test-glance.R,eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3,glance.MP works with a custom est_method function
 tests/testthat/test-glance.R,eb89be6352de487c4fe03983001673e96cda9c8930f9557a4b48f3ce48fe54c3,glance.AGGTEobj works with a custom est_method function
+tests/testthat/test-inference-outcome-units.R,7fd3814578dba2898972d84426496d2682a164919522e2d521dad45aa72fac73,"outcome units preserve SEs, Wald tests, and simultaneous bands"
+tests/testthat/test-inference-outcome-units.R,7fd3814578dba2898972d84426496d2682a164919522e2d521dad45aa72fac73,one low-variance cohort is not filtered relative to other cohorts
+tests/testthat/test-inference-outcome-units.R,7fd3814578dba2898972d84426496d2682a164919522e2d521dad45aa72fac73,exactly zero influence functions remain unavailable in panels and RC
+tests/testthat/test-inference-outcome-units.R,7fd3814578dba2898972d84426496d2682a164919522e2d521dad45aa72fac73,non-finite custom influence functions do not produce finite inference
+tests/testthat/test-inference-outcome-units.R,7fd3814578dba2898972d84426496d2682a164919522e2d521dad45aa72fac73,zero-IQR bootstrap draws are not reported as zero standard errors
+tests/testthat/test-inference-outcome-units.R,7fd3814578dba2898972d84426496d2682a164919522e2d521dad45aa72fac73,a single bootstrap draw retains columns and cannot estimate their scales
 tests/testthat/test-inference.R,3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f,inference with balanced panel data and aggregations
 tests/testthat/test-inference.R,3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f,inference with clustering
 tests/testthat/test-inference.R,3a39714114bb5157f619f3184d2e21011c49c1a1a828405ee35b24c027eb131f,same inference with unbalanced panel and panel data
@@ -222,20 +247,31 @@ tests/testthat/test-mboot-cluster.R,13955d5d8c5998432833c209351f16c2c197b7e4f88b
 tests/testthat/test-mboot-cluster.R,13955d5d8c5998432833c209351f16c2c197b7e4f88bdc0ce51a842f6e923258,clustering validation is preserved (at most one cluster variable beyond idname)
 tests/testthat/test-mboot-postprocess.R,184431a6dbf1f2dc56f2ac91aaf47592938c6b10026f21e41084e6ed500fdc6d,mboot on an all-degenerate influence function returns NA crit.val and all-NA se
 tests/testthat/test-mboot-postprocess.R,184431a6dbf1f2dc56f2ac91aaf47592938c6b10026f21e41084e6ed500fdc6d,mboot pmax-fold critical value equals the old row-wise apply reference
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,global design slice is bit-identical to per-subset model.matrix for numeric formulae
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,slow path matches faster_mode for numeric / transform formulae
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,RC-path (positional global slice) matches faster_mode
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,unbalanced panel (positional global slice) matches faster_mode for factor / transform formulae
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,RC-path matches faster_mode for factor / data-dependent-basis formulae
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,"transform / factor formulae match faster_mode under universal base, notyettreated, anticipation"
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,"global basis is reparameterization-invariant: ~poly(X, 2) equals ~X + I(X^2)"
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,a factor covariate equals manually-expanded dummies EXACTLY (dense levels)
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,transform formulae that evaluate to NaN drop those rows instead of crashing
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,matrix-valued transformed formula terms drop non-finite rows row-wise
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,a globally-empty factor level is dropped instead of NA-failing every cell
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,"a sparse factor (level absent from some cells) matches manual dummies, incl. warnings"
-tests/testthat/test-modelmatrix-hoist.R,f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a,"RC sparse factor (level absent from some cells) matches manual dummies, incl. warnings"
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,global design slice is bit-identical to per-subset model.matrix for numeric formulae
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,slow path matches faster_mode for numeric / transform formulae
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,RC-path (positional global slice) matches faster_mode
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,unbalanced panel (positional global slice) matches faster_mode for factor / transform formulae
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,RC-path matches faster_mode for factor / data-dependent-basis formulae
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,"transform / factor formulae match faster_mode under universal base, notyettreated, anticipation"
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,"global basis is reparameterization-invariant: ~poly(X, 2) equals ~X + I(X^2)"
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,a factor covariate equals manually-expanded dummies EXACTLY (dense levels)
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,transform formulae that evaluate to NaN drop those rows instead of crashing
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,matrix-valued transformed formula terms drop non-finite rows row-wise
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,a globally-empty factor level is dropped instead of NA-failing every cell
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,"a sparse factor (level absent from some cells) matches manual dummies, incl. warnings"
+tests/testthat/test-modelmatrix-hoist.R,93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d,"RC sparse factor (level absent from some cells) matches manual dummies, incl. warnings"
 tests/testthat/test-mutation-safety.R,f31e6211fbba13b3e8c49d1e9fa10a8c350c36d0258fc253e7798b9c6c41f5fb,att_gt does not mutate caller data in either implementation
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,never-treated group removed by balancing is re-checked
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,re-check honors anticipation
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,re-check also covers the comparison cohort coerced from the raw data
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,"a treated cohort removed by balancing is dropped with a warning, not an internal error"
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,no re-check when never-treated units survive balancing or the panel is left unbalanced
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,'notyettreated' without a never-treated group in the raw data stays silent
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,"nothing left to estimate gives an error that names the cause, identically in both modes"
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,a sample emptied by the missing-data drop stops with the missing-data message
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,a NaN 2x2 estimate is announced (both modes)
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,faster_mode = TRUE names a cell with no control units instead of returning NA silently
+tests/testthat/test-nevertreated-balanced-panel.R,0ce1d9809a297b6dc3ecedf127afde70705da64110598e55405c664b343acd5b,aggte() explains an object with no post-treatment cells
 tests/testthat/test-output-methods-coverage.R,bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd,summary.AGGTEobj / print.AGGTEobj cover every aggregation type
 tests/testthat/test-output-methods-coverage.R,bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd,summary.AGGTEobj covers pointwise (non-cband) and not-yet-treated / est_method branches
 tests/testthat/test-output-methods-coverage.R,bc976fa5586002f0e83864fe84dc18d0b7607a4e35ec011419ffca673edae9bd,summary.MP.TEST prints the conditional pre-test results
@@ -245,30 +281,52 @@ tests/testthat/test-overlap-guard-cache.R,0c703c15508197c525930dbe0718ff159c3516
 tests/testthat/test-overlap-guard-cache.R,0c703c15508197c525930dbe0718ff159c35163364020b7852a3a94ca80622d9,intercept-only rcond short-circuit matches the Gram-matrix test
 tests/testthat/test-overlap-guard-cache.R,0c703c15508197c525930dbe0718ff159c35163364020b7852a3a94ca80622d9,guard cache returns bit-identical results to per-cell checks (fast and slow paths)
 tests/testthat/test-overlap-guard-cache.R,0c703c15508197c525930dbe0718ff159c35163364020b7852a3a94ca80622d9,cached guard failures still warn once per cell with unchanged text
+tests/testthat/test-preprocess-name-collisions.R,5dc2ae226bf10eee91f9816328e3857b74214ffac686529554dba2bbf34f20d2,fast preprocessing respects columns named args and tlist
+tests/testthat/test-preprocess-name-collisions.R,5dc2ae226bf10eee91f9816328e3857b74214ffac686529554dba2bbf34f20d2,argument name collisions work across preprocessing branches
+tests/testthat/test-preprocess-name-collisions.R,5dc2ae226bf10eee91f9816328e3857b74214ffac686529554dba2bbf34f20d2,group size checks use counts even if the cohort is named V1
+tests/testthat/test-preprocess-name-collisions.R,5dc2ae226bf10eee91f9816328e3857b74214ffac686529554dba2bbf34f20d2,args can name sampling weights or a cluster column
+tests/testthat/test-preprocess-name-collisions.R,5dc2ae226bf10eee91f9816328e3857b74214ffac686529554dba2bbf34f20d2,last-cohort filtering uses the cutoff argument rather than a covariate
 tests/testthat/test-pretest-vectorization.R,7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8,indicator() vectorization matches the row-wise definition exactly
 tests/testthat/test-pretest-vectorization.R,7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8,test.mboot equals the explicit per-draw multiplier bootstrap (unclustered)
 tests/testthat/test-pretest-vectorization.R,7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8,test.mboot equals the explicit clustered multiplier bootstrap
 tests/testthat/test-pretest-vectorization.R,7aa2650b67772424643c84a71e20ba9cd1056afa414f939aebb9031956960fe8,test.mboot multi-chunk tiling accumulates across chunks correctly
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,"duplicate (id, period) rows are rejected identically by both modes"
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,negative / zero-mean weights are rejected identically by both modes
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,valid positive weights are still accepted in both modes
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,fast RC path returns NA instead of crashing when a cell has no treated post observations
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,never-treated small-group stop fires in both modes when multiple groups are small
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,slow unbalanced influence aggregation handles fractional numeric ids
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,fast path preserves user columns named weights
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,transformed non-finite covariates are dropped before RC overlap checks
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,"overlap_logit_fit matches fastglm::fastglm exactly, including the 0.999 decision"
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,slow panel path converts estimator NaN cells to NA like fast mode
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,never-treated units coded as gname = Inf are NOT dropped (Inf is a valid never-treated code)
-tests/testthat/test-robustness-guards.R,7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da,NA / NaN gname rows are still dropped while Inf is preserved
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,panel precompute is bit-identical to the original get_wide_data path
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,panel precompute also bit-identical for factor / transform covariates
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,panel precompute also bit-identical with time-varying sampling weights
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,panel precompute bit-identical with fix_weights base_period/first_period
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,RC/unbalanced precompute is bit-identical to the legacy subset path
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,"RC/unbalanced precompute bit-identical with fix_weights base/first, incl. dropped units"
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,RC/unbalanced precompute keeps slow-fast parity
-tests/testthat/test-slowpath-precompute.R,eb3a27274bb20d2edffab5c50689c490af066d6bb63d1bd92d9d99a231482330,input row order does not affect slow-path results (precompute precondition)
+tests/testthat/test-rc-idname-uniqueness.R,914b4881a68b3c884b8c902b9bb8c7c597a4feaaa13affc742a0afcc9c7ca4a7,"panel = FALSE rejects an idname that repeats across periods, in both modes"
+tests/testthat/test-rc-idname-uniqueness.R,914b4881a68b3c884b8c902b9bb8c7c597a4feaaa13affc742a0afcc9c7ca4a7,"panel = FALSE rejects an idname that repeats within a period, in both modes"
+tests/testthat/test-rc-idname-uniqueness.R,914b4881a68b3c884b8c902b9bb8c7c597a4feaaa13affc742a0afcc9c7ca4a7,"panel = FALSE runs when the supplied idname is unique, in both modes"
+tests/testthat/test-rc-idname-uniqueness.R,914b4881a68b3c884b8c902b9bb8c7c597a4feaaa13affc742a0afcc9c7ca4a7,panel = FALSE runs when idname is omitted even though an id column is present
+tests/testthat/test-rc-idname-uniqueness.R,914b4881a68b3c884b8c902b9bb8c7c597a4feaaa13affc742a0afcc9c7ca4a7,panel = TRUE with allow_unbalanced_panel = TRUE is unaffected by the new check
+tests/testthat/test-rc-normalized-support.R,f5a9c05e17d376d8a78667e21c6f3af67d2073d47ae0ca6f7b0c1dca1a062a0b,RC support counts use the weights after DRDID normalization
+tests/testthat/test-rc-normalized-support.R,f5a9c05e17d376d8a78667e21c6f3af67d2073d47ae0ca6f7b0c1dca1a062a0b,normalization loss is rejected before DR/reg backend entry
+tests/testthat/test-rc-normalized-support.R,f5a9c05e17d376d8a78667e21c6f3af67d2073d47ae0ca6f7b0c1dca1a062a0b,a second local normalization is checked on every RC route
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,"duplicate (id, period) rows are rejected identically by both modes"
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,negative / zero-mean weights are rejected identically by both modes
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,valid positive weights are still accepted in both modes
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,fast RC path returns NA instead of crashing when a cell has no treated post observations
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,never-treated small-group stop fires in both modes when multiple groups are small
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,slow unbalanced influence aggregation handles fractional numeric ids
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,fast path preserves user columns named weights
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,transformed non-finite covariates are dropped before RC overlap checks
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,"overlap_logit_fit matches fastglm::fastglm exactly, including the 0.999 decision"
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,slow panel path converts estimator NaN cells to NA like fast mode
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,never-treated units coded as gname = Inf are NOT dropped (Inf is a valid never-treated code)
+tests/testthat/test-robustness-guards.R,3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68,NA / NaN gname rows are still dropped while Inf is preserved
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,panel precompute is bit-identical to the original get_wide_data path
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,panel precompute also bit-identical for factor / transform covariates
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,panel precompute also bit-identical with time-varying sampling weights
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,panel precompute bit-identical with fix_weights base_period/first_period
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,RC/unbalanced precompute is bit-identical to the legacy subset path
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,"RC/unbalanced precompute bit-identical with fix_weights base/first, incl. dropped units"
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,RC/unbalanced precompute keeps slow-fast parity
+tests/testthat/test-slowpath-precompute.R,d483bcf01078f0f9f375f26af0b0456564bcf62755151c87f48621cb89740cda,input row order does not affect slow-path results (precompute precondition)
+tests/testthat/test-stress-balance-support.R,e6770afb6e01afefed7242724230a9324c829bb959b43b82a515b3b2d133683a,balance_e retains the same cohorts after missing cells are removed
+tests/testthat/test-stress-balance-support.R,e6770afb6e01afefed7242724230a9324c829bb959b43b82a515b3b2d133683a,balance_e requires common event-time support on irregular grids
+tests/testthat/test-stress-balance-support.R,e6770afb6e01afefed7242724230a9324c829bb959b43b82a515b3b2d133683a,balance_e uses observed support without inventing absent event times
+tests/testthat/test-stress-balance-support.R,e6770afb6e01afefed7242724230a9324c829bb959b43b82a515b3b2d133683a,balance_e errors when no cohort has complete observed support
+tests/testthat/test-stress-balance-support.R,e6770afb6e01afefed7242724230a9324c829bb959b43b82a515b3b2d133683a,an event time with all missing estimates still has to be balanced
+tests/testthat/test-stress-balance-support.R,e6770afb6e01afefed7242724230a9324c829bb959b43b82a515b3b2d133683a,balance_e preserves the complete regularly spaced aggregation
+tests/testthat/test-stress-bootstrap-scale.R,007d1d35f5f72a3436c076a5d0533216e3391dd3e38b7d5bc63d3cf9641d1803,bootstrap degeneracy does not depend on the units of the outcome
+tests/testthat/test-stress-bootstrap-scale.R,007d1d35f5f72a3436c076a5d0533216e3391dd3e38b7d5bc63d3cf9641d1803,rescaling outcomes preserves att_gt and aggte bootstrap inference
+tests/testthat/test-stress-pretest-defaults.R,873ac5296db58d5beb3e3bc4ec38978b3a231821f68f25d1c2a1a5c4df46f9c1,conditional pre-test resolves omitted covariates and observation ids
 tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3,tidy.MP returns expected columns
 tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3,tidy.MP statistic equals estimate / std.error
 tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3,tidy.MP p.value matches normal approximation
@@ -281,14 +339,28 @@ tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224
 tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3,nobs.MP returns number of unique units
 tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3,nobs.AGGTEobj returns number of unique units
 tests/testthat/test-tidy.R,534afcf046f23224e61af67b1362f232bdeae6ccc8b6904383224e64f80bc9b3,nobs.MP and nobs.AGGTEobj agree
+tests/testthat/test-tiny-rc-outcome-designs.R,d3f2b8a4f4883994dd8b6b53cf1d4127ecb779e153cc57655a4430898197f280,small RC treated groups are rejected before the DR backend
+tests/testthat/test-tiny-rc-outcome-designs.R,d3f2b8a4f4883994dd8b6b53cf1d4127ecb779e153cc57655a4430898197f280,RC methods without treated outcome regressions retain small groups
+tests/testthat/test-tiny-rc-outcome-designs.R,d3f2b8a4f4883994dd8b6b53cf1d4127ecb779e153cc57655a4430898197f280,zero-weight rows cannot identify RC treated outcome regressions
+tests/testthat/test-tiny-rc-outcome-designs.R,d3f2b8a4f4883994dd8b6b53cf1d4127ecb779e153cc57655a4430898197f280,square full-rank RC treated regressions are allowed
+tests/testthat/test-tiny-rc-outcome-designs.R,d3f2b8a4f4883994dd8b6b53cf1d4127ecb779e153cc57655a4430898197f280,undersized control-period regressions fail only affected RC cells
+tests/testthat/test-tiny-rc-outcome-designs.R,d3f2b8a4f4883994dd8b6b53cf1d4127ecb779e153cc57655a4430898197f280,unbalanced and varying-weight panel RC routes check treated regressions
+tests/testthat/test-two-period-cband.R,37d5e49bd0312f3236adc862a6497f7e25adedac97e5d3074997b302b89abd1a,two periods + cband = TRUE announces the override and returns a pointwise critical value
+tests/testthat/test-two-period-cband.R,37d5e49bd0312f3236adc862a6497f7e25adedac97e5d3074997b302b89abd1a,two periods without cband is silent about the override
+tests/testthat/test-two-period-cband.R,37d5e49bd0312f3236adc862a6497f7e25adedac97e5d3074997b302b89abd1a,"three or more periods still get the bootstrap uniform band, with no message"
 tests/testthat/test-unbalanced-faster-cluster-se.R,fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e,att_gt analytical clustered SE: faster_mode works (not i.i.d. fallback) on an unbalanced panel
 tests/testthat/test-unbalanced-faster-cluster-se.R,fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e,aggte: faster_mode TRUE == FALSE on an unbalanced clustered panel (all aggregation types)
 tests/testthat/test-unbalanced-faster-cluster-se.R,fd6deb485634bc3db1a9f0dca120d2c0d05c8813fb133b40617b86cb1b12582e,"no regression: balanced panel still has faster_mode TRUE == FALSE (att_gt + aggte, clustered)"
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,having column named t1 causes code to crash
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,missing covariates
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,repeated cross sections small groups with covariates
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,fewer time periods than groups
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,0 pre-treatment estimates when outcomes are 0
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,variables not in dataset
-tests/testthat/test-user_bug_fixes.R,0f77671d0453cade68ac730401d9c44c4946344866196f80f0a36ebc610c8979,groups treated after max(t) but within anticipation window are not coerced to never-treated
+tests/testthat/test-unbalanced-panel-message.R,e301fec6c951bd547d6dce940834d7f61bcf5a4daa5be3125600c4040783193d,both modes announce that a balanced panel resets allow_unbalanced_panel
+tests/testthat/test-unbalanced-panel-message.R,e301fec6c951bd547d6dce940834d7f61bcf5a4daa5be3125600c4040783193d,both modes announce that an unbalanced panel is used as such
+tests/testthat/test-user_bug_fixes.R,bec928849861585369e616c37eedeb3d4da47971fae2c045718d167469b2adc4,having column named t1 causes code to crash
+tests/testthat/test-user_bug_fixes.R,bec928849861585369e616c37eedeb3d4da47971fae2c045718d167469b2adc4,missing covariates
+tests/testthat/test-user_bug_fixes.R,bec928849861585369e616c37eedeb3d4da47971fae2c045718d167469b2adc4,fewer time periods than groups
+tests/testthat/test-user_bug_fixes.R,bec928849861585369e616c37eedeb3d4da47971fae2c045718d167469b2adc4,0 pre-treatment estimates when outcomes are 0
+tests/testthat/test-user_bug_fixes.R,bec928849861585369e616c37eedeb3d4da47971fae2c045718d167469b2adc4,variables not in dataset
+tests/testthat/test-user_bug_fixes.R,bec928849861585369e616c37eedeb3d4da47971fae2c045718d167469b2adc4,groups treated after max(t) but within anticipation window are not coerced to never-treated
+tests/testthat/test-zero-weight-guards.R,da51788dc2ec39f2ed7280c6652e02b6c3eaa84b0f6810e31a1c2d6043688284,zero-weight covariates cannot cause false overlap or rank failures
+tests/testthat/test-zero-weight-guards.R,da51788dc2ec39f2ed7280c6652e02b6c3eaa84b0f6810e31a1c2d6043688284,zero-weight guard fix also applies without positional precompute or guard cache
+tests/testthat/test-zero-weight-guards.R,da51788dc2ec39f2ed7280c6652e02b6c3eaa84b0f6810e31a1c2d6043688284,guard support follows normalization and still rejects unidentified designs
+tests/testthat/test-zero-weight-guards.R,da51788dc2ec39f2ed7280c6652e02b6c3eaa84b0f6810e31a1c2d6043688284,regression feasibility uses the actual weighted control design
 tests/testthat/test_sim_data_2_groups.R,a3c85221aa5bd66d45cead18641a9ed6385882bbeb10175410a0237a6ee68a18,att_gt works with 2 groups

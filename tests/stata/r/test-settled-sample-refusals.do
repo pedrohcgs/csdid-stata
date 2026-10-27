@@ -35,19 +35,20 @@ isid scenario
 tempfile status
 save `status'
 import delimited using "`fx'/inputs/scenarios.csv", clear varnames(1) bindquote(strict)
-assert _N == 12
+assert _N == 13
 merge 1:1 scenario using `status'
 assert _merge == 3
 drop _merge
 * R's reason, by kind: R's own text carries backquotes, so it is classified
 * here rather than carried through a macro
 generate byte kind = 1 * (strpos(message, "never-treated group is too small") > 0) + ///
-    2 * (strpos(message, "No valid groups") > 0) + 3 * (strpos(message, "No valid (g, t) cells") > 0)
+    2 * (strpos(message, "No valid groups") > 0) + 3 * (strpos(message, "No valid (g, t) cells") > 0) + ///
+    4 * (strpos(message, "Only one time period remains") > 0)
 assert (kind > 0) == refused
 tempfile specs runlog
 save `specs'
 local nrefused 0
-forvalues k = 1/12 {
+forvalues k = 1/13 {
     use `specs', clear
     local s = scenario[`k']
     local design = design[`k']
@@ -73,8 +74,12 @@ forvalues k = 1/12 {
             rt045_log_has using "`runlog'", message("No valid groups.")
             assert r(found)
         }
-        else {
+        else if `kind' == 3 {
             rt045_log_has using "`runlog'", message("No valid (g, t) cells found for estimation.")
+            assert r(found)
+        }
+        else {
+            rt045_log_has using "`runlog'", message("Only one time period remains")
             assert r(found)
         }
         local ++nrefused
@@ -96,29 +101,6 @@ forvalues k = 1/12 {
         display as text "RT045 `s': estimated as R estimates"
     }
 }
-assert `nrefused' == 11
+assert `nrefused' == 13
 
-* The first-period drop can leave a single unit after the scan counted two;
-* the kernel's one-unit refusal then carries no internal frames either.
-clear
-input id t g y
-2 2 6 -1
-1 6 3 5
-4 2 3 3
-4 3 3 4
-3 3 0 2
-2 3 6 0
-2 6 6 2
-1 4 3 2
-end
-log using "`runlog'", text replace name(rt045log)
-capture noisily csdid y, ivar(id) time(t) gvar(g) method(ipw) analytical anticipation(1)
-local rc = _rc
-log close rt045log
-assert `rc' == 459
-rt045_log_has using "`runlog'", message("ivar() identifies only one unit")
-assert r(found)
-rt045_log_has using "`runlog'", message("returned error")
-assert !r(found)
-
-display as text "test-settled-sample-refusals: 11 settled-sample refusals match R, named and without frames"
+display as text "test-settled-sample-refusals: 13 settled-sample refusals match R, named and without frames"

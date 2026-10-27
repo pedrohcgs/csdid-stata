@@ -4,6 +4,30 @@ title: News
 
 # csdid news
 
+## csdid 2.0.2
+
+**Anticipation and inference.** Comparisons in the anticipation window use
+the last unaffected base period under either base-period setting. The
+parallel-trends pretest excludes anticipation periods. Finite positive standard
+errors are retained when the outcome is measured in small units. Two-period
+designs use pointwise intervals.
+
+**Sampling weights.** Preliminary overlap and regression checks use the
+observations supported by the normalized weights. Undersized outcome
+regressions in repeated cross sections are identified before fitting.
+
+**Aggregation windows.** Simple and group aggregations apply both bounds of
+`window()` in the original time units. A balanced event study retains only
+cohorts with nonmissing estimates at every originally observed event time in
+the requested balanced window, before applying display limits. It refuses
+when no eligible cohort remains.
+
+**Panel balancing and observation IDs.** Whole cohorts removed by balancing
+are announced; estimation continues with the surviving cohorts and available
+comparison group. Under `rcs`, nonmissing `ivar()` values must identify
+unique observations. Use `cluster()` for repeated cluster codes and
+`bal(none)` for repeated observations of units in an incomplete panel.
+
 ## csdid 2.0.1 — 23 October 2026
 
 **Covariate-adjusted inference in repeated cross sections.** Under `method(dr)`,
@@ -240,7 +264,7 @@ as Stata matrices, and `saverif()` writes the durable dataset that
 | `pscoretrim(#)` with `#` ≤ 0 | Errors. Omit it for the default of .995, or pass 1 (or more) for no trimming |
 | `gvar()` with negative values | Errors. `gvar()` is 0 for never-treated units and 1 or more for treated cohorts |
 | `time()` below 1 | Errors. Add the same constant to time and treated cohort codes; leave never-treated codes at zero |
-| `from()` | Errors. Use `window(# #)` on `estat event` for event-time windows |
+| `from()` | Errors. Use `window(# #)` with simple/group aggregation or `estat event` for event-time windows; calendar aggregation has no event-time window |
 | `dryrun` | Rejected; it was never a documented option |
 
 ### Postestimation forms that are gone

@@ -11,3 +11,4 @@
 "no_cells_notyet","no_cells",TRUE,FALSE,"notyettreated","varying",1,"ivar(id) time(t) gvar(g) notyet base_period(varying) anticipation(1)"
 "no_cells_never","no_cells",TRUE,FALSE,"nevertreated","varying",1,"ivar(id) time(t) gvar(g) nevertreated base_period(varying) anticipation(1)"
 "no_cells_universal","no_cells",TRUE,FALSE,"notyettreated","universal",1,"ivar(id) time(t) gvar(g) notyet base_period(universal) anticipation(1)"
+"postbalance_empty","postbalance_empty",TRUE,FALSE,"notyettreated","universal",1,"ivar(id) time(t) gvar(g) notyet base_period(universal) anticipation(1)"

@@ -7,14 +7,10 @@
 # dead middle/first/last period, a dead varying base, a cohort's own
 # treatment period dead, two dead periods, universal base, anticipation, and
 # the early-period kill that trims a whole cohort -- plus the all-dead
-# refusal. Shape 9 is the boundary the family surfaced: a covariate missing
-# for SOME rows of a period such that balancing removes exactly the
-# never-treated units. R's never-treated availability check has already run
-# on the pre-balancing cohort list, so R returns an all-NA grid in silence;
-# shape 9b feeds R the balanced sample itself, where its own fallback fires,
-# and pins the grid csdid reports on the raw data (owner decision
-# 2026-08-28: csdid keeps the loud fallback -- R's own rule, applied to the
-# settled sample). Inputs are quantized to exact multiples of 2^-13 so
+# refusal. Shape 9 removes exactly the never-treated units during balancing;
+# did 2.5.1.904 rechecks the comparison group, announces its fallback and
+# returns the same grid as the explicitly balanced input (shape 9b).
+# Inputs are quantized to exact multiples of 2^-13 so
 # 17-digit CSVs replay bit-identically through R and Stata parsers alike.
 
 args <- commandArgs(trailingOnly = FALSE)
@@ -159,7 +155,7 @@ run_shape <- function(name, d, faster_mode, ...) {
     write.csv(tab, file.path(OUT, "expected/r", paste0("attgt_", tag, ".csv")),
               row.names = FALSE, quote = FALSE)
   }
-  invisible(NULL)
+  invisible(fit)
 }
 
 write_input <- function(name, d) {
@@ -193,12 +189,21 @@ shapes <- list(
   list(name = "s11_dead_1and2",     d = kill_periods(BASE, c(1, 2)),   args = list())
 )
 
+fits <- list()
 for (s in shapes) {
   write_input(s$name, s$d)
   for (fm in c(TRUE)) {
-    do.call(run_shape, c(list(name = s$name, d = s$d, faster_mode = fm), s$args))
+    fits[[s$name]] <- do.call(run_shape, c(list(name = s$name, d = s$d, faster_mode = fm), s$args))
   }
 }
+raw_control_loss <- fits[["s09_partial_control"]]
+balanced_control_loss <- fits[["s09b_partial_control_balanced"]]
+stopifnot(identical(raw_control_loss$group, balanced_control_loss$group),
+          identical(raw_control_loss$t, balanced_control_loss$t),
+          identical(raw_control_loss$n, balanced_control_loss$n),
+          all(is.finite(raw_control_loss$att)),
+          max(abs(raw_control_loss$att - balanced_control_loss$att)) <= 1e-10,
+          max(abs(raw_control_loss$se - balanced_control_loss$se)) <= 1e-10)
 
 # ------------------------------------------- shape 1 unit-retention detail ----
 {
@@ -239,13 +244,15 @@ suppressPackageStartupMessages(library(jsonlite))
 manifest <- list(
   matrix_id = "RT036",
   fixture_family = "dead-period-covariate-rule",
-  normative_source = "R did 2.5.1 pre_process_did.R: a period whose covariates are missing on every row is deleted before the period list exists; the reduced calendar governs the grid, base re-anchoring, the first-period cohort trim, balancing, and n",
+  normative_source = "R did 2.5.1.904 pre_process_did.R and pre_process_did2.R: wholly missing periods disappear before the calendar is built; comparison-group availability is rechecked after balancing",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   generators = list(list(
     runtime = "R",
     command = "Rscript tools/parity/generators/rt036/generate.R",
     path = "tools/parity/generators/rt036/generate.R"
   )),
-  runtimes = list(list(name = "R", version = paste(R.version, R.version, sep = "."))),
+  runtimes = list(list(name = "R", version = as.character(getRversion()),
+    package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),
   consumers = list("tests/stata/r/test-dead-period-covariate.do")
 )
 write_json(manifest, file.path(OUT, "metadata/manifest.json"), auto_unbox = TRUE, pretty = TRUE)

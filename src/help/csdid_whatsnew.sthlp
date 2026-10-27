@@ -1,11 +1,12 @@
 {smcl}
-{* *! version 2.0.1 23oct2026}{...}
+{* *! version 2.0.2 27oct2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_plot" "help csdid_plot"}{...}
 {vieweralsosee "csdid legacy utilities" "help csdid_legacy"}{...}
+{viewerjumpto "csdid 2.0.2" "csdid_whatsnew##v202"}{...}
 {viewerjumpto "csdid 2.0.1" "csdid_whatsnew##v201"}{...}
 {viewerjumpto "csdid 2.0.0" "csdid_whatsnew##v200"}{...}
 {viewerjumpto "Also see" "csdid_whatsnew##alsosee"}{...}
@@ -17,7 +18,7 @@
 {p2colreset}{...}
 
 {pstd}
-Version 2.0.1 is a patch to 2.0.0. Its changes appear first below. The 2.0.0
+Version 2.0.2 is a patch to 2.0.1. Its changes appear first below. The 2.0.0
 section describes what changed for someone upgrading from csdid Version 1.82,
 the last revision of the 1.8x line; {cmd:ssc install csdid} installs Version 1.81,
 whose two further differences are listed in {helpb csdid}. The command surface
@@ -25,6 +26,26 @@ is deliberately the same, so most existing do-files run unchanged. The entries
 below summarize where they do not, and the things that are new;
 {help csdid##remarks_legacy:Migrating from Stata csdid Version 1.82} in
 {helpb csdid} lists every change with what replaces it.
+
+
+{marker v202}{...}
+{hline 8} {hi:csdid 2.0.2} {hline}
+
+{pstd}
+Anticipation-window comparisons use the last unaffected base period under
+either base-period setting, and the parallel-trends pretest excludes
+anticipation periods. Finite positive standard errors are retained even when
+the outcome is measured in small units. Two-period designs use pointwise
+intervals.
+
+{pstd}
+Sampling-weight checks use positive support after normalization. Simple and
+group aggregations apply both {cmd:window()} bounds in the original time units.
+Balanced event studies require complete observed event-time support before
+applying display limits. Panel balancing announces vanished cohorts and
+continues with the surviving comparison groups. Under {cmd:rcs}, nonmissing
+{cmd:ivar()} values must identify unique observations; repeated cluster codes
+belong in {cmd:cluster()}.
 
 
 {marker v201}{...}

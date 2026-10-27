@@ -30,7 +30,7 @@ write.csv(drop2006, file.path(fixture, "inputs/mpdta-drop2006.csv"), row.names =
 
 run_rcs_analytical <- function(d) {
   att_gt(
-    yname = "lemp", tname = "year", idname = "countyreal", gname = "first_treat",
+    yname = "lemp", tname = "year", gname = "first_treat",
     data = d, panel = FALSE, control_group = "notyettreated",
     base_period = "universal", est_method = "dr", bstrap = FALSE, cband = FALSE
   )
@@ -48,6 +48,17 @@ export_attgt(res_gap, file.path(fixture, "expected/r/attgt-gap-rcs-analytical.cs
 
 res_drop <- run_rcs_analytical(drop2006)
 export_attgt(res_drop, file.path(fixture, "expected/r/attgt-drop-rcs-analytical.csv"))
+
+run_panel <- function(d) suppressWarnings(att_gt(yname="lemp", tname="year",
+  idname="countyreal", gname="first_treat", data=d, panel=TRUE,
+  control_group="notyettreated", base_period="universal", est_method="dr",
+  bstrap=FALSE, cband=FALSE))
+panel_gap <- run_panel(gap)
+panel_drop <- run_panel(drop2006)
+stopifnot(identical(panel_gap$group,panel_drop$group), identical(panel_gap$t,panel_drop$t),
+          isTRUE(all.equal(panel_gap$att,panel_drop$att,tolerance=0)),
+          isTRUE(all.equal(panel_gap$se,panel_drop$se,tolerance=0)))
+export_attgt(panel_gap,file.path(fixture,"expected/r/attgt-drop-panel-analytical.csv"))
 
 summary_json <- list(
   did_version = as.character(packageVersion("did")),

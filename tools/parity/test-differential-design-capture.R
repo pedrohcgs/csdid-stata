@@ -86,18 +86,18 @@ run_case("balanced", 0L, "reg", degenerate = TRUE)
 for (method in c("dr", "reg", "ipw")) for (ncov in 0:1) {
   run_case("unbalanced", ncov, method, balanced_data = TRUE)
 }
-# No post-treatment cells survive the original comparison cutoff. The default
-# reference returns normalized/placebo cells but its aggregations refuse.
-d <- expand.grid(id = 1:30, time = 1:4)
-d$g <- rep(c(0, 3, 4), each = 10L)[d$id]
-d <- d[!(d$g == 0 & d$time == 1), ]
+# Anticipation leaves normalized/anticipation cells but no post-treatment
+# cells. Post-balancing reconciliation now makes the former missing-control
+# witness estimable, so use a genuinely post-treatment-empty reference grid.
+d <- expand.grid(id = 1:30, time = 1:6)
+d$g <- rep(c(4, 6), each = 15L)[d$id]
 d$y <- d$id * d$time / 64 + ((d$id * d$time) %% 11) / 8
 input <- file.path(out, "refused-aggregation.csv")
 write.csv(d, input, row.names = FALSE)
 csdid_design_begin("refused-aggregation", input, list())
 fit <- suppressWarnings(did::att_gt(yname = "y", tname = "time", gname = "g",
   idname = "id", data = d, panel = TRUE, allow_unbalanced_panel = FALSE,
-  control_group = "nevertreated", base_period = "universal", est_method = "reg",
+  control_group = "nevertreated", base_period = "universal", est_method = "reg", anticipation = 2,
   bstrap = FALSE, cband = FALSE))
 csdid_design_agg_begin("dynamic")
 a <- tryCatch(suppressWarnings(did::aggte(fit, type = "dynamic", na.rm = TRUE,

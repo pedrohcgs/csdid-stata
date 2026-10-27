@@ -1,12 +1,10 @@
 #!/usr/bin/env Rscript
 # RT045: refusals decided on the settled sample.
-# With no never-treated units R coerces the latest cohort to never-treated and
-# removes the periods from its date on (pre_process_did2.R:246-265); it then
-# recomputes the cohort list and stops when it is empty (:405-407), measures
-# the coerced group as rows over the remaining periods and stops when it is
-# below reqsize (:433-452), and stops when no (g,t) cell can be formed
-# (compute.att_gt2.R:782-785). Each refusal here is decided on a sample the
-# pre-estimation scan does not see.
+# With no never-treated units, the latest cohort supplies comparisons and
+# periods from its treatment date net of anticipation are removed. The
+# settled sample can then have a comparison cohort below the size guard,
+# no remaining treated cohort, or only one period. The current reference
+# refuses the one-period case under both base-period conventions.
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt045/generate.R"
@@ -35,6 +33,12 @@ designs$empty_cohorts <- rbind(e, data.frame(t = 3, id = 21:25, g = 2))
 # periods 1, 3, 4 with anticipation(1): the varying base forms no cell
 n <- expand.grid(t = c(1, 3, 4), id = 1:40); n$g <- ifelse(n$id <= 20, 3, 4)
 designs$no_cells <- n
+# After first-period treatment removal, balancing removes the only remaining
+# never-treated unit. Rechecking comparison availability consumes the last
+# cohort and leaves no treated group, rather than a one-unit fit.
+designs$postbalance_empty <- data.frame(
+  id = c(2,1,4,4,3,2,2,1), t = c(2,6,2,3,3,3,6,4),
+  g = c(6,3,3,3,0,6,6,3))
 for (nm in names(designs)) {
   d <- designs[[nm]]
   d$y <- outcome(d)
@@ -58,7 +62,8 @@ scenarios <- rbind(
   sc("empty_cohorts_full_never", "empty_cohorts", TRUE, FALSE, "nevertreated", stata = "ivar(id) time(t) gvar(g) nevertreated"),
   sc("no_cells_notyet", "no_cells", TRUE, FALSE, "notyettreated", "varying", 1L, "ivar(id) time(t) gvar(g) notyet base_period(varying) anticipation(1)"),
   sc("no_cells_never", "no_cells", TRUE, FALSE, "nevertreated", "varying", 1L, "ivar(id) time(t) gvar(g) nevertreated base_period(varying) anticipation(1)"),
-  sc("no_cells_universal", "no_cells", TRUE, FALSE, "notyettreated", "universal", 1L, "ivar(id) time(t) gvar(g) notyet base_period(universal) anticipation(1)"))
+  sc("no_cells_universal", "no_cells", TRUE, FALSE, "notyettreated", "universal", 1L, "ivar(id) time(t) gvar(g) notyet base_period(universal) anticipation(1)"),
+  sc("postbalance_empty", "postbalance_empty", TRUE, FALSE, "notyettreated", "universal", 1L, "ivar(id) time(t) gvar(g) notyet base_period(universal) anticipation(1)"))
 scenarios$stata_options <- ifelse(grepl("base_period", scenarios$stata_options), scenarios$stata_options,
   paste0(scenarios$stata_options, " base_period(", scenarios$base, ")"))
 
@@ -93,14 +98,14 @@ write.csv(scenarios, file.path(out, "inputs/scenarios.csv"), row.names = FALSE)
 inputs[[length(inputs) + 1L]] <- list(path = "inputs/scenarios.csv", sha256 = sha(file.path(out, "inputs/scenarios.csv")), rows = nrow(scenarios), columns = ncol(scenarios))
 outputs <- lapply(c("estimation_status", "attgt"), function(nm) list(path = paste0("expected/r/", nm, ".csv"), schema = nm, sha256 = sha(file.path(out, "expected/r", paste0(nm, ".csv")))))
 manifest <- list(matrix_id = "RT045", fixture_family = "r-settled-sample-refusals",
-  normative_source = "did 2.5.1 pre_process_did2.R:246-265 (latest cohort coerced, periods cut), :419-421 (No valid groups), :433-452 (never-treated group too small), compute.att_gt2.R:782-785 (no valid (g, t) cells)",
-  source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
+  normative_source = "did 2.5.1.904 pre_process_did2.R: no-never fallback, settled cohort/period availability, and minimum comparison-group size",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt045/generate.R", path = "tools/parity/generators/rt045/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),
   rng = NULL, expected_outputs = outputs,
-  comparison_plan = list(list(actual = "Stata return code, refusal message and the absence of internal frames; cells of the one estimable scenario", expected = c("expected/r/estimation_status.csv", "expected/r/attgt.csv"), tolerance_id = "TOL001", key_columns = c("scenario"))),
+  comparison_plan = list(list(actual = "Stata return code, named refusal reason and absence of internal frames for all thirteen settled-sample cases", expected = c("expected/r/estimation_status.csv", "expected/r/attgt.csv"), tolerance_id = "TOL001", key_columns = c("scenario"))),
   approved_divergence = NULL,
-  scope_note = "Refusals R reaches only after the no-never-treated period cut: a coerced latest cohort too small (repeated cross sections, unbalanced and balanced panels), an empty cohort list (three sample modes, both comparison groups), and an empty cell grid under the varying base; the universal base of the last design estimates. R's fast and slow routes agree on every verdict.")
+  scope_note = "Refusals R reaches only after the no-never-treated period cut: a coerced latest cohort too small (repeated cross sections, unbalanced and balanced panels), an empty cohort list (three sample modes, both comparison groups), and a single surviving period under either base convention, and balancing that removes the only never-treated unit after the first-period trim. R's fast and slow routes agree on every verdict.")
 jsonlite::write_json(manifest, file.path(out, "metadata/manifest.json"), pretty = TRUE, auto_unbox = TRUE, null = "null")
 cat("RT045 written:", nrow(scenarios), "scenarios.\n")

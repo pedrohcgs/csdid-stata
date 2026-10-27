@@ -13,7 +13,11 @@
   "license": "GPL-3",
   "r_dependency": "R >= 4.1.0",
   "observed_local_r_version": "4.6.0",
-  "rng_kind": ["Mersenne-Twister", "Inversion", "Rejection"],
+  "rng_kind": [
+    "Mersenne-Twister",
+    "Inversion",
+    "Rejection"
+  ],
   "install_command": "R CMD INSTALL /path/to/pinned/did-checkout",
   "dependency_floor": {
     "BMisc": ">= 1.4.4",
@@ -59,5 +63,24 @@
     "record_rng_kind": true,
     "record_generator_hash": true,
     "record_output_hashes": true
+  },
+  "current_oracle_snapshot": {
+    "did_version": "2.5.1.904",
+    "did_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+    "DRDID_version": "1.4.0",
+    "observed_on": "2026-10-26",
+    "tree": "13c6295e1bfa24c5e16c7fa8c22ecbb291afce3c",
+    "description_sha256": "b1341908477e1508d46d8e3d0f3d90271e12c13469935492842b14cd0e2f6cd5",
+    "namespace_sha256": "dd0ca6151c06a4d3d9967349a2b71522584a444f42b1825befd715ad79f4a58d",
+    "code_digest": "a7b476372d499d0d",
+    "full_code_digest": "268b4fd6ab540f53ef1f198cc6747e1d48aa02f68e9dfc37da338fe983a699aa",
+    "test_blocks": 364,
+    "load_command": "CSDID_DID_UPSTREAM=<clean pinned checkout>; pkgload::load_all(..., export_all=FALSE)",
+    "dependency_floor": {
+      "BMisc": ">= 1.4.8",
+      "DRDID": ">= 1.4.0",
+      "testthat": ">= 3.1.8"
+    },
+    "note": "The top-level record is the original conformance-profile source. This snapshot governs current numerical fixtures."
   }
 }

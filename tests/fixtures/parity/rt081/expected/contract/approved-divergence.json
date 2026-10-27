@@ -1,0 +1,98 @@
+[
+  {
+    "divergence_id": "RT081-EXC003",
+    "source_tests": "tests/testthat/test-anticipation-window.R::the pretest-only cell filter follows the same rule",
+    "reason": "The pretreatment_only filter is private plumbing used by the R legacy conditional test. Stata exposes the ATT-based Wald pretest, whose anticipation restriction is covered by RT080; no pretreatment_only API is claimed.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC004",
+    "source_tests": "tests/testthat/test-conditional-ipw-only.R::conditional pre-test rejects unsupported methods before processing data",
+    "reason": "These blocks exercise conditional_did_pretest(), its Cramer-von-Mises/Kolmogorov-Smirnov moments, callbacks and resolved R formulas/IDs. The frozen Stata API exposes ATT-based Wald pretests only; it does not expose this legacy conditional test. No implementation or statistical equivalence is claimed.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC004",
+    "source_tests": "tests/testthat/test-conditional-ipw-only.R::correct original outcome regression cannot validate the legacy regression test",
+    "reason": "These blocks exercise conditional_did_pretest(), its Cramer-von-Mises/Kolmogorov-Smirnov moments, callbacks and resolved R formulas/IDs. The frozen Stata API exposes ATT-based Wald pretests only; it does not expose this legacy conditional test. No implementation or statistical equivalence is claimed.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC004",
+    "source_tests": "tests/testthat/test-conditional-ipw-only.R::default and explicit IPW conditional pre-tests remain identical",
+    "reason": "These blocks exercise conditional_did_pretest(), its Cramer-von-Mises/Kolmogorov-Smirnov moments, callbacks and resolved R formulas/IDs. The frozen Stata API exposes ATT-based Wald pretests only; it does not expose this legacy conditional test. No implementation or statistical equivalence is claimed.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC004",
+    "source_tests": "tests/testthat/test-conditional-ipw-only.R::conditional pre-test uses the resolved panel structure",
+    "reason": "These blocks exercise conditional_did_pretest(), its Cramer-von-Mises/Kolmogorov-Smirnov moments, callbacks and resolved R formulas/IDs. The frozen Stata API exposes ATT-based Wald pretests only; it does not expose this legacy conditional test. No implementation or statistical equivalence is claimed.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC002",
+    "source_tests": "tests/testthat/test-inference-outcome-units.R::non-finite custom influence functions do not produce finite inference",
+    "reason": "Function-valued custom estimators are outside the Stata API. RT078 tests invalid/missing influence-function scales directly, without claiming callback support.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC001",
+    "source_tests": "tests/testthat/test-inference-outcome-units.R::zero-IQR bootstrap draws are not reported as zero standard errors",
+    "reason": "This block requires biters=1. The command refuses reps<=20; inference from one draw is outside the Stata contract. RT078 separately tests zero and missing bootstrap scales.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC001",
+    "source_tests": "tests/testthat/test-inference-outcome-units.R::a single bootstrap draw retains columns and cannot estimate their scales",
+    "reason": "This block requires biters=1. The command refuses reps<=20; inference from one draw is outside the Stata contract. RT078 separately tests zero and missing bootstrap scales.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC005",
+    "source_tests": "tests/testthat/test-preprocess-name-collisions.R::fast preprocessing respects columns named args and tlist",
+    "reason": "These regressions target R data.table nonstandard evaluation and local-variable/column-name collisions (args/tlist/cutoff_t/V1) in its preprocessors. The Stata ado/Mata implementation has no data.table evaluator or those internal bindings; no R internal-code claim is made.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC005",
+    "source_tests": "tests/testthat/test-preprocess-name-collisions.R::argument name collisions work across preprocessing branches",
+    "reason": "These regressions target R data.table nonstandard evaluation and local-variable/column-name collisions (args/tlist/cutoff_t/V1) in its preprocessors. The Stata ado/Mata implementation has no data.table evaluator or those internal bindings; no R internal-code claim is made.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC005",
+    "source_tests": "tests/testthat/test-preprocess-name-collisions.R::group size checks use counts even if the cohort is named V1",
+    "reason": "These regressions target R data.table nonstandard evaluation and local-variable/column-name collisions (args/tlist/cutoff_t/V1) in its preprocessors. The Stata ado/Mata implementation has no data.table evaluator or those internal bindings; no R internal-code claim is made.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC005",
+    "source_tests": "tests/testthat/test-preprocess-name-collisions.R::args can name sampling weights or a cluster column",
+    "reason": "These regressions target R data.table nonstandard evaluation and local-variable/column-name collisions (args/tlist/cutoff_t/V1) in its preprocessors. The Stata ado/Mata implementation has no data.table evaluator or those internal bindings; no R internal-code claim is made.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC005",
+    "source_tests": "tests/testthat/test-preprocess-name-collisions.R::last-cohort filtering uses the cutoff argument rather than a covariate",
+    "reason": "These regressions target R data.table nonstandard evaluation and local-variable/column-name collisions (args/tlist/cutoff_t/V1) in its preprocessors. The Stata ado/Mata implementation has no data.table evaluator or those internal bindings; no R internal-code claim is made.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC004",
+    "source_tests": "tests/testthat/test-stress-pretest-defaults.R::conditional pre-test resolves omitted covariates and observation ids",
+    "reason": "These blocks exercise conditional_did_pretest(), its Cramer-von-Mises/Kolmogorov-Smirnov moments, callbacks and resolved R formulas/IDs. The frozen Stata API exposes ATT-based Wald pretests only; it does not expose this legacy conditional test. No implementation or statistical equivalence is claimed.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC006",
+    "source_tests": "tests/testthat/test-unbalanced-panel-message.R::both modes announce that a balanced panel resets allow_unbalanced_panel",
+    "reason": "The assertions concern exact R messages when allow_unbalanced_panel is reset/retained. Stata expresses this choice with bal(full)/bal(none) and e(panel_mode), which existing unbalanced-panel gates cover; there is no allow_unbalanced_panel message/API to inherit.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  },
+  {
+    "divergence_id": "RT081-EXC006",
+    "source_tests": "tests/testthat/test-unbalanced-panel-message.R::both modes announce that an unbalanced panel is used as such",
+    "reason": "The assertions concern exact R messages when allow_unbalanced_panel is reset/retained. Stata expresses this choice with bal(full)/bal(none) and e(panel_mode), which existing unbalanced-panel gates cover; there is no allow_unbalanced_panel message/API to inherit.",
+    "accepted_behavior": "This row describes an inapplicable R-only API or bootstrap request; it claims no Stata implementation."
+  }
+]

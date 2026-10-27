@@ -1,15 +1,16 @@
-# R `did` 2.5.1 <-> Stata `csdid` crosswalk
+# R `did` 2.5.1.904 <-> Stata `csdid` crosswalk
 
 This is a complete, two-way mapping between the R package
-[`did`](https://bcallaway11.github.io/did/) 2.5.1 (Callaway and Sant'Anna) and
+[`did`](https://bcallaway11.github.io/did/) 2.5.1.904 (Callaway and Sant'Anna) and
 this Stata `csdid` package. Read it left to right if you are porting R code to
 Stata, and right to left if you are reading a Stata log and want to know which
 R call produced the same numbers.
 
 The Stata side of every row was read off the `syntax` lines in
 `src/ado/*.ado` and exercised in Stata; the R side of every row was read off
-the installed package (`args(did::att_gt)`, `args(did::aggte)`, and the package
-help). Nothing here is inferred from documentation alone.
+the authenticated source at commit
+`48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e` (`args(did::att_gt)`,
+`args(did::aggte)`, and package help).
 
 Contents:
 
@@ -49,7 +50,7 @@ the group-time results.
 
 ## 2. `att_gt()` arguments -> `csdid` options
 
-R signature (verified with `args(did::att_gt)` against the installed 2.5.1):
+R signature (verified with `args(did::att_gt)` against the pinned 2.5.1.904 source):
 
 ```r
 att_gt(yname, tname, idname = NULL, gname, xformla = NULL, data,
@@ -72,19 +73,19 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | --- | --- | --- | --- | --- |
 | `yname` | required | `depvar`, the first variable in the varlist | required | Must be numeric. |
 | `tname` | required | `time(varname)` | required | Must be numeric. |
-| `idname` | `NULL` | `ivar(varname)` (alias `id()`) | none = repeated cross sections | Must be **numeric** in Stata; `egen id = group(strid)` first. |
+| `idname` | `NULL` | `ivar(varname)` (alias `id()`) | none = repeated cross sections | Must be numeric. Under repeated cross sections a supplied observation ID must be unique across all rows; omit it when no observation ID is needed. |
 | `gname` | required | `gvar(varname)` | required | `0` = never treated in both packages; negative values are rejected. |
 | `xformla` | `NULL` (`~1`) | the covariates after `depvar` in the varlist | none | `xformla = ~ x1 + x2` is `csdid y x1 x2, ...`. Factor-variable notation (`i.x`, `c.x##c.x`) is expanded before estimation. The intercept is always included, as in R. |
 | `data` | required | the dataset in memory | - | Restrict the sample with `if` / `in` rather than subsetting a data frame. |
-| `panel` | `TRUE` | `ivar()` specified or not | not specified | `panel = FALSE` (repeated cross sections) is `csdid` **without** `ivar()`. `e(panel_mode)` reports which mode ran. |
+| `panel` | `TRUE` | `ivar()` specified or not | not specified | `panel = FALSE` is `rcs` or omission of `ivar()`. With `rcs`, an optional `ivar()` identifies individual observations and must be unique across all rows. Repeated units belong to a panel, with `bal(none)` if incomplete. `e(panel_mode)` reports which mode ran. |
 | `allow_unbalanced_panel` | `FALSE` | `bal(full\|pair\|none)`; `unbalanced` is the documented synonym of `bal(none)`, and `allowunbalanced` / `allow_unbalanced` the R-style longhand carrying R's own argument name (all typed in full) | `bal(full)` | `bal(full)` is R's `allow_unbalanced_panel = FALSE`: units not observed in every period are dropped once, before estimation, and csdid reports how many. `bal(none)` is R's `allow_unbalanced_panel = TRUE`: every unit is kept and the repeated-cross-section computation runs. `bal(pair)` has no R counterpart (legacy Version 1.82 per-comparison balancing). `e(panel_mode)` reports which ran. See [section 6](#6-where-the-two-deliberately-differ). |
 | `control_group` | `"nevertreated"` | `notyet` (alias `notyettreated`); `nevertreated` (legacy alias `never`) | **not-yet-treated** | **Deliberate divergence.** csdid defaults to the not-yet-treated comparison group; `nevertreated` restores R's default. `e(control_group)` reports `nevertreated` or `notyettreated`. Specifying both errors. |
-| `anticipation` | `0` | `anticipation(#)` | `0` | Must be nonnegative. |
+| `anticipation` | `0` | `anticipation(#)` | `0` | Must be nonnegative. Anticipation-window cells use the last observed period strictly before `g - anticipation` under either base-period setting and are excluded from the Wald pretest. |
 | `weightsname` | `NULL` | `[iweight = varname]` | none | Stata weight syntax, normalized to R's `weightsname` contract. |
 | `fix_weights` | `NULL` | `fix_weights()` (alias `fixweights()`) | none | Accepted values: `varying`, `base` / `baseperiod` / `base_period`, `first` / `firstperiod` / `first_period`. `base` and `first` require `ivar()`, as in R. `e(fix_weights)` reports the canonical value. |
 | `alp` | `0.05` | `level(#)` | `c(level)`, i.e. 95 unless you changed it | `level = 100 * (1 - alp)`. `alp = 0.10` is `level(90)`. |
 | `bstrap` | `TRUE` | bootstrap is the default; `analytical` or `vce(analytical)` turns it off | bootstrap | `e(bstrap)` is 1/0. `reps()`, `biters()`, `seed()`, `rseed()` with `analytical` is an error, not a silent no-op. |
-| `cband` | `TRUE` | `pointwise` turns uniform bands off | uniform bands | `cband = FALSE` is `pointwise`. `e(cband)` records the request (1/0). Under `analytical` without `pointwise`, aggregations still carry a simultaneous band whose critical value comes from the multiplier bootstrap — exactly R's behavior on a `bstrap = FALSE` fit, warning included — while every standard error stays analytical. The ATT(g,t) table itself is pointwise in both packages when the bootstrap is off. |
+| `cband` | `TRUE` | `pointwise` turns uniform bands off | uniform bands | `cband = FALSE` is `pointwise`. `e(cband)` records the resolved policy (1/0): two periods or an unavailable simultaneous critical value resolve it to pointwise. Under `analytical` without `pointwise`, aggregations still carry a simultaneous band whose critical value comes from the multiplier bootstrap — exactly R's behavior on a `bstrap = FALSE` fit, warning included — while every standard error stays analytical. The ATT(g,t) table itself is pointwise in both packages when the bootstrap is off. |
 | `biters` | `1000` | `biters(#)`, `reps(#)`, `wboot(biters(#))`, or `wboot(reps(#))` | `1000` | All four spellings set the same thing; two spellings that disagree is an error. |
 | `clustervars` | `NULL` | `cluster(varname)`, `vce(cluster varname)`, or `wboot(cluster(varname))` | none (unit level) | R takes at most two variables and one of them must be `idname`; Stata takes the one non-unit clustering variable, which is the same thing. Must be numeric. `e(N_clusters)` reports the count. R drops `idname` from `clustervars`, so `clustervars = idname` is unclustered there; csdid's `cluster()` on the `ivar()` variable runs the clustered computation with one cluster per unit, which gives the unclustered analytical standard errors, and a seeded bootstrap that matches R's `clustervars` on a copy of the identifier rather than R's unclustered draws. |
 | `est_method` | `"dr"` | `method(dr\|reg\|ipw)` | `dr` | Legacy aliases: `dripw` -> `dr`, `stdipw` -> `ipw`, both with a deprecation note. A user-supplied estimator function has no Stata equivalent. |
@@ -132,9 +133,9 @@ csdid_stats using filename [, ...]
 | --- | --- | --- | --- | --- |
 | `MP` | required | the `csdid` results already in `e()` | - | Or `csdid_stats using rif.dta`, reading a file written by `csdid, saverif()`. |
 | `type` | `"group"` | `type(simple\|group\|dynamic\|calendar)`, or the same word as a positional argument | `group` | `type(event)` and the positional `event` are accepted aliases for `type(dynamic)`. `e(agg_type)` reports the canonical value. |
-| `balance_e` | `NULL` | `balance(#)` or `balance_e(#)` | none | Dynamic aggregation only. Matches R's event-time grid and values. |
-| `min_e` | `-Inf` | `min_e(#)`, or the first number in `window(min max)` | `-Inf` | `min_e()` and `window()` cannot be combined. |
-| `max_e` | `Inf` | `max_e(#)`, or the second number in `window(min max)` | `Inf` | Both packages ignore `min_e` / `max_e` / `balance_e` for `type(calendar)`; R does so silently, Stata prints a warning first. |
+| `balance_e` | `NULL` | `balance(#)` or `balance_e(#)` | none | Dynamic aggregation only; other types warn that it is ignored. A retained cohort must have a nonmissing ATT at every originally observed post-treatment event time through the horizon. This check precedes display limits; no complete cohort produces an error. |
+| `min_e` | `-Inf` | `min_e(#)`, or the first number in `window(min max)` | `-Inf` | Simple, group and dynamic aggregations use original calendar event time, `t-g`. `min_e()` and `window()` cannot be combined. |
+| `max_e` | `Inf` | `max_e(#)`, or the second number in `window(min max)` | `Inf` | Original calendar units apply to simple, group and dynamic aggregations. Both packages warn and ignore `min_e` / `max_e` / `balance_e` for `type(calendar)`. |
 | `na.rm` | `FALSE` | `dropmissing`, `na_rm`, or `na.rm` | `FALSE` | All three spellings are the same option. |
 | `alp` | inherited from the `MP` object | `level(#)` | inherited from `e(level)` | Omitting `level()` inherits the estimation-time level, exactly as R inherits `alp` from the `MP` object. `e(agg_level)` reports what was used. |
 | `bstrap` | inherited | - | inherited from `e(bstrap)` | **Cannot be overridden at aggregation.** See [section 6](#6-where-the-two-deliberately-differ). |
@@ -283,8 +284,9 @@ the estimates, band bounds, x values, and pre/post labels and leaves rendering
 to `twoway`. Styling options are rejected rather than ignored on both paths.
 
 **6.5 Numeric identifiers are required.**
-R accepts any `idname` column type. Stata requires `ivar()`, `time()`, `gvar()`,
-and `cluster()` to be numeric and errors otherwise (`egen id = group(strid)`).
+Both packages require numeric unit, time and cohort identifiers. Stata also
+requires `cluster()` to be numeric (`egen id = group(strid)` converts a string
+identifier without changing group membership).
 
 **6.6 The bootstrap has a compiled accelerator on macOS and a Mata engine
 everywhere else.**
@@ -296,23 +298,20 @@ random-number stream and agree to floating-point rounding, so the accelerator
 is a speed decision and never an estimand decision. `e(bootstrap_accelerator)` and
 `e(bootstrap_accelerator_status)` report which path ran.
 
-**6.7 A never-treated group that balancing empties is replaced out loud, not
-left to return blanks.**
-Both packages drop a unit whole when any of its covariate cells is missing
-(`bal(full)`, `allow_unbalanced_panel = FALSE`). When that step removes every
-never-treated unit, R has already decided that a never-treated group exists
-and goes on to estimate: under `control_group = "nevertreated"` every ATT(g,t)
-is `NA`, and no warning says why. `csdid` makes that decision on the sample it
-actually estimates on, so it applies the rule both packages use when no
-never-treated unit exists to begin with -- the latest treated cohort becomes
-the comparison group and the periods from its treatment date on are dropped --
-and warns that it did so. The numbers are the ones R reports when it is given
-the balanced sample directly.
+**6.7 Both packages re-check comparison availability after balancing.**
+With `bal(full)` / `allow_unbalanced_panel = FALSE`, units missing a period
+are removed whole. If that removes every never-treated unit or the latest
+cohort previously used as the comparison group, both packages apply the
+latest-cohort fallback again and announce it. A treated cohort that loses all
+its units is removed with a warning; the surviving cohorts are estimated.
+If no usable treated cohort remains, both packages refuse. Anticipation
+also shifts the period cutoff used by this fallback.
 
 **6.8 An outcome with no variation at all is refused, not estimated.**
 When the outcome takes the same value in every observation of the estimation
 sample, R runs: it returns a table in which every ATT(g,t) is exactly 0 with a
-missing standard error, and a simultaneous critical value of `-Inf`. `csdid`
+missing standard error, and an announced pointwise fallback when a
+simultaneous band was requested. `csdid`
 stops first, with return code 459 and a message naming the variable and the
 value. The R table is not wrong, but it is indistinguishable at a glance from a
 precisely estimated null, and none of the warnings that do fire names this
@@ -323,6 +322,17 @@ within one of a panel is estimated, with R's numbers (on a balanced panel
 without `fix_weights(varying)`, every ATT(g,t) exactly 0 with no standard error); `csdid` adds a warning naming
 the outcome and counting the ATT(g,t) that are 0, up to rounding, with no
 standard error.
+
+**6.9 A comparison at the numerical-singularity cutoff can be missing.**
+When nearly collinear covariates put a regression at the machine-precision
+conditioning boundary, rounding of the matrix product can determine whether
+that comparison passes its guard. The R verdict itself can change with the
+matrix backend. csdid retains a missing cell with a warning naming the cohort
+and period when its own control design is numerically singular; it does not
+loosen that guard to recover a backend-dependent estimate. Center or rescale
+covariates and inspect redundant terms. RT082 retains the observed R backend
+results alongside the visible Stata refusal. Ordinary comparisons still follow
+the parity contract.
 
 Legacy-Stata-facing divergences (options that exist only to ease migration from
 Stata `csdid` Version 1.82, and that R has no notion of) are catalogued separately in
@@ -479,8 +489,12 @@ clustered bootstrap with one cluster per unit, which reproduces R's
 
 ### 8.3 `balance_e`, the trickiest option to port
 
-`balance_e` drops cohorts that are not observed for at least `#` post-treatment
-periods, which changes the event-time grid as well as the values:
+`balance_e` retains cohorts with nonmissing estimates at every originally
+observed post-treatment event time through the horizon. On irregular calendars
+it requires the event times observed among eligible cohorts, including a time
+whose estimates are all missing, and does not invent globally absent times.
+Balancing precedes `min_e` / `max_e`; an error names an empty complete-cohort
+selection. On complete regular data this gives the following grid and values:
 
 ```r
 aggte(out, type = "dynamic", balance_e = 0, na.rm = TRUE)   # egt -3 .. 0
@@ -504,7 +518,8 @@ Both the grid and the values match; the event-time truncation agrees with R to
 
 ## 9. How to reproduce this document
 
-The reference environment is R `did` 2.5.1 with `DRDID` 1.4.0. To regenerate
+The reference environment is R `did` 2.5.1.904 at commit
+`48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e` with `DRDID` 1.4.0. To regenerate
 the numbers in section 8:
 
 ```bash
@@ -512,9 +527,15 @@ Rscript -e 'args(did::att_gt)'    # section 2 signature
 Rscript -e 'args(did::aggte)'     # section 3 signature
 ```
 
-then run the R and Stata blocks in section 8 verbatim; print with
+Then run the R and Stata blocks in section 8 verbatim; print with
 `sprintf("%.10f", ...)` on the R side and
 `matrix list e(attgt), format(%20.10f)` on the Stata side.
+
+Fixture regeneration also requires the pinned source checkout and `pkgload`.
+Set `CSDID_DID_UPSTREAM` to a clean checkout at the commit above before running
+`Rscript tools/parity/generators/<id>/generate.R`. RT081 reads upstream test
+sources and therefore requires that checkout even when the installed package
+passes the code-fingerprint check.
 
 Broader evidence for the parity claims quoted here: the repository carries the
 parity test suite under `tests/`, built on frozen R fixtures. Group-time and dynamic-aggregation estimates agree with R to

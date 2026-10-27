@@ -1,0 +1,391 @@
+{
+  "matrix_id": "RT077",
+  "fixture_family": "r-weighted-feasibility-support",
+  "normative_source": "did utility_functions.R overlap_check_fail, rcond_check_fail, rc_outcome_has_too_few_obs; compute.att_gt2.R normalized RC support precedence",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/panel_reg_zero.csv",
+      "sha256": "b703dadbd73c49a97abcf1499bdba98964fe071cf8b2a26c7c6b022251e14777",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_reg_ordinary.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_reg_tiny.csv",
+      "sha256": "7486058377b006713ef546def87bb99441c02f358ec9314a0c8a6deb3c3ea8fe",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_reg_unweighted.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_reg_nearrank.csv",
+      "sha256": "4b72b5dba160a12913ab79c48d189572d7798b1155fc684d5ae44072ecdf7f54",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_dr_zero.csv",
+      "sha256": "6a5e04ca798d987f3e89c7acf8577d673f698c2df93a9627787f04741bbdea3c",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_dr_ordinary.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_dr_unweighted.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_dr_nearrank.csv",
+      "sha256": "4b72b5dba160a12913ab79c48d189572d7798b1155fc684d5ae44072ecdf7f54",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_ipw_zero.csv",
+      "sha256": "6a5e04ca798d987f3e89c7acf8577d673f698c2df93a9627787f04741bbdea3c",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_ipw_ordinary.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_ipw_unweighted.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel_ipw_nearrank.csv",
+      "sha256": "4b72b5dba160a12913ab79c48d189572d7798b1155fc684d5ae44072ecdf7f54",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_reg_zero.csv",
+      "sha256": "6cb8526d09d913d2b237102cb9ce85fbf42968e8ae8aef13a2fe432d33ac11f9",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_reg_ordinary.csv",
+      "sha256": "e9069613c3e2c6981504a5fa162d5047209ebe88ec5668fc1f01c4d9ff4a92af",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_reg_tiny.csv",
+      "sha256": "9b277defbe0727d612defe83af25b7afdef6de4ecdc801961c519ca7cc14d483",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_reg_unweighted.csv",
+      "sha256": "e9069613c3e2c6981504a5fa162d5047209ebe88ec5668fc1f01c4d9ff4a92af",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_reg_nearrank.csv",
+      "sha256": "ae010e1d1d7577be8e93608876f3a7c006893fbeee7e25671b11fb0b59446cfc",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_dr_zero.csv",
+      "sha256": "5ecba2395f0e5cfa093af8cf919fd743760b47dd92c53903165c1499ed7de5bb",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_dr_ordinary.csv",
+      "sha256": "e9069613c3e2c6981504a5fa162d5047209ebe88ec5668fc1f01c4d9ff4a92af",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_dr_unweighted.csv",
+      "sha256": "e9069613c3e2c6981504a5fa162d5047209ebe88ec5668fc1f01c4d9ff4a92af",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_dr_nearrank.csv",
+      "sha256": "ae010e1d1d7577be8e93608876f3a7c006893fbeee7e25671b11fb0b59446cfc",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_ipw_zero.csv",
+      "sha256": "5ecba2395f0e5cfa093af8cf919fd743760b47dd92c53903165c1499ed7de5bb",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_ipw_ordinary.csv",
+      "sha256": "e9069613c3e2c6981504a5fa162d5047209ebe88ec5668fc1f01c4d9ff4a92af",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_ipw_unweighted.csv",
+      "sha256": "e9069613c3e2c6981504a5fa162d5047209ebe88ec5668fc1f01c4d9ff4a92af",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc_ipw_nearrank.csv",
+      "sha256": "ae010e1d1d7577be8e93608876f3a7c006893fbeee7e25671b11fb0b59446cfc",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_reg_zero.csv",
+      "sha256": "a4b66e9b1b35a0a33f2c5776efad240bd96c24f9869e0b9467dfa8895ba27cd6",
+      "rows": 596,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_reg_ordinary.csv",
+      "sha256": "f7d646cf0c967e7659c4fb95aa850cb3d4f7b8276bcb42f227066d7557db7606",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_reg_tiny.csv",
+      "sha256": "49952c4c407dd9c3d273cec200392d650ef1a56fd138bc6902b5817bea240445",
+      "rows": 596,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_reg_unweighted.csv",
+      "sha256": "f7d646cf0c967e7659c4fb95aa850cb3d4f7b8276bcb42f227066d7557db7606",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_reg_nearrank.csv",
+      "sha256": "b3de090f50b8715e7f4a2a8f6aa77af147e6ff901ed25fe88a942f449334a955",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_dr_zero.csv",
+      "sha256": "1fd3439608e0e8cfa8de82a4a73bacb5c769f535698c4d9cc858891c29565ce4",
+      "rows": 596,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_dr_ordinary.csv",
+      "sha256": "f7d646cf0c967e7659c4fb95aa850cb3d4f7b8276bcb42f227066d7557db7606",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_dr_unweighted.csv",
+      "sha256": "f7d646cf0c967e7659c4fb95aa850cb3d4f7b8276bcb42f227066d7557db7606",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_dr_nearrank.csv",
+      "sha256": "b3de090f50b8715e7f4a2a8f6aa77af147e6ff901ed25fe88a942f449334a955",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_ipw_zero.csv",
+      "sha256": "1fd3439608e0e8cfa8de82a4a73bacb5c769f535698c4d9cc858891c29565ce4",
+      "rows": 596,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_ipw_ordinary.csv",
+      "sha256": "f7d646cf0c967e7659c4fb95aa850cb3d4f7b8276bcb42f227066d7557db7606",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_ipw_unweighted.csv",
+      "sha256": "f7d646cf0c967e7659c4fb95aa850cb3d4f7b8276bcb42f227066d7557db7606",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced_ipw_nearrank.csv",
+      "sha256": "b3de090f50b8715e7f4a2a8f6aa77af147e6ff901ed25fe88a942f449334a955",
+      "rows": 591,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_reg_zero.csv",
+      "sha256": "b703dadbd73c49a97abcf1499bdba98964fe071cf8b2a26c7c6b022251e14777",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_reg_ordinary.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_reg_tiny.csv",
+      "sha256": "7486058377b006713ef546def87bb99441c02f358ec9314a0c8a6deb3c3ea8fe",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_reg_unweighted.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_reg_nearrank.csv",
+      "sha256": "4b72b5dba160a12913ab79c48d189572d7798b1155fc684d5ae44072ecdf7f54",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_dr_zero.csv",
+      "sha256": "6a5e04ca798d987f3e89c7acf8577d673f698c2df93a9627787f04741bbdea3c",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_dr_ordinary.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_dr_unweighted.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_dr_nearrank.csv",
+      "sha256": "4b72b5dba160a12913ab79c48d189572d7798b1155fc684d5ae44072ecdf7f54",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_ipw_zero.csv",
+      "sha256": "6a5e04ca798d987f3e89c7acf8577d673f698c2df93a9627787f04741bbdea3c",
+      "rows": 605,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_ipw_ordinary.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_ipw_unweighted.csv",
+      "sha256": "995d4e986f4649fba137f6dad0d9d4fe799f2e40b441e89f6356f0c71b8fc6d5",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/varying_ipw_nearrank.csv",
+      "sha256": "4b72b5dba160a12913ab79c48d189572d7798b1155fc684d5ae44072ecdf7f54",
+      "rows": 600,
+      "columns": 6
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "cab1196faef6e882ee70202572512dd2e2096218726ae728fb99f7aac84d9696",
+      "rows": 52,
+      "columns": 5
+    },
+    {
+      "path": "inputs/support.csv",
+      "sha256": "6e03811e3afc6204b7cc052b94556117e21e9a60a8155804133bdcd2d1f095a4",
+      "rows": 160,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt077/generate.R",
+      "path": "tools/parity/generators/rt077/generate.R",
+      "sha256": "31b50ac3b0b896053bd9ac0f59ffd7d02908250bd7160828a574f7ed9b9f784f"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.904",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "rt077",
+      "sha256": "3073ee84f544e28f3fc8bd57bbcfb3750270b4ded224c0ac79ff662851ac854e"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "rt077",
+      "sha256": "e9d77273245185a83489bb0d28fe112ed72cd1aa9942f5505a96cc8cd7dfe94e"
+    },
+    {
+      "path": "expected/r/warnings.csv",
+      "schema": "rt077",
+      "sha256": "f6d59788bb9adaf74268f2d27bbd0644ec5fedff1ded08fa696b4b2063567ae6"
+    },
+    {
+      "path": "expected/r/support.csv",
+      "schema": "rt077",
+      "sha256": "7ab607fccbb6e9fc8b47fe63905807b69f98a5ea5dd2004f530ce7fd071ffd02"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "every public ATT/SE and unit-level influence function on weighted panel, RC, unbalanced and varying-weight routes",
+      "expected": "expected/r/attgt.csv and inffunc.csv",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "fast", "group", "time", "unit"]
+    },
+    {
+      "actual": "exact normalized support decisions including square and subnormal boundaries",
+      "expected": "expected/r/support.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": "scenario"
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "52 deterministic designs, each in both R compute modes, plus 40 normalized support boundaries. The 28 weighted designs cover zero-weight extreme covariates and tiny positive control weights; 24 unweighted designs cover ordinary and large-column-scale near-rank designs with no user weights. All public estimates and every unit-level influence-function entry are compared, alongside weighted numerical-rank rejection and normalized support checks in the Stata test."
+}

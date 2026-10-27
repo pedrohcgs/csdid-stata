@@ -2,17 +2,11 @@ version 15
 clear all
 set more off
 
-* rt034: type(group) + dropmissing on an off-grid calendar (periods {1,3,5,9},
-* cohort dates {2,4,7}). R's compute.aggte screens cohorts on RAW calendar
-* values with max_e before its rank recode, and builds the recode grid from
-* the original period list joined with the SURVIVING cohort dates -- so which
-* cohorts survive moves every later rank. Witness "balanced" has no missing
-* cell at all (cohort 7 leaves under max_e(1) because no cell sits inside
-* [7, 8]); witness "gap" removes cohort 4's t = 5 rows so that cohort leaves
-* under dropmissing while 2 and 7 survive. Before the in-house review fix the
-* balanced witness reported three cohorts where R reports two, and the gap
-* witness kept different cells for cohort 2. Reference values are R fixtures
-* from tools/parity/generators/rt034/generate.R.
+* RT034: group + dropmissing on periods {1,3,5,9}, cohorts {2,4,7}.
+* Windows use original calendar units. The balanced witness excludes cohort
+* 7 at max_e(1), since [7,8] contains no observed post-treatment cell. The
+* gap witness excludes cohort 4 at max_e(2), since its only cell in [4,6]
+* is missing. Every cohort effect, overall effect and SE is compared with R.
 
 local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
@@ -56,4 +50,4 @@ quietly csdid_stats group, max_e(2) na_rm
 assert e(N_aggte) == 2
 rt034_assert_group_matches_r, expected("`fixture'/expected/r/group-gap-maxe2.csv")
 
-display as text "test-group-grid-narm: group aggregation matches R's na.rm cohort screen and rank grid on off-grid calendars"
+display as text "test-group-grid-narm: group aggregation matches the original-calendar cohort screen on off-grid calendars"

@@ -1,14 +1,11 @@
 #!/usr/bin/env Rscript
-# RT071: type = "group" with max_e and na.rm on a sub-unit-spaced time axis.
-# R screens each cohort on the RAW calendar, g <= t <= g + max_e
-# (compute.aggte.R:177), then recodes periods and cohorts to ranks (:252-253)
-# and averages the cells whose RANK lies within max_e of the cohort's
-# (:335-:344). When periods sit less than one time() unit apart the raw window
-# is the wider of the two, so a cohort whose only estimated post cells lie
-# between them passes the screen and has nothing to average, and
-# get_agg_inf_func stops (:777-781). Cohort 1.7 is unobserved at 1.7 and 2.2,
-# its first two post periods; its cell at 2.7 is inside the raw window
-# [1.7, 2.7] and outside the rank window {1.7, 2.2}.
+# RT071: group windows use original calendar units at both selection stages.
+# The decimal endpoint still exposes an operation-order boundary: the na.rm
+# cohort screen compares t <= g + max_e, while the final keeper compares
+# t - g <= max_e. At g=1.7, t=2.7, max_e=1 the former is true and the latter
+# false in binary double precision, so the reference retains an empty cohort
+# and raises a named window error. Preserve that refusal as well as all
+# successful original-calendar-window estimates.
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt071/generate.R"
@@ -67,8 +64,8 @@ outputs <- list(
   list(path = "expected/r/aggte.csv", schema = "aggte-group", sha256 = sha(file.path(out, "expected/r/aggte.csv"))),
   list(path = "expected/r/refusals.csv", schema = "refusal-message", sha256 = sha(file.path(out, "expected/r/refusals.csv"))))
 manifest <- list(matrix_id = "RT071", fixture_family = "r-group-window-subunit-axis",
-  normative_source = "did 2.5.1 compute.aggte.R:177 (raw-scale na.rm screen), :252-253 (rank recode), :335-344 (rank-scale group window), :777-781 (get_agg_inf_func stop on an empty selection)",
-  source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
+  normative_source = "did 2.5.1.904 compute.aggte.R:192 (additive raw-scale na.rm screen), :302 (subtractive original-unit keeper), :368-387 (named empty-cohort window refusal)",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt071/generate.R", path = "tools/parity/generators/rt071/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),

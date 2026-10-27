@@ -6,7 +6,7 @@ title: csdid
 # `csdid`
 
 <p class="tagline" markdown="span">**A Stata package for difference-in-differences with multiple periods.**</p>
-<p class="meta-line">version 2.0.1</p>
+<p class="meta-line">version 2.0.2</p>
 
 </div>
 
@@ -23,7 +23,7 @@ by default; analytical and clustered inference are also available.
 
 ## How to install
 
-Version 2.0.1 installs from GitHub. It replaces an earlier `csdid` under the
+Version 2.0.2 installs from GitHub. It replaces an earlier `csdid` under the
 same command name, so uninstall first and then install:
 
 <!-- norun -->
@@ -35,7 +35,7 @@ net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata
 
 If your current copy came from SSC, `ssc uninstall csdid` is the first line
 instead. Uninstalling first is what keeps Stata tracking one `csdid` rather
-than two. Run `csdid version` afterwards to confirm version 2.0.1.
+than two. Run `csdid version` afterwards to confirm version 2.0.2.
 
 SSC currently distributes csdid **Version 1.81**, the previous generation of
 the package. It needs `drdid` as well, so if that is what you want, it is two
@@ -127,7 +127,7 @@ We ask that you cite *both* the method and the software when you use our `csdid`
 @misc{CRS2026_csdidStata,
   author = {Callaway, Brantly and Rios-Avila, Fernando and Sant'Anna, Pedro H. C.},
   title  = {csdid: Difference-in-Differences with Multiple Time Periods in Stata},
-  note   = {Stata module, version 2.0.1},
+  note   = {Stata module, version 2.0.2},
   year   = {2026},
   url    = {https://github.com/pedrohcgs/csdid-stata}
 }

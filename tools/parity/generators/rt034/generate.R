@@ -14,16 +14,10 @@ dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "expected/r"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "metadata"), recursive = TRUE, showWarnings = FALSE)
 
-# type(group) + na.rm on an off-grid calendar. Periods {1,3,5,9} and cohort
-# dates {2,4,7} share no value, so every rank in compute.aggte's recode grid
-# depends on WHICH cohorts survive the na.rm screen: R's grid is the original
-# tlist joined with the SURVIVING glist (compute.aggte.R:239 with glist as it
-# stands after :164/:195), and for type="group" the survival screen runs on
-# RAW calendar values with max_e before any recode (:177). Witness 2 needs no
-# missing cells at all: with max_e = 1, cohort 7 has no cell inside
-# [7, 8] and leaves glist, which moves every later rank. Witness 1 removes
-# cohort 4's t = 5 rows, so its only cell inside [4, 6] is missing and the
-# cohort leaves under na.rm while cohorts 2 and 7 survive.
+# Group windows use original calendar units. With periods {1,3,5,9}
+# and cohorts {2,4,7}, max_e=1 removes cohort 7 because [7,8] contains
+# no observed cell. Removing cohort 4's t=5 observations makes its only
+# cell in [4,6] unavailable; na.rm then removes that cohort at max_e=2.
 set.seed(20260827)
 periods <- c(1, 3, 5, 9)
 cohorts <- c(0, 2, 4, 7)
@@ -68,7 +62,7 @@ export_group(a1, "gap", 2, "expected/r/group-gap-maxe2.csv")
 manifest <- list(
   matrix_id = "RT034",
   fixture_family = "group-narm-offgrid-cohorts",
-  normative_source = "R did 2.5.1 compute.aggte: under na.rm the type='group' cohort screen runs on raw calendar values with max_e before the rank recode, and the recode grid is the original tlist joined with the surviving glist",
+  normative_source = "R did 2.5.1.904 compute.aggte: type='group' applies min_e/max_e in original calendar units; under na.rm cohorts with no surviving post-treatment cell inside the window are excluded",
   generators = list(list(
     runtime = "R",
     command = "Rscript tools/parity/generators/rt034/generate.R",

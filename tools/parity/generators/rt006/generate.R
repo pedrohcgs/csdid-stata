@@ -159,7 +159,7 @@ calendar_ignored <- rbind(
 write.csv(calendar_ignored, file.path(fixture, "expected/r/calendar-ignored.csv"), row.names = FALSE, na = "")
 
 source_file <- "tests/testthat/test-audit-fixes.R"
-source_sha <- "c8b6b5d7cf2e0544957d6e6bddb211871df48b051a134cc0a6d041e648aa6dd4"
+source_sha <- "8d38f1785dcf661f3a73e84486e0f0dd5577024792301670a53bc54676f0c868"
 upstream_map <- data.frame(
   source_file = source_file,
   source_sha256 = source_sha,
@@ -224,8 +224,8 @@ writeLines(jsonlite::toJSON(divergence, dataframe = "rows", auto_unbox = TRUE, p
 manifest <- list(
   matrix_id = "RT006",
   fixture_family = "r-audit-fixes",
-  normative_source = "R did 2.5.1 tests/testthat/test-audit-fixes.R",
-  source_commit = "622d7cec474790934cdaeb68c82c5c38c0711426",
+  normative_source = "R did 2.5.1.904 tests/testthat/test-audit-fixes.R",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   source_sha256 = source_sha,
   decision_refs = c("D001", "D004", "D014"),
   tolerance_ids = c("TOL002", "EXACT"),

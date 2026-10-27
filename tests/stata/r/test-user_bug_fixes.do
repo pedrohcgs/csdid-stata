@@ -66,11 +66,14 @@ confirm file "`root'/tests/fixtures/parity/rt028/expected/contract/scenarios.csv
 confirm file "`root'/tests/fixtures/parity/rt028/metadata/manifest.json"
 
 import delimited using "`root'/tests/fixtures/parity/rt028/expected/contract/upstream-test-map.csv", clear varnames(1) stringcols(_all)
-assert _N == 7
+* The retired skipped tiny-RC block is covered by RT077/RT076; only
+* the six current public blocks remain in this source map. Its historical
+* exclusion record is retained separately below.
+assert _N == 6
 quietly count if coverage_status == "mapped"
 assert r(N) == 6
 quietly count if coverage_status == "approved-divergence" & divergence_id == "RT028-DIV001"
-assert r(N) == 1
+assert r(N) == 0
 
 import delimited using "`root'/tests/fixtures/parity/rt028/expected/contract/approved-divergence.csv", clear varnames(1) stringcols(_all)
 assert _N == 1

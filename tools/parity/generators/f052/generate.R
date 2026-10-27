@@ -61,7 +61,7 @@ run <- function(is_panel) {
   att_gt(
     yname = "y",
     tname = "time",
-    idname = "id",
+    idname = if (is_panel) "id" else NULL,
     gname = "g",
     data = d,
     panel = is_panel,

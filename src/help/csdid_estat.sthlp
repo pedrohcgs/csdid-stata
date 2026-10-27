@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.1 23oct2026}{...}
+{* *! version 2.0.2 27oct2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
@@ -305,7 +305,9 @@ accept {cmd:dropmissing}; specify it on the aggregation before exporting.
 {opt from(#)} was a lower bound on event time in Stata {cmd:csdid} Version
 1.82. It is rejected with return code 198 and a message naming the
 replacement; see {helpb csdid_stats}. Use {cmd:window(}{it:# #}{cmd:)} on
-{cmd:estat event} instead. The Version 1.82 options {cmd:estore()} and
+{cmd:estat simple}, {cmd:estat group}, or {cmd:estat event} instead.
+The calendar aggregation does not use event-time windows.
+The Version 1.82 options {cmd:estore()} and
 {cmd:esave()} are rejected the same way; add {cmd:post} and name the posted
 aggregation with {cmd:estimates store} or {cmd:estimates save}. The Version
 1.82 subcommands {cmd:pretrend}, {cmd:cevent} and {cmd:all} are refused with
@@ -316,9 +318,9 @@ return code 498 and a message naming what replaces each.
 
 {pstd}
 {cmd:window()} is forwarded to {helpb csdid_stats##opt_window:csdid_stats}, so
-it behaves exactly as it does there -- including the fact that on
-{cmd:estat simple} and {cmd:estat group} only the upper bound bites, by
-restricting which post-treatment cells are averaged, and the fact that on
+it behaves exactly as it does there. On {cmd:estat simple} and
+{cmd:estat group}, both bounds restrict which post-treatment cells are
+averaged, in the original time units. On
 {cmd:estat calendar} it does not bite at all: the calendar aggregation is over
 periods, not event times, so a window on it is warned about and ignored and
 the full calendar aggregation is reported. The reported overall
@@ -413,7 +415,7 @@ the aggregation after.
 {pstd}
 A row with no standard error -- the normalised base period under
 {helpb csdid##opt_base:base_period(universal)}, or an effect whose influence
-function is degenerate, which includes a standard error of 1.49e-7 or less --
+function is degenerate or nonfinite --
 reports a missing standard error, z, p-value and
 confidence limits, exactly as the displayed table does. {cmd:e(V)} carries a
 zero row and column there, which is Stata's convention for a coefficient with

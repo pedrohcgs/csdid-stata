@@ -1,0 +1,76 @@
+{
+  "matrix_id": "RT082",
+  "fixture_family": "r-conditioning-backend-boundary",
+  "normative_source": "did 2.5.1.904 utility_functions.R rcond_check_fail; backend-dependent conditioning cutoff",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": [],
+  "tolerance_ids": "EXACT",
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "sha256": "1d4d76aa521d17603a52735dfb1d223a62b18797f7e1239526504c1c98034481",
+      "rows": 56,
+      "columns": 8
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt082/generate.R",
+      "path": "tools/parity/generators/rt082/generate.R",
+      "sha256": "0b4793a52652ec709f4edbea949f4b32c227a7c8c618a7db715f00a81cf98274"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.904",
+        "DRDID": "1.4.0",
+        "fastglm": "0.1.1"
+      },
+      "BLAS": "/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib"
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/results.csv",
+      "schema": "keyed-reference",
+      "sha256": "61a6bf1dccbe618276bb9ee7d40abfb358dc937979451454ce2938ce84eb476e"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "keyed-reference",
+      "sha256": "7e3c9054a8e454d2311f2012ff818d8b023b70965dde0bd8fa8666d6863265ca"
+    },
+    {
+      "path": "expected/r/grams.csv",
+      "schema": "keyed-reference",
+      "sha256": "d76d5ac47dfca58e9a8505f1b52ddd70a3f97537b32eadb3c0ddc45fcf6c6a72"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence",
+      "sha256": "8bc599166ba9373d10f4f6b5abf0e468d2dc5a5318f121f06716e93db8992c4f"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence",
+      "sha256": "41a81ea91df941aa351b265f1496bfa2aa93c9adca7c1556dca3d4df7fdd7852"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Visible Stata conditioning refusal, missing ATT/SE/IF, and genuine R backend results",
+      "expected": ["expected/r/results.csv", "expected/r/inffunc.csv", "expected/r/grams.csv", "expected/contract/approved-divergence.csv", "expected/contract/approved-divergence.json"],
+      "tolerance_id": "EXACT"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "One exact-roundtripping 28-unit/two-period regression design at the existing reciprocal-condition-number cutoff; 16 genuine R fits cross panel/RC, omitted/unit weights, fast/slow, default/internal matrix products. Default BLAS identity and its observed verdict are recorded, not assumed. No tolerance or estimator is changed."
+}

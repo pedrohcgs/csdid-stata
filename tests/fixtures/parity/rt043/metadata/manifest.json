@@ -32,7 +32,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }
@@ -42,7 +42,7 @@
     {
       "path": "expected/r/attgt.csv",
       "schema": "attgt",
-      "sha256": "09df55c27afa41c6a84d141a4cea53b312289d2a8d69a96b31dbf9a945fb34e8"
+      "sha256": "2b51338ca746aa5b07bf0840978675f478de95e244b9ba16d9df553a79e27295"
     }
   ],
   "comparison_plan": [

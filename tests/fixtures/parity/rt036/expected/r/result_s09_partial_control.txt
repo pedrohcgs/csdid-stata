@@ -4,26 +4,20 @@ ERROR: <none>
 N_WARNINGS: 3
 WARNING[1]: dropped 30 rows from original data due to missing or non-finite data
 WARNING[2]: 30 units are missing in some periods. Converting to balanced panel by dropping them.
-WARNING[3]: No pre-treatment periods available for the Wald pre-test of parallel trends: pre-treatment ATT(g,t) estimates exist, but all of them have missing or zero variance (e.g., because the underlying 2x2 estimation failed for those cells), so they were dropped from the pre-test.
+WARNING[3]: No never-treated group is available after converting to balanced panel (set allow_unbalanced_panel = TRUE to keep the never-treated units). The last treated cohort is being coerced as 'never-treated' units, and data from periods after that is being filtered out (no available comparison groups).
 N_MESSAGES: 0
-tlist: 1 2 3 4 5
-glist: 3 4
-fit_t_unique: 2 3 4 5
-fit_group_unique: 3 4
+tlist: 1 2 3
+glist: 3
+fit_t_unique: 2 3
+fit_group_unique: 3
 fit_n: 60
 DIDparams_panel: TRUE
 DIDparams_allow_unbalanced_panel: FALSE
 DIDparams_true_repeated_cross_sections: FALSE
 inffunc_nrow: 60
-inffunc_ncol: 8
-n_cells: 8
+inffunc_ncol: 2
+n_cells: 2
 --- (g,t) table ---
 group	time	att	se
-3	2	NA	NA
-3	3	NA	NA
-3	4	NA	NA
-3	5	NA	NA
-4	2	NA	NA
-4	3	NA	NA
-4	4	NA	NA
-4	5	NA	NA
+3	2	0.24328689461850117	0.2653241597993255
+3	3	0.78049964107209302	0.29670136776391165

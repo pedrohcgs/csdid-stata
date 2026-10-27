@@ -1,8 +1,8 @@
 {
   "matrix_id": "RT072",
   "fixture_family": "r-dynamic-empty-window-one-cell",
-  "normative_source": "did 2.5.1 compute.aggte.R:454-476 (balance_e admission and truncation, then the empty-window stop)",
-  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
+  "normative_source": "did compute.aggte.R:514-550 (complete original support, then display-window restriction)",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001"],
   "inputs": [
@@ -36,7 +36,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt072/generate.R",
       "path": "tools/parity/generators/rt072/generate.R",
-      "sha256": "b16da707fe8ec8d44927b36de267fdd1a1cc4802fa5ca44812ae2c2f5cd56029"
+      "sha256": "fbdbbf32c1b001b7d2b395456535d9862e381d9ae9f8e441c5a605af88e6f170"
     }
   ],
   "runtimes": [
@@ -44,7 +44,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }
@@ -59,12 +59,12 @@
     {
       "path": "expected/r/refusals.csv",
       "schema": "refusal-message",
-      "sha256": "2ca9926555a787d6425f102132f9eaae2110a7c6b53f022b5ca165202d851d8c"
+      "sha256": "128057129e603581776d04e00ce323447d4fd96fd5bbba85922c177efbfa6374"
     }
   ],
   "comparison_plan": [
     {
-      "actual": "csdid_stats dynamic refuses with rc 498 and the empty-window message on every case R stops on",
+      "actual": "csdid_stats dynamic refuses with rc 498 and the matching support/window diagnosis on every case R stops on",
       "expected": "expected/r/refusals.csv",
       "tolerance_id": "EXACT",
       "key_columns": "case"

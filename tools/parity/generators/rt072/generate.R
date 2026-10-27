@@ -1,14 +1,6 @@
 #!/usr/bin/env Rscript
-# RT072: a balanced event study that balance_e leaves empty, with one cell.
-# R stops with "No event times fall within the requested window"
-# (compute.aggte.R:472-476) whenever the balance and window restrictions leave
-# no event time. With a single surviving ATT(g,t) cell the event-time vector
-# is 1 x 1, and emptying it takes a different path from emptying a longer one.
-# Two routes reach it: mpdta cut to 2003-2004 with cohorts 0 and 2004 (one
-# cell; balance_e = 1 admits no cohort), and a decimal axis whose cohort 1.5
-# is unobserved at 1.5, so under na.rm one cell survives at event time
-# 2.2 - 1.5 and balance_e = 0 truncates it away. A three-period mpdta cut,
-# where balance_e = 1 leaves both event times (0 and 1) standing, is the control.
+# RT072: distinguish absent balanced support from an empty display window,
+# including a single surviving cell on an irregular calendar.
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)
 script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "tools/parity/generators/rt072/generate.R"
@@ -77,14 +69,14 @@ outputs <- list(
   list(path = "expected/r/dynamic.csv", schema = "aggte-dynamic", sha256 = sha(file.path(out, "expected/r/dynamic.csv"))),
   list(path = "expected/r/refusals.csv", schema = "refusal-message", sha256 = sha(file.path(out, "expected/r/refusals.csv"))))
 manifest <- list(matrix_id = "RT072", fixture_family = "r-dynamic-empty-window-one-cell",
-  normative_source = "did 2.5.1 compute.aggte.R:454-476 (balance_e admission and truncation, then the empty-window stop)",
-  source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10", decision_refs = list(),
+  normative_source = "did compute.aggte.R:514-550 (complete original support, then display-window restriction)",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt072/generate.R", path = "tools/parity/generators/rt072/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),
   rng = NULL, expected_outputs = outputs,
   comparison_plan = list(
-    list(actual = "csdid_stats dynamic refuses with rc 498 and the empty-window message on every case R stops on", expected = "expected/r/refusals.csv", tolerance_id = "EXACT", key_columns = c("case")),
+    list(actual = "csdid_stats dynamic refuses with rc 498 and the matching support/window diagnosis on every case R stops on", expected = "expected/r/refusals.csv", tolerance_id = "EXACT", key_columns = c("case")),
     list(actual = "the control keeps R's event times, effects and standard errors", expected = "expected/r/dynamic.csv", tolerance_id = "TOL001", key_columns = c("case", "egt"))),
   approved_divergence = NULL,
   scope_note = "mpdta (did's own copy) cut to 2003-2004 and 2003-2005 with cohorts 0 and 2004 under base_period varying; a three-period decimal axis {1, 1.5, 2.2} with cohort 1.5 unobserved at 1.5 under bal(none) and dropmissing.")

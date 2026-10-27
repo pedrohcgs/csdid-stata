@@ -26,6 +26,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 MODE="${1:---check}"
+if [ "$MODE" != "--check" ] && [ "$MODE" != "--upgrade" ]; then
+  echo "usage: sync-upstream-did.sh [--check|--upgrade]" >&2
+  exit 2
+fi
 UPSTREAM_URL="https://github.com/bcallaway11/did.git"
 CHECKOUT="${CSDID_DID_UPSTREAM:-}"
 INVENTORY="inst/spec/upstream-did-tests.csv"
@@ -34,7 +38,11 @@ have() { command -v "$1" >/dev/null 2>&1; }
 have Rscript || { echo "Rscript is not on PATH" >&2; exit 1; }
 
 # ---------------------------------------------------------------- installed
-installed_version() { Rscript -e 'cat(as.character(packageVersion("did")))' 2>/dev/null; }
+installed_version() {
+  Rscript -e 'up <- Sys.getenv("CSDID_DID_UPSTREAM", "")
+    if (nzchar(up)) pkgload::load_all(up, export_all = FALSE, quiet = TRUE)
+    cat(as.character(packageVersion("did")))' 2>/dev/null
+}
 
 # A version string is not proof of content: see check-r-oracles.sh.
 installed_fingerprint() {
@@ -56,10 +64,14 @@ resolve_checkout() {
   # drift in the pin rather than what it was -- a different oracle. Whoever
   # supplies a pinned checkout must get that checkout or a loud failure.
   if [ -n "$CHECKOUT" ] && [ -e "$CHECKOUT/.git" ]; then
-    # A detached HEAD is the normal shape here (a release tag), where pull is a
-    # no-op; on a branch this keeps a supplied checkout current.
-    git -C "$CHECKOUT" fetch --quiet origin 2>/dev/null || true
-    git -C "$CHECKOUT" pull --quiet --ff-only 2>/dev/null || true
+    # A detached HEAD is normal for an exact oracle pin. Fetch may update
+    # remote refs, but only a named branch has a tracking branch to pull.
+    if [ "$MODE" = "--upgrade" ]; then
+      git -C "$CHECKOUT" fetch --quiet origin || return 1
+      if git -C "$CHECKOUT" symbolic-ref --quiet HEAD >/dev/null; then
+        git -C "$CHECKOUT" pull --quiet --ff-only || return 1
+      fi
+    fi
     echo "$CHECKOUT"; return
   fi
   if [ -n "$CHECKOUT" ]; then
@@ -75,7 +87,7 @@ resolve_checkout() {
 
 echo "== reference implementation =="
 INST_V="$(installed_version)"
-echo "   installed        : ${INST_V:-not installed}"
+echo "   selected oracle  : ${INST_V:-not available}"
 
 UP="$(resolve_checkout)" || { echo "could not obtain upstream" >&2; exit 1; }
 UP_V="$(sed -n 's/^Version:[[:space:]]*//p' "$UP/DESCRIPTION" | head -1)"
@@ -88,16 +100,19 @@ BEHIND=0
 
 echo
 echo "== pinned test inventory vs upstream =="
-python3 tools/spec/check-upstream-coverage.py --upstream "$UP" || true
+coverage_rc=0
+python3 tools/spec/check-upstream-coverage.py --upstream "$UP" || coverage_rc=$?
 
 if [ "$MODE" = "--check" ]; then
+  [ "$coverage_rc" -eq 0 ] || exit "$coverage_rc"
+  Rscript --vanilla -e 'source("tools/parity/generators/oracle-check.R")' || exit $?
   echo
   if [ "$BEHIND" = "1" ]; then
     echo "ACTION NEEDED: installed did ($INST_V) differs from upstream ($UP_V)."
     echo "Run: bash tools/maint/sync-upstream-did.sh --upgrade"
     exit 1
   fi
-  echo "installed reference matches upstream; inventory checked above."
+  echo "selected reference matches the pinned source; code and inventory verified."
   exit 0
 fi
 
@@ -110,9 +125,13 @@ fi
 echo
 echo "== reinstalling did from upstream =="
 BEFORE_FP="$(installed_fingerprint)"
-Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes", repos="https://cloud.r-project.org")
-            remotes::install_github("bcallaway11/did", force = TRUE, upgrade = "never")' \
-  || { echo "reinstall failed" >&2; exit 1; }
+if [ -n "$CHECKOUT" ]; then
+  R CMD INSTALL "$UP" || { echo "reinstall from selected checkout failed" >&2; exit 1; }
+else
+  Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes", repos="https://cloud.r-project.org")
+              remotes::install_github("bcallaway11/did", force = TRUE, upgrade = "never")' \
+    || { echo "reinstall failed" >&2; exit 1; }
+fi
 AFTER_V="$(installed_version)"
 AFTER_FP="$(installed_fingerprint)"
 echo "   version    : $INST_V -> $AFTER_V"

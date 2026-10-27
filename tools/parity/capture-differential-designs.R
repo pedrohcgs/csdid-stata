@@ -149,6 +149,7 @@ csdid_design_agg_end <- function(result) {
   # diagnostics with that refusal; any error on a returned aggregation remains
   # a failure of the required numerical evidence.
   errors <- .csdid_design_capture$current_errors
+  if (inherits(result, "error")) errors <- unique(c(errors, conditionMessage(result)))
   if (status == "complete") {
     .csdid_design_capture$errors <- c(.csdid_design_capture$errors, errors)
   }

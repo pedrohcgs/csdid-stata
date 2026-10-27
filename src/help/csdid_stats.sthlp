@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.1 23oct2026}{...}
+{* *! version 2.0.2 27oct2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -163,14 +163,12 @@ bounds must be numeric; one number, three numbers, or a nonnumeric bound is an
 error. Comma-separated bounds, as in {cmd:window(-3,3)}, are also accepted.
 
 {pmore}
-The upper bound is not only a reporting filter. For {cmd:type(simple)} and
-{cmd:type(group)} it restricts which post-treatment cells enter the average to
-those within {it:max} observed periods of the cohort's first treatment -- on a
-calendar recorded without gaps that is exactly t <= g + {it:max}, and on a
-gapped calendar (biennial data, a skipped wave) the bound counts positions on
-the grid of observed periods and cohort dates;
-the lower bound has no effect on those two types, because they average
-post-treatment cells only. For {cmd:type(dynamic)} both
+Both bounds determine which cells enter the average. For {cmd:type(simple)}
+and {cmd:type(group)}, only post-treatment cells with
+{it:min} <= t - g <= {it:max} enter. Event time is measured in the original
+units of {cmd:time()}, including on calendars with gaps or decimal period
+labels. A negative lower bound has no additional effect on these two types.
+For {cmd:type(dynamic)} both
 bounds select the reported event times, and the overall post-treatment effect
 is the average of the effects that survive the window. For
 {cmd:type(calendar)} the window has no effect and a warning says so. This is
@@ -183,23 +181,28 @@ coefficients are created for event times that are not in the data.
 
 {pmore}
 Under {opt dropmissing}, {cmd:type(group)} first leaves out a cohort with no
-estimated post-treatment cell at t <= g + {it:max}, and then averages each
-remaining cohort over its cells within {it:max} observed periods. When periods
-sit less than one {cmd:time()} unit apart the second window is the narrower
-one, and a cohort with no estimated cell left in it is refused with return
-code 498 rather than dropped from the overall effect.
+estimated post-treatment cell inside the requested window. Without
+{opt dropmissing}, a cohort with no cell in the requested window is refused
+with return code 498.
 
 {marker opt_balance}{...}
 {phang}
 {opt balance(#)} restricts the dynamic aggregation to a balanced event-time
-sample. It applies two restrictions:
+sample. It applies three restrictions:
 
 {pmore}
 1. Only cohorts observed for at least {it:#} periods after treatment
 contribute, that is, cohorts with {it:last period} - g >= {it:#}.
 
 {pmore}
-2. The reported event times are truncated to the range {it:#} -
+2. Each retained cohort must have an estimated ATT(g,t) at every observed
+post-treatment event time from 0 through {it:#}. The required event times
+are those present in the original grid among cohorts satisfying restriction
+1, before {opt dropmissing}. An event time absent from that grid is not
+required. If no cohort has complete support, the aggregation is refused.
+
+{pmore}
+3. The reported event times are truncated to the range {it:#} -
 ({it:last period} - {it:first period}) through {it:#}. Event times outside that
 range are dropped, because they are not available for every retained cohort.
 
@@ -208,19 +211,11 @@ Truncation is what makes the retained cohorts comparable; without it the
 reported profile would mix event times that only some cohorts contribute to.
 
 {pmore}
-Both restrictions are computed from the cells that survive estimation, so
-under {opt dropmissing} the guarantee is conditional: {it:last period} is the
-last period with an estimated cell of any cohort, not the cohort's own last
-estimated period, so a cohort can be admitted although its cells at event
-time {it:#} are missing. A cohort with a missing cell inside the window drops
-out of that event time while still contributing to the others, and the
-composition inside the balanced window can then differ across event times;
-an event time with no estimated cell left is not reported at all. Both are
-announced by a warning, and neither stops the aggregation: a missing cell at
-an event time that is still reported is named with its cohort, and an event
-time that lost every cell is named as not reported. Inspect
-{cmd:e(attgt)} for the missing cells before reading the balanced profile as
-composition-constant.
+These restrictions use the original grid before missing cells or display
+limits are removed. Narrowing {cmd:window()} does not readmit a cohort whose
+support through {cmd:balance()} is incomplete. The common-cohort guarantee
+applies to the observed post-treatment event times from 0 through {it:#};
+pre-treatment support can still differ across cohorts.
 {cmd:balance(0)} is legal and keeps every cohort with at least one
 post-treatment period. {cmd:balance()} needs the first period of the estimation
 sample, which {cmd:csdid} stores in {cmd:e(time_first)} and a RIF file
@@ -245,11 +240,9 @@ accepts for them: {cmd:win(0 1) win(1 2)} is reported as a repeated
 {phang}
 {opt from(#)} was a lower bound on event time in Stata {cmd:csdid} Version
 1.82, applied to the simple, group and calendar aggregations. It is rejected
-with return code 198 and a message naming the replacement. There is no
-equivalent: those three aggregations are defined from event time 0 upward, so
-a lower bound below that has nothing to restrict and one above it would
-silently redefine the estimand. Use {cmd:window(}{it:# #}{cmd:)} with
-{cmd:type(dynamic)} for an event-time window.
+with return code 198 and a message naming the replacement. Use
+{cmd:window(}{it:# #}{cmd:)} with {cmd:type(simple)}, {cmd:type(group)}, or
+{cmd:type(dynamic)}. The calendar aggregation does not use event-time windows.
 
 {dlgtab:Sample}
 
@@ -358,12 +351,9 @@ effects that are still reported, not the unwindowed overall effect. Narrowing
 the window therefore changes the headline number.
 
 {phang}
-The upper bound also trims {cmd:simple} and {cmd:group}. Both average the
-cells within {it:max} observed periods of first treatment (t <= g + {it:max}
-on a gapless calendar), so {cmd:csdid_stats group, window(-3 1)} reports, for
-each cohort, the average effect over its first two treated periods rather than
-over all of them. Use the upper bound deliberately, and remember that the lower
-bound does nothing for these two types.
+Both bounds also trim {cmd:simple} and {cmd:group}, using t-g in the original
+calendar units. For example, {cmd:csdid_stats group, window(1 2)} averages
+each cohort's effects at event times 1 through 2.
 
 {marker balance}{...}
 {title:Balanced event-time samples}
@@ -376,14 +366,10 @@ downward-sloping profile can be composition rather than dynamics.
 ({it:#} periods after initial treatment) and truncates the event-time grid to
 the range those cohorts share. Both steps matter: the cohort restriction alone would
 leave event times that not every retained cohort reaches. The guarantee is
-exact when every retained cohort's cells inside the window were estimated;
-when {opt dropmissing} removes a failed cell inside the window, its cohort
-leaves that one event time but remains in the rest of the window, so some
-composition change survives the balancing -- and {cmd:csdid_stats} warns,
-naming each such cell; when no cell of an event time survives, the event time
-is dropped from the profile, and the warning names it. If composition constancy
-matters for the application, resolve the failed cells -- the estimation names each one and
-its cause -- rather than dropping them.
+enforced at every originally observed post-treatment event time through
+{it:#}. A missing cell excludes its entire cohort from that balanced
+post-treatment profile, before display limits are applied. If no cohort
+has complete support, the aggregation is refused.
 
 {pstd}
 With the county-level example below, which runs from 2003 to 2007,

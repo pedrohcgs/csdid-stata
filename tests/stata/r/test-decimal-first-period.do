@@ -37,12 +37,19 @@ program define rt070_dynamic_match
     restore
 end
 
+import delimited using "`fx'/expected/r/attgt.csv", clear asdouble varnames(1)
+tempfile att_all
+save `att_all'
+
 import delimited using "`fx'/expected/r/dynamic.csv", clear asdouble varnames(1)
 isid scenario balance_e egt
 assert _N == 153
 tempfile dyn
 save `dyn'
 
+foreach route in fast baseline {
+    local mode ""
+    if "`route'"=="baseline" local mode "nofast"
 foreach s in month_double month_float month_unbalanced {
     import delimited using "`fx'/inputs/`s'.csv", clear asdouble varnames(1)
     * every value on the float axis is float-representable, so this is exact
@@ -52,8 +59,24 @@ foreach s in month_double month_float month_unbalanced {
     scalar `tmin' = r(min)
     tempfile rif
     quietly csdid y, ivar(id) time(time) gvar(g) method(reg) notyet ///
-        base_period(universal) analytical pointwise saverif(`rif') replace
+        base_period(universal) analytical pointwise saverif(`rif') replace `mode'
     assert e(time_first) == scalar(`tmin')
+    tempname ATT
+    matrix `ATT'=e(attgt)
+    preserve
+    clear
+    svmat double `ATT',names(col)
+    keep group time att se
+    rename (att se) (att_stata se_stata)
+    generate str20 scenario="`s'"
+    generate str20 control="notyettreated"
+    merge 1:1 scenario control group time using `att_all',keep(master match)
+    assert _merge==3
+    assert missing(att_stata)==missing(att)
+    assert abs(att_stata-att)<1e-8 if !missing(att)
+    assert missing(se_stata)==missing(se)
+    assert abs(se_stata-se)<1e-8 if !missing(se)
+    restore
     estimates store rt070_fit
     forvalues be = 0/1 {
         preserve
@@ -83,6 +106,8 @@ foreach s in month_double month_float month_unbalanced {
     quietly csdid_stats dynamic, balance(0)
     rt070_dynamic_match using `dyn_s', balance(0) label(`s' after estat event, post)
     estimates drop rt070_fit
+}
+
 }
 
 * The one-ulp first period: cohort 2.02 is usable under anticipation(1), and
@@ -118,7 +143,7 @@ foreach cg in notyet nevertreated {
 * either comparison group, and so does csdid.
 import delimited using "`fx'/expected/r/refusals.csv", clear varnames(1)
 assert _N == 4
-assert strpos(message, "No valid groups.") == 1
+assert strpos(message, "No valid groups") == 1
 forvalues r = 1/4 {
     local s = scenario[`r']
     local cg = cond(control[`r'] == "notyettreated", "notyet", "nevertreated")

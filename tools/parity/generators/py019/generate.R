@@ -93,10 +93,11 @@ write.csv(data.frame(group = out$group, t = out$t, att = out$att, se = out$se),
 
 # ---- sim/ref_gaps.csv ------------------------------------------------------
 ex <- read.csv(file.path(IN, "mpdta_extra.csv"))
-common <- list(yname = "lemp", tname = "year", idname = "countyreal",
+ex$obsid <- seq_len(nrow(ex))
+common <- list(yname = "lemp", tname = "year",
                gname = "first.treat", data = ex, bstrap = FALSE, cband = FALSE)
 run <- function(scn, ...) {
-  o <- q(do.call(att_gt, c(common, list(...))))
+  o <- q(do.call(att_gt, c(common, list(idname = if (scn == "rc") "obsid" else "countyreal"), list(...))))
   data.frame(scenario = scn, group = o$group, t = o$t, att = o$att, se = o$se)
 }
 write.csv(rbind(

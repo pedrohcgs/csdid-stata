@@ -62,7 +62,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }
@@ -72,17 +72,17 @@
     {
       "path": "expected/r/attgt.csv",
       "schema": "attgt",
-      "sha256": "b78ccf8845dac8713f1f7d408009ead4e9d573080bc9099523fc6f6622e656d2"
+      "sha256": "1f83ab14edd43db6b8b082f1c8cdf4077994f447bb1cec3f231489bb500c09bc"
     },
     {
       "path": "expected/r/dynamic.csv",
       "schema": "aggte-dynamic",
-      "sha256": "27912eee8a968ba0b4d5eb5ad0507b4fcb0ac186dc3f89a2b8838296e8ae2121"
+      "sha256": "8fcf5e80f8e50df2e2a6605468031bea77d9f6747fd5f8fb2bc1ee62202856e8"
     },
     {
       "path": "expected/r/refusals.csv",
       "schema": "refusal-message",
-      "sha256": "e916e843f6f07cacf00b367b97929e9d90b3e4df8bb0b5aba96ee6e49f7761e1"
+      "sha256": "1b6521a630c1485bdae61244438d447a9c1b6831c135a4ca6621c80c227e4287"
     }
   ],
   "comparison_plan": [

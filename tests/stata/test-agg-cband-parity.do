@@ -10,8 +10,7 @@
 *                         for the overall column -- even with a single effect
 *                         (compute.aggte.R:352/370/414).
 *   two settled periods   the band is off for every aggregation
-*                         (pre_process_did.R:523), while the ATT(g,t) table
-*                         keeps its simultaneous band (att_gt.R:291/694).
+*                         and for the ATT(g,t) table.
 *
 * Every pinned number below is R did 2.5.1 output on the same data and seed.
 * Each cell runs on the plugin and on the Mata kernels, which must agree.
@@ -120,10 +119,8 @@ foreach eng in plugin mata {
 global CSDID_BOOT_PLUGIN_DISABLE
 
 * =============================================================================
-* D. Two settled periods: every aggregation bands pointwise, the ATT(g,t)
-*    table does not. The sweep is its own qualification -- if no att_gt
-*    critical value ever left the pointwise quantile the cells below would
-*    pass on degenerate data instead of on the rule.
+* D. Two settled periods: the ATT(g,t) table and every aggregation band
+*    pointwise at every seed.
 * =============================================================================
 clear
 set seed 20260814
@@ -136,23 +133,21 @@ generate double y = rnormal() + 0.5 * (g == 2 & t == 2) + 0.1 * id / 100
 tempfile twoperiod
 quietly save "`twoperiod'"
 
-local attgt_moved 0
 forvalues s = 1/12 {
     quietly use "`twoperiod'", clear
     quietly csdid y, ivar(id) time(t) gvar(g) wboot(reps(999) rseed(`s'))
     assert e(N_time) == 2
-    assert e(cband) == 1
-    if reldif(e(crit_val), invnormal(.975)) > 1e-6 local attgt_moved = 1
+    assert e(cband) == 0
+    assert e(crit_val) == invnormal(.975)
     foreach ty in dynamic group calendar simple {
         quietly csdid_stats, type(`ty')
         assert e(crit_val) == invnormal(.975)
         assert e(crit_val) == e(point_crit_val)
         assert e(agg_cband) == 0
-        assert e(cband) == 1
+        assert e(cband) == 0
     }
 }
-assert `attgt_moved' == 1
-display as text "D: two-period aggregations pointwise over 12 seeds; ATT(g,t) band still simultaneous"
+display as text "D: two-period ATT(g,t) and aggregations pointwise over 12 seeds"
 
 * =============================================================================
 * E. Clustering survives saverif(): the reloaded artifact aggregates exactly

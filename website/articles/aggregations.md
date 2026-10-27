@@ -79,9 +79,10 @@ csdid_stats, type(dynamic) balance(1)       // cohorts observed through event ti
 stronger instrument. It restricts the aggregation to cohorts observed for a
 common post-treatment horizon and truncates the event-time window accordingly.
 `balance(1)` requires observation one period after treatment begins, not just
-in the treatment period. If `na_rm` removes an interior cell, its cohort can
-be absent only at that event time, so the command warns that composition may
-still vary. If the event-study shape changes materially under
+in the treatment period. With `na_rm`, a cohort missing any originally observed
+post-treatment event time through the balanced horizon is excluded from the
+whole balanced aggregation. This requirement is applied before display limits;
+the command refuses if no eligible cohort remains. If the event-study shape changes materially under
 `balance()`, the original shape was partly composition. We would then report the
 balanced version alongside the unbalanced one.
 

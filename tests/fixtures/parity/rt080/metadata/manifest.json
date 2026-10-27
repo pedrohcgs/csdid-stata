@@ -1,0 +1,58 @@
+{
+  "matrix_id": "RT080",
+  "fixture_family": "r-upstream-settling-and-rc-identity",
+  "normative_source": "did pre_process_did2.R observation-ID validation; att_gt panel/RC/unbalanced routes",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "sha256": "20780ffb81000d795f9e623e12c0ff3cf14c27df33b11e44ed0a3bd963d1a513"
+    }
+  ],
+  "expected_outputs": [
+    {
+      "path": "expected/r/attgt.csv",
+      "schema": "keyed-reference",
+      "sha256": "17b385cc4f7cc9f7a8f78a6b20c8af1dbc8d77baeec31c2c6a569e20d45a7ccf"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "schema": "keyed-reference",
+      "sha256": "e274ce28e59ecbb385380b0e38bea559f12cd40977bd8969b6df6e999feee5f1"
+    },
+    {
+      "path": "expected/r/refusals.csv",
+      "schema": "keyed-reference",
+      "sha256": "f1b42c3d354153aa5c33d5484ab0fa631b78fda2a517d017aaf861ab4ff9aa5d"
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt080/generate.R",
+      "path": "tools/parity/generators/rt080/generate.R",
+      "sha256": "930d06ba72b222092c1218cb41c829434ef95b2d176764cbfd187f6560b0cccd"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.904",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": null,
+  "comparison_plan": [
+    {
+      "actual": "Every ATT/SE and unit-level IF, both execution routes; RC refusals",
+      "expected": ["expected/r/attgt.csv", "expected/r/inffunc.csv", "expected/r/refusals.csv"],
+      "tolerance_id": "TOL002"
+    }
+  ],
+  "approved_divergence": null
+}

@@ -42,7 +42,7 @@ fi
 # reader cannot tell what the oracles were generated against.
 INV="inst/spec/upstream-did-tests.csv"
 [ -f "$INV" ] || { echo "$INV is missing" >&2; exit 1; }
-head -1 "$INV" | grep -qE '^# did [0-9]+\.[0-9]+\.[0-9]+ @ [0-9a-f]+' || {
+head -1 "$INV" | grep -qE '^# did [0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)? @ [0-9a-f]+' || {
   echo "$INV does not record the did version and commit it was pinned from" >&2
   exit 1
 }

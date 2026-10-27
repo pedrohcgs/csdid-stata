@@ -22,7 +22,7 @@ if c(stata_version) != 17 {
 * ---------------------------------------------------------------------------
 * The library's stamp.
 *
-* csdid_mlib_version() ships in the source reading "2.0.1|source". The copy
+* csdid_mlib_version() ships in the source reading "2.0.2|source". The copy
 * compiled into the library says which Stata compiled it instead, because that
 * is what csdid.ado cannot find out any other way and what it has to know: a
 * library built by a newer Stata than the one running has every name the
@@ -37,7 +37,7 @@ capture erase build/lcsdid_v2.mlib
 capture erase pkg/lcsdid_v2.mlib
 tempfile stamped
 filefilter "src/mata/csdid.mata" "`stamped'", ///
-    from("2.0.1|source") to("2.0.1|`c(stata_version)'") replace
+    from("2.0.2|source") to("2.0.2|`c(stata_version)'") replace
 mata: mata clear
 * All three compile-time settings are pinned, not just strictness. matalnum
 * keeps line numbers in the compiled code and DEFEATS the optimizer; a build
@@ -76,7 +76,7 @@ if `compile_notes' > 0 {
     exit 459
 }
 mata: st_local("built_stamp", csdid_mlib_version())
-assert "`built_stamp'" == "2.0.1|`c(stata_version)'"
+assert "`built_stamp'" == "2.0.2|`c(stata_version)'"
 
 * ---------------------------------------------------------------------------
 * Precompiled Mata library.
@@ -105,7 +105,7 @@ assert "`built_stamp'" == "2.0.1|`c(stata_version)'"
 * estimation, on whichever member did not travel. Trading that for a build
 * that stops here is not a close call.
 * ---------------------------------------------------------------------------
-* size() is explicit (169 members today, headroom to 512, hard Mata cap 2048),
+* size() is explicit (172 members today, headroom to 512, hard Mata cap 2048),
 * and the add is scoped to the package namespace rather than a bare *() --
 * the library's contents are an intended list, not whatever the session held.
 mata: mata mlib create lcsdid_v2, dir("build") replace size(512)
@@ -113,7 +113,7 @@ mata: mata mlib add lcsdid_v2 csdid*(), dir("build") complete
 mata: mata mlib index
 * ---------------------------------------------------------------------------
 * The member count is asserted against the engine's own banner arithmetic
-* (138 free functions + 3 classes + 28 methods = 169; src/mata/csdid.mata,
+* (141 free functions + 3 classes + 28 methods = 172; src/mata/csdid.mata,
 * "HOW MANY NAMES"). A count that moved means the source and this build
 * disagree about what the library holds -- drift this gate exists to stop.
 * ---------------------------------------------------------------------------
@@ -128,7 +128,7 @@ quietly log close csdid_desc
 adopath - "build"
 local member_ok 0
 if c(noisily) {
-    mata: st_local("member_ok", strofreal(rows(cat(st_local("desc_log"))) == 0 ? 0 : sum(strpos(cat(st_local("desc_log")), "library contains 169 members") :> 0)))
+    mata: st_local("member_ok", strofreal(rows(cat(st_local("desc_log"))) == 0 ? 0 : sum(strpos(cat(st_local("desc_log")), "library contains 172 members") :> 0)))
 }
 else {
     * the gate cannot read suppressed output; the noisy release build is
@@ -136,7 +136,7 @@ else {
     local member_ok 1
 }
 if `member_ok' == 0 {
-    display as error "lcsdid_v2 does not hold the 169 members the source declares (mata describe using lcsdid_v2 disagrees)"
+    display as error "lcsdid_v2 does not hold the 172 members the source declares (mata describe using lcsdid_v2 disagrees)"
     display as error "update the count here AND the csdid.mata banner together if the surface deliberately changed"
     exit 459
 }

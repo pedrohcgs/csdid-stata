@@ -1,11 +1,7 @@
 * ---------------------------------------------------------------------------
-* balance() with dropmissing: an event time that lost every cell is announced.
-*
-* Owner decision 2026-09-26. Under dropmissing, an event time of the balanced
-* window whose every cell failed is not reported, and the post-treatment
-* average then covers only the event times left -- the reference drops it in
-* silence. csdid warns and carries on. A single missing cell at an event time
-* that is still reported keeps the older composition warning.
+* balance() requires complete original post-treatment event-time support.
+* A missing cell removes its cohort from every balanced event time. An event
+* time missing for every eligible cohort makes the balanced profile unavailable.
 * ---------------------------------------------------------------------------
 version 15
 clear all
@@ -33,32 +29,34 @@ program define bv_log_has, rclass
     return scalar has = strpos(`"`body'"', `"`message'"') > 0
 end
 
-* one e = 1 cell missing: still reported, the composition warning names it
+* One e=1 cell missing: its cohort is removed from the whole balanced profile.
 use "`root'/src/data/mpdta.dta", clear
 drop if first_treat == 2006 & year == 2007
 quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) method(reg) ///
     nevertreated base_period(universal) bal(none) analytical pointwise
 tempfile lg
+matrix AT=e(attgt)
 log using "`lg'", text replace name(bv)
 csdid_stats event, balance(1) dropmissing
 log close bv
-bv_log_has using "`lg'", message("cohort 2006 at event time 1")
-assert r(has) == 1
+matrix AG=e(aggte)
+mata: bv_k=selectindex((st_matrix("AT")[.,1]:==2004):&(st_matrix("AT")[.,2]:==2004))
+mata: assert(abs(st_matrix("AG")[selectindex(st_matrix("AG")[.,1]:==0),2]-st_matrix("AT")[bv_k,4])<1e-10)
+bv_log_has using "`lg'", message("cohort composition differs")
+assert r(has) == 0
 bv_log_has using "`lg'", message("no estimated cell is left at event time")
 assert r(has) == 0
 
-* both e = 1 cells missing: event time 1 vanishes, is named, and nothing stops
+* Both e=1 cells missing: no cohort has complete support, so refuse by name.
 drop if first_treat == 2004 & year == 2005
 quietly csdid lemp, ivar(countyreal) time(year) gvar(first_treat) method(reg) ///
     nevertreated base_period(universal) bal(none) analytical pointwise
 log using "`lg'", text replace name(bv)
-csdid_stats event, balance(1) dropmissing
+capture noisily csdid_stats event, balance(1) dropmissing
+local rc=_rc
 log close bv
-bv_log_has using "`lg'", message("no estimated cell is left at event time(s) 1 of the balance(1) window")
+assert `rc'==498
+bv_log_has using "`lg'", message("every observed post-treatment event time through balance()")
 assert r(has) == 1
-tempname AG
-matrix `AG' = e(aggte)
-mata: st_local("has_e1", strofreal(any(st_matrix("`AG'")[., 1] :== 1)))
-assert `has_e1' == 0
 
-display as text "test-balance-vanished-event-time: a vanished balanced event time is announced, not refused"
+display as text "test-balance-vanished-event-time: incomplete cohorts leave the balanced profile"

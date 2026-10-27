@@ -119,20 +119,17 @@ The last-treated cohort now serves as the comparison group for the earlier ones.
 It gets no ATT of its own; there is nothing left to compare it against. It is
 absent from the results table and still contributing as a control.
 
-An unbalanced panel needs one further distinction. Under `bal(full)`, a
-not-yet-treated run chooses its usable calendar after removing rows with
-missing values and before dropping incomplete units. If all never-treated
-units disappear only during that balancing step, surviving treated cohorts
-keep their eligible pre-treatment comparisons, including those of the latest
-cohort; comparisons with no eligible controls are missing. A `nevertreated`
-run instead applies its announced latest-cohort fallback when no never-treated
-units remain in the balanced sample. Read the sample and comparison-group
-messages together when choosing between these options.
+Under `bal(full)`, comparison availability is checked again after incomplete
+units are removed, for either comparison-group choice. If that removes every
+never-treated unit or the latest cohort serving as the comparison group, the
+latest surviving cohort becomes the comparison group and the usable horizon
+is shortened. The cutoff also accounts for `anticipation()`. Read the sample
+and comparison-group messages together when choosing between these options.
 
-If balancing removes every unit from an eligible treated cohort, estimation
-stops and names that cohort. Correct the missing observations or use
-`bal(none)` to estimate on the unbalanced panel. Cohorts already excluded by
-the usable-calendar rules do not trigger this refusal.
+If balancing removes every unit from an eligible treated cohort, that cohort
+is dropped with a warning and estimation continues with the surviving cohorts.
+The run refuses if no usable treated cohort remains. Correct the missing
+observations or use `bal(none)` to retain the unbalanced panel.
 
 ## Which to use
 

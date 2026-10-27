@@ -69,8 +69,8 @@ estat event
 ```
 
 Negative event times precede nominal treatment. With `anticipation(#)`,
-some may contain allowed responses; the joint test still includes those
-cells. Use the earlier periods to assess the no-anticipation restriction
+some may contain allowed responses. The joint test excludes those cells and
+uses estimable periods with `t < g - anticipation`, before anticipation begins
 (see [Anticipation](anticipation.html)). Without anticipation, look for
 *pattern* rather than for stars. A gentle drift toward zero as treatment
 approaches is more worrying than one isolated period: a drift suggests that the

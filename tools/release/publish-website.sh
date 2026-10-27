@@ -19,6 +19,8 @@ set -euo pipefail
 #
 #   bash tools/release/publish-website.sh            # build, stage, show diff
 #   bash tools/release/publish-website.sh --push     # and push it live
+#   bash tools/release/publish-website.sh --historical-evidence <public-checkout> --push
+#     retain explicitly labeled 2.0.1 measurements, verified on their released code
 #
 # Nothing is pushed without --push.
 
@@ -28,7 +30,18 @@ cd "$ROOT"
 SITE_ROOT="${CSDID_SITE_ROOT:-$HOME/Documents/GitHub/pedrohcgs.github.io}"
 SITE_DIR="$SITE_ROOT/csdid"
 PUSH=0
-[ "${1:-}" = "--push" ] && PUSH=1
+HISTORICAL_REFERENCE=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --push) PUSH=1 ;;
+    --historical-evidence)
+      [ "$#" -ge 2 ] || { echo "--historical-evidence requires a public checkout" >&2; exit 2; }
+      HISTORICAL_REFERENCE="$2"
+      shift ;;
+    *) echo "unknown publication argument: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
 
 # ---- preconditions --------------------------------------------------------
 [ -d website ] || { echo "no website/ directory" >&2; exit 1; }
@@ -69,10 +82,16 @@ fi
 # The published numbers must already agree with the runs that produced them.
 # Publishing a page that fails its own gates is the failure this whole set of
 # checks exists to prevent.
-python3 tools/release/check-website-speed-tables.py
-python3 tools/release/check-website-speed-prose.py
-bash tests/meta/test-website-speed-claims.sh
+if [ -n "$HISTORICAL_REFERENCE" ]; then
+  python3 tools/release/check-historical-website.py --reference-checkout "$HISTORICAL_REFERENCE"
+else
+  python3 tools/release/check-website-speed-tables.py
+  python3 tools/release/check-website-speed-prose.py
+  bash tests/meta/test-website-speed-claims.sh
+fi
 bash tests/meta/test-reliability-tables.sh
+bash tests/meta/test-code-appendix-sync.sh
+bash tests/meta/test-website-news-sync.sh
 
 SRC_COMMIT="$(git rev-parse --short HEAD)"
 

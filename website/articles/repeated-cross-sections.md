@@ -64,6 +64,11 @@ over time. Declaring the
 structure explicitly, and keeping the identifier, gives exactly the same
 estimates.
 
+With `rcs`, nonmissing `ivar()` values must be unique across observations in
+the requested sample, including rows later excluded for missing outcomes or
+covariates. Put repeated cluster codes in `cluster()`. For repeated observations
+of the same units, omit `rcs` and use `bal(none)` if the panel is incomplete.
+
 ```stata
 csdid mrate, ivar(county_code) time(year) gvar(gvar) rcs rseed(20250101)
 estat event

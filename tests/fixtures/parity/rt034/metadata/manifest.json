@@ -1,7 +1,7 @@
 {
   "matrix_id": "RT034",
   "fixture_family": "group-narm-offgrid-cohorts",
-  "normative_source": "R did 2.5.1 compute.aggte: under na.rm the type='group' cohort screen runs on raw calendar values with max_e before the rank recode, and the recode grid is the original tlist joined with the surviving glist",
+  "normative_source": "R did 2.5.1.904 compute.aggte: type='group' applies min_e/max_e in original calendar units; under na.rm cohorts with no surviving post-treatment cell inside the window are excluded",
   "generators": [
     {
       "runtime": "R",

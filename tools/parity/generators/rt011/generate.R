@@ -52,7 +52,7 @@ reversal$g[reversal$id == target_id & reversal$period == periods[1]] <- 0
 reversal$g[reversal$id == target_id & reversal$period == periods[2]] <- 2
 write.csv(reversal, file.path(fixture, "inputs/treatment-reversal.csv"), row.names = FALSE, na = "")
 
-source_sha <- "66b0e390e67447f0c154ed386036bd497eb7af42c9610b41680a79a3077f50b7"
+source_sha <- "37cd15d84e357a068ef083955ab785a3bf80ac6f5e6a19039b65b702f37a2515"
 source_tests <- c(
   "att_gt errors on invalid est_method string",
   "att_gt errors on non-character non-function est_method",
@@ -235,8 +235,8 @@ writeLines(jsonlite::toJSON(divergence, dataframe = "rows", auto_unbox = TRUE, p
 manifest <- list(
   matrix_id = "RT011",
   fixture_family = "r-error-handling",
-  normative_source = "R did 2.5.1 tests/testthat/test-error-handling.R",
-  source_commit = "9aba07d054a798558ac9b551887f5cb592d8db10",
+  normative_source = "R did 2.5.1.904 tests/testthat/test-error-handling.R",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   decision_refs = c("D003", "D004", "D010", "D014", "D015"),
   tolerance_ids = c("EXACT", "TOL002"),
   inputs = list(

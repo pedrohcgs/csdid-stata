@@ -32,7 +32,8 @@ end
 
 import delimited using "`fx'/expected/r/refusals.csv", clear varnames(1)
 assert _N == 3
-assert strpos(message, "No event times fall within the requested window.") == 1
+assert strpos(message, "No event times fall within the requested window.") == 1 if case=="onecell_window12"
+assert strpos(message, "No groups have non-missing ATT(g,t)") == 1 if case!="onecell_window12"
 import delimited using "`fx'/expected/r/dynamic.csv", clear asdouble varnames(1)
 assert _N == 2
 tempfile expected
@@ -54,7 +55,9 @@ foreach c in onecell_balance1 onecell_window12 decimal_balance0_narm {
     local rc = _rc
     log close rt072
     assert `rc' == 498
-    rt072_log_has using "`lg'", message("no event times fall within the requested aggregation window")
+    local diagnosis "no event times fall within the requested aggregation window"
+    if "`c'"!="onecell_window12" local diagnosis "no cohorts have nonmissing ATT(g,t) estimates at every observed post-treatment event time through balance()"
+    rt072_log_has using "`lg'", message("`diagnosis'")
     assert r(has) == 1
     rt072_log_has using "`lg'", message("vector required")
     assert r(has) == 0

@@ -1,0 +1,7 @@
+"source_file","source_sha256","source_test","mapped_scenario","assertion_family","coverage_status","divergence_id"
+"tests/testthat/test-user_bug_fixes.R","","having column named t1 causes code to crash","mpdta_t1_column","mpdta not-yet-treated regression runs before and after adding a harmless t1 column","mapped",""
+"tests/testthat/test-user_bug_fixes.R","","missing covariates","mpdta_missing_covariate","missing covariate warning/run behavior maps to Stata complete-case preprocessing and successful estimation","mapped",""
+"tests/testthat/test-user_bug_fixes.R","","fewer time periods than groups","fewer_periods_than_groups","fewer observed periods than treatment groups gives expected ATT slice and nonmissing dynamic/group/calendar aggregations","mapped",""
+"tests/testthat/test-user_bug_fixes.R","","0 pre-treatment estimates when outcomes are 0","zero_pretreatment_outcomes","pre-treatment ATT for group 9 at time 7 is zero under universal and varying base periods","mapped",""
+"tests/testthat/test-user_bug_fixes.R","","variables not in dataset","missing_formula_variable","unknown covariate variable is rejected","mapped",""
+"tests/testthat/test-user_bug_fixes.R","","groups treated after max(t) but within anticipation window are not coerced to never-treated","anticipation_window_coercion","anticipation controls whether late cohort is coerced to controls or remains treated; fast-requested path agrees with baseline","mapped",""

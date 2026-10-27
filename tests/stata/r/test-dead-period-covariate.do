@@ -15,13 +15,9 @@
 * first-period trim, and the all-dead refusal. Shape 9 pins the family's
 * boundary: a covariate missing for SOME rows of a period, for every
 * never-treated unit, so that balancing removes the never-treated group
-* whole. R's never-treated availability check has already run on the
-* pre-balancing cohort list, so R returns an all-NA grid in silence; csdid
-* re-checks on the settled sample, applies R's OWN no-never-treated rule
-* there (the latest cohort becomes the comparison group, later periods are
-* dropped) and says so. Shape 9b is R run on the balanced sample, where that
-* rule fires: csdid's grid on the raw data is that grid (owner decision
-* 2026-08-28, AGENTS.md sixth registered divergence). Reference values from
+* whole. The updated reference rechecks availability after balancing,
+* announces the latest-cohort fallback and returns the same grid as the
+* explicitly balanced input (shape 9b). Reference values from
 * tools/parity/generators/rt036/generate.R.
 * ---------------------------------------------------------------------------
 
@@ -47,17 +43,19 @@ program define rt036_assert_matches_r
     matrix `A' = e(attgt)
     preserve
     import delimited using "`expected'", clear asdouble
+    assert rowsof(`A') == _N
     * the oracle writes NA for the universal-base zero cells' se
     foreach v in att se {
         capture confirm string variable `v'
         if !_rc quietly destring `v', replace force
     }
     forvalues i = 1/`=_N' {
-        if missing(att[`i']) continue
         local found 0
         forvalues r = 1/`=rowsof(`A')' {
             if `A'[`r', 1] == group[`i'] & `A'[`r', 2] == time[`i'] {
-                assert abs(`A'[`r', 4] - att[`i']) <= 1e-10 + 1e-10 * abs(att[`i'])
+                assert missing(`A'[`r', 4]) == missing(att[`i'])
+                assert missing(`A'[`r', 5]) == missing(se[`i'])
+                if !missing(att[`i']) assert abs(`A'[`r', 4] - att[`i']) <= 1e-10 + 1e-10 * abs(att[`i'])
                 if !missing(se[`i']) {
                     assert abs(`A'[`r', 5] - se[`i']) <= 1e-8 + 1e-8 * abs(se[`i'])
                 }
@@ -131,15 +129,13 @@ log close rt036log
 rt036_log_has using "`evlog'", message("already treated in the first period")
 rt036_assert_matches_r, expected("`fixture'/expected/r/attgt_s11_dead_1and2.csv") nunits(60) ntime(3)
 
-* --- shape 9: balancing removes the never-treated group whole. The oracle's
-*     own grid on the raw data is all NA and says nothing; csdid announces
-*     R's no-never-treated fallback and reports the grid R produces when
-*     handed the balanced sample (shape 9b)
+* --- shape 9: balancing removes the never-treated group whole. The raw and
+*     explicitly balanced inputs now return the same announced fallback.
 import delimited using "`fixture'/expected/r/attgt_s09_partial_control.csv", clear asdouble
 capture confirm string variable att
 if !_rc quietly destring att, replace force
-assert _N == 8
-assert missing(att)
+assert _N == 2
+assert !missing(att)
 import delimited using "`fixture'/inputs/input_s09_partial_control.csv", clear asdouble
 capture log close rt036log
 log using "`evlog'", text replace name(rt036log)
@@ -148,6 +144,7 @@ log close rt036log
 rt036_log_has using "`evlog'", message("No never-treated group available")
 assert "`e(control_group)'" == "nevertreated"
 assert e(N_attgt) == 2
+rt036_assert_matches_r, expected("`fixture'/expected/r/attgt_s09_partial_control.csv") nunits(60) ntime(3)
 rt036_assert_matches_r, expected("`fixture'/expected/r/attgt_s09b_partial_control_balanced.csv") nunits(60) ntime(3)
 
 * --- shape 10: total annihilation refuses
@@ -155,4 +152,4 @@ import delimited using "`fixture'/inputs/input_s10_all_dead.csv", clear asdouble
 capture csdid y x1, ivar(id) time(time) gvar(g) method(dr) nevertreated base_period(varying) analytical pointwise
 assert _rc == 459
 
-display as text "test-dead-period-covariate: dead periods vanish exactly as in R did 2.5.1, and csdid names them"
+display as text "test-dead-period-covariate: dead periods and balanced-away controls match the reference, with named sample changes"

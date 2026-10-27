@@ -1,6 +1,6 @@
 # Stored Results API
 
-Status: public API policy for `2.0.1`; the stable surface introduced in `2.0.0` is unchanged.
+Status: public API policy for `2.0.2`; the stable surface introduced in `2.0.0` is unchanged.
 
 ## Stable Public Results
 
@@ -67,10 +67,11 @@ the per-column `crit` row of `r(table)`, which carries the critical value each
 column's own limits were built from.
 
 `e(cband)` and `e(agg_cband)` answer different questions and are both stable.
-`e(cband)` is the estimation's band request and governs the ATT(g,t) table.
+`e(cband)` is the estimation's resolved band policy and governs the ATT(g,t)
+table. It is 0 on a two-period time grid and after an unavailable-band fallback.
 After a bootstrap, `e(cband_fallback)` = 1 marks a request that could not be
 honored because no ATT(g,t) had a usable bootstrap standard error; the table
-is then pointwise. Under `analytical` the ATT(g,t) table is pointwise whatever
+is then pointwise and `e(cband)` is 0. Under `analytical` the ATT(g,t) table is pointwise whatever
 `e(cband)` says, and `e(cband_fallback)` is not posted.
 `e(agg_cband)` reports the band the aggregation in `e(aggte)` actually carries,
 which is 0 whenever the aggregation is banded pointwise however the estimation

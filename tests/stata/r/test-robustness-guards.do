@@ -97,7 +97,7 @@ assert r(N) == 4
 * treatment timing (RT024-DIV002).
 assert inlist(source_file, "tests/testthat/test-robustness-guards.R", ///
               "csdid/test_csdid/test_ported_from_R_robustness.py")
-assert source_sha256 == "7aead08bef062586173ef9c67430378fd9aa77f97487d93521c782e9d10f51da" ///
+assert source_sha256 == "3cc127066b7b8b2771ceed1836194bbf46c21d6aa6e72e53cb3ac1b895ff7e68" ///
     if source_file == "tests/testthat/test-robustness-guards.R"
 
 import delimited using "`root'/tests/fixtures/parity/rt024/expected/contract/approved-divergence.csv", clear varnames(1) stringcols(_all)

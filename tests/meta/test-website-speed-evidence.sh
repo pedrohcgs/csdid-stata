@@ -148,6 +148,9 @@ esac
         destination = fixture_root/relative
         destination.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(root/relative,destination)
+    # The synthetic records below describe 2.0.1 independently of the release
+    # whose source tree runs this test.
+    (fixture_root/'src/ado/csdid.ado').write_text('*! csdid 2.0.1 synthetic fixture\n')
     for name in ('csdid.ado','csdid.mata','csdid_stats.ado','lcsdid_v2.mlib'):
         destination=fixture_root/'build'/name
         destination.parent.mkdir(parents=True,exist_ok=True)

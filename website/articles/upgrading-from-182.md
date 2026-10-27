@@ -268,7 +268,7 @@ method this version does not offer.
 | `wboot(reps(#))` with `#` ≤ 20 | Errors. Too few iterations to support a simultaneous band |
 | `pscoretrim(#)` with `#` ≤ 0 | Errors. Omit for the default `.995`, or pass `1` for no trimming |
 | `gvar()` with negative values | Errors. Use `0` for never-treated |
-| `from()` | Removed. It set a lower event-time bound on the simple, group and calendar aggregations, and R fixes that bound at event time 0, so there is no equivalent. `from(0)` was the legacy default and is already what `csdid` does, so most uses were no-ops. For event-time windows use `estat event, window(# #)` |
+| `from()` | Removed. For lower and upper event-time bounds use `csdid_stats simple/group, window(# #)` or `estat event, window(# #)`. Calendar aggregation has no event-time window. |
 | `dryrun` | Rejected; it was an internal option |
 
 ## What you gain

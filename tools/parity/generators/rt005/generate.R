@@ -34,7 +34,7 @@ input_meta <- lapply(list.files(file.path(fixture, "inputs"), full.names = TRUE)
 })
 
 source_file <- "tests/testthat/test-att_gt.R"
-source_sha <- "ac654d0ea602886f19cc43418231741dbad6a3e605bfb6d76b08de2ce595453c"
+source_sha <- "463ecc95a77a300c825a8cf80bd3f2f2d470e20a446c8e7a2384891ea643842d"
 source_tests <- c(
   "att_gt works w/o dynamics, time effects, or group effects",
   "att_gt works using ipw",
@@ -243,8 +243,8 @@ write.csv(scenarios, file.path(fixture, "expected/contract/scenarios.csv"), row.
 manifest <- list(
   matrix_id = "RT005",
   fixture_family = "r-att-gt",
-  normative_source = "R did 2.5.1 tests/testthat/test-att_gt.R",
-  source_commit = "622d7cec474790934cdaeb68c82c5c38c0711426",
+  normative_source = "R did 2.5.1.904 tests/testthat/test-att_gt.R",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   source_sha256 = source_sha,
   decision_refs = c("D001", "D003", "D004", "D014"),
   tolerance_ids = c("TOL002", "EXACT"),

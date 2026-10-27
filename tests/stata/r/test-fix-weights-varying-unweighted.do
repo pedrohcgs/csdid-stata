@@ -9,9 +9,11 @@ version 15
 clear all
 set more off
 set linesize 200
+args engine_source
 local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
+if `"`engine_source'"' != "" quietly do "`engine_source'"
 local fx "`root'/tests/fixtures/parity/rt074"
 
 import delimited using "`fx'/expected/r/attgt.csv", clear asdouble varnames(1)

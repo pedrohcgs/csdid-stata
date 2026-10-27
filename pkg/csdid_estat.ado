@@ -1,4 +1,4 @@
-*! csdid_estat 2.0.1 23oct2026
+*! csdid_estat 2.0.2 27oct2026
 program define csdid_estat, eclass
     version 14
     if "`e(cmd)'" != "csdid" {
@@ -97,7 +97,7 @@ program define csdid_estat, eclass
     * the option is unsupported either way - and so _csdid_estat_optdup, which
     * must mirror only the SUPPORTED declarations, needs no change.
     if `"`from'"' != "" {
-        display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which is now fixed at event time 0 -- the legacy default from(0) already was. Use window(# #) on estat event for event-time windows."
+        display as error "from() is no longer supported; use window(# #) on estat simple, estat group, or estat event for event-time windows. The calendar aggregation does not use event-time windows."
         exit 198
     }
     * estore() and esave() are Version 1.82 options that stored or saved the

@@ -36,15 +36,16 @@ local({
     suppressPackageStartupMessages(library(did))
   }
 
+  reference <- jsonlite::read_json(file.path(dirname(digest_file), "r-oracle-reference.json"))
   ver <- as.character(utils::packageVersion("did"))
-  if (ver != "2.5.1") {
+  if (!identical(ver, reference$did_version)) {
     stop("oracle gate: loaded did reports version ", ver,
-         " but the parity contract is frozen on 2.5.1")
+         " but the parity contract is frozen on ", reference$did_version)
   }
   drdid_ver <- as.character(utils::packageVersion("DRDID"))
-  if (drdid_ver != "1.4.0") {
+  if (!identical(drdid_ver, reference$DRDID_version)) {
     stop("oracle gate: loaded DRDID reports version ", drdid_ver,
-         " but the parity contract is frozen on 1.4.0")
+         " but the parity contract is frozen on ", reference$DRDID_version)
   }
   # Regeneration traces calls to attest their execution. Inspect each traced
   # function's original body, so instrumentation cannot change the fingerprint.
@@ -101,7 +102,7 @@ local({
     stop("oracle gate: loaded did/DRDID full code digest ", full_actual,
          " differs from the frozen fingerprint in ", full_digest_file)
   }
-  message("oracle gate: did 2.5.1 / DRDID 1.4.0 content-verified (", actual,
+  message("oracle gate: did ", ver, " / DRDID ", drdid_ver, " content-verified (", actual,
           "; all ", length(unlist(records, use.names = FALSE)), " R functions ",
           full_actual, ") at ", find.package("did"))
 })

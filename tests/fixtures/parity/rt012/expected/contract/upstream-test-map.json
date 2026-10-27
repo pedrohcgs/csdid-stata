@@ -1,7 +1,7 @@
 [
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr balanced nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__dr__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -10,7 +10,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr balanced nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__dr__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -19,7 +19,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr balanced notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__dr__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -28,7 +28,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr balanced notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__dr__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -37,7 +37,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr unbalanced nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__dr__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -46,7 +46,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr unbalanced nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__dr__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -55,7 +55,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr unbalanced notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__dr__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -64,7 +64,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr unbalanced notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__dr__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -73,7 +73,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr RC nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__dr__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -82,7 +82,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr RC nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__dr__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -91,7 +91,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr RC notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__dr__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -100,7 +100,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: dr RC notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__dr__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -109,7 +109,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw balanced nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__ipw__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -118,7 +118,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw balanced nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__ipw__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -127,7 +127,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw balanced notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__ipw__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -136,7 +136,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw balanced notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__ipw__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -145,7 +145,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw unbalanced nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__ipw__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -154,7 +154,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw unbalanced nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__ipw__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -163,7 +163,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw unbalanced notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__ipw__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -172,7 +172,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw unbalanced notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__ipw__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -181,7 +181,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw RC nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__ipw__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -190,7 +190,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw RC nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__ipw__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -199,7 +199,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw RC notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__ipw__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -208,7 +208,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: ipw RC notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__ipw__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -217,7 +217,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg balanced nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__reg__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -226,7 +226,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg balanced nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__reg__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -235,7 +235,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg balanced notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__reg__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -244,7 +244,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg balanced notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__balanced__reg__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -253,7 +253,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg unbalanced nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__reg__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -262,7 +262,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg unbalanced nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__reg__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -271,7 +271,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg unbalanced notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__reg__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -280,7 +280,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg unbalanced notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__unbalanced__reg__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -289,7 +289,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg RC nevertreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__reg__nevertreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -298,7 +298,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg RC nevertreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__reg__nevertreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -307,7 +307,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg RC notyettreated varying",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__reg__notyettreated__varying",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -316,7 +316,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency: reg RC notyettreated universal",
     "mapped_scenario": "requested-fast-covariate-optimized__RC__reg__notyettreated__universal",
     "assertion_family": "Stata requested-fast covariate optimized path equals explicit nofast ATT(g,t)/SE; fast_used is 1 and public estimates match",
@@ -325,7 +325,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency with anticipation > 0",
     "mapped_scenario": "requested-fast-anticipation-optimized",
     "assertion_family": "Stata requested-fast covariate optimized path with anticipation equals explicit nofast",
@@ -334,7 +334,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "consistency without covariates",
     "mapped_scenario": "real-fast-no-covariate-reg",
     "assertion_family": "Stata real fast path for balanced-panel no-covariate method(reg) equals baseline",
@@ -343,7 +343,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "aggte consistency across faster_mode for all types",
     "mapped_scenario": "requested-fast-aggregation-optimized",
     "assertion_family": "Stata aggregation results are identical after explicit nofast and requested-fast covariate runs",
@@ -352,7 +352,7 @@
   },
   {
     "source_file": "tests/testthat/test-faster-mode-consistency.R",
-    "source_sha256": "caf632cecc7a68982b6b81d8667d6db4145eadd974875be4fcce436bd829c172",
+    "source_sha256": "fd93ade210e09586dd070340ae34686e7471bb35e138a8e73edbcbad43101c48",
     "source_test": "partial-NA influence functions propagate identically across modes (unbalanced panel)",
     "mapped_scenario": "r-custom-estimator-na-influence-only",
     "assertion_family": "R custom est_method callback can inject partial-NA influence functions; Stata has no public custom-estimator callback surface",

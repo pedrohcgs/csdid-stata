@@ -54,7 +54,7 @@ log close unreadarm
 * The fall-back must succeed and the session must be running the source.
 assert `load_rc' == 0
 local marker `"$CSDID_ENGINE_RESOLVED"'
-assert strpos(`"`marker'"', "2.0.1|source;") == 1
+assert strpos(`"`marker'"', "2.0.2|source;") == 1
 
 * The note: names the file it could not read, says the results are the same,
 * and asks for nothing -- "re-install csdid" is the OTHER refusal's remedy

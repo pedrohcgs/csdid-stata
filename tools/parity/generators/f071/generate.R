@@ -1,10 +1,7 @@
 #!/usr/bin/env Rscript
-# F071: on a gapped calendar, max_e counts OBSERVED PERIODS for the simple
-# and group aggregations, because R rank-recodes periods and cohorts
-# (orig2t) before its keepers (compute.aggte.R:279, :335) -- while the
-# dynamic path stays on raw calendar event time (eseq = originalt -
-# originalgroup). csdid's raw-calendar keeper once kept one of two post
-# cells R keeps (cold-audit round 4, F1).
+# F071: min_e/max_e use original calendar event time for simple, group and
+# dynamic aggregations. On periods {1,3,5}, cohort 3 has event times 0 and 2;
+# max_e=1 keeps only event time 0 under every aggregation type.
 
 args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", args, value = TRUE)

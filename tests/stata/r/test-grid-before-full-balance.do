@@ -1,4 +1,4 @@
-* RT040: full balancing retains the reference's already fixed cohort grid.
+* RT040: full balancing reconciles the reference cohort grid and controls.
 * Every cell, IF entry, sample key and aggregation verdict/value is compared.
 * Default reference refusals remain refusals; no slow-only grid is substituted.
 version 15
@@ -24,19 +24,19 @@ isid scenario group time
 assert _N == 269
 import delimited using "`fx'/expected/r/inffunc.csv", clear asdouble
 isid scenario unit_index group time
-assert _N == 8180
+assert _N == 7820
 import delimited using "`fx'/expected/r/sample.csv", clear asdouble
 isid scenario id time
-assert _N == 3620
+assert _N == 5100
 import delimited using "`fx'/expected/r/aggte.csv", clear asdouble
 isid scenario type na_rm seq
-assert _N == 372
+assert _N == 858
 import delimited using "`fx'/expected/r/aggregation_status.csv", clear asdouble
 isid scenario type na_rm
-assert _N == 256
+assert _N == 448
 import delimited using "`fx'/expected/r/meta.csv", clear asdouble
 isid scenario
-assert _N == 32
+assert _N == 56
 
 mata:
 void rt040_compare_if()
@@ -115,14 +115,14 @@ foreach mode in auto off {
             assert `actual_rc' == 459
             assert "`e(cmd)'" == "regress"
             mata: assert(mreldif(st_matrix("e(b)"), st_matrix("`prior_b'")) == 0)
-            rt040_log_has using "`refusal_log'", message("bal(full) removed every unit from treated cohort(s)")
+            rt040_log_has using "`refusal_log'", message("No valid groups")
             assert r(found)
             preserve
             import delimited using "`fx'/expected/r/estimation_status.csv", clear asdouble
             keep if scenario == "`s'"
             assert _N == 1
             assert failed == 1
-            assert strpos(message, "not found in cohort_vec") > 0
+            assert strpos(message, "No valid groups") > 0
             restore
             scalar rt040_nrefused = rt040_nrefused + 1
             continue
@@ -230,10 +230,10 @@ foreach mode in auto off {
     }
 }
 assert rt040_natt == 538
-assert rt040_nif == 16360
-assert rt040_nagg == 744
-assert rt040_nverdict == 512
-assert rt040_nrefused == 56
+assert rt040_nif == 15640
+assert rt040_nagg == 1716
+assert rt040_nverdict == 896
+assert rt040_nrefused == 8
 
 * Missing rows and the complete companion rows removed by balancing have
 * separate, observable counts even under quietly.
@@ -282,4 +282,4 @@ foreach shape in covariate_missing row_absent mixed_shapes {
     }
 }
 display as text "RT040 max |dATT| = " %12.5g rt040_maxatt " max |dSE| = " %12.5g rt040_maxse " max |dIF| = " %12.5g rt040_maxif " max |dAgg| = " %12.5g rt040_maxagg
-display as text "test-grid-before-full-balance: 60 scenarios pass on both routes: 32 reference-defined grids and 28 explicit refusals, including all sample keys and aggregation verdicts"
+display as text "test-grid-before-full-balance: 60 scenarios pass on both routes: 56 reference-defined grids and 4 explicit refusals, including all sample keys and aggregation verdicts"

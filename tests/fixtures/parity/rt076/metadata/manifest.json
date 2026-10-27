@@ -1,8 +1,8 @@
 {
   "matrix_id": "RT076",
   "fixture_family": "r-undersized-glm-designs",
-  "normative_source": "DRDID 1.4.0 fastglm_fit.R:19-21; did 2.5.1 compute.att_gt/compute.att_gt2 catch and report estimator errors",
-  "source_commit": "eaac3b49cd225d0d7706c633858555a5f204e21e",
+  "normative_source": "DRDID 1.4.0 fastglm_fit.R:19-21; did compute.att_gt/compute.att_gt2 normalized RC outcome support before overlap and pooled rank",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
   "inputs": [
@@ -410,9 +410,9 @@
     },
     {
       "path": "inputs/scenarios.csv",
-      "sha256": "09ae1c1604286f41b53d1ff15a2c65dcad955544c2133cf7121ff730ec083059",
+      "sha256": "f746a69e39b88b682bf6de69096485d1c21a594c46f935db5b7373c560594e8d",
       "rows": 162,
-      "columns": 9
+      "columns": 10
     }
   ],
   "generators": [
@@ -420,7 +420,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt076/generate.R",
       "path": "tools/parity/generators/rt076/generate.R",
-      "sha256": "5012e2a11cff0123352af6ef65ac27973532e26d3770e804d9566b9c09940ec9"
+      "sha256": "cca3aaf9becb3f791ac6ffe574179c7567a3eaa5e9b1450457b7e34bce21b9f8"
     }
   ],
   "runtimes": [
@@ -428,7 +428,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }
@@ -438,7 +438,7 @@
     {
       "path": "expected/r/fits.csv",
       "schema": "rt076",
-      "sha256": "215f08e773c28f80d6c72ddf19418a708bc20506d420ed6b71097d16673fa715"
+      "sha256": "edc06b07526792dddbabc222c02cb861e189efdd371052aea4d427d52d469889"
     },
     {
       "path": "expected/r/inffunc.csv",
@@ -448,7 +448,7 @@
     {
       "path": "expected/r/warnings.csv",
       "schema": "rt076",
-      "sha256": "02b583426bfad2008f2d9d404b27e7b25f2f301a89c3b5feff0cbc825023e755"
+      "sha256": "f91e1d428bf25b3b2ba75a1a26334c59b2d1a1257ac488a0316927266c476eeb"
     },
     {
       "path": "expected/r/wide-warnings.csv",
@@ -482,5 +482,5 @@
     }
   ],
   "approved_divergence": null,
-  "scope_note": "54 designs, 162 low-level method fits with did preliminary feasibility guards: every RC corner and both panel arms at k-1/k/k+1 rows for k=4, unit/nonuniform/one-zero weights. The shortened block has half-scale H4 covariates so the propensity model remains regular; square outcome designs retain full rank. Every RC shape also runs did's fast and slow route. Square designs stay admissible when full rank; zero weights count physically, with effective rank left to existing guards. Twelve total-design IPW cases cross panel/RC, overlap pass/fail and three weight types at n<k=9, matching both public did modes."
+  "scope_note": "54 designs, 162 low-level method fits with did preliminary feasibility guards: every RC corner and both panel arms at k-1/k/k+1 rows for k=4, unit/nonuniform/one-zero weights. The shortened block has half-scale H4 covariates so the propensity model remains regular. RC support counts positive locally normalized weights before overlap or pooled rank; square positive-support designs remain admissible. Every RC shape also runs did's fast and slow route. Twelve total-design IPW cases cross panel/RC, overlap pass/fail and three weight types at n<k=9, matching both public did modes."
 }

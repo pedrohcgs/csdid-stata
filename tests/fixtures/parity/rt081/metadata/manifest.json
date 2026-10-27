@@ -1,0 +1,60 @@
+{
+  "matrix_id": "RT081",
+  "fixture_family": "upstream-test-inheritance-refresh",
+  "normative_source": "did 2.5.1.904 tests/testthat",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": [],
+  "tolerance_ids": [
+    "EXACT"
+  ],
+  "inputs": [],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt081/generate.R",
+      "path": "tools/parity/generators/rt081/generate.R",
+      "sha256": "2ab7214342eb845c6aa005a1bec89abf56321b90618f64c9c7b462d3af18dd4b"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Python",
+      "version": "3.14.2"
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "schema": "approved-divergence"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "schema": "approved-divergence"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Source inventory and reviewed public Stata assertions",
+      "expected": "expected/contract/upstream-test-map.csv",
+      "tolerance_id": "EXACT",
+      "key_columns": [
+        "source_file",
+        "source_test"
+      ]
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-exclusion",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Contract-only registry: 73 new upstream blocks, existing source-map hashes, and the removed historical skipped block. Numerical evidence is supplied by RT077 through RT080 and the refreshed RT040 matrix. R conditional-pretest internals, data.table implementation collisions, exact R flag-resolution messages, custom callbacks and single-draw bootstrap requests are explicitly excluded under the existing public API and bootstrap minimum. This registry does not supply or manufacture numerical expectations."
+}

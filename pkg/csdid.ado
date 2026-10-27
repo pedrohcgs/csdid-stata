@@ -1,4 +1,4 @@
-*! csdid 2.0.1 23oct2026
+*! csdid 2.0.2 27oct2026
 program define csdid, eclass sortpreserve
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
@@ -12,7 +12,7 @@ program define csdid, eclass sortpreserve
     version 14
 
     if `"`0'"' == "version" {
-        display as text "csdid version 2.0.1"
+        display as text "csdid version 2.0.2"
         * A diagnostic, and ONLY a diagnostic: no e() (the help guarantees
         * it, and an e(cmd) stub posted here once let csdid_estat print a
         * fabricated table in a session that had estimated nothing), and no
@@ -365,16 +365,12 @@ program define csdid, eclass sortpreserve
     }
     * from() is unsupported by design. In legacy csdid it set a LOWER EVENT-TIME
     * bound on the simple, group and calendar aggregations
-    * (tlvl[j] - glvl[i] >= from). R's did fixes that bound at event time 0 for
-    * those three types -- compute.aggte() selects them with
-    * `which(group <= t & t <= (group + max_e))`, in which `group <= t` hardcodes
-    * e >= 0 and only the upper bound is adjustable; min_e applies solely to
-    * type == "dynamic". So a nonzero from() has no R counterpart, and from(0),
-    * the legacy default, is already what csdid and R both do. Declared in
+    * (tlvl[j] - glvl[i] >= from). Simple/group now take both bounds through
+    * window(), while calendar has no event-time window. Declared in
     * syntax rather than left to the catch-all so a migrating user gets this
     * explanation instead of a bare "unsupported option(s)".
     if `"`from'"' != "" {
-        display as error "from() is no longer supported. It set a lower event-time bound on the simple, group and calendar aggregations; those aggregations now fix that bound at event time 0, which is what from(0) -- the legacy default -- already did, so there is no equivalent. For event-time windows use csdid_stats, type(dynamic) window(# #) or estat event, window(# #)."
+        display as error "from() is no longer supported. For lower and upper event-time bounds on simple or group aggregation, use csdid_stats simple/group, window(# #). For a dynamic event study use csdid_stats, type(dynamic) window(# #) or estat event, window(# #). Calendar aggregation has no event-time window."
         exit 198
     }
     if `nofast_raw' local nofast "nofast"
@@ -1098,6 +1094,17 @@ program define csdid, eclass sortpreserve
     * -----------------------------------------------------------------------
     local ivar_declared ""
     if "`rcs'" != "" & "`ivar'" != "" {
+        * pre_process_did2.R:76-88 checks the declared RC observation IDs
+        * before complete-case screening; missing IDs cannot be duplicates.
+        tempname rcs_ids
+        mata: `rcs_ids' = st_data(., "`ivar'")
+        mata: `rcs_ids' = select(`rcs_ids', (st_data(., "`touse_initial'") :!= 0) :& (`rcs_ids' :< .))
+        mata: st_local("rcs_duplicate", strofreal(rows(`rcs_ids') != rows(uniqrows(`rcs_ids'))))
+        mata: mata drop `rcs_ids'
+        if `rcs_duplicate' {
+            display as error "ivar(`ivar') must be unique under rcs: repeated cross sections treat every observation as a distinct sampling unit. For repeated observations of the same units, omit rcs and use bal(none) for an incomplete panel. For repeated cross sections, give every observation a unique identifier or omit ivar(); use cluster(`ivar') if this variable identifies clusters."
+            exit 459
+        }
         local ivar_declared "`ivar'"
         local ivar ""
         display as text "csdid: rcs declares repeated cross sections, so ivar(`ivar_declared') identifies the estimation sample but is not used as a panel identifier; each observation is treated as its own unit. To cluster standard errors on it, add cluster(`ivar_declared')."
@@ -1400,21 +1407,21 @@ program define csdid, eclass sortpreserve
         exit `prescan_rc'
     }
     local balance_lostgroups "`__csdid_ps_lostgroups'"
-    local use_prebalance_grid = (`want_bal' & "`notyet'" != "" & `ps_incunits' > 0)
+    local prebalance_never = `ps_never'
+    local prebalance_glevels "`__csdid_ps_glevels'"
+    local prebalance_latest "."
+    local prebalance_ngroups : word count `prebalance_glevels'
+    if `prebalance_ngroups' > 0 {
+        local prebalance_latest : word `prebalance_ngroups' of `prebalance_glevels'
+    }
     * What the kernel keeps from this scan when bal(full) drops a unit: R folds
     * as-if-never-treated cohorts once, before balancing, under either
     * comparison group (pre_process_did2.R:207-214, then :356-384), so both
     * keep the fold (a drop can empty the last periods, and the balanced
-    * calendar would fold treated cohorts into controls). notyet also keeps
-    * the latest cohort and cohort list (1); nevertreated keeps the fold only
-    * (2), reading its comparison cohort from the balanced sample -- the
-    * registered divergence for a balanced-away never-treated group.
-    local prebalance_mode = cond(`want_bal' & `ps_incunits' > 0, cond("`notyet'" != "", 1, 2), 0)
-    if `use_prebalance_grid' {
-        local prebalance_min_time `ps_tmin'
-        local prebalance_never = `ps_never'
-        local prebalance_glevels "`__csdid_ps_prebalance_groups'"
-    }
+    * calendar would fold treated cohorts into controls). Both comparison
+    * groups now rebuild the cohort list and comparison group after balancing
+    * (pre_process_did2.R:423-456); mode 2 preserves only the original fold.
+    local prebalance_mode = cond(`want_bal' & `ps_incunits' > 0, 2, 0)
     * The three data-shape violations R refuses -- an irreversible-treatment
     * breach, a duplicate (id, time) row and a time-varying cluster variable --
     * are decided on THIS scan and not on the one below, and refused HERE, in
@@ -1826,14 +1833,6 @@ program define csdid, eclass sortpreserve
     * shapes are covered: all-one-cohort (S4757) and anticipation-eats-every-
     * base-period (S192 family).
     local __treated_levels "`__csdid_ps_glevels'"
-    if `use_prebalance_grid' {
-        * R retains its pre-balance grid. Re-deriving it after losing
-        * comparison units can erase finite latest-cohort placebo effects;
-        * a vanished treated cohort is refused separately below.
-        local __treated_levels "`prebalance_glevels'"
-        local min_time `prebalance_min_time'
-        local never_count = `prebalance_never'
-    }
     local __n_treated : word count `__treated_levels'
     local __n_usable 0
     local __gmax_usable 0
@@ -1843,13 +1842,13 @@ program define csdid, eclass sortpreserve
             local __gmax_usable `__gv'
         }
     }
-    if !`use_prebalance_grid' & `never_count' == 0 & `__n_usable' > 0 {
+    if `never_count' == 0 & `__n_usable' > 0 {
         local __glast : word `__n_treated' of `__treated_levels'
         if `__glast' == `__gmax_usable' {
             local __n_usable = `__n_usable' - 1
         }
     }
-    if `__n_usable' <= 0 & "`balance_lostgroups'" == "" {
+    if `__n_usable' <= 0 {
         display as error "No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings."
         * Pre-kernel refusal: nothing has been estimated, so whatever
         * estimation results were already in memory stay posted -- the
@@ -1926,13 +1925,10 @@ program define csdid, eclass sortpreserve
         * estimation results were already in memory stay posted.
         exit 459
     }
-    * did's default balanced-panel route refuses a treated identity lost
-    * after the cohort grid is fixed (compute.att_gt2.R:40-43). The first
-    * scan's actual balance mask identifies loss without confusing a surviving
-    * cohort's later recoding with removal. Entry refusals preserve the old fit.
+    * pre_process_did2.R:423-429 removes cohorts lost while balancing and
+    * continues on the settled grid. Announce whole-cohort loss even quietly.
     if "`balance_lostgroups'" != "" {
-        display as error "bal(full) removed every unit from treated cohort(s) `balance_lostgroups'. The requested cohort comparisons cannot be estimated. Resolve the missing observations or use bal(none) to keep the unbalanced panel."
-        exit 459
+        display as error "warning: Dropped cohort(s) `balance_lostgroups' while converting to balanced panel; use bal(none) to keep them."
     }
     * Both of these announce a change to the SAMPLE or the ESTIMAND, so they
     * follow the rule stated at the bal() drop above: error-styled, which is
@@ -1949,6 +1945,11 @@ program define csdid, eclass sortpreserve
     if `never_count' == 0 & "`notyet'" == "" {
         if `__n_treated' > 0 {
             display as error "warning: No never-treated group available; using the latest treated cohort as never-treated, and dropping periods after it (no comparison group is available there)."
+        }
+    }
+    if `never_count' == 0 & "`notyet'" != "" & `balance_dropped_units' > 0 {
+        if `prebalance_never' > 0 | `__gmax_usable' < real("`prebalance_latest'") {
+            display as error "warning: No never-treated group is available after converting to balanced panel; the latest surviving treated cohort is used only as a comparison group, and periods from its treatment date (net of anticipation) onward are dropped. Use bal(none) to keep the incomplete units."
         }
     }
     * The count is the point of this line. "Units treated in the first period
@@ -2043,6 +2044,12 @@ program define csdid, eclass sortpreserve
             ereturn clear
             exit `csdid_rc'
         }
+    }
+    * The period count comes from the settled sample under every data route.
+    * pre_process_did2.R:492-497 resolves a two-period band to pointwise.
+    if scalar(`panel_ntime') == 2 & `cband' {
+        display as text "Only two time periods are available; uniform confidence bands coincide with pointwise confidence intervals. Using pointwise intervals."
+        local cband 0
     }
     local bootstrap_accelerator "none"
     local bootstrap_accelerator_status "not-requested"
@@ -2299,15 +2306,14 @@ program define csdid, eclass sortpreserve
             scalar drop CSDID_ATTGT_CRIT_LARGE
             display as error "warning: the simultaneous critical value for the ATT(g,t) bands is arguably too large to be reliable. This usually happens when the number of observations per group is small and/or there is not much variation in outcomes. Specify pointwise for pointwise intervals."
         }
-        * No ATT(g,t) had a usable bootstrap scale, so no simultaneous band
-        * exists (R: a critical value of -Inf). The table reports pointwise
-        * intervals and says so; e(cband) keeps the request, which the
-        * aggregation reads, and e(cband_fallback) records the fallback
-        * (owner decision 2026-09-27, AGENTS.md register).
+        * did att_gt.R:740-744 resolves a non-finite simultaneous critical
+        * value to pointwise intervals and carries that resolved policy into
+        * aggregations. The diagnostic still records why the request changed.
         capture confirm scalar CSDID_ATTGT_CRIT_FALLBACK
         if !_rc {
             scalar drop CSDID_ATTGT_CRIT_FALLBACK
             local attgt_cband_fallback 1
+            local cband 0
             display as error "warning: the simultaneous critical value for the ATT(g,t) bands cannot be computed, because no ATT(g,t) has a usable bootstrap standard error; the ATT(g,t) table reports pointwise confidence intervals."
         }
         matrix colnames `boot_attgt' = group time event_time att se_boot se_analytic crit_val ci_low ci_high point_crit_val point_ci_low point_ci_high
@@ -2359,8 +2365,8 @@ program define csdid, eclass sortpreserve
     * the identical W under bstrap=TRUE and bstrap=FALSE on mpdta:
     *     V     <- t(inffunc) %*% inffunc / n     [clustered: crossprod(Sc)/n]
     *     se    <- sqrt(diag(V)/n)
-    *     se[se <= sqrt(.Machine$double.eps)*10] <- NA
-    *     pre   <- which(group > tt)              [minus the NA-se entries]
+    *     se[!is.finite(se) | se <= 0] <- NA
+    *     pre   <- which(group - anticipation > tt) [minus NA-se entries]
     *     preV  <- V[pre, pre]
     *     W     <- n * t(att[pre]) %*% solve(preV) %*% att[pre]
     *     Wpval <- round(1 - pchisq(W, length(pre)), 5)
@@ -2396,8 +2402,10 @@ program define csdid, eclass sortpreserve
     local pre_cells 0
     local pre_valid 0
     forvalues i = 1/`=rowsof(`attgt')' {
-        if `attgt'[`i', 1] > `attgt'[`i', 2] {
-            local ++pre_cells
+        if `attgt'[`i', 1] - `anticipation' > `attgt'[`i', 2] {
+            * A universal base is a structural normalization, including on
+            * irregular calendars where it is not g-anticipation-1.
+            if "`base_period'" != "universal" | `attgt'[`i', 2] != `attgt'[`i', 10] local ++pre_cells
             if !missing(`attgt'[`i', 4]) & !missing(`attgt'[`i', 5]) {
                 local ++pre_valid
             }
@@ -2429,7 +2437,7 @@ program define csdid, eclass sortpreserve
             * fx-boundary overlap-failure fixture). Padding the mask forces
             * rows() >= 2, which removes the guess; the sentinel is never
             * selected, so the indices still address the unpadded arrays.
-            mata: __csdid_wald_m = (__csdid_wald_A[., 1] :> __csdid_wald_A[., 2]) \ 0
+            mata: __csdid_wald_m = ((__csdid_wald_A[., 1] :- `anticipation') :> __csdid_wald_A[., 2]) \ 0
             mata: __csdid_wald_p = select((1::rows(__csdid_wald_m)), __csdid_wald_m)
             if `store_large' {
                 if rowsof(`inffunc') > 0 & colsof(`inffunc') == rowsof(`attgt') {
@@ -2479,11 +2487,11 @@ program define csdid, eclass sortpreserve
                 mata: __csdid_wald_a = __csdid_wald_A[__csdid_wald_p, 4]
                 mata: __csdid_wald_e = sqrt(diagonal(__csdid_wald_V) :/ __csdid_wald_n)
                 * R drops a pre-treatment cell from the pre-test exactly when
-                * its ANALYTICAL se is NA, i.e. missing or <= sqrt(eps)*10.
+                * its ANALYTICAL se is unavailable or nonpositive.
                 * That is also what removes the identically-zero event_time=-1
                 * cells under baseperiod(universal) - verified: R reports df 5
                 * on mpdta under both base-period conventions.
-                mata: __csdid_wald_m = ((__csdid_wald_e :< .) :& (__csdid_wald_e :> 1.4901161193847656e-07) :& (__csdid_wald_a :< .)) \ 0
+                mata: __csdid_wald_m = ((__csdid_wald_e :< .) :& (__csdid_wald_e :> 0) :& (__csdid_wald_a :< .)) \ 0
                 mata: __csdid_wald_k = select((1::rows(__csdid_wald_m)), __csdid_wald_m)
                 mata: st_numscalar("`wald_q'", rows(__csdid_wald_k))
             }
@@ -2731,7 +2739,7 @@ program define csdid, eclass sortpreserve
     * produces a message that names the reason.
     ereturn local marginsnotok "_ALL"
     ereturn local cmdline `"`cmdline'"'
-    ereturn local version "2.0.1"
+    ereturn local version "2.0.2"
     * the conventional Stata estimation macros were all empty,
     * which is what estout/etable/esttab read to label a column and its standard
     * errors. didregress sets e(depvar), e(vce), e(vcetype) and e(predict); set
@@ -2846,7 +2854,7 @@ program define csdid, eclass sortpreserve
         ereturn local rseed "`boot_seed'"
     }
     ereturn scalar cband = `cband'
-    ereturn scalar pointwise = (`cband' == 0)
+    ereturn scalar pointwise = ("`pointwise'" != "")
     ereturn scalar fast_requested = `fast_requested'
     ereturn scalar fast_auto = `fast_auto'
     ereturn scalar fast_allowed = `fast_allowed'

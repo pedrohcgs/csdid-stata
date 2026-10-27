@@ -34,7 +34,7 @@ input_main <- read.csv(file.path(fixture, "inputs/input.csv"))
 input_sparse <- read.csv(file.path(fixture, "inputs/sparse-factor.csv"))
 
 source_file <- "tests/testthat/test-modelmatrix-hoist.R"
-source_sha <- "f412253e6523b15e8ab45a3daa521765cf9b1ee4e76860199318bbd4710c6a9a"
+source_sha <- "93e728acdcd402bf782794a80b80d47d53ddf13ddc89da6bf2e3458d68577a4d"
 source_tests <- c(
   "global design slice is bit-identical to per-subset model.matrix for numeric formulae",
   "slow path matches faster_mode for numeric / transform formulae",
@@ -177,8 +177,8 @@ write.csv(scenarios, file.path(fixture, "expected/contract/scenarios.csv"), row.
 manifest <- list(
   matrix_id = "RT019",
   fixture_family = "r-modelmatrix-hoist",
-  normative_source = "R did 2.5.1 tests/testthat/test-modelmatrix-hoist.R",
-  source_commit = "622d7cec474790934cdaeb68c82c5c38c0711426",
+  normative_source = "R did 2.5.1.904 tests/testthat/test-modelmatrix-hoist.R",
+  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
   source_sha256 = source_sha,
   decision_refs = c("D001", "D003", "D004", "D014"),
   tolerance_ids = c("TOL002", "EXACT"),

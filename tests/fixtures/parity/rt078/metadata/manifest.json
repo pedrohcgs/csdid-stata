@@ -1,0 +1,152 @@
+{
+  "matrix_id": "RT078",
+  "fixture_family": "r-upstream-inference-units",
+  "normative_source": "did att_gt.R:600-750; mboot.R:143-196; anticipation-window and outcome-unit regressions",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/panel.csv",
+      "sha256": "355581f56c8a137928398adfb7d137d815874fe110b1d9f53e495ed6e78735e0",
+      "rows": 840,
+      "columns": 5
+    },
+    {
+      "path": "inputs/rc.csv",
+      "sha256": "fa391e2c33012b933ad8a0e2a16c6947e5877eb6a70a2644c74ec8e900b49f76",
+      "rows": 840,
+      "columns": 5
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "eecd7e9d6378e8ea09502e8b97681f4bf722ba7991846bbf43adaa6f9e5b72c2",
+      "rows": 144,
+      "columns": 8
+    },
+    {
+      "path": "inputs/overflow-draws.csv",
+      "sha256": "0f29c609b141ffdf465668cdb0cf8866daed5eb7fa79324b42b90cee8b9f1dcf",
+      "rows": 5,
+      "columns": 2
+    },
+    {
+      "path": "inputs/cluster-probes.csv",
+      "sha256": "ba26fb2a054fdb9f49b8a578f8464dd9bd8deacd0aa127161934669b92c62f37",
+      "rows": 4,
+      "columns": 6
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt078/generate.R",
+      "path": "tools/parity/generators/rt078/generate.R",
+      "sha256": "d2403ffcbba8cc2cb54731d953db1a72d3378ab2413cb20b4272695cdbf6d527"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.904",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "Mersenne-Twister",
+    "seed": 20261026,
+    "biters": 199
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/diagnostics.csv",
+      "sha256": "3e926709420fe56e307e52a0e100d3d6756407f247a3d470f32047c286b94d80",
+      "rows": 144,
+      "columns": 5,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/cells.csv",
+      "sha256": "c8bd946e80aa88f2b65eca111964e4d1ac6535a6a9abf9521794042ff304d336",
+      "rows": 1872,
+      "columns": 5,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "sha256": "90181852d59a794e2fb61546a55e290efee74c2daad1c4d6ec1d09984b6bef58",
+      "rows": 69120,
+      "columns": 23,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/aggregates.csv",
+      "sha256": "e1c820dc8032eec6c4f755ce60fde3d7a2f1e583e69d67432a7d36038d6d574d",
+      "rows": 2520,
+      "columns": 23,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/agg-inffunc.csv",
+      "sha256": "2ca801af3c8fed7c991a4ae78f8d6a717222d935467e32acc7b4bac77c3d0429",
+      "rows": 276480,
+      "columns": 23,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/criticals.csv",
+      "sha256": "5bc945a048b18c27e7bdb2b20ed5f7d3664c0883d1759236a875d55c48f18975",
+      "rows": 576,
+      "columns": 3,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/two-period.csv",
+      "sha256": "9e6fa5d1fb0bd4e92ba43fd7e7eb2485e2eeac7bd929d18ec0fc227908d5110e",
+      "rows": 4,
+      "columns": 7,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/tiny-sigma.csv",
+      "sha256": "596886c6d5ae99c22f05f39d5db352fd37194fec18196dd20db555b4294d9648",
+      "rows": 3,
+      "columns": 2,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/overflow-crit.csv",
+      "sha256": "d19db7d8b500394657b193c6920444dd485386ba2c5fab519b28ee8cab4a4a85",
+      "rows": 1,
+      "columns": 1,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/mpdta-small.csv",
+      "sha256": "8b686059763e9b6cde81d14159362276306824349f717f45d628c7c6593529eb",
+      "rows": 15,
+      "columns": 5,
+      "schema": "rt078"
+    },
+    {
+      "path": "expected/r/cluster-se.csv",
+      "sha256": "7ebd695b8620d9d321cb153f1e734e9658f1fd3d8e5be3fe294fbb08c9837ed9",
+      "rows": 4,
+      "columns": 2,
+      "schema": "rt078"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "every ATT/SE/IF, Wald and critical value and all four aggregate tables and IFs after dividing by outcome scale",
+      "expected": "expected/r",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "group", "time"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "144 configurations cross panel/RC, all three estimators, both base conventions, anticipation 0/1, analytical/bootstrap, outcome scales 1/1e-8/1e-100, and unequal clusters. Irregular calendar isolates the actual universal base. Direct IQR checks retain representable 1e-200 scales even when squared draws underflow."
+}

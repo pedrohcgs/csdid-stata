@@ -1,9 +1,9 @@
 {
   "matrix_id": "RT040",
   "fixture_family": "r-grid-before-full-balance",
-  "normative_source": "did 2.5.1 pre_process_did.R and pre_process_did2.R: row complete cases, fixed cohort/control grid, then whole-unit balancing",
-  "source_commit": "9aba07d054a798558ac9b551887f5cb592d8db10",
-  "decision_refs": ["D026", "approved divergence 6.7"],
+  "normative_source": "did 2.5.1.904 pre_process_did.R and pre_process_did2.R: whole-unit balancing then cohort/control reconciliation",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": "D026",
   "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
   "inputs": [
     {
@@ -368,7 +368,7 @@
     },
     {
       "path": "inputs/scenarios.csv",
-      "sha256": "121e42929bcfd7d3b06e9ee502e39774f434e1f978e056f289b3be5a8cf9fd3a",
+      "sha256": "1ca045e1f57c3d50c007766df1ff3b4e7abd8d0f23cc83057a505c85a776405d",
       "rows": 60,
       "columns": 10
     }
@@ -378,43 +378,43 @@
       "path": "expected/r/attgt.csv",
       "schema": "attgt",
       "rows": 269,
-      "sha256": "657b251883e882d830578f774ff10498ab680c3298228129db6a62c943c6096b"
+      "sha256": "00fcd6f0c7f60e90671d1156c2076ce9d77af2ea9095deaf2e0d37152c9fa6b5"
     },
     {
       "path": "expected/r/inffunc.csv",
       "schema": "inffunc",
-      "rows": 8180,
-      "sha256": "8262ac23b8705bff9791d3a5d574f6b89f4eb68dd21b05bc9fb0a28579f63705"
+      "rows": 7820,
+      "sha256": "8175bb65d4f98d8ff36e76ea258a9d1c3f0a47273e276655b211520cc354b0a1"
     },
     {
       "path": "expected/r/sample.csv",
       "schema": "sample",
-      "rows": 3620,
-      "sha256": "ec2d3fd877137a7fa7b60e2e5d428d5bd095a5ec9c9eaa21a283729d305241ae"
+      "rows": 5100,
+      "sha256": "0efc6aecbf0151c4c70ea5fe6c72a399542c5de97599a13ae64123412e61684e"
     },
     {
       "path": "expected/r/meta.csv",
       "schema": "meta",
-      "rows": 32,
-      "sha256": "bd25451800b607e3c6ef23ab78a477750aefc45fe6d23189ae709c679a122eb4"
+      "rows": 56,
+      "sha256": "91bbdc930646c99b619863676828f53e46b9aa5f2dc8a910d91eaa0b797725fa"
     },
     {
       "path": "expected/r/aggte.csv",
       "schema": "aggte",
-      "rows": 372,
-      "sha256": "42e294976d4f05aaffc17ba0e2d980d82a05c003d0a53e5e5d3413f1feb0a634"
+      "rows": 858,
+      "sha256": "0104f2de08b0d4f4cd304ee78ad159973e0f8b88cbe7a631968d7f316531f332"
     },
     {
       "path": "expected/r/aggregation_status.csv",
       "schema": "aggregation_status",
-      "rows": 256,
-      "sha256": "93893538131308405ba3f3e79a07745fc951a6a2aa6051ee155d00920345d3f5"
+      "rows": 448,
+      "sha256": "a6040d4613dc834025dc7d7a678dd4971fc5b26891e8d419a6c362a2f90caa9b"
     },
     {
       "path": "expected/r/estimation_status.csv",
       "schema": "estimation_status",
       "rows": 60,
-      "sha256": "c5b2be09df3fe0f50ff5c59a54e3b5f804b90100630611c840958ecfda9357e5"
+      "sha256": "f821d92b45c1707d109e84a2de0ea2b15d320ba5f1769456f32a8217134ec3e1"
     }
   ],
   "generators": [
@@ -422,7 +422,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt040/generate.R",
       "path": "tools/parity/generators/rt040/generate.R",
-      "sha256": "37ed65ab283b2f2224a70afcf53287ce12974ef1c63ab2013980d09f5808897a"
+      "sha256": "363e8d9bd8f4aa492eff89bdf9ad54f6838ad89864c41a65dafacc6f81b13d74"
     }
   ],
   "runtimes": [
@@ -430,7 +430,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }
@@ -448,5 +448,5 @@
       "tolerance_ids": ["EXACT", "TOL001", "TOL002"]
     }
   ],
-  "scope_note": "Normative results and refusals are from the default did 2.5.1 call. Successful grids are cross-checked against its slow path; no slow-only grid is substituted for a default refusal. Coverage includes comparison-unit removal, actual eligible treated-cohort loss under both comparison groups, excluded first-period/latest/future groups, surviving cohorts beyond a shortened horizon, dead periods, anticipation, weights/clustering and defaults. The four declared never-only fallback witnesses use the approved balanced-sample reference. Estimation refusal assertions are recorded in estimation_status.csv."
+  "scope_note": "Normative results and refusals are from the pinned did 2.5.1.904 call. Successful grids are cross-checked against its slow path; no slow-only grid is substituted for a default refusal. Coverage includes comparison-unit removal, actual eligible treated-cohort loss under both comparison groups, excluded first-period/latest/future groups, surviving cohorts beyond a shortened horizon, dead periods, anticipation, weights/clustering and defaults. Every witness uses the original raw input; comparison groups and cohorts are reconciled after balancing. Estimation refusal assertions are recorded in estimation_status.csv."
 }

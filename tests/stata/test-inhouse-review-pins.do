@@ -20,7 +20,7 @@
 *      csdid_stats level() refuses non-numeric and out-of-range levels with
 *      its own r(198); vce(cluster) accepts an abbreviated varname;
 *      full-precision levels survive the estat round trip and redisplay.
-* The group/na.rm rank-grid fix is pinned separately against R fixtures in
+* The group/na.rm original-calendar window is pinned against R fixtures in
 * tests/stata/r/test-group-grid-narm.do (fixture rt034).
 
 version 15
@@ -33,7 +33,7 @@ adopath ++ "`root'/src/mata"
 
 program define ihr_assert_log_contains
     version 15
-    syntax using/, message(string)
+    syntax using/, message(string) [ABSENT]
     tempname fh
     local found 0
     file open `fh' using `"`using'"', read text
@@ -43,7 +43,7 @@ program define ihr_assert_log_contains
         file read `fh' line
     }
     file close `fh'
-    assert `found' == 1
+    assert `found' == ("`absent'" == "")
 end
 
 tempfile evlog rif
@@ -300,11 +300,11 @@ assert mreldif(`SEA', `SEB') == 0
 display as text "pin 6: banded analytical aggregation mirrors R, bit for bit at the kernel"
 
 * ---------------------------------------------------------------------------
-* 7. Composition drift inside a balanced window is announced (owner decision
-*    2026-08-28). The panel kills two cells via a singular covariate design;
-*    under balance(1) dropmissing their event times are inside the reported
-*    window, so the warning names them; restricting the window to exclude
-*    them silences it; without balance() there is no promise and no warning.
+* 7. Missing pre-treatment cells do not exclude a cohort whose observed
+*    post-treatment support is complete through balance(1). The two singular
+*    pre-treatment cells below remain outside that support requirement. The
+*    retained post-treatment effects use both cohorts and no obsolete drift
+*    warning is printed, including after display-window restriction.
 * ---------------------------------------------------------------------------
 clear
 quietly set obs 120
@@ -316,25 +316,25 @@ generate double z1 = sin(id) + 0.1 * t
 generate double z2 = cond(t == 2, z1, cos(id) - 0.2 * t)
 generate double y = 1 + 0.2 * t + 0.4 * z1 + 0.2 * z2 + 0.5 * (g > 0 & t >= g) + mod(id * 7 + t * 11, 19) / 19
 quietly csdid y z1 z2, ivar(id) time(t) gvar(g) method(dr) nevertreated base_period(varying) analytical pointwise
+matrix IHR_CELLS = e(attgt)
 capture log close ihrdrift
 log using "`evlog'", text replace name(ihrdrift)
 csdid_stats event, balance(1) dropmissing
 log close ihrdrift
-ihr_assert_log_contains using "`evlog'", message("fall inside the balance(1) window")
+ihr_assert_log_contains using "`evlog'", message("fall inside the balance(") absent
+matrix IHR_BALANCED = e(aggte)
+foreach e in 0 1 {
+    mata: st_numscalar("__ihr_expected", mean(select(st_matrix("IHR_CELLS")[.,4], st_matrix("IHR_CELLS")[.,3]:==`e')))
+    forvalues j=1/`=rowsof(IHR_BALANCED)' {
+        if IHR_BALANCED[`j',1]==`e' assert reldif(IHR_BALANCED[`j',2],scalar(__ihr_expected))<1e-10
+    }
+}
+scalar drop __ihr_expected
 capture log close ihrdrift2
 log using "`evlog'", text replace name(ihrdrift2)
 csdid_stats event, balance(1) window(-1 1) dropmissing
 csdid_stats event, dropmissing
 log close ihrdrift2
-tempname fh2
-local found2 0
-file open `fh2' using "`evlog'", read text
-file read `fh2' line
-while r(eof) == 0 {
-    if strpos(`"`macval(line)'"', "fall inside the balance(") local found2 1
-    file read `fh2' line
-}
-file close `fh2'
-assert `found2' == 0
-display as text "pin 7: balanced-window composition drift warns by name, and only when real"
+ihr_assert_log_contains using "`evlog'", message("fall inside the balance(") absent
+display as text "pin 7: complete post-treatment support retains cohorts despite missing pre-treatment cells"
 display as text "test-inhouse-review-pins: all pins green"

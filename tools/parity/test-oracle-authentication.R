@@ -78,6 +78,7 @@ dir.create(file.path(scratch, "tools/parity/generators"), recursive = TRUE)
 dir.create(file.path(scratch, "inst/spec"), recursive = TRUE)
 copy <- file.path(scratch, "tools/parity/generators/oracle-check.R")
 file.copy(gate, copy)
+file.copy("inst/spec/r-oracle-reference.json", file.path(scratch, "inst/spec/r-oracle-reference.json"))
 fingerprints <- c("r-oracle-code-digest.txt", "r-oracle-full-code-digest.txt")
 for (fingerprint in fingerprints) {
   for (mode in c("missing", "empty", "wrong")) {

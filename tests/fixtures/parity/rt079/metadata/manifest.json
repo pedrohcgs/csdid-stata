@@ -1,0 +1,122 @@
+{
+  "matrix_id": "RT079",
+  "fixture_family": "r-upstream-aggregation-support",
+  "normative_source": "did compute.aggte.R:165-168,316,386-405,514-550",
+  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "path": "inputs/regular.csv",
+      "sha256": "31f854110d92c7eccca46402616a9d47457d62d5cacbbb6623db5722e2d39dfa",
+      "rows": 600,
+      "columns": 4
+    },
+    {
+      "path": "inputs/irregular.csv",
+      "sha256": "58b97453e88617c776701c1ba5b0f1d4545c2fd6e746b82acfd266b36c0539e2",
+      "rows": 480,
+      "columns": 4
+    },
+    {
+      "path": "inputs/sparse.csv",
+      "sha256": "cc316cb2bc6967946366acae669e948308dda45ffbf53f0acdddd85483caef9f",
+      "rows": 360,
+      "columns": 4
+    },
+    {
+      "path": "inputs/decimal.csv",
+      "sha256": "cb1edd685203f4625831a2d2095d8f6af0c3c8304d365bfd336a166d6ad80c2b",
+      "rows": 720,
+      "columns": 4
+    },
+    {
+      "path": "inputs/offgrid.csv",
+      "sha256": "065d0aed56d7015e0ebff6faa089fbf38b2f4027c841e3b3f5238881731fc3d8",
+      "rows": 480,
+      "columns": 4
+    },
+    {
+      "path": "inputs/missing.csv",
+      "sha256": "7fae6c171b1571bdb8216f6d70c3c1820405423df048d25291d007a5fba64e18",
+      "rows": 560,
+      "columns": 4
+    },
+    {
+      "path": "inputs/none.csv",
+      "sha256": "4bdb7fee704473118360f10b82378d5c14c11f0be10c163db366aaeddd29f9f6",
+      "rows": 520,
+      "columns": 4
+    },
+    {
+      "path": "inputs/vanished.csv",
+      "sha256": "2fbbc0663b1274cfe944ae33677148a36659ce330cb0ebd77293cbe5c4cae6fd",
+      "rows": 520,
+      "columns": 4
+    },
+    {
+      "path": "inputs/decimal_missing.csv",
+      "sha256": "851000535f5645c73db324cbd3eb741581fc00715d16ad00ad26214a1a073d73",
+      "rows": 660,
+      "columns": 4
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "30828100048451ec97a1fadcb6ea3f5c5515c2f3aae1eef435a5b37fb204e296",
+      "rows": 102,
+      "columns": 7
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt079/generate.R",
+      "path": "tools/parity/generators/rt079/generate.R",
+      "sha256": "8db5f5e1c6638e9019807894a9441264c80f8f4563a0b475c13acb3cfdcc09b7"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.904",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": null,
+  "expected_outputs": [
+    {
+      "path": "expected/r/aggregates.csv",
+      "sha256": "b2d90f7a268cf9f968097e56ec0f5fc7b1da9c79164986b9c8f6751573c6ea6a",
+      "rows": 96,
+      "columns": 6,
+      "schema": "rt079"
+    },
+    {
+      "path": "expected/r/status.csv",
+      "sha256": "317a694fcce15a3c44c93f4aa273be8889a547a2ed57150a400015ae62578275",
+      "rows": 102,
+      "columns": 4,
+      "schema": "rt079"
+    },
+    {
+      "path": "expected/r/inffunc.csv",
+      "sha256": "b5ed0fc8d0cdb1178066e405fa5cd3abfb14a488c69d376cf75654a37874e7f7",
+      "rows": 8160,
+      "columns": 12,
+      "schema": "rt079"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "all dynamic/simple/group aggregate cells and IFs or named window/support refusals",
+      "expected": "expected/r",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "event", "unit"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "102 cases: regular, irregular, sparse, decimal and off-grid calendars; one missing cohort-event cell, no complete cohort, an event time missing for all cohorts, and decimal missing cells. Balancing requires the original eligible-cohort union of observed post-treatment event times before display limits. Both window bounds are measured in calendar units for every aggregation."
+}

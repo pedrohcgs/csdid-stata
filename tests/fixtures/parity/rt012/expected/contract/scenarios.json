@@ -1,0 +1,27 @@
+[
+  {
+    "scenario": "balanced-covariate-optimized",
+    "input": "input.csv",
+    "expected_behavior": "balanced panel covariate requested-fast path equals nofast and fast_used is 1"
+  },
+  {
+    "scenario": "rc-covariate-optimized",
+    "input": "input.csv",
+    "expected_behavior": "repeated-cross-section covariate requested-fast path equals nofast and fast_used is 1"
+  },
+  {
+    "scenario": "unbalanced-covariate-optimized",
+    "input": "input-unbalanced.csv",
+    "expected_behavior": "unbalanced panel covariate requested-fast path equals nofast and fast_used is 1"
+  },
+  {
+    "scenario": "real-fast-no-covariate-reg",
+    "input": "input.csv",
+    "expected_behavior": "balanced panel no-covariate method(reg) requested-fast path uses fast engine and equals baseline"
+  },
+  {
+    "scenario": "aggregation-optimized",
+    "input": "input.csv",
+    "expected_behavior": "simple/group/dynamic/calendar aggregation after requested-fast covariate run equals nofast aggregation"
+  }
+]

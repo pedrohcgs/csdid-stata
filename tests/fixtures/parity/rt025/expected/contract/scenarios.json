@@ -1,0 +1,17 @@
+[
+  {
+    "scenario": "rc-requested-fast-optimized",
+    "input": "input.csv",
+    "expected_behavior": "repeated-cross-section requested-fast ATT(g,t) equals nofast and fast_used is 1"
+  },
+  {
+    "scenario": "unbalanced-requested-fast-optimized",
+    "input": "input-unbalanced.csv",
+    "expected_behavior": "unbalanced panel requested-fast ATT(g,t) equals nofast and fast_used is 1"
+  },
+  {
+    "scenario": "input-row-order-invariance",
+    "input": "input-shuffled.csv",
+    "expected_behavior": "baseline ATT(g,t) is invariant to deterministic row shuffling"
+  }
+]

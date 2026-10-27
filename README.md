@@ -30,7 +30,7 @@ net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata
 ```
 
 `Stata module` |
-`version 2.0.1` |
+`version 2.0.2` |
 [Getting started](#getting-started) |
 [Install](#install) |
 [A short example](#a-short-example) |
@@ -76,7 +76,7 @@ but installing over a package Stata still tracks leaves two csdid entries
 behind, and a later `ado uninstall csdid` then refuses (the name matches two
 entries) or removes the wrong one.
 
-Confirm that the installed version is 2.0.1 with:
+Confirm that the installed version is 2.0.2 with:
 
 ```stata
 csdid version
@@ -218,6 +218,8 @@ restore
 ```
 
 ## Speed
+
+The following measurements describe version 2.0.1.
 
 Measured against **csdid Version 1.82** &mdash; the last revision of the 1.8x
 line, November 2025 &mdash; on 22 October 2026, on the same machine and data, with seven timed
@@ -397,7 +399,7 @@ For the software, cite the version you actually ran (report it with
 @misc{csdidStata,
   author = {Callaway, Brantly and Rios-Avila, Fernando and Sant'Anna, Pedro H. C.},
   title  = {csdid: Difference-in-Differences with Multiple Time Periods in Stata},
-  note   = {Stata module, version 2.0.1},
+  note   = {Stata module, version 2.0.2},
   year   = {2026},
   url    = {https://github.com/pedrohcgs/csdid-stata}
 }

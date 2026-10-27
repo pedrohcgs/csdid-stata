@@ -28,7 +28,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0"
       }
     }
@@ -38,7 +38,7 @@
     {
       "path": "expected/r/aggregation_status.csv",
       "schema": "aggregation_status",
-      "sha256": "bc9d90774277fa1f11ade602ba03505e0328a2ea7a95544be473e3d8491ba744"
+      "sha256": "f0a8b79f6c52a0ef97cc92a164e1d3fb29e59b3eea2621f41ae3fc7b5f987c95"
     }
   ],
   "comparison_plan": [

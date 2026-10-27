@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.1 23oct2026
+*! csdid_stats 2.0.2 27oct2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -154,7 +154,7 @@ program define _csdid_stats_main, eclass
     * from() is unsupported by design; see csdid.ado for the full rationale.
     * Legacy accepted it on the simple, group and calendar aggregations.
     if `"`from'"' != "" {
-        display as error "from() is no longer supported; it set a lower event-time bound on the simple, group and calendar aggregations, which is now fixed at event time 0 -- the legacy default from(0) already was. Use window(# #) with type(dynamic) for event-time windows."
+        display as error "from() is no longer supported; use window(# #) or min_e()/max_e() with type(simple), type(group), or type(dynamic) for event-time windows. The calendar aggregation does not use event-time windows."
         exit 198
     }
     if `"`using'"' != "" {
@@ -555,6 +555,10 @@ program define _csdid_stats_main, eclass
         * quietly; the estat route was given the same treatment already.
         display as error "warning:`cal_ignored' is ignored for type(calendar); the full calendar aggregation is reported"
     }
+    if inlist("`type'", "simple", "group") & `balance_e_specified' {
+        local ignored_balance = cond(`balance_given', "balance()", "balance_e()")
+        display as error "warning: `ignored_balance' is ignored for type(`type'); it only applies to type(dynamic)"
+    }
     local na_rm_flag = ("`na_rm'" != "")
     local use_cluster = ("`e(clustervar)'" != "")
     * An abbreviation csdid itself accepted names the same variable here.
@@ -665,12 +669,17 @@ program define _csdid_stats_main, eclass
     * "missing values found in ATT(g,t) estimates", ...) arrived with two
     * lines of Mata frames stapled underneath it. Run it under -capture- and
     * re-raise the diagnosis from the ado.
-    capture scalar drop CSDID_AGG_BAL_DRIFT CSDID_AGG_BAL_VANISH
-    global CSDID_AGG_BAL_DRIFT_LIST
-    global CSDID_AGG_BAL_VANISH_LIST
+    local __csdid_agg_diagnosis ""
     capture mata: csdid_aggte("`type'", `min_e', `max_e', `balance_e', `na_rm_flag', `use_cluster', `use_cache', "`aggte'", "`agg_inffunc'", `agg_store_large')
     local aggte_rc = _rc
     if `aggte_rc' {
+        * The kernel supplies diagnoses that depend on the original support,
+        * before dropmissing and windowing. Repeating that settling here
+        * would create a second rule for which cohorts can be balanced.
+        if `"`__csdid_agg_diagnosis'"' != "" {
+            display as error `"`__csdid_agg_diagnosis'"'
+            exit `aggte_rc'
+        }
         * no caller-supplied remedy means the user typed csdid_stats
         * themselves; name this command's own retype, keeping the saved-RIF
         * path's `using' -- without it the advice would tell a RIF user to
@@ -706,31 +715,6 @@ program define _csdid_stats_main, eclass
             bale(`balance_e') narm(`na_rm_flag') usecache(`use_cache') ///
             remedy(`remedy')
         exit `aggte_rc'
-    }
-    * Owner decision 2026-08-28: when dropmissing removed an estimated cell
-    * INSIDE the balanced window, the balanced profile's cohort composition
-    * differs across the event times it reports -- announced here, error-styled
-    * so it survives a caller's `quietly' (a composition property of the
-    * reported table changed; the rule stated at the bal() drop in csdid.ado
-    * applies identically).
-    capture confirm scalar CSDID_AGG_BAL_DRIFT
-    if !_rc {
-        local bal_drift = scalar(CSDID_AGG_BAL_DRIFT)
-        scalar drop CSDID_AGG_BAL_DRIFT
-        local bal_drift_list `"$CSDID_AGG_BAL_DRIFT_LIST"'
-        global CSDID_AGG_BAL_DRIFT_LIST
-        local bal_drift_more ""
-        if `bal_drift' > 5 local bal_drift_more "; ..."
-        display as error `"warning: `bal_drift' missing cell(s) fall inside the balance(`balance_e') window (`bal_drift_list'`bal_drift_more'), so under dropmissing their cohorts leave those event times while remaining in the rest of the window: the balanced profile's cohort composition differs across event times. See e(attgt) for the missing cells."'
-    }
-    * Owner decision 2026-09-26: an event time of the balanced window that
-    * lost every cell to dropmissing is not reported. Say so; do not stop.
-    capture confirm scalar CSDID_AGG_BAL_VANISH
-    if !_rc {
-        scalar drop CSDID_AGG_BAL_VANISH
-        local bal_vanish_list `"$CSDID_AGG_BAL_VANISH_LIST"'
-        global CSDID_AGG_BAL_VANISH_LIST
-        display as error `"warning: under dropmissing no estimated cell is left at event time(s) `bal_vanish_list' of the balance(`balance_e') window, so those event times are not reported and the post-treatment average covers only the event times that remain. See e(attgt) for the missing cells."'
     }
     capture confirm scalar e(bstrap)
     local bstrap = 0
@@ -1281,7 +1265,7 @@ program define _csdid_stats_main, eclass
         local overall_se_missing = missing(`aggte'[1, 5])
     }
     if `n_se_total' > 0 & `n_se_missing' == `n_se_total' & `overall_se_missing' {
-        display as text "note: every standard error in this type(`type') aggregation is missing, because the ATT(g,t) estimates it aggregates have none. The usual causes are a cohort with a single comparison unit, a perfectly collinear covariate design, or an outcome measured on a very small scale: a standard error of 1.49e-7 or less is reported as missing, so rescale the outcome (for example, multiply it by 1e6). The point estimates below are still valid: they are the aggregation of the ATT(g,t) estimates."
+        display as text "note: every standard error in this type(`type') aggregation is missing, because the influence functions are degenerate or nonfinite. The usual causes are a cohort with a single comparison unit or a perfectly collinear covariate design. Inspect the ATT(g,t) estimates and their standard errors in e(attgt)."
     }
     local n_aggte = rowsof(`aggte')
     ereturn matrix aggte = `aggte'
@@ -1324,10 +1308,8 @@ end
 * the kernel's wording and its check order. It never aborts: if the probe
 * itself fails it is discarded and the caller falls back to a generic message,
 * so a probe defect can never turn a working aggregation into a refusal.
-* type(group) follows csdid__Agg::agg_group step for step: the raw-calendar
-* screen under dropmissing, then each admitted cohort's window on the rank
-* grid of periods, base periods and admitted cohorts. The two windows differ
-* when periods sit less than one time() unit apart.
+* type(group) keeps the addition-form cohort screen and the subtraction-form
+* final keeper: a decimal-boundary cell can pass one and fail the other.
 * Mirror of csdid_stats's own syntax line, minus the `*' catch-all and the
 * options this command parses by hand out of `options' (min_e(), max_e(),
 * balance_e(), cluster()/clustervars(), na_rm/na.rm/dropmissing). A leftover
@@ -1389,25 +1371,21 @@ program define _csdid_stats_aggfail
             } ///
             if (__csdid_pM == "" & rows(__csdid_pA) > 0) { ///
                 if ("`type'" == "simple") { ///
-                    if (sum((__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pA[., 2] :<= __csdid_pA[., 1] :+ (`maxe'))) == 0) __csdid_pM = "no valid ATT(g,t) estimates found for simple aggregation"; ///
+                    if (sum((__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pA[., 3] :>= (`mine')) :& (__csdid_pA[., 3] :<= (`maxe'))) == 0) __csdid_pM = "no valid ATT(g,t) estimates found for simple aggregation"; ///
                 } ///
                 if ("`type'" == "group") { ///
                     __csdid_pG = st_matrix("e(group_prob)"); ///
                     if (rows(__csdid_pG) > 0) { ///
                         __csdid_pS = J(rows(__csdid_pG), 1, 1); ///
                         for (__csdid_pI = 1; __csdid_pI <= rows(__csdid_pG); __csdid_pI++) { ///
-                            __csdid_pK = sum((__csdid_pA[., 1] :== __csdid_pG[__csdid_pI, 1]) :& (__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pA[., 2] :<= __csdid_pA[., 1] :+ (`maxe'))); ///
+                            __csdid_pK = sum((__csdid_pA[., 1] :== __csdid_pG[__csdid_pI, 1]) :& (__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pA[., 2] :>= __csdid_pA[., 1] :+ (`mine')) :& (__csdid_pA[., 2] :<= __csdid_pA[., 1] :+ (`maxe'))); ///
                             if (__csdid_pK == 0 & `narm' != 0) __csdid_pS[__csdid_pI] = 0; ///
                         } ///
                         if (sum(__csdid_pS) == 0) __csdid_pM = "no valid ATT(g,t) estimates found for group aggregation"; ///
                         if (sum(__csdid_pS) > 0) { ///
-                            __csdid_pF = st_matrix("e(attgt)"); ///
-                            __csdid_pT = uniqrows(__csdid_pF[., 2] \ __csdid_pF[., 10] \ select(__csdid_pG[., 1], __csdid_pS)); ///
-                            __csdid_pR = J(rows(__csdid_pA), 1, 0); ///
-                            for (__csdid_pI = 1; __csdid_pI <= rows(__csdid_pT); __csdid_pI++) __csdid_pR = __csdid_pR + (__csdid_pA[., 2] :>= __csdid_pT[__csdid_pI]); ///
                             for (__csdid_pI = 1; __csdid_pI <= rows(__csdid_pG); __csdid_pI++) { ///
                                 if (__csdid_pS[__csdid_pI] == 1) { ///
-                                    __csdid_pK = sum((__csdid_pA[., 1] :== __csdid_pG[__csdid_pI, 1]) :& (__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pR :<= sum(__csdid_pT :<= __csdid_pG[__csdid_pI, 1]) + (`maxe'))); ///
+                                    __csdid_pK = sum((__csdid_pA[., 1] :== __csdid_pG[__csdid_pI, 1]) :& (__csdid_pA[., 1] :<= __csdid_pA[., 2]) :& (__csdid_pA[., 3] :>= (`mine')) :& (__csdid_pA[., 3] :<= (`maxe'))); ///
                                     if (__csdid_pK == 0) __csdid_pM = "no valid ATT(g,t) estimates found for group aggregation"; ///
                                 } ///
                             } ///
@@ -1813,7 +1791,7 @@ program define _csdid_stats_load_rif, eclass
     ereturn local marginsnotok "_ALL"
     ereturn local rif_file `"`using'"'
     ereturn local cmdline `"`cmdline'"'
-    ereturn local version "2.0.1"
+    ereturn local version "2.0.2"
     ereturn local panel_mode "`panel_mode'"
     ereturn local control_group "`control_group'"
     ereturn local method "`method'"

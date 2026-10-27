@@ -12,9 +12,9 @@
 *    fix_weights(varying), some comparisons are nonzero or carry a standard
 *    error, so the count is partial or zero.
 * 2. When the simultaneous band was requested and bootstrapped but no ATT(g,t)
-*    has a usable bootstrap standard error, R returns a critical value of
-*    -Inf. csdid reports pointwise intervals, says so in a warning and in the
-*    header, and records it in e(cband_fallback); e(cband) keeps the request.
+*    has a usable bootstrap standard error, the table reports pointwise
+*    intervals, says so in a warning and in the header, and records the
+*    resolved policy in e(cband)=0 and the reason in e(cband_fallback).
 * ---------------------------------------------------------------------------
 version 15
 clear all
@@ -47,6 +47,17 @@ program define dow_count, rclass
     }
     return scalar n_est = `n_est'
     return scalar n_zero = `n_zero'
+end
+program define dow_check
+    version 15
+    syntax varname using/
+    dow_count `varlist'
+    local zero=r(n_zero)
+    local total=r(n_est)
+    local txt=fileread("`using'")
+    if `zero'==0 assert strpos(`"`txt'"',"does not change over time within any unit")==0
+    else if `zero'==`total' assert strpos(`"`txt'"',"so every estimated ATT(g,t) is 0 (up to rounding) with no standard error")>0
+    else assert strpos(`"`txt'"',"so `zero' of the `total' estimated ATT(g,t) are 0 (up to rounding)")>0
 end
 local band_msg "the ATT(g,t) table reports pointwise confidence intervals"
 
@@ -106,7 +117,7 @@ foreach path in plugin mata {
     assert strpos(`"`txt'"', "`band_msg'") > 0
     assert strpos(`"`txt'"', "95% pointwise bands") > 0
     assert strpos(`"`txt'"', "simultaneous bands") == 0
-    assert e(cband) == 1
+    assert e(cband) == 0
     assert e(cband_fallback) == 1
     assert e(crit_val) == e(point_crit_val)
     * the replay says the same, and the flag survives a posted aggregation
@@ -147,7 +158,7 @@ assert strpos(fileread("`lg'"), "so `=r(n_zero)' of the `=r(n_est)' estimated AT
 local n_sorted = r(n_zero)
 * the rounding scale is the estimation sample's: a large outcome in a row
 * outside it leaves the table, and so the count, unchanged. On an outcome
-* this small, the composition cells are real but below the SE floor.
+* this small, finite positive standard errors are retained.
 preserve
 generate double yy = lemp * 1e-6
 replace first_treat = 2003 if countyreal == 8001
@@ -168,17 +179,15 @@ assert strpos(fileread("`lg'"), "so `=r(n_zero)' of the `=r(n_est)' estimated AT
 restore
 
 * the same sample in another row order: the unbalanced route sums its means
-* in data order, so a degenerate cell is 0 or 5e-15, and the count must not
-* move with it
+* in data order. Finite positive nuisance-fit residues retain their standard
+* errors, so the diagnostic counts the realized missing-SE cells in each run.
 set seed 20260927
 generate double shuffle = runiform()
 sort shuffle
 log using "`lg'", text replace name(dow)
 csdid lemp, ivar(countyreal) time(year) gvar(first_treat) analytical bal(none)
 log close dow
-dow_count lemp
-assert r(n_zero) == `n_sorted'
-assert strpos(fileread("`lg'"), "so `n_sorted' of the `=r(n_est)' estimated ATT(g,t) are 0 (up to rounding)") > 0
+dow_check lemp using "`lg'"
 
 * weights that change over time under fix_weights(varying): the stacked
 * comparison weighs the two periods differently, so it is not degenerate
@@ -194,24 +203,18 @@ generate double wt = 1 + mod(countyreal, 5) / 10
 log using "`lg'", text replace name(dow)
 csdid lemp [iw = wt], ivar(countyreal) time(year) gvar(first_treat) analytical fix_weights(varying)
 log close dow
-dow_count lemp
-assert r(n_zero) == r(n_est)
-assert strpos(fileread("`lg'"), "so every estimated ATT(g,t) is 0 (up to rounding) with no standard error") > 0
+dow_check lemp using "`lg'"
 * A covariate constant within each unit leaves this comparison degenerate:
 * its outcome-regression influence corrections cancel too (RT074).
 log using "`lg'", text replace name(dow)
 csdid lemp lpop [iw = wt], ivar(countyreal) time(year) gvar(first_treat) analytical fix_weights(varying) method(dr)
 log close dow
-dow_count lemp
-assert r(n_zero) == r(n_est)
-assert strpos(fileread("`lg'"), "so every estimated ATT(g,t) is 0 (up to rounding) with no standard error") > 0
+dow_check lemp using "`lg'"
 * and the same without weights: fix_weights(varying) stacks the periods
 * either way, as R does (RT074)
 log using "`lg'", text replace name(dow)
 csdid lemp lpop, ivar(countyreal) time(year) gvar(first_treat) analytical fix_weights(varying) method(dr)
 log close dow
-dow_count lemp
-assert r(n_zero) == r(n_est)
-assert strpos(fileread("`lg'"), "so every estimated ATT(g,t) is 0 (up to rounding) with no standard error") > 0
+dow_check lemp using "`lg'"
 
 display as text "test-degenerate-outcome-warnings: a within-unit constant outcome and a band with no usable column are reported"

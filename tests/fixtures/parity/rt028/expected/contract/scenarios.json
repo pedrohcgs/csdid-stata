@@ -1,0 +1,37 @@
+[
+  {
+    "scenario": "mpdta_t1_column",
+    "input": "mpdta.csv",
+    "expected_behavior": "mpdta not-yet-treated regression runs before and after adding a harmless t1 column"
+  },
+  {
+    "scenario": "mpdta_missing_covariate",
+    "input": "mpdta.csv",
+    "expected_behavior": "missing covariate warning/run behavior maps to Stata complete-case preprocessing and successful estimation"
+  },
+  {
+    "scenario": "r_custom_rc1_small_group_skipped",
+    "input": "",
+    "expected_behavior": "R source uses a custom DRDID::drdid_rc1 callback on a skipped known-bug branch; no public Stata custom-estimator callback exists"
+  },
+  {
+    "scenario": "fewer_periods_than_groups",
+    "input": "fewer-periods.csv",
+    "expected_behavior": "fewer observed periods than treatment groups gives expected ATT slice and nonmissing dynamic/group/calendar aggregations"
+  },
+  {
+    "scenario": "zero_pretreatment_outcomes",
+    "input": "zero-pre.csv",
+    "expected_behavior": "pre-treatment ATT for group 9 at time 7 is zero under universal and varying base periods"
+  },
+  {
+    "scenario": "missing_formula_variable",
+    "input": "missing-var.csv",
+    "expected_behavior": "unknown covariate variable is rejected"
+  },
+  {
+    "scenario": "anticipation_window_coercion",
+    "input": "anticipation.csv",
+    "expected_behavior": "anticipation controls whether late cohort is coerced to controls or remains treated; fast-requested path agrees with baseline"
+  }
+]

@@ -1,40 +1,8 @@
-* F065 -- degeneracy is decided on the DRAWS, and the plugin decides nothing.
-*
-* R draws every influence-function column and only then asks which dimensions
-* survive: mboot l142 forms bres for all of them and keeps
-*     ndg.dim = !is.na(colSums(bres)) & colSums(bres^2) > sqrt(eps)*10
-* This file used to pin the opposite -- a screen applied to the influence
-* functions BEFORE any draw, in the C plugin, against that same absolute
-* tolerance. Two things were wrong with it. It is a second, tighter screen R
-* does not have (the draws carry biters/n_clusters times the column sum of
-* squares, so with more replications than clusters it could only delete
-* dimensions R keeps), and the plugin accumulated the sum in `long double',
-* which is not one type across the release targets: arm64 Darwin makes it a
-* 53-bit double, x86_64 and mingw give the x87 64-bit type, aarch64 Linux
-* gives IEEE binary128. The universal macOS bundle is built -arch arm64
-* -arch x86_64, so the same shipped file could answer one borderline question
-* two ways in its two slices.
-*
-* The screen is gone from the plugin rather than widened, so the platform
-* hazard is gone with it. What is pinned here is what replaced it:
-*
-*   1. The only column the plugin cannot draw is one carrying a missing value
-*      -- a failed (g,t) cell, which R never has to represent. Every other
-*      column is drawn, degenerate or not, and the Mata twin
-*      csdid__boot_drawable_cols answers the same question the same way.
-*   2. Degeneracy is then judged from the draws at R's tolerance, and a
-*      dimension below it loses its standard error.
-*   3. It also leaves the simultaneous band: the critical value is the
-*      type-1 quantile folded over the surviving dimensions only.
-*
-* The fixture is unchanged where it overlaps the old one: 100 rows, a column
-* at 1e-5 each (influence sum of squares 1e-8) and a column at 1e-3 each
-* (1e-4), either side of 1.4901161193847656e-07. A third column, 1e-3 with
-* one missing entry, is the failed cell. Both live columns are drawn from the
-* SAME multipliers, so their draws stay in exact 1:100 proportion -- which is
-* how this file now detects a reintroduced pre-draw screen: the screened
-* column would come back all zeros instead.
-
+* F065: every finite nonzero bootstrap dimension survives outcome scaling.
+* The plugin draws both proportional live columns and zeroes only the column
+* with missing input. Degeneracy is then decided from finite positive IQRs,
+* without an absolute sum-of-squares cutoff. The two live columns have
+* proportional draws and equal studentized statistics.
 version 15
 clear all
 set more off
@@ -141,7 +109,7 @@ mata:
     st_numscalar("f065_se2", f065_att[2, 5])
     st_numscalar("f065_crit", f065_crit)
 
-    // the same quantile, folded by hand over the surviving dimension only
+    // Both proportional live dimensions give the same sup-t statistic.
     f065_scaled = sort(abs(f065_b[., 2] :/ f065_s2), 1)
     st_numscalar("f065_q95", f065_scaled[ceil(.95 * 20)])
 end
@@ -149,15 +117,15 @@ end
 * The draws, not the influence functions, decide it.
 assert scalar(f065_ss1) <= scalar(f065_tol)
 assert scalar(f065_ss2) > scalar(f065_tol)
-assert missing(scalar(f065_sig1))
+assert !missing(scalar(f065_sig1))
 assert !missing(scalar(f065_sig2))
+assert reldif(scalar(f065_sig2),100*scalar(f065_sig1))<=1e-14
 
-* A dropped dimension reports no standard error; a surviving one reports
-* sigma / sqrt(n).
-assert missing(scalar(f065_se1))
+* Both live dimensions report sigma / sqrt(n).
+assert reldif(scalar(f065_se1),scalar(f065_sig1)/10)<=1e-15
 assert reldif(scalar(f065_se2), scalar(f065_sig2) / 10) <= 1e-15
 
-* The band folds over the surviving dimension only.
+* Both proportional dimensions give the same studentized band quantile.
 assert reldif(scalar(f065_crit), scalar(f065_q95)) <= 1e-15
 
 display as text "test-f065: draws-based degeneracy screen OK"

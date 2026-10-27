@@ -38,7 +38,7 @@ program define source_switch_write
     file open `fh' using "`directory'/csdid.mata", write replace text
     file write `fh' "version 14" _n "mata:" _n
     file write `fh' "real matrix csdid__mean(real matrix x) return(mean(x))" _n
-    file write `fh' `"string scalar csdid_mlib_version() return("2.0.1|source")"' _n
+    file write `fh' `"string scalar csdid_mlib_version() return("2.0.2|source")"' _n
     file write `fh' "real scalar csdid__source_switch_witness() return(`value')" _n
     file write `fh' "end" _n
     file close `fh'

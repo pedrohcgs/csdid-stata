@@ -1,13 +1,7 @@
-* F071 -- max_e counts OBSERVED PERIODS on the simple and group aggregations,
-* and raw calendar event time on the dynamic one, exactly as R does
-* (cold-audit round 4, F1; compute.aggte.R rank-recodes its keepers).
-*
-* On periods {1,3,5} with cohort g=3, the two post cells sit at raw event
-* times 0 and 2 but period ranks 0 and 1 apart. R's simple and group
-* aggregations under max_e(1) therefore keep BOTH cells; its dynamic
-* aggregation under the same max_e keeps only e=0. csdid's raw-calendar
-* keeper kept one cell on all three routes; each row below now pins the
-* frozen R oracle number.
+* F071 -- max_e uses original calendar event time for every aggregation.
+* On periods {1,3,5}, cohort 3 has event times 0 and 2; max_e(1) keeps only
+* event time 0 for simple, group and dynamic. Unrestricted simple retains
+* both cells. Each result is pinned to the authenticated R reference.
 
 version 15
 clear all
@@ -43,10 +37,8 @@ forvalues i = 1/`nspec' {
     display as text "f071 `tag_`i'': overall matches R"
 }
 
-* two cohorts on the gapped calendar with dropmissing: the rank grid must be
-* the ORIGINAL period grid (cell times and base times over the unfiltered
-* table), not the surviving cell times -- round-11 differential: R and csdid
-* agree to 1e-8 on both routes only with the full grid.
+* Two cohorts on the gapped calendar with dropmissing use the same
+* original-calendar window and are compared with regenerated R values.
 import delimited using "`root'/tests/fixtures/parity/f071/inputs/input-twocohort.csv", clear asdouble varnames(1)
 quietly csdid y, ivar(id) time(time) gvar(g) analytical nevertreated
 preserve
@@ -69,4 +61,4 @@ forvalues i = 1/`tcn' {
     display as text "f071 `tctag_`i'': overall matches R"
 }
 
-display as text "test-f071: max_e keeps R's period-rank keepers on simple and group, and R's raw event times on dynamic"
+display as text "test-f071: max_e uses original-calendar event time on simple, group and dynamic"

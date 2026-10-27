@@ -251,9 +251,10 @@ assert "`e(cmd)'" == ""
 
 * rcs: the identifier is signed and a changed identifier refuses
 import delimited using "`root'/tests/fixtures/parity/f034/inputs/input.csv", clear asdouble
-quietly csdid y x1, ivar(id) time(time) gvar(g) rcs method(dr) analytical notyet
-assert strpos(" `e(datasignaturevars)' ", " id ") > 0
-quietly replace id = id + 100000
+generate long obsid = _n
+quietly csdid y x1, ivar(obsid) time(time) gvar(g) rcs method(dr) analytical notyet
+assert strpos(" `e(datasignaturevars)' ", " obsid ") > 0
+quietly replace obsid = obsid + 100000
 capture estat summarize
 assert _rc == 459
 

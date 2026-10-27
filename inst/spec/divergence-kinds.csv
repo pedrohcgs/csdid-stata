@@ -55,3 +55,10 @@ RT025-DIV001,internal-api,Hidden did.disable_precompute/get_wide_data legacy pat
 RT028-DIV001,language-surface,Custom function-valued estimator in a skipped upstream branch
 RT029-DIV001,upstream-not-a-test,Legacy executable script rather than testthat expectations
 RT030-DIV001,upstream-not-a-test,Legacy exploratory R Markdown rather than testthat expectations
+RT081-EXC001,stata-surface,Approved minimum bootstrap count excludes biters=1 requests
+RT081-EXC002,language-surface,Custom estimator callbacks have no Stata API
+RT081-EXC003,internal-api,Private pretreatment_only filter belongs to the R conditional pretest
+RT081-EXC004,stata-surface,No legacy conditional_did_pretest command or conditional-moment test object
+RT081-EXC005,language-surface,R data.table expression scoping has no Mata evaluator analogue
+RT081-EXC006,stata-surface,R allow_unbalanced_panel reset messages have no matching Stata flag
+RT082-DIV001,stata-surface,Visible conservative cell refusal at a backend-dependent numerical-singularity cutoff

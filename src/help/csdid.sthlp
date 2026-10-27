@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.1 23oct2026}{...}
+{* *! version 2.0.2 27oct2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -350,6 +350,13 @@ value) to disable trimming entirely; this is the level earlier versions of
 {cmd:csdid} used by default. This is an overlap safeguard, not a specification
 choice: if it binds often, the overlap assumption is in doubt.
 
+{pstd}
+A comparison whose covariate design is numerically singular is left missing,
+with a warning naming its cohort and period. With extremely collinear
+covariates, rounding at the conditioning cutoff can determine whether a
+comparison is estimable. Inspect redundant terms and consider centering or
+rescaling the covariates before re-estimating.
+
 {phang}
 {opt fix_weights(rule)} controls how {cmd:iweight}s are applied over time in
 panel data. {it:rule} may
@@ -516,8 +523,9 @@ between two otherwise identical runs.
 simultaneous ({it:uniform}) bands. Pointwise
 intervals are correct one at a time; the default bands cover the whole family
 of ATT(g,t) simultaneously and are what you want when reading a table or a
-plot as a whole. {cmd:e(cband)} and {cmd:e(pointwise)} record which was
-requested, {cmd:e(crit_val)} holds the critical value actually applied, and
+plot as a whole. {cmd:e(cband)} records the resolved band policy and
+{cmd:e(pointwise)} records the request. {cmd:e(cband)} is 0 on a two-period
+time grid and after an unavailable-band fallback. {cmd:e(crit_val)} holds the critical value actually applied, and
 after a bootstrap {cmd:e(cband_fallback)} is 1 when a requested band could not
 be built and the intervals are pointwise.
 
@@ -736,11 +744,16 @@ genuinely exists.
 
 {phang2}
 With {cmd:rcs} the declaration is explicit, and {cmd:ivar()} may be supplied
-alongside it. The identifier is then checked and used to exclude observations
+alongside it. Its nonmissing values must be unique across all observations in
+the requested sample, including observations later excluded for missing data.
+For units observed repeatedly, omit {cmd:rcs}; {cmd:bal(none)} accommodates an
+incomplete panel. The identifier is checked and used to exclude observations
 where it is missing, but it does not enter estimation: each observation is
 treated as its own unit. {cmd:e(idvar)} is therefore empty and
 {cmd:e(panel_mode)} is {cmd:repeated-cross-section}. To put the identifier back
-into the standard errors, use {cmd:cluster()}.
+into the standard errors, use {cmd:cluster()}. A repeated cluster code belongs
+in {cmd:cluster()}, with a unique observation identifier in {cmd:ivar()} or
+with {cmd:ivar()} omitted.
 
 {phang2}
 Repeated cross sections have nothing to balance, so {cmd:rcs} implies
@@ -788,10 +801,9 @@ each mode does. Nothing else is accepted inside {cmd:bal()}.
 {opt from(#)} was a lower bound on event time for the simple, group and
 calendar aggregations. It is rejected with return code 198 and a message
 naming the replacement, on {cmd:csdid}, {helpb csdid_stats} and
-{helpb csdid_estat} alike. There is no equivalent: those three aggregations
-are defined from event time 0 upward, so a lower bound below that has nothing
-to restrict and a bound above it would silently redefine the estimand. Use
-{cmd:window(}{it:# #}{cmd:)} with {cmd:type(dynamic)} for an event-time window.
+{helpb csdid_estat} alike. Use {cmd:window(}{it:# #}{cmd:)} on the simple,
+group, or dynamic aggregation instead. The calendar aggregation does not
+use event-time windows.
 
 {phang}
 {cmd:dryrun} was an internal option in the legacy package. It is rejected with
@@ -1426,10 +1438,9 @@ of {cmd:e(attgt)} -- it is the row whose {cmd:base_time} equals its own
 only when the reference period happens to be exactly one time unit before
 {it:g}. Cells with a missing estimate are excluded as well. Note that a
 genuine cell can still have a missing standard error when its influence
-function is degenerate; its variance is then posted as zero. A standard error
-of 1.49e-7 or less (ten times the square root of machine epsilon) counts as
-degenerate, so an outcome measured on a very small scale can lose every
-standard error; rescaling the outcome restores them.{p_end}
+function is degenerate or nonfinite; its variance is then posted as zero.
+Every finite positive standard error is retained, regardless of the outcome's
+measurement units.{p_end}
 
 {phang2}
 o {bf:Immediate aggregation.} {cmd:agg()} accepts only {cmd:event} and
@@ -1773,8 +1784,9 @@ analytical{p_end}
 {synopt:{cmd:e(biters)}}number of bootstrap iterations (0 when analytical){p_end}
 {synopt:{cmd:e(reps)}}number of bootstrap iterations, under the name Stata's
 own {helpb bootstrap} uses {it:(conditional: bootstrap)}{p_end}
-{synopt:{cmd:e(cband)}}1 when simultaneous bands were requested, that is
-whenever {cmd:pointwise} was not typed. Under {cmd:analytical} no simultaneous
+{synopt:{cmd:e(cband)}}1 when the resolved policy requests simultaneous bands;
+0 under {cmd:pointwise}, on a two-period time grid, or after an unavailable-band
+fallback. Under {cmd:analytical} no simultaneous
 band is computed and {cmd:e(crit_val)} is the normal quantile, so before any
 aggregation read {cmd:e(crit_val)} against {cmd:e(point_crit_val)} to tell
 whether a band was actually built{p_end}
@@ -2094,11 +2106,10 @@ posted cell whose standard error is missing has its row and column of
 
 {pstd}
 {bf:Parallel-trends pre-test.} Let {it:P} index the pre-treatment cells, those
-with {it:t < g}, and let {it:V} be the analytical influence-function covariance
+with {it:t < g - anticipation}, and let {it:V} be the analytical influence-function covariance
 matrix of the ATT(g,t) estimates, {it:V = (1/n) sum_i psi(W_i) psi(W_i)'},
 formed from cluster sums under {cmd:cluster()}. Cells whose implied standard
-error {it:sqrt(V_jj / n)} is missing or no greater than ten times the square
-root of machine epsilon (about 1.49e-7) are dropped from {it:P}. With {it:q}
+error {it:sqrt(V_jj / n)} is missing or nonpositive are dropped from {it:P}. With {it:q}
 cells left and {it:a} the vector of their estimates,
 
 {p 12 12 2}
@@ -2183,7 +2194,7 @@ Sant'Anna. 2026. Difference-in-differences designs: A practitioner's guide.
 {phang}
 Callaway, B., F. Rios-Avila, and P. H. C. Sant'Anna. 2026. csdid:
 Difference-in-Differences with Multiple Time Periods in Stata. Stata module,
-version 2.0.1.
+version 2.0.2.
 {browse "https://github.com/pedrohcgs/csdid-stata"}.
 {p_end}
 

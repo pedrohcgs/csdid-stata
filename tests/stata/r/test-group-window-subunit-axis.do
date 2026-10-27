@@ -1,10 +1,8 @@
-* RT071 -- type(group) with max_e() and dropmissing on a sub-unit-spaced axis.
-* R screens cohorts on the raw calendar, g <= t <= g + max_e, and then averages
-* the cells whose RANK lies within max_e of the cohort's. With periods less than
-* one time() unit apart the raw window is the wider one, so cohort 1.7 -- its
-* cells at 1.7 and 2.2 missing, its cell at 2.7 estimated -- passes the screen
-* with nothing to average, and R stops. csdid left the cohort out without a
-* word and reported an overall ATT over the other three.
+* RT071 -- group max_e() and dropmissing on a sub-unit-spaced calendar.
+* The reference cohort screen compares t <= g + max_e and its final keeper
+* compares t - g <= max_e. At g=1.7, t=2.7, max_e=1 these differ by rounding:
+* the cohort passes the screen but has no final cell. The named window
+* refusal and every successful original-calendar-window result are pinned.
 version 15
 clear all
 set more off
@@ -38,7 +36,7 @@ save `expected'
 import delimited using "`fx'/expected/r/refusals.csv", clear varnames(1)
 assert _N == 2
 assert case == "group_maxe1_narm" in 1
-assert strpos(message, "No valid att_gt() estimates found for this aggregation") == 1 in 1
+assert strpos(message, "No group-time average treatment effects fall within the requested window for group(s) 1.7") == 1 in 1
 assert case == "group_maxe1" in 2
 
 import delimited using "`fx'/inputs/subunit_axis.csv", clear asdouble varnames(1)

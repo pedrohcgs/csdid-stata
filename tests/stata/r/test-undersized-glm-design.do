@@ -1,13 +1,15 @@
-* RT076 -- DRDID 1.4.0 strict physical GLM dimensions and square controls.
+* RT076 -- GLM dimensions, normalized RC support and square controls.
 version 15
 clear all
 set more off
 set linesize 255
+args engine_source
 local root "`c(pwd)'"
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 local fx "`root'/tests/fixtures/parity/rt076"
-_csdid_engine_load
+if `"`engine_source'"' != "" quietly do "`engine_source'"
+else _csdid_engine_load
 quietly mata: csdid__globals_init()
 
 mata:
@@ -20,7 +22,7 @@ real colvector rt076_dr_panel(real colvector y1, real colvector y0,
     real matrix hi, xi
     real colvector w, ps, wt, wc, keep, b
     n = rows(d)
-    if (csdid__rcond_fail(x, d)) return(. \ J(n, 1, .) \ 2)
+    if (csdid__rcond_fail(x, d, raw)) return(. \ J(n, 1, .) \ 2)
     if (sum(d :== 0) < cols(x)) return(. \ J(n, 1, .) \ 7)
     w = csdid__normalize_weights(raw)
     b = csdid__logit_fit(d, x, w)
@@ -111,6 +113,7 @@ forvalues k = 1/162 {
     local method = method[`k']
     local good = good[`k']
     local physical = physical[`k']
+    local guard_status = guard_status[`k']
     display as text "RT076 case `k': `scenario' method(`method') good=`good' physical=`physical'"
     use `expected' if scenario == "`scenario'" & method == "`method'", clear
     assert _N == 1
@@ -140,9 +143,9 @@ forvalues k = 1/162 {
         assert rt076_status != 0
     }
     if `physical' {
-        * This status and exact warning fail on the pre-1.4.0 source even
-        * where its old inverse guards already refuse the same numeric cell.
-        assert rt076_status == 7
+        * The current did RC guard names positive normalized support and
+        * precedes overlap and pooled rank, including square physical blocks.
+        assert rt076_status == `guard_status'
         use `expected_warnings' if scenario == "`scenario'" & method == "`method'", clear
         assert _N == 2
         assert message[1] == message[2]
@@ -202,6 +205,7 @@ forvalues k = 1/12 {
     mkmat group time att se, matrix(R_A)
     import delimited using "`fx'/inputs/`scenario'.csv", clear asdouble varnames(1)
     mata: rt076_wide_fit()
+    display as text "RT076 wide measured status=" rt076_status
     assert rt076_status == `want_status'
     local structure "rcs"
     if "`mode'" == "panel" local structure "ivar(id)"

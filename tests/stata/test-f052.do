@@ -20,7 +20,8 @@ local FIX "`root'/tests/fixtures/parity/f052"
 * -----------------------------------------------------------------------
 import delimited using "`FIX'/inputs/input.csv", clear asdouble
 local sample_n = _N
-csdid y, time(time) gvar(g) ivar(id) rcs method(reg) analytical ///
+generate long obsid = _n
+csdid y, time(time) gvar(g) ivar(obsid) rcs method(reg) analytical ///
     nevertreated base_period(varying)
 
 assert "`e(panel_mode)'" == "repeated-cross-section"
@@ -107,12 +108,13 @@ assert scalar(d_noid) == 0
 * 4. Options that describe a panel conflict with rcs and say so.
 * -----------------------------------------------------------------------
 import delimited using "`FIX'/inputs/input.csv", clear asdouble
+generate long obsid = _n
 foreach bad in "bal(full)" "bal(pair)" "fixweights(base)" "fixweights(first)" {
-    capture csdid y, time(time) gvar(g) ivar(id) rcs `bad' method(reg) analytical
+    capture csdid y, time(time) gvar(g) ivar(obsid) rcs `bad' method(reg) analytical
     assert _rc == 198
 }
 * bal(none) says the same thing rcs already implies, so it is accepted.
-capture csdid y, time(time) gvar(g) ivar(id) rcs bal(none) method(reg) analytical
+capture csdid y, time(time) gvar(g) ivar(obsid) rcs bal(none) method(reg) analytical
 assert _rc == 0
 
 * -----------------------------------------------------------------------
@@ -120,7 +122,8 @@ assert _rc == 0
 *    identifier back into the standard errors if that is what you want.
 * -----------------------------------------------------------------------
 import delimited using "`FIX'/inputs/input.csv", clear asdouble
-csdid y, time(time) gvar(g) ivar(id) rcs cluster(id) method(reg) analytical
+generate long obsid = _n
+csdid y, time(time) gvar(g) ivar(obsid) rcs cluster(id) method(reg) analytical
 assert "`e(panel_mode)'" == "repeated-cross-section"
 assert e(N_clusters) == 45
 

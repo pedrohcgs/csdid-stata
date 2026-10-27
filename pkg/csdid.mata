@@ -1,4 +1,4 @@
-*! csdid 2.0.1 23oct2026
+*! csdid 2.0.2 27oct2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -76,11 +76,11 @@ mata:
 // callersversion() split with the old body kept in its own version block
 // ([M-3] lmbuild, "Version control") -- never a hard edit.
 //
-// HOW MANY NAMES, and why the count is worth keeping. 138 free functions and
+// HOW MANY NAMES, and why the count is worth keeping. 141 free functions and
 // three classes: `mata mlib add csdid*()' writes one library member per free
-// function and ONE per class, so the compiled library holds 141 top-level
+// function and ONE per class, so the compiled library holds 144 top-level
 // names and the 28 class methods travel inside the three classdef entries
-// rather than beside them (169 members in all: 21 methods on csdid__Agg,
+// rather than beside them (172 members in all: 21 methods on csdid__Agg,
 // 3 on csdid__Boot, 4 on csdid__Engine). Mata answers a global name it
 // is not already holding by walking c(matalibs), so each free name is a
 // first-call lookup a session pays once and a method is not.
@@ -142,6 +142,33 @@ real scalar csdid__mean(real colvector x)
     return(mean(x))
 }
 
+real scalar csdid__mean_ordered(real colvector x)
+{
+    real scalar n, i, center, correction
+
+    // R summary.c real_mean(): ordered accumulation followed by the bias
+    // correction. Mata mean() uses quadcross instead. The distinction is
+    // observable when stacked pre/post IFs cancel: positive roundoff-scale
+    // variances survive the reference's no-absolute-cutoff rule (RT074).
+    // Only the exact-zero folded-IF retry enters these row loops.
+    n = rows(x)
+    if (n == 0 | hasmissing(x)) return(.)
+    center = 0
+    for (i = 1; i <= n; i++) center = center + x[i]
+    if (center >= .) {
+        center = 0
+        for (i = 1; i <= n; i++) center = center + x[i] / n
+        if (center >= .) return(.)
+        correction = 0
+        for (i = 1; i <= n; i++) correction = correction + (x[i] - center) / n
+        return(center + correction)
+    }
+    center = center / n
+    correction = 0
+    for (i = 1; i <= n; i++) correction = correction + (x[i] - center)
+    return(center + correction / n)
+}
+
 
 // ---------------------------------------------------------------------------
 // What the compiled library says it is.
@@ -165,7 +192,7 @@ real scalar csdid__mean(real colvector x)
 // ---------------------------------------------------------------------------
 string scalar csdid_mlib_version()
 {
-    return("2.0.1|source")
+    return("2.0.2|source")
 }
 
 
@@ -844,6 +871,63 @@ real colvector csdid__trim_keep(real colvector ps, real scalar trim_level)
 // ===========================================================================
 
 
+real colvector csdid__logit_wide_fit(real colvector d, real matrix x, real colvector w)
+{
+    real scalar iter, half, rank, dev, dev_old, tol, n, k
+    real colvector b, previous, temporary, mu, eta, omu, mumu, ww, z, effects
+    real matrix q, r
+    real rowvector permutation
+
+    // did's preliminary overlap fit uses fastglm method 0 even when n<k.
+    // Its rank-deficient QR update replaces only the first rank coordinates
+    // before permuting the WHOLE previous coefficient vector; the tail is
+    // retained. Zeroing that tail computes another trajectory and can change
+    // the warning before the estimator's physical-dimension refusal (RT076).
+    // fastglm glm.h solve_wls()/run_step_halving() define both updates.
+    // This branch cannot produce a reported estimate: the estimator rejects
+    // n<k. Keep its QR state off the ordinary propensity fitter's frame.
+    n = rows(x)
+    k = cols(x)
+    tol = 1e-8
+    b = J(k, 1, 0)
+    mu = (w :* d :+ .5) :/ (w :+ 1)
+    eta = log(mu :/ (1 :- mu))
+    dev_old = 1e308
+    for (iter = 1; iter <= 100; iter++) {
+        previous = b
+        omu = 1 :- mu
+        mumu = mu :* omu
+        ww = w :* mumu
+        z = eta :+ (d :- mu) :/ mumu
+        // Stata's QR requires n>=k. Appending zero rows preserves the WLS
+        // products; numerical rank uses the ORIGINAL number of observations,
+        // as Eigen's default threshold does, rather than the padded size.
+        qrdp((sqrt(ww) :* x \ J(k - n, k, 0)), q = ., r = ., permutation = .)
+        rank = sum(abs(diagonal(r)) :> max(abs(diagonal(r))) * epsilon(1) * n)
+        if (rank == 0) return(J(k, 1, .))
+        effects = q' * (sqrt(ww) :* z \ J(k - n, 1, 0))
+        b[1..rank] = luinv(r[1..rank, 1..rank], 0) * effects[1..rank]
+        temporary = b
+        b[permutation] = temporary
+        if (hasmissing(b)) return(J(k, 1, .))
+        eta = x * b
+        mu = csdid__invlogit(eta)
+        dev = -2 * quadsum(w :* (d :* log(mu) :+ (1 :- d) :* log(1 :- mu)))
+        if (iter > 1 & (dev - dev_old) / (abs(dev) + .1) >= tol) {
+            for (half = 1; half <= 100; half++) {
+                b = .5 * (b + previous)
+                eta = x * b
+                mu = csdid__invlogit(eta)
+                dev = -2 * quadsum(w :* (d :* log(mu) :+ (1 :- d) :* log(1 :- mu)))
+                if ((dev - dev_old) / (abs(dev) + .1) < -tol) break
+            }
+        }
+        if (abs(dev - dev_old) / (abs(dev) + .1) < tol) break
+        dev_old = dev
+    }
+    return(b)
+}
+
 real colvector csdid__logit_fit(real colvector d, real matrix x, real colvector w)
 {
     // F-002: bit-faithful replica of R DRDID's propensity-score fitter,
@@ -877,12 +961,13 @@ real colvector csdid__logit_fit(real colvector d, real matrix x, real colvector 
     // Bit-identical, and together with the invlogit guard the fit measured
     // 0.512s -> 0.328s over 60 refits of a 9,716-row cell.
     // The overlap guard fits this model with unit weights (R runs its own
-    // guard unweighted, so csdid does too), which is every dr and ipw cell of
+    // guard unweighted on supported rows), which is every dr and ipw cell of
     // a weighted run -- half of all fits. Multiplying by 1.0 is exact, so
     // dropping those multiplies changes nothing: `w :* mu :* omu' is
     // (1 :* mu) :* omu, which is the mu :* omu already in hand, and
     // quadsum(1 :* v) is quadsum(v) term for term. One pass to detect, three
     // saved per iteration.
+    if (rows(x) < cols(x)) return(csdid__logit_wide_fit(d, x, w))
     unit_w = all(w :== 1)
     if (unit_w) mu = (d :+ 0.5) :/ 2
     else        mu = (w :* d :+ 0.5) :/ (w :+ 1)
@@ -896,25 +981,16 @@ real colvector csdid__logit_fit(real colvector d, real matrix x, real colvector 
         if (unit_w) ww = mumu
         else        ww = w :* mu :* omu
         z = eta :+ (d :- mu) :/ mumu
-        if (rows(x) < cols(x)) {
-            // did's preliminary overlap fit uses method 0 even on a wide
-            // design. Zero rows make QR conformable without changing WLS;
-            // the estimator entry refuses this design after the overlap test.
-            b = qrsolve((sqrt(ww) :* x \ J(cols(x) - rows(x), cols(x), 0)),
-                        (sqrt(ww) :* z \ J(cols(x) - rows(x), 1, 0)))
+        h = quadcross(x, ww, x)
+        h_inv = invsym(h)
+        if (csdid__valid_inverse(h_inv)) {
+            b = h_inv * quadcross(x, ww :* z)
         }
         else {
-            h = quadcross(x, ww, x)
-            h_inv = invsym(h)
-            if (csdid__valid_inverse(h_inv)) {
-                b = h_inv * quadcross(x, ww :* z)
-            }
-            else {
-                // fastglm's LDLT solve keeps every column; qrsolve() would zero a
-                // near-collinear one at its rank tolerance and fit a different
-                // model. Tolerance 0: only an exactly singular system is missing.
-                b = lusolve(h, quadcross(x, ww :* z), 0)
-            }
+            // fastglm's LDLT solve keeps every column; qrsolve() would zero a
+            // near-collinear one at its rank tolerance and fit a different
+            // model. Tolerance 0: only an exactly singular system is missing.
+            b = lusolve(h, quadcross(x, ww :* z), 0)
         }
         if (sum(b :>= .) > 0) return(J(cols(x), 1, .))
         eta = x * b
@@ -937,7 +1013,8 @@ real colvector csdid__logit_fit(real colvector d, real matrix x, real colvector 
 // ===========================================================================
 
 
-real scalar csdid__overlap_status(real matrix x, real colvector d)
+real scalar csdid__overlap_status(real matrix x, real colvector d,
+    | real colvector wraw, real scalar has_weights)
 {
     // F-040: one classifier for the two distinct reasons R refuses a
     // propensity-score cell before estimating it, so that the warning the user
@@ -946,8 +1023,7 @@ real scalar csdid__overlap_status(real matrix x, real colvector d)
     //
     //   1 = did::overlap_check_fail() -- the fitted propensity reaches 0.999,
     //       i.e. the overlap condition is violated. R runs this guard on an
-    //       UNWEIGHTED logit of D on the cohort design, so it fires identically
-    //       with and without iweights;
+    //       UNWEIGHTED logit of D on the positively supported cohort design;
     //   2 = the propensity fit cannot be computed at all, which is DRDID's
     //       separate "coefficients have NA components / multicollinearity"
     //       refusal (the F-013 singular-design branch);
@@ -961,8 +1037,9 @@ real scalar csdid__overlap_status(real matrix x, real colvector d)
     external real matrix CSDID_OVL_X
     external real colvector CSDID_OVL_D
     external real scalar CSDID_OVL_STATUS
-    real colvector beta, ps
-    real scalar pbar, status, decided, overlap_cut, knife_edge_band
+    real colvector beta, ps, supported
+    real matrix xs
+    real scalar pbar, status, decided, overlap_cut, knife_edge_band, weight_mean
 
     // did::overlap_check_fail()'s cut, and the width of the band around it
     // inside which R defers to a real fit instead of answering outright.
@@ -970,6 +1047,21 @@ real scalar csdid__overlap_status(real matrix x, real colvector d)
     knife_edge_band = 1e-6
 
     if (rows(d) == 0) return(2)
+
+    // did utility_functions.R:89-103: the diagnostic logit remains
+    // unweighted, but only observations with positive locally normalized
+    // sampling weight constrain its support. Keep the usual all-positive
+    // design and its memo unchanged; zero/underflow support takes a subset.
+    if (args() >= 3 & (args() < 4 | has_weights)) {
+        weight_mean = mean(wraw)
+        if (!(min(wraw) / weight_mean > 0 & weight_mean < . & weight_mean > 0)) {
+            supported = (wraw / weight_mean :> 0) :& (wraw / weight_mean :< .)
+            if (!any(supported)) return(1)
+            if (rows(x) == 0) xs = J(sum(supported), 1, 1)
+            else xs = select(x, supported)
+            return(csdid__overlap_status(xs, select(d, supported)))
+        }
+    }
 
     // PERF: this is a PURE function of (x, d) -- an unweighted logit and a
     // threshold on its fitted values -- and it is called once per 2x2 cell from
@@ -1063,12 +1155,33 @@ real scalar csdid__rcond1(real matrix a)
     return(1 / (n1a * n1ai))
 }
 
-real scalar csdid__rcond_fail(real matrix x, real colvector d)
+real scalar csdid__rcond_fail(real matrix x, real colvector d,
+    | real colvector wraw, real scalar has_weights)
 {
     real matrix xc
+    real colvector w, control
+    real scalar weight_min
 
-    if (cols(x) == 1) return(sum(d :== 0) == 0)
-    xc = select(x, d :== 0)
+    control = (d :== 0)
+    if (args() >= 3 & (args() < 4 | has_weights)) {
+        weight_min = min(wraw)
+        if (weight_min > 0 & weight_min < . & weight_min == max(wraw)) {
+            if (!any(control)) return(1)
+            if (cols(x) == 1) return(0)
+            xc = select(x, control)
+            return(csdid__rcond1(cross(xc :* 1, xc) / rows(d)) < epsilon(1))
+        }
+        w = csdid__normalize_weights(wraw)
+        control = control :& (w :> 0) :& (w :< .)
+        if (!any(control)) return(1)
+        if (cols(x) == 1) return(0)
+        xc = select(x, control)
+        // did utility_functions.R:123-153: zero-weight rows supply no rank;
+        // the actual normalized weighted control Gram governs feasibility.
+        return(csdid__rcond1(cross(xc :* select(w, control), xc) / rows(d)) < epsilon(1))
+    }
+    if (cols(x) == 1) return(!any(control))
+    xc = select(x, control)
     if (rows(xc) == 0) return(1)
     // F-005 R parity: did 2.5.1 rcond_check_fail tests
     //   rcond(crossprod(control_covs)) < .Machine$double.eps
@@ -1076,6 +1189,24 @@ real scalar csdid__rcond_fail(real matrix x, real colvector d)
     // column-scale disparity; fires on benign near-collinearity R accepts).
     // crossprod in double precision (cross, not quadcross) to match R.
     return(csdid__rcond1(cross(xc, xc)) < epsilon(1))
+}
+
+real scalar csdid__rc_outcome_too_few(real colvector d, real colvector post,
+    real colvector w, real scalar k, real scalar include_treated)
+{
+    real colvector positive
+
+    // did rc_outcome_has_too_few_obs: w is the estimator's locally
+    // normalized weight. Count exact positive support, including subnormals;
+    // a square design is allowed and rank is checked separately.
+    positive = (w :> 0) :& (w :< .)
+    if (sum(positive :& (d :== 0) :& (post :== 0)) < k |
+        sum(positive :& (d :== 0) :& (post :== 1)) < k) return(1)
+    if (include_treated) {
+        if (sum(positive :& (d :== 1) :& (post :== 0)) < k |
+            sum(positive :& (d :== 1) :& (post :== 1)) < k) return(1)
+    }
+    return(0)
 }
 
 // R's compute.att_gt raises four DISTINCT warnings when a 2x2 cell has no
@@ -1142,6 +1273,10 @@ void csdid__fit_status_warning(
         errprintf("warning: Error computing internal 2x2 DiD for (g, t) = (%g, %g): The regression design matrix is singular: fewer observations than covariates. Consider removing some covariates.. The ATT for this cell will be set to NA.\n", g, t)
         return
     }
+    if (fit_status == 8) {
+        errprintf("warning: Outcome regression design is singular (fewer positive-weight observations than covariates) for group %g in time period %g; the ATT for this cell will be set to NA.\n", g, t)
+        return
+    }
     if (fit_status >= 4 & fit_status <= 6) {
         // DRDID's stop on rcond(XpX) of an outcome-regression design, in the
         // form the ipw design refusal below takes; the repeated cross-section
@@ -1187,7 +1322,8 @@ real colvector csdid__reg_panel_fit(
     real colvector y0,
     real colvector d,
     real matrix x,
-    real colvector wraw)
+    real colvector wraw,
+    | real scalar has_weights)
 {
     real scalar n, mw_treat, mw_cont, eta_treat, eta_cont, att
     real matrix xtwx, xtwx_inv, xpx_inv
@@ -1196,6 +1332,7 @@ real colvector csdid__reg_panel_fit(
     real colvector inf_treat, inf_cont_1, inf_cont_2, inf_control, inf
     real colvector m1, gamma_ols, ols_resid, m_control, wls_root
 
+    if (args() < 6) has_weights = 1
     n = rows(d)
     dy = y1 :- y0
     w = csdid__normalize_weights(wraw)
@@ -1207,7 +1344,7 @@ real colvector csdid__reg_panel_fit(
     // refuses -- including the zero-control case (cols(x)==1 branch) and the
     // rank-deficient control design -- so the extra count test only produced
     // missing ATT/SE where R returns finite values.
-    if (csdid__rcond_fail(x, d)) return(. \ J(n, 1, .) \ 2)  // F-005: R rcond_check_fail on the control design
+    if (csdid__rcond_fail(x, d, wraw, has_weights)) return(. \ J(n, 1, .) \ 2)
 
     weights_ols = w :* (1 :- d)
     xtwx = quadcross(x, weights_ols, x)
@@ -1259,7 +1396,8 @@ real colvector csdid__ipw_panel_fit(
     real colvector d,
     real matrix x,
     real colvector wraw,
-    real scalar trim_level)
+    real scalar trim_level,
+    | real scalar has_weights)
 {
     real scalar n, mw_treat, mw_cont, eta_treat, eta_cont, att, nonconstant_w, pbar, hscalar, keep_control
     real scalar mean_w, mean_wd, mean_w0, treat_moment, cont_moment, cont_factor, m2_scalar
@@ -1269,6 +1407,7 @@ real colvector csdid__ipw_panel_fit(
     real colvector inf_treat, inf_cont_1, inf_cont_2, inf_control, inf
     real colvector m2, gamma_ps
 
+    if (args() < 7) has_weights = 1
     overlap_cut = 0.999          // did::overlap_check_fail()
     mu_floor    = 1e-8           // fastglmPure's clamp on the fitted mean
     ps_cap      = 1 - 1e-6       // DRDID's pmin(ps.fit, 1 - 1e-06)
@@ -1278,21 +1417,21 @@ real colvector csdid__ipw_panel_fit(
     w = csdid__normalize_weights(wraw)
     if (sum(w :>= .) > 0) return(. \ J(n, 1, .) \ 3)
     if (n < cols(x)) {
-        // did tests unweighted overlap before DRDID's physical dimensions.
-        overlap_status = csdid__overlap_status(x, d)
+        // did tests supported unweighted overlap before physical dimensions.
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
         return(. \ J(n, 1, .) \ 7)
     }
     nonconstant_w = csdid__nonconstant_weights(w)
     if (cols(x) == 1) {
         // The overlap refusal is did::overlap_check_fail(), which fits an
-        // UNWEIGHTED logit (utility_functions.R:86-93) and so must be decided on
-        // mean(d), knife edge included; only the pbar below -- the weighted
+        // UNWEIGHTED logit on normalized positive support and so is decided on
+        // its treated share, knife edge included; only the pbar below -- the weighted
         // intercept-only MLE DRDID estimates with -- carries the weights. The
         // two coincide without iweights, so this is the same set of refused
         // cells there, and the classifier is the one every other pscore path
         // already uses.
-        overlap_status = csdid__overlap_status(x, d)
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
         pbar = mean(w :* d) / mean(w)
         if (pbar < mu_floor) pbar = mu_floor
@@ -1329,11 +1468,10 @@ real colvector csdid__ipw_panel_fit(
     }
     if (nonconstant_w) {
         // F-040: classify the pre-estimation refusal the way R does. The guard
-        // itself is unchanged (same unweighted fit, same overlap cut-off, same
-        // set of refused cells); only the reported cause changes, so an
+        // uses the supported unweighted fit and the common overlap cut-off, so an
         // overlap violation under iweights no longer reaches the user as a
         // singular-covariate-matrix message.
-        overlap_status = csdid__overlap_status(x, d)
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
     }
     beta = csdid__logit_fit(d, x, w)
@@ -1451,7 +1589,8 @@ real colvector csdid__reg_rc_fit(
     real colvector post,
     real colvector d,
     real matrix x,
-    real colvector wraw)
+    real colvector wraw,
+    | real scalar has_weights)
 {
     real scalar n, eta_treat_pre, eta_treat_post, eta_cont, att
     real scalar mw_treat_pre, mw_treat_post, mw_cont
@@ -1464,9 +1603,13 @@ real colvector csdid__reg_rc_fit(
     real colvector m1, gamma_ols, ols_resid_pre, ols_resid_post
     real colvector m_cont_pre, m_cont_post, wls_root
 
+    if (args() < 6) has_weights = 1
     n = rows(d)
     w = csdid__normalize_weights(wraw)
     if (sum(w :>= .) > 0) return(. \ J(n, 1, .) \ 3)
+
+    // did checks normalized per-period support before overlap or pooled rank.
+    if (csdid__rc_outcome_too_few(d, post, w, cols(x), 0)) return(. \ J(n, 1, .) \ 8)
 
     // The two control-block masks were rebuilt from scratch three times each
     // -- once for the design, once for the weights, once for the weighted
@@ -1476,10 +1619,7 @@ real colvector csdid__reg_rc_fit(
     m_cont_post = (d :== 0) :& (post :== 1)
     xpre = select(x, m_cont_pre)
     xpost = select(x, m_cont_post)
-    if (csdid__rcond_fail(x, d)) return(. \ J(n, 1, .) \ 2)  // F-005: R rcond_check_fail on the control design
-    // DRDID 1.4.0 fastglm_fit checks each physical outcome-design block.
-    // Zero weights still count; DS-04's square blocks remain admissible.
-    if (rows(xpre) < cols(x) | rows(xpost) < cols(x)) return(. \ J(n, 1, .) \ 7)
+    if (csdid__rcond_fail(x, d, wraw, has_weights)) return(. \ J(n, 1, .) \ 2)
     xtwx_pre = quadcross(xpre, select(w, m_cont_pre), xpre)
     xtwx_post = quadcross(xpost, select(w, m_cont_post), xpost)
     xtwx_inv_pre = csdid__inv_r_parity(xtwx_pre)  // F-005: R-parity inverse
@@ -1544,7 +1684,8 @@ real colvector csdid__ipw_rc_fit(
     real colvector d,
     real matrix x,
     real colvector wraw,
-    real scalar trim_level)
+    real scalar trim_level,
+    | real scalar has_weights)
 {
     real scalar n, att, att_treat_pre, att_treat_post, att_cont_pre, att_cont_post, nonconstant_w, pbar, hscalar, keep_control
     real scalar mw_treat_pre, mw_treat_post, mw_cont_pre, mw_cont_post, overlap_status
@@ -1557,6 +1698,7 @@ real colvector csdid__ipw_rc_fit(
     real colvector inf_cont_pre, inf_cont_post, inf_cont, inf_cont_ps, inf
     real colvector m2_pre, m2_post, gamma_ps
 
+    if (args() < 7) has_weights = 1
     overlap_cut = 0.999          // did::overlap_check_fail()
     mu_floor    = 1e-8           // fastglmPure's clamp on the fitted mean
     ps_cap      = 1 - 1e-6       // DRDID's pmin(ps.fit, 1 - 1e-06)
@@ -1565,16 +1707,16 @@ real colvector csdid__ipw_rc_fit(
     w = csdid__normalize_weights(wraw)
     if (sum(w :>= .) > 0) return(. \ J(n, 1, .) \ 3)
     if (n < cols(x)) {
-        // did tests unweighted overlap before DRDID's physical dimensions.
-        overlap_status = csdid__overlap_status(x, d)
+        // did tests supported unweighted overlap before physical dimensions.
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
         return(. \ J(n, 1, .) \ 7)
     }
     nonconstant_w = csdid__nonconstant_weights(w)
     if (cols(x) == 1) {
         // See csdid__ipw_panel_fit: the overlap refusal is R's unweighted
-        // overlap_check_fail(); only the estimator's pbar is weighted.
-        overlap_status = csdid__overlap_status(x, d)
+        // overlap_check_fail() on positive support; the estimator's pbar is weighted.
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
         pbar = mean(w :* d) / mean(w)
         if (pbar < mu_floor) pbar = mu_floor
@@ -1613,7 +1755,7 @@ real colvector csdid__ipw_rc_fit(
     }
     if (nonconstant_w) {
         // F-040: see csdid__ipw_panel_fit -- same guard, R's classification.
-        overlap_status = csdid__overlap_status(x, d)
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
     }
     beta = csdid__logit_fit(d, x, w)
@@ -1673,7 +1815,8 @@ real colvector csdid__dr_rc_fit(
     real colvector d,
     real matrix x,
     real colvector wraw,
-    real scalar trim_level)
+    real scalar trim_level,
+    | real scalar has_weights, real scalar reference_means)
 {
     real scalar n, att, mw_treat_pre, mw_treat_post, mw_cont_pre, mw_cont_post, nonconstant_w
     real scalar mw_d, mw_dt1, mw_dt0, overlap_status, overlap_cut
@@ -1701,15 +1844,19 @@ real colvector csdid__dr_rc_fit(
     real colvector twd, twcps, resid_c, dout_post, dout_pre
     real matrix gmat, xgam
 
+    if (args() < 7) has_weights = 1
+    if (args() < 8) reference_means = 0
     overlap_cut = 0.999          // did::overlap_check_fail()
 
     n = rows(d)
     w = csdid__normalize_weights(wraw)
+    if (reference_means) w = wraw / csdid__mean_ordered(wraw)
     if (sum(w :>= .) > 0) return(. \ J(n, 1, .) \ 3)
+    if (csdid__rc_outcome_too_few(d, post, w, cols(x), 1)) return(. \ J(n, 1, .) \ 8)
     nonconstant_w = csdid__nonconstant_weights(w)
     if (nonconstant_w) {
         // F-040: see csdid__ipw_panel_fit -- same guard, R's classification.
-        overlap_status = csdid__overlap_status(x, d)
+        overlap_status = csdid__overlap_status(x, d, wraw, has_weights)
         if (overlap_status) return(. \ J(n, 1, .) \ overlap_status)
     }
     beta_ps = csdid__logit_fit(d, x, w)
@@ -1732,11 +1879,7 @@ real colvector csdid__dr_rc_fit(
     xct = select(x, m_c_post)
     xtp = select(x, m_t_pre)
     xtt = select(x, m_t_post)
-    if (csdid__rcond_fail(x, d)) return(. \ J(n, 1, .) \ 2)  // F-005: R rcond_check_fail on the control design
-    // DRDID 1.4.0 fastglm_fit: all four outcome fits obey the same strict
-    // dimension check, before their weighted cross-products are inverted.
-    if (rows(xcp) < cols(x) | rows(xct) < cols(x) |
-        rows(xtp) < cols(x) | rows(xtt) < cols(x)) return(. \ J(n, 1, .) \ 7)
+    if (csdid__rcond_fail(x, d, wraw, has_weights)) return(. \ J(n, 1, .) \ 2)
     xtwx_c_pre = quadcross(xcp, select(w, m_c_pre), xcp)
     xtwx_c_post = quadcross(xct, select(w, m_c_post), xct)
     xtwx_t_pre = quadcross(xtp, select(w, m_t_pre), xtp)
@@ -1774,6 +1917,15 @@ real colvector csdid__dr_rc_fit(
     mw_d = mean(w_d)
     mw_dt1 = mw_treat_post
     mw_dt0 = mw_treat_pre
+    if (reference_means) {
+        mw_treat_pre = csdid__mean_ordered(w_treat_pre)
+        mw_treat_post = csdid__mean_ordered(w_treat_post)
+        mw_cont_pre = csdid__mean_ordered(w_cont_pre)
+        mw_cont_post = csdid__mean_ordered(w_cont_post)
+        mw_d = csdid__mean_ordered(w_d)
+        mw_dt1 = mw_treat_post
+        mw_dt0 = mw_treat_pre
+    }
     // min() ignores missing; see csdid__ipw_panel_fit. mw_dt1 and mw_dt0 are
     // copies of mw_treat_post and mw_treat_pre and need no test of their own.
     if (min((mw_treat_pre, mw_treat_post, mw_cont_pre, mw_cont_post, mw_d, mw_dt1, mw_dt0)) <= 0 |
@@ -1806,7 +1958,7 @@ real colvector csdid__dr_rc_fit(
     // caller would have been a silent way to start estimating cells csdid
     // currently declines. Reaching this line means every one of those guards
     // has already run and passed, so only the arithmetic is swapped.
-    if (cols(x) == 1) return(csdid__reg_rc_fit(y, post, d, x, wraw))
+    if (cols(x) == 1) return(csdid__reg_rc_fit(y, post, d, x, wraw, has_weights))
 
     // The four block regressions and their projections moved below the
     // delegation: none of the guards above reads them, and the intercept-only
@@ -1854,6 +2006,16 @@ real colvector csdid__dr_rc_fit(
     att_dt1_post = mean(eta_dt1_post)
     att_d_pre = mean(eta_d_pre)
     att_dt0_pre = mean(eta_dt0_pre)
+    if (reference_means) {
+        att_treat_pre = csdid__mean_ordered(eta_treat_pre)
+        att_treat_post = csdid__mean_ordered(eta_treat_post)
+        att_cont_pre = csdid__mean_ordered(eta_cont_pre)
+        att_cont_post = csdid__mean_ordered(eta_cont_post)
+        att_d_post = csdid__mean_ordered(eta_d_post)
+        att_dt1_post = csdid__mean_ordered(eta_dt1_post)
+        att_d_pre = csdid__mean_ordered(eta_d_pre)
+        att_dt0_pre = csdid__mean_ordered(eta_dt0_pre)
+    }
     att = (att_treat_post - att_treat_pre) - (att_cont_post - att_cont_pre) + (att_d_post - att_dt1_post) - (att_d_pre - att_dt0_pre)
 
     weights_ols_pre = wc :* post0
@@ -2766,16 +2928,18 @@ void csdid__rc_fit_dispatch(
     real matrix x_rc,
     real colvector w_rc,
     real scalar trim_level,
-    real colvector fit)
+    real colvector fit,
+    | real scalar has_weights)
 {
+    if (args() < 9) has_weights = 1
     if (method == "ipw") {
-        fit = csdid__ipw_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc, trim_level)
+        fit = csdid__ipw_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc, trim_level, has_weights)
     }
     else if (method == "dr") {
-        fit = csdid__dr_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc, trim_level)
+        fit = csdid__dr_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc, trim_level, has_weights)
     }
     else {
-        fit = csdid__reg_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc)
+        fit = csdid__reg_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc, has_weights)
     }
 }
 
@@ -3087,6 +3251,10 @@ void csdid__settle_sample(
     // cut, so a cohort seen only in the removed periods reaches this point.
     if (cols(glevels) == 0) {
         errprintf("No valid groups. The variable in gvar() should be the time period a unit is first treated (0 for never-treated); no treated cohort has both a usable base period and a comparison group under the requested anticipation and comparison-group settings.\n")
+        exit(459)
+    }
+    if (cols(tlevels) < 2) {
+        errprintf("Only one time period remains after dropping periods from the last treated cohort's treatment date onward. Check time(), gvar() and anticipation().\n")
         exit(459)
     }
 }
@@ -3683,7 +3851,7 @@ real matrix csdid__Engine::cell_grid(
         g = glevels[i]
         for (j = 1; j <= cols(tlevels); j++) {
             t = tlevels[j]
-            if (t >= g) {
+            if (t >= g - anticipation) {
                 pret = csdid__previous_time(tlevels, g, anticipation)
             }
             else if (base_period == "universal") {
@@ -3762,6 +3930,7 @@ void csdid__cells_fast(
     real scalar ic, g, t, pret, control_time
     real colvector dy_fast, treat_fast, control_fast, treat_uid, control_uid
     real colvector dy_treat, dy_control, fast_d, unit_if
+    real colvector reg_use, reg_fit
     real scalar tidx_t, tidx_pre, nt1, nt0, nc1, nc0, mt1, mc1, att, se
     real scalar fast_pbar, fast_status, fast_ps, prof_if_t0
     real scalar overlap_cut, knife_edge_band, anticipation, trim_level
@@ -3856,13 +4025,27 @@ void csdid__cells_fast(
         unit_if = J(n_units, 1, 0)
         unit_if[treat_uid] = (n_units / nt1) :* (dy_treat :- mt1)
         unit_if[control_uid] = -(n_units / nc1) :* (dy_control :- mc1)
-        // R blanks the SE, not its sum of squares: att_gt l568-570
-        // forms se = sqrt(diag(V)/n) and then applies
-        // se[se <= sqrt(.Machine$double.eps)*10] <- NA. Testing the
-        // sum of squares against the SQUARE of that tolerance makes
-        // the threshold n_units times too tight. csdid__se_from_if
-        // is that rule, and is what every clustered site already uses.
+        // did att_gt.R:605 retains every finite positive SE. The helper
+        // shares that rule with the general and clustered routes.
         se = csdid__se_from_if(unit_if)
+        if (se >= . & method == "reg") {
+            // The closed form can center a nonzero constant difference
+            // exactly while DRDID's Gaussian QR leaves a positive IF scale.
+            // did now retains that scale (att_gt.R:605); use its regression
+            // algorithm on this exceptional boundary rather than imposing
+            // a new zero-variance rule. A zero outcome difference stays zero.
+            if (any(dy_treat :!= 0) | any(dy_control :!= 0)) {
+                reg_use = select(uid_seq, treat_fast :| control_fast)
+                reg_fit = csdid__reg_panel_fit(y_fast[reg_use, tidx_t],
+                    y_fast[reg_use, tidx_pre], treat_fast[reg_use],
+                    J(rows(reg_use), 1, 1), J(rows(reg_use), 1, 1), 0)
+                if (reg_fit[rows(reg_fit)] == 0) {
+                    att = reg_fit[1]
+                    unit_if[reg_use] = (n_units / rows(reg_use)) * reg_fit[2::(rows(reg_use) + 1)]
+                    se = csdid__se_from_if(unit_if)
+                }
+            }
+        }
         csdid__store_cell(g, t, att, se, nt1, nt0, nc1, nc0, pret,
             unit_if, out, ifmat_t, cell_ix)
         csdid__profile_add(4, prof_if_t0, n_units)
@@ -4049,11 +4232,11 @@ void csdid__cells_panel(
                 x_rc = x_cell \ x_cell
             }
             csdid__rc_fit_dispatch(method, y_rc, post_rc, d_rc, x_rc,
-                w_rc, trim_level, fit = J(0, 1, .))
+                w_rc, trim_level, fit = J(0, 1, .), has_w)
         }
         else {
             if (method == "ipw") {
-                fit = csdid__ipw_panel_fit(y1_cell, y0_cell, d_cell, x_cell, w_cell, trim_level)
+                fit = csdid__ipw_panel_fit(y1_cell, y0_cell, d_cell, x_cell, w_cell, trim_level, has_w)
             }
             else if (method == "dr") {
                 if (notyet != "") {
@@ -4107,7 +4290,7 @@ void csdid__cells_panel(
                             // its cause; csdid__overlap_status() is the
                             // one classifier, so the reported cause is
                             // the cause DRDID::drdid_panel refuses on.
-                            eng->dr_status = csdid__overlap_status(x_cell, d_cell)
+                            eng->dr_status = csdid__overlap_status(x_cell, d_cell, w_cell)
                         }
                         if (eng->dr_status == 0) {
                             beta_ps_cell = csdid__logit_fit(d_cell, x_cell, eng->dr_w)
@@ -4148,7 +4331,8 @@ void csdid__cells_panel(
                     if (eng->dr_status == 0) {
                         // F-005: R-parity conditioning guard must also
                         // cover this precomputed fast path.
-                        if (csdid__rcond_fail(x_cell, d_cell)) {
+                        if ((has_w ? csdid__rcond_fail(x_cell, d_cell, w_cell) :
+                            csdid__rcond_fail(x_cell, d_cell))) {
                             eng->dr_status = 2
                         }
                     }
@@ -4207,7 +4391,7 @@ void csdid__cells_panel(
                 }
             }
             else {
-                fit = csdid__reg_panel_fit(y1_cell, y0_cell, d_cell, x_cell, w_cell)
+                fit = csdid__reg_panel_fit(y1_cell, y0_cell, d_cell, x_cell, w_cell, has_w)
             }
         }
         csdid__profile_add(3, prof_fit_t0, n1)
@@ -4230,6 +4414,27 @@ void csdid__cells_panel(
             unit_if = J(n_units, 1, .)
         }
         se = csdid__se_from_if(unit_if)
+        if (method == "dr" & fix_weights == "varying" & has_x &
+            att < . & se >= .) {
+            if (all(unit_if :== 0)) {
+                // The quad-precision means can cancel a stacked pair exactly
+                // where the reference's ordered, bias-corrected means retain a
+                // positive roundoff-scale IF. Re-evaluate that exceptional cell
+                // using the reference arithmetic; no variance floor is imposed.
+                fit = csdid__dr_rc_fit(y_rc, post_rc, d_rc, x_rc, w_rc,
+                    trim_level, has_w, 1)
+                att = fit[1]
+                fit_status = fit[rows(fit)]
+                if (att >= .) csdid__fit_status_warning(fit_status, method, has_x, g, t)
+                unit_if = J(n_units, 1, 0)
+                if (att < .) {
+                    unit_if[valid_uid] = (n_units / n1) *
+                        (fit[2..(n1 + 1)] + fit[(n1 + 2)..(2 * n1 + 1)]) / 2
+                }
+                else unit_if = J(n_units, 1, .)
+                se = csdid__se_from_if(unit_if)
+            }
+        }
         if (att >= .) se = .
         csdid__store_cell(g, t, att, se, nt1, nt0, nc1, nc0, pret,
             unit_if, out, ifmat_t, cell_ix)
@@ -4263,6 +4468,7 @@ void csdid__cells_unbal_panel(
     real scalar sorted_unit_scan,
     string scalar method,
     real scalar has_x,
+    real scalar has_w,
     real matrix out,
     real matrix ifmat_t,
     real scalar cell_ix)
@@ -4353,7 +4559,7 @@ void csdid__cells_unbal_panel(
 
         prof_fit_t0 = csdid__profile_start()
         csdid__rc_fit_dispatch(method, y_rc, post_rc, d_rc, x_rc, w_rc,
-            trim_level, fit = J(0, 1, .))
+            trim_level, fit = J(0, 1, .), has_w)
         csdid__profile_add(3, prof_fit_t0, n1)
         att = fit[1]
         fit_status = fit[rows(fit)]
@@ -4636,7 +4842,7 @@ void csdid__cells_rc(
                 g, t, pret, nt1, nt0, nc1, nc0, n_units, out, ifmat_t, cell_ix)) continue
             prof_fit_t0 = csdid__profile_start()
             csdid__rc_fit_dispatch(method, y_rc, post_rc, d_rc, x_rc, w_rc,
-                trim_level, fit = J(0, 1, .))
+                trim_level, fit = J(0, 1, .), has_w)
             csdid__profile_add(3, prof_fit_t0, n1)
             att = fit[1]
             fit_status = fit[rows(fit)]
@@ -5052,7 +5258,7 @@ void csdid_basic_attgt(
         csdid__cells_unbal_panel(eng, cells, tlevels,
             y, tt, geff, ww, x, id, idlevels, row_index,
             row_unit_index, unit_group, uid_seq, n_units,
-            sorted_unit_scan, method, has_x, out, ifmat_t, cell_ix)
+            sorted_unit_scan, method, has_x, has_w, out, ifmat_t, cell_ix)
     }
     else {
         csdid__cells_rc(eng, cells, tlevels, first_t,
@@ -5317,11 +5523,15 @@ void csdid_cluster_attgt(
     // (a failed cell) would come back as se = 0 and read as "estimated with
     // zero variance". Blank those columns explicitly instead.
     sc_miss = colmissing(sc)'
-    se = sqrt(colsum(sc:^2))' / n
-    // R's degenerate-SE threshold; see csdid__se_from_if.
-    se_floor = sqrt(epsilon(1)) * 10
+    sc = sc:^2
+    // Squaring a finite cluster sum can overflow to missing. colsum() would
+    // omit that cluster and report another cluster's finite variance instead.
+    sc_miss = sc_miss + colmissing(sc)'
+    se = sqrt(colsum(sc))' / n
+    // did att_gt.R:605 retains every finite positive SE, regardless of units.
+    se_floor = 0
     for (k = 1; k <= rows(se); k++) {
-        if (sc_miss[k] > 0 | se[k] <= se_floor) se[k] = .
+        if (sc_miss[k] > 0 | se[k] >= . | se[k] <= se_floor) se[k] = .
     }
     att[., 5] = se
     st_matrix(attname, att)
@@ -5341,22 +5551,14 @@ void csdid_cluster_attgt(
 
 real scalar csdid__se_from_if(real colvector ifv)
 {
-    real scalar n, se, se_floor
-
-    // R's degenerate-standard-error threshold (att_gt.R:570/593,
-    // compute.aggte.R:312): at or below it the standard error is reported
-    // missing rather than as a number. It is a threshold on an SE, never on a
-    // variance, and it is the ONLY zero-variance floor in this file -- every
-    // other site below sets the same value. The `epsilon(1)' tests in
-    // csdid__rcond_fail and csdid__hessinv_r_parity are a different rule: they
-    // are R's reciprocal-condition-number cut on a design matrix, not a floor
-    // on a standard error, and the two must not be reconciled with each other.
-    se_floor = sqrt(epsilon(1)) * 10
+    real scalar n, se
 
     n = rows(ifv)
-    if (n == 0) return(.)
+    if (n == 0 | hasmissing(ifv)) return(.)
     se = sqrt(quadcross(ifv, ifv)) / n
-    if (se <= se_floor) return(.)
+    // did att_gt.R:605 and compute.aggte.R:getSE: an absolute cutoff changes
+    // inference when only the outcome's measurement units change.
+    if (se >= . | se <= 0) return(.)
     return(se)
 }
 
@@ -5505,68 +5707,54 @@ real scalar csdid__type1_quantile(real colvector x, real scalar p)
 real scalar csdid__bootstrap_sigma(real colvector bres, real scalar iqr_norm)
 {
     real colvector finite
-    real scalar n, idx25, idx75, if_ss, bsigma, se_floor
+    real scalar n, idx25, idx75, bsigma
 
-    // R's degenerate-SE threshold; see csdid__se_from_if.
-    se_floor = sqrt(epsilon(1)) * 10
-
-    if (sum(bres :>= .) == 0) {
-        n = rows(bres)
-        if_ss = quadcross(bres, bres)
-        finite = sort(bres, 1)
-    }
-    else {
-        finite = select(bres, bres :< .)
-        n = rows(finite)
-        if (n == 0) return(.)
-        if_ss = quadcross(finite, finite)
-        finite = sort(finite, 1)
-    }
-    if (if_ss <= se_floor) return(.)
+    // did mboot.R:144-167 rejects a non-finite or identically-zero column.
+    // A sum-of-squares screen also rejects valid small outcome units, and
+    // squaring can underflow even when the IQR itself remains representable.
+    n = rows(bres)
+    if (n == 0 | hasmissing(bres)) return(.)
+    if (!any(bres :!= 0)) return(.)
+    finite = sort(bres, 1)
     idx25 = max((1, min((n, ceil(.25 * n)))))
     idx75 = max((1, min((n, ceil(.75 * n)))))
     bsigma = (finite[idx75] - finite[idx25]) / iqr_norm
-    if (bsigma <= se_floor) return(.)
+    if (bsigma >= . | bsigma <= 0) return(.)
     return(bsigma)
 }
 
-// The aggregation-level simultaneous band, built as did 2.5.1's mboot builds
-// it (R/mboot.R:142-180) -- which is not the ATT(g,t)-level rule in
-// csdid__boot_table. A column enters when none of its draws is missing and its
-// sum of squared draws exceeds sqrt(.Machine$double.eps)*10 (l142), and its
-// IQR scale is then used as it stands: att_gt.R:707 blanks a scale at or
-// below that tolerance, mboot does not (l158-162). A tiny positive scale
-// therefore dominates the maximum, which is where R's very-large-critical-
-// value warning below comes from. A zero scale divides to Inf where the draw
-// is nonzero and to NaN where it is zero; NaN is ignored (-Inf) and a draw
-// whose maximum is Inf is dropped by the is.finite filter (l174-178). Mata
-// returns missing for both, so a missing ratio over a nonzero draw is R's Inf.
+// did mboot.R:144-188 uses finite positive IQR scales at both inference levels.
+// An unavailable scale contributes no studentized draw to the sup-t maximum.
 real scalar csdid__bootstrap_cband_crit(
     real matrix bres,
     real scalar alp,
     real scalar pointcrit)
 {
-    real colvector keep, bT, sorted
+    real colvector keep, bT
     real rowvector bsigma
     real matrix b, scaled
-    real scalar j, n, crit, iqr_norm
+    real scalar j, crit, iqr_norm
 
     crit = pointcrit
-    n = rows(bres)
     iqr_norm = invnormal(.75) - invnormal(.25)
     keep = csdid__selidx(((colmissing(bres) :== 0) :&
-        (quadcolsum(bres :* bres) :> sqrt(epsilon(1)) * 10))')
+        (colsum(bres :!= 0) :> 0))')
     bT = J(0, 1, .)
     if (rows(keep) > 0) {
         b = bres[., keep]
         bsigma = J(1, cols(b), .)
         for (j = 1; j <= cols(b); j++) {
-            sorted = sort(b[., j], 1)
-            bsigma[j] = (sorted[ceil(.75 * n)] - sorted[ceil(.25 * n)]) / iqr_norm
+            bsigma[j] = csdid__bootstrap_sigma(b[., j], iqr_norm)
         }
-        scaled = abs(b :/ bsigma)
-        bT = select(rowmax(scaled), !rowsum((scaled :>= .) :& (b :!= 0)))
-        bT = select(bT, bT :< .)
+        keep = csdid__selidx(bsigma' :< .)
+        if (rows(keep) > 0) {
+            scaled = abs(b[., keep] :/ bsigma[., keep])
+            bT = rowmax(scaled)
+            // Finite draws divided by positive finite scales can overflow.
+            // R's Inf makes the entire maximum non-finite; Mata's missing
+            // must not be ignored in favor of another finite dimension.
+            bT = select(bT, (bT :< .) :& (rowmissing(scaled) :== 0))
+        }
     }
     // R's aggregation-level fallbacks are LABELED, not silent: when the
     // band quantile cannot be computed, or comes back below the pointwise
@@ -5635,8 +5823,8 @@ real matrix csdid__boot_table(
     real colvector bsigma, seboot, seanalytic, rowmaxv, bT, active
     real matrix scaled, bootout
 
-    // R's degenerate-SE threshold; see csdid__se_from_if.
-    se_floor = sqrt(epsilon(1)) * 10
+    // did att_gt.R:627 retains every finite positive SE.
+    se_floor = 0
 
     k = rows(att)
     boot_t0 = csdid__profile_start()
@@ -5668,7 +5856,7 @@ real matrix csdid__boot_table(
             scaled = J(biters, 1, 1) * bsigma[active]'
             scaled = abs(bres[., active] :/ scaled)
             rowmaxv = rowmax(scaled)
-            bT = select(rowmaxv, rowmaxv :< .)
+            bT = select(rowmaxv, (rowmaxv :< .) :& (rowmissing(scaled) :== 0))
             if (rows(bT) > 0) {
                 crit = csdid__type1_quantile(bT, 1 - alp)
                 band_built = 1
@@ -5758,8 +5946,8 @@ void csdid__agg_assemble_bootout(
 {
     real scalar k_effects, k, j, se_floor
 
-    // R's degenerate-SE threshold; see csdid__se_from_if.
-    se_floor = sqrt(epsilon(1)) * 10
+    // did compute.aggte.R:getSE retains every finite positive SE.
+    se_floor = 0
 
     k_effects = rows(agg)
     k = rows(seboot)
@@ -5791,22 +5979,11 @@ void csdid__agg_assemble_bootout(
     }
 }
 
-// Which columns can be DRAWN. R draws every column and judges degeneracy on
-// the draws -- mboot l142, ndg.dim = !is.na(colSums(bres)) &
-// colSums(bres^2) > sqrt(.Machine$double.eps)*10 -- which is exactly the test
-// csdid__bootstrap_sigma applies to each drawn column. The only screen owed
-// here is the one R never faces: a failed (g,t) cell is an all-missing column
-// and has no draws at all. Judged per COLUMN, as ndg.dim is, so a failed cell
-// drops out alone rather than taking the healthy columns' inference with it.
-//
-// Screening the CLUSTER SUMS against the same absolute tolerance -- as this
-// did -- is a SECOND, tighter screen R does not have: the draws carry
-// biters/nc times the column sum of squares, so on any run with more
-// replications than clusters every column with a sum of squares in
-// (tol*nc/biters, tol] lost its standard error here and kept it in R, and
-// left the sup-t maximum with it, moving the band on every other cell too.
-// The number of columns drawn does not move the random stream (multipliers
-// are drawn per observation), so widening the keep-set is seed-neutral.
+// did mboot.R:143-167 judges degeneracy from the draws. Before drawing, only
+// columns carrying missing input are excluded; a failed (g,t) cell must not
+// contaminate the healthy columns. No absolute-magnitude screen belongs on
+// either the influence functions or the cluster sums. Multipliers are drawn
+// per observation, so the drawable-column count never changes the RNG stream.
 real colvector csdid__boot_drawable_cols(real matrix sc)
 {
     return(csdid__selidx(colmissing(sc)' :== 0))
@@ -7590,10 +7767,8 @@ class csdid__Agg {
     real matrix    inffunc
     real matrix    group_prob
     real matrix    unit_map
-    // (group, event_time) of the cells na_rm dropped, kept so the dynamic
-    // aggregation can see whether a dropped cell sat inside a balanced
-    // window it is about to report as composition-constant
-    real matrix    dropped_gt
+    // Original support remains binding after missing estimates are removed.
+    real matrix    full_gt
     real colvector group
     real colvector tt
     real colvector event_time
@@ -7627,7 +7802,6 @@ class csdid__Agg {
 
     // ---- what the aggregation produces ----
     real colvector egt
-    real colvector tgrid_full
     real colvector effects
     real colvector ses
     real matrix    effect_if_mat
@@ -7698,6 +7872,7 @@ void csdid__Agg::new()
     inffunc       = J(0, 0, .)
     group_prob    = J(0, 0, .)
     unit_map      = J(0, 0, .)
+    full_gt       = J(0, 3, .)
     group         = J(0, 1, .)
     tt            = J(0, 1, .)
     event_time    = J(0, 1, .)
@@ -7767,22 +7942,9 @@ void csdid__Agg::load()
     csdid__engine_ensure()
 
     attgt = st_matrix("e(attgt)")
-    // The original rank grid, taken BEFORE any missing-cell filtering:
-    // R builds it as sort(unique(c(originaltlist, originalglist))) --
-    // compute.aggte.R:239, "In case g's are not part of tlist" -- so the
-    // union here is every cell's time, every cell's base period (the
-    // periods that survive standardization are exactly those some cell
-    // references), and every cohort date. Ranking on the SURVIVING cell
-    // times alone was wrong twice over (cold-audit round 11): dropmissing
-    // shifted the ranks, and an off-grid cohort has a rank of its own in
-    // R's map rather than an exclusion.
-    // the tlist half only: R's tlist stays the ORIGINAL periods under
-    // na.rm (its recompute lines are commented out in compute.aggte.R:163,
-    // :194), and every period survives preprocessing exactly when some cell
-    // references it as its time or base. The glist half joins per route,
-    // because R DOES refilter glist under na.rm (:164) and refilters it
-    // again for type=group after a raw-scale max_e screen (:177-195).
-    tgrid_full = uniqrows(attgt[., 2] \ attgt[., 10])
+    // did compute.aggte.R:165-168: missing estimates do not erase the
+    // originally observed event-time support required by balance().
+    full_gt = attgt[., (1, 2, 3)]
     group_prob = st_matrix("e(group_prob)")
     if (use_cache != 0) {
         inffunc = CSDID_ENGINE.inffunc
@@ -7810,6 +7972,10 @@ void csdid__Agg::load()
         errprintf("stored influence functions do not match ATT(g,t) results\n")
         _error(498)
     }
+    if (!any(attgt[., 1] :<= attgt[., 2])) {
+        st_local("__csdid_agg_diagnosis", "no post-treatment ATT(g,t) estimates are available to aggregate (all cells have time < cohort)")
+        _error(498)
+    }
     if (use_cache != 0 & rows(unit_map) != st_numscalar("e(N_units)")) {
         errprintf("the stored influence functions do not match the active csdid results; re-run csdid before aggregating\n")
         _error(498)
@@ -7826,7 +7992,6 @@ void csdid__Agg::load()
     }
 
     att = attgt[., 4]
-    dropped_gt = J(0, 2, .)
     if (sum(att :>= .) > 0) {
         if (!na_rm) {
             // Say how many cells are missing and out of how many, so the user
@@ -7852,7 +8017,6 @@ void csdid__Agg::load()
             _error(498)
         }
         keep_notmiss = which(notmiss)
-        dropped_gt = select(attgt[., (1, 3)], att :>= .)
         attgt = attgt[keep_notmiss, .]
         inffunc = inffunc[., keep_notmiss]
     }
@@ -8023,8 +8187,8 @@ real scalar csdid__Agg::cluster_se(real colvector ifv)
     real matrix sc
     real scalar n, se, se_floor
 
-    // R's degenerate-SE threshold; see csdid__se_from_if.
-    se_floor = sqrt(epsilon(1)) * 10
+    // did compute.aggte.R:getSE retains every finite positive SE.
+    se_floor = 0
 
     n = rows(ifv)
     if (n == 0) return(.)
@@ -8032,8 +8196,12 @@ real scalar csdid__Agg::cluster_se(real colvector ifv)
     if (sum(cluster_vec :>= .) > 0) return(csdid__se_from_if(ifv))
 
     sc = csdid__cluster_sums_pre(cl_ord, cl_info, ifv)
+    // quadcross() drops missing rows, whereas did getSE's sum(S^2)
+    // propagates a missing cluster or a square that overflows.
+    if (hasmissing(sc)) return(.)
+    if (hasmissing(sc:^2)) return(.)
     se = sqrt(quadcross(sc[., 1], sc[., 1])) / n
-    if (se <= se_floor) return(.)
+    if (se >= . | se <= se_floor) return(.)
     return(se)
 }
 
@@ -8129,31 +8297,12 @@ void csdid__Agg::store()
 void csdid__Agg::agg_simple()
 {
     real rowvector keep
-    real colvector agg_tgrid, agg_tr, agg_gr
-    real scalar agg_i
 
-    // R rank-recodes periods and cohorts (orig2t) BEFORE applying max_e to
-    // the simple and group keepers (compute.aggte.R:279, :335), so on a
-    // gapped calendar max_e counts OBSERVED PERIODS, not calendar units --
-    // measured: on periods {1,3,5} with g=3 and max_e=1, R keeps both post
-    // cells and csdid's raw-calendar comparison kept one. The dynamic path
-    // is different by R's own construction (eseq = originalt -
-    // originalgroup, raw) and stays raw here too. The rank of a value is
-    // its count of grid points at or below it, exact for every on-grid
-    // value; missing max_e still means unbounded, since a comparison
-    // against missing is true for the same reason it was on the raw scale.
-    // grid = original tlist UNION the surviving cohort dates (R
-    // compute.aggte.R:239 with glist as it stands after the na.rm filter)
-    agg_tgrid = uniqrows(tgrid_full \ group)
-    agg_tr = J(rows(tt), 1, 0)
-    agg_gr = J(rows(group), 1, 0)
-    for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
-        agg_tr = agg_tr + (tt :>= agg_tgrid[agg_i])
-        agg_gr = agg_gr + (group :>= agg_tgrid[agg_i])
-    }
-    keep = which((group :<= tt) :& (agg_tr :<= agg_gr :+ max_e))
+    // did compute.aggte.R:316: every aggregation window uses e=t-g in the
+    // original calendar units, including irregularly spaced periods.
+    keep = which((group :<= tt) :& (event_time :>= min_e) :& (event_time :<= max_e))
     if (cols(keep) == 0) {
-        errprintf("no valid ATT(g,t) estimates found for simple aggregation\n")
+        st_local("__csdid_agg_diagnosis", "no valid ATT(g,t) estimates found for simple aggregation within the requested window(); adjust window()/min_e()/max_e()")
         _error(498)
     }
     cell_effect(keep, overall_att, overall_if, overall_se)
@@ -8171,9 +8320,9 @@ void csdid__Agg::agg_group()
 {
     real rowvector keep
     real colvector weights, effect_if, overall_weights
-    real colvector agg_tgrid, agg_tr, agg_gr, agg_gscreen
+    real colvector agg_gscreen
     real matrix wif
-    real scalar i, g, n_effects, n_max, agg_i
+    real scalar i, g, n_effects, n_max
 
     // One cohort at most per iteration, so the tables are opened at that size
     // and trimmed once if dropmissing left a cohort out. Appending a column to
@@ -8190,46 +8339,31 @@ void csdid__Agg::agg_group()
     pgg = J(n_max, 1, .)
     effect_if_mat = J(rows(inffunc), n_max, .)
     n_effects = 0
-    // R's type=group na.rm screen runs BEFORE the rank recode, on RAW
-    // calendar values (compute.aggte.R:177): a cohort with no surviving
-    // cell inside (g <= t <= g + max_e) leaves glist entirely, and the
-    // grid is then built from the SURVIVING cohorts (:195 feeding :239).
-    // Without na.rm the screen never runs (it sits inside R's na.rm
-    // block), and every cohort is present anyway.
+    // did compute.aggte.R:190 preserves the addition-form window in its
+    // na.rm cohort screen. The final keeper uses t-g instead: on decimal
+    // boundaries those operations can round differently, and both matter.
     agg_gscreen = J(rows(glist), 1, 1)
     if (na_rm) {
         for (i = 1; i <= rows(glist); i++) {
             g = glist[i]
-            if (cols(which((group :== g) :& (g :<= tt) :& (tt :<= g :+ max_e))) == 0) {
+            if (cols(which((group :== g) :& (g :<= tt) :& (tt :>= g :+ min_e) :& (tt :<= g :+ max_e))) == 0) {
                 agg_gscreen[i] = 0
             }
         }
     }
-    // R stops when no cohort survives the screen (compute.aggte.R:185-187).
-    // select() on a one-cohort glist returns 0 x 0, which the union below
-    // cannot take, so the refusal is raised before it.
+    // did compute.aggte.R:198 refuses when no cohort survives the screen.
     if (!any(agg_gscreen)) {
-        errprintf("no valid ATT(g,t) estimates found for group aggregation\n")
+        st_local("__csdid_agg_diagnosis", "no valid ATT(g,t) estimates found for group aggregation within the requested window(); adjust window()/min_e()/max_e()")
         _error(498)
-    }
-    agg_tgrid = uniqrows(tgrid_full \ select(glist, agg_gscreen))
-    agg_tr = J(rows(tt), 1, 0)
-    agg_gr = J(rows(group), 1, 0)
-    for (agg_i = 1; agg_i <= rows(agg_tgrid); agg_i++) {
-        agg_tr = agg_tr + (tt :>= agg_tgrid[agg_i])
-        agg_gr = agg_gr + (group :>= agg_tgrid[agg_i])
     }
     for (i = 1; i <= n_max; i++) {
         g = glist[i]
         if (agg_gscreen[i] == 0) continue
-        keep = which((group :== g) :& (group :<= tt) :& (agg_tr :<= agg_gr :+ max_e))
-        // R averages every cohort its screen admitted and stops on one with
-        // nothing to average (get_agg_inf_func, compute.aggte.R:777-781).
-        // With na.rm the raw screen above can admit such a cohort: on an axis
-        // whose periods sit less than one time() unit apart, [g, g + max_e]
-        // is wider than the rank window taken here (:335).
+        keep = which((group :== g) :& (group :<= tt) :& (event_time :>= min_e) :& (event_time :<= max_e))
+        // did compute.aggte.R:391 refuses an empty keeper even if its
+        // addition-form cohort screen admitted a decimal-boundary cell.
         if (cols(keep) == 0) {
-            errprintf("no valid ATT(g,t) estimates found for group aggregation\n")
+            st_local("__csdid_agg_diagnosis", sprintf("no valid ATT(g,t) estimates found for group aggregation for cohort %g within the requested window(); adjust window()/min_e()/max_e(), or specify dropmissing", g))
             _error(498)
         }
         weights = J(cols(keep), 1, 1 / cols(keep))
@@ -8263,16 +8397,38 @@ void csdid__Agg::agg_dynamic()
     real matrix t_first_mat  // F-009: defensive e(time_first) fetch
     real colvector include_balanced, pos, overall_weights, effect_if
     real rowvector keep, keep2
-    real scalar i, e, n_effects, max_t, effect, se
+    real scalar i, j, e, n_effects, max_t, effect, se
     real scalar t_first  // F-009: balance_e truncation needs e(time_first)
-    real scalar drift_n, vanish_n, win_lo, win_hi
-    string scalar drift_list, vanish_list
-    real colvector vanish_e
+    real colvector eligible_g, required_e, counts, complete
+    real matrix pairs
 
     include_balanced = J(rows(group), 1, 1)
     if (balance_e >= 0) {
-        max_t = max(tt)
-        include_balanced = ((max_t :- group) :>= balance_e)
+        // did compute.aggte.R:514-546: determine the required observed
+        // post-treatment support BEFORE missing-cell and display filtering.
+        max_t = max(full_gt[., 2])
+        eligible_g = uniqrows(select(full_gt[., 1], (max_t :- full_gt[., 1]) :>= balance_e))
+        required_e = uniqrows(select(full_gt[., 3], ((max_t :- full_gt[., 1]) :>= balance_e) :&
+            (full_gt[., 3] :>= 0) :& (full_gt[., 3] :<= balance_e)))
+        complete = J(rows(eligible_g), 1, 0)
+        if (rows(required_e) > 0 & rows(eligible_g) > 0) {
+            pairs = uniqrows(select((group, event_time), ((max_t :- group) :>= balance_e) :&
+                (event_time :>= 0) :& (event_time :<= balance_e)))
+            counts = J(rows(eligible_g), 1, 0)
+            for (i = 1; i <= rows(pairs); i++) {
+                j = csdid__sorted_index(eligible_g, pairs[i, 1])
+                if (j < .) counts[j] = counts[j] + 1
+            }
+            complete = (counts :== rows(required_e))
+        }
+        if (!any(complete)) {
+            st_local("__csdid_agg_diagnosis", "no cohorts have nonmissing ATT(g,t) estimates at every observed post-treatment event time through balance(); reduce balance() or inspect e(attgt)")
+            _error(498)
+        }
+        include_balanced = J(rows(group), 1, 0)
+        for (i = 1; i <= rows(eligible_g); i++) {
+            if (complete[i]) include_balanced = include_balanced :| (group :== eligible_g[i])
+        }
     }
     egt = uniqrows(select(event_time, include_balanced :!= 0))
     // select() on a 1 x 1 vector returns 0 x 0 when it keeps nothing, and a
@@ -8307,56 +8463,6 @@ void csdid__Agg::agg_dynamic()
     if (rows(egt) == 0) {
         errprintf("no event times fall within the requested aggregation window\n")
         _error(498)
-    }
-    // Owner decision 2026-08-28: composition drift inside the balanced
-    // window is ANNOUNCED. The balance rule admits cohorts by cohort alone
-    // -- (maxT - g) >= balance_e, no per-event-time presence test, exactly
-    // the reference's own rule -- so a cell removed by dropmissing at an
-    // event time the window still reports takes its cohort out of that one
-    // event time while leaving it in the rest. The numbers match the
-    // reference either way; the reference says nothing when it happens, and
-    // a balanced profile is read as composition-constant, so csdid says so
-    // (the register's over-warn precedent). The ado prints from the flags.
-    if (balance_e >= 0 & na_rm & rows(dropped_gt) > 0) {
-        drift_n = 0
-        drift_list = ""
-        for (i = 1; i <= rows(dropped_gt); i++) {
-            if ((max_t - dropped_gt[i, 1]) >= balance_e & sum(egt :== dropped_gt[i, 2]) > 0) {
-                drift_n = drift_n + 1
-                if (drift_n <= 5) {
-                    drift_list = drift_list + (drift_list == "" ? "" : "; ") +
-                        sprintf("cohort %g at event time %g", dropped_gt[i, 1], dropped_gt[i, 2])
-                }
-            }
-        }
-        if (drift_n > 0) {
-            st_numscalar("CSDID_AGG_BAL_DRIFT", drift_n)
-            st_global("CSDID_AGG_BAL_DRIFT_LIST", drift_list)
-        }
-        // Owner decision 2026-09-26: an event time inside the balanced
-        // window whose every cell dropmissing removed is not reported, and
-        // the overall effect averages over the event times left. The
-        // reference drops it in silence; csdid warns and carries on. An
-        // admitted cohort's dropped cell at an event time absent from egt
-        // is exactly such an event time.
-        win_lo = max((balance_e - max_t + t_first, min_e))
-        win_hi = min((balance_e, max_e))
-        vanish_e = J(0, 1, .)
-        for (i = 1; i <= rows(dropped_gt); i++) {
-            e = dropped_gt[i, 2]
-            if ((max_t - dropped_gt[i, 1]) >= balance_e & e >= win_lo & e <= win_hi &
-                sum(egt :== e) == 0) vanish_e = vanish_e \ e
-        }
-        if (rows(vanish_e) > 0) {
-            vanish_e = uniqrows(vanish_e)
-            vanish_n = rows(vanish_e)
-            vanish_list = ""
-            for (i = 1; i <= vanish_n; i++) {
-                vanish_list = vanish_list + (i > 1 ? " " : "") + sprintf("%g", vanish_e[i])
-            }
-            st_numscalar("CSDID_AGG_BAL_VANISH", vanish_n)
-            st_global("CSDID_AGG_BAL_VANISH_LIST", vanish_list)
-        }
     }
     n_effects = rows(egt)
     effects = J(n_effects, 1, .)
@@ -9003,21 +9109,14 @@ void csdid_bootstrap_aggte_direct(
 
 void csdid__rescale_v_to_se(real matrix V, real colvector se)
 {
-    real scalar j, l, sj, tol
-
-    // tol is R's degenerate-SE threshold (att_gt.R:570/593, compute.aggte.R:312),
-    // so it is only meaningful against an SE. Compared against the VARIANCE
-    // V[j,j] it fired on every ordinary cell with se < sqrt(tol) = 3.9e-04 and
-    // zeroed that cell's covariances, which made every test/lincom after csdid
-    // depend on the units the outcome happens to be measured in.
-    tol = sqrt(epsilon(1)) * 10
+    real scalar j, l, sj
     for (j = 1; j <= rows(V); j++) {
         if (se[j] >= .) {
             V[j, .] = J(1, cols(V), 0)
             V[., j] = J(rows(V), 1, 0)
             continue
         }
-        if (V[j, j] < . & V[j, j] > tol * tol) {
+        if (V[j, j] < . & V[j, j] > 0) {
             sj = se[j] / sqrt(V[j, j])
             V[j, .] = V[j, .] :* sj
             V[., j] = V[., j] :* sj

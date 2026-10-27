@@ -144,16 +144,22 @@ assert `n_finite_boot' == 8
 assert `n_boot_differs' > 0
 
 *-----------------------------------------------------------------------------
-* Part 5: full balancing cannot silently remove an entire treated cohort
-* from the requested grid. The default reference refuses this shape (RT040).
-* Explicitly excluding that cohort before estimation remains a valid call.
+* Part 5: full balancing announces a vanished cohort and estimates the same
+* settled grid as an explicit exclusion (upstream preprocessing reconciliation).
 *-----------------------------------------------------------------------------
 import delimited using "`fixture'/inputs/mpdta-gap.csv", clear asdouble
-capture quietly csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical
-assert _rc == 459
+quietly csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical storeall
+tempname balanced_att balanced_if
+matrix `balanced_att'=e(attgt)
+matrix `balanced_if'=e(inffunc)
+tempfile balanced_actual
+rt032_save_attgt, outfile("`balanced_actual'")
+rt032_assert_attgt_matches_r, actual("`balanced_actual'") expected("`fixture'/expected/r/attgt-drop-panel-analytical.csv")
 
 import delimited using "`fixture'/inputs/mpdta-drop2006.csv", clear asdouble
-csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical
+csdid lemp, id(countyreal) cluster(countyreal) time(year) gvar(first_treat) analytical storeall
 assert "`e(cmd)'" == "csdid"
+mata: assert(mreldif(st_matrix("`balanced_att'"),st_matrix("e(attgt)"))==0)
+mata: assert(mreldif(st_matrix("`balanced_if'"),st_matrix("e(inffunc)"))==0)
 
 display as text "test-missing-cell-se: all assertions passed"

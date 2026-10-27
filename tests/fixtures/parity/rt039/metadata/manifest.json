@@ -68,7 +68,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1",
+        "did": "2.5.1.904",
         "DRDID": "1.4.0",
         "fastglm": "0.1.1"
       }
@@ -79,7 +79,7 @@
     {
       "path": "expected/r/attgt.csv",
       "schema": "attgt",
-      "sha256": "3e6bbd3f379441eed3cf846603d26b39027fc9beb5d416735e060946db704ab0"
+      "sha256": "63d5e2b3da78d3bede345e6e97d04a6173ec89c4642e312e0eeb884af3d845d8"
     },
     {
       "path": "expected/r/inffunc.csv",

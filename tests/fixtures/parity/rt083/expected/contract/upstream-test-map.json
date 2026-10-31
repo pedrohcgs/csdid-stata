@@ -1,0 +1,38 @@
+[
+  {
+    "source_file": "tests/testthat/test-aggregation-weight-scale.R",
+    "source_sha256": "b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88",
+    "source_test": "weight influence functions match ratio derivatives at extreme scales",
+    "mapped_scenario": "tests/stata/r/test-aggregation-weight-scale.do",
+    "assertion_family": "RT083 compares complete weight-ratio influence functions and independent finite-difference derivatives at six weight scales.",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-aggregation-weight-scale.R",
+    "source_sha256": "b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88",
+    "source_test": "weight influence functions preserve ordinary arithmetic and invalid inputs",
+    "mapped_scenario": "tests/stata/r/test-aggregation-weight-scale.do",
+    "assertion_family": "RT083 preserves ordinary-scale arithmetic and all-missing invalid-input results.",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-aggregation-weight-scale.R",
+    "source_sha256": "b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88",
+    "source_test": "weight influence functions handle overflow of repeated selected masses",
+    "mapped_scenario": "tests/stata/r/test-aggregation-weight-scale.do",
+    "assertion_family": "RT083 checks complete finite influence matrices when repeated cohort masses overflow their raw sum.",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  },
+  {
+    "source_file": "tests/testthat/test-aggregation-weight-scale.R",
+    "source_sha256": "b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88",
+    "source_test": "all public aggregations preserve full influence functions across weight scales",
+    "mapped_scenario": "tests/stata/r/test-aggregation-weight-scale.do",
+    "assertion_family": "RT083 compares full cell and aggregate influence functions, estimates, analytical/seeded-bootstrap inference and analytical saved-RIF roundtrips for panel/RC and all three estimators.",
+    "coverage_status": "mapped",
+    "divergence_id": ""
+  }
+]

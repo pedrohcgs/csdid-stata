@@ -1,0 +1,26 @@
+{
+  "constant": {
+    "input_transformation": "unchanged ordinary input",
+    "column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+    "warnings": [],
+    "messages": []
+  },
+  "range_eps": {
+    "input_transformation": "all units use weights 1 1+1e-8 1-1e-8 1 across periods",
+    "column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "c3ff52d62fc501794425636ca9ae209646f9d5db7ad3633bfbcb960473e6c96d", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+    "warnings": [],
+    "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n"
+  },
+  "balanced_away": {
+    "input_transformation": "id1 time2 weight doubled and time4 row omitted",
+    "column_double_sha256": ["aecffcb047ee612004ab6f24d698c7abc797f0a734507f576c3452c83732f6dd", "f87c8e651d295a83838b20f80d4e19691fe8ac6194c4878bee44e859d25bc64c", "46084a22d157196626441d80a44e935c3e82357eb4bc60a0dedcf41208392f5b", "4e7ed4382534d6479c9a84e1bd40600040978262660c8d9ef3af9f8fa0147058", "d5cc681cb6779f31d72d9935066306147efc24a08607547df68e56d81dbb2393", "f94e3f944c9e1525cbe026ee056c0f5fc191d5bb679aaaf19e65181ae43b1647"],
+    "warnings": "1 units are missing in some periods. Converting to balanced panel by dropping them.",
+    "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n"
+  },
+  "first_treated": {
+    "input_transformation": "id1 time2 weight doubled and cohort set to1",
+    "column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "455123ba0a83db4d41c44fe3702e994e06dca5f6013b928da41cd2c927049154", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "d92fa457fbb896d97da5744ae1870cee855518685b12e73dd82658987dffa900", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+    "warnings": "Dropped 1 units that were already treated in the first period.",
+    "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n"
+  }
+}

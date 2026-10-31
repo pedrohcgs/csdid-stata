@@ -205,7 +205,7 @@ capture noisily {
     * ---------------------------------------------------------------------------
     tempfile staged_mata
     filefilter "`root'/src/mata/csdid.mata" "`staged_mata'", ///
-        from("2.0.2|source") to("2.0.2|`c(stata_version)'") replace
+        from("2.0.3|source") to("2.0.3|`c(stata_version)'") replace
     mata: mata clear
     mata: mata set matastrict on
     do "`staged_mata'"
@@ -331,11 +331,11 @@ capture noisily {
     local other_pkg "1.82.0"
     tempfile fp_thisbuild fp_newerstata fp_othercsdid fp_nostamp
     filefilter "`root'/src/mata/csdid.mata" "`fp_thisbuild'", ///
-        from("2.0.2|source") to("2.0.2|`c(stata_version)'") replace
+        from("2.0.3|source") to("2.0.3|`c(stata_version)'") replace
     filefilter "`root'/src/mata/csdid.mata" "`fp_newerstata'", ///
-        from("2.0.2|source") to("2.0.2|`newer_stata'") replace
+        from("2.0.3|source") to("2.0.3|`newer_stata'") replace
     filefilter "`root'/src/mata/csdid.mata" "`fp_othercsdid'", ///
-        from("2.0.2|source") to("`other_pkg'|`c(stata_version)'") replace
+        from("2.0.3|source") to("`other_pkg'|`c(stata_version)'") replace
     * A library that predates the stamp: the function is not merely wrong, it
     * is not there.
     filefilter "`root'/src/mata/csdid.mata" "`fp_nostamp'", ///
@@ -404,8 +404,8 @@ capture noisily {
         * settings it holds it under -- a marker that could disagree with
         * either is a way to skip the decision after the thing it decided
         * about has changed.
-        if "`arm'" == "thisbuild" mlib_marker_agrees "2.0.2|`c(stata_version)'"
-        else                      mlib_marker_agrees "2.0.2|source"
+        if "`arm'" == "thisbuild" mlib_marker_agrees "2.0.3|`c(stata_version)'"
+        else                      mlib_marker_agrees "2.0.3|source"
 
         * and the note is printed exactly when the library was refused, and
         * says which of the two refusals this is. The user's position differs:
@@ -484,7 +484,7 @@ capture noisily {
 
     import delimited using "`data'", clear asdouble
     csdid y x1 x2, ivar(id) time(time) gvar(g) method(reg) analytical notyet
-    mlib_marker_agrees "2.0.2|`c(stata_version)'"
+    mlib_marker_agrees "2.0.3|`c(stata_version)'"
 
     adopath - "`scratch'/stamp-thisbuild"
     adopath ++ "`scratch'/stamp-othercsdid"
@@ -498,7 +498,7 @@ capture noisily {
 
     mlib_log_says using "`switchlog'", ///
         message("belongs to a different installation of csdid") expect(1)
-    mlib_marker_agrees "2.0.2|source"
+    mlib_marker_agrees "2.0.3|source"
 
     tempname SWITCHATT
     matrix `SWITCHATT' = e(attgt)
@@ -532,7 +532,7 @@ capture noisily {
     quietly mata: mata mlib index
 
     csdid_stats using "`rif'", type(simple)
-    mlib_marker_agrees "2.0.2|`c(stata_version)'"
+    mlib_marker_agrees "2.0.3|`c(stata_version)'"
     assert strpos(";`c(matalibs)';", ";lcsdid_v2;") == 1
 
     local order_less ";`c(matalibs)';"
@@ -544,7 +544,7 @@ capture noisily {
     import delimited using "`data'", clear asdouble
     csdid y x1 x2, ivar(id) time(time) gvar(g) method(dripw) analytical notyet
     assert strpos(";`c(matalibs)';", ";lcsdid_v2;") == 1
-    mlib_marker_agrees "2.0.2|`c(stata_version)'"
+    mlib_marker_agrees "2.0.3|`c(stata_version)'"
 
     tempname ORDERATT
     matrix `ORDERATT' = e(attgt)
@@ -604,7 +604,7 @@ capture noisily {
 
     import delimited using "`data'", clear asdouble
     csdid y x1 x2, ivar(id) time(time) gvar(g) method(reg) analytical notyet
-    mlib_marker_agrees "2.0.2|`c(stata_version)'"
+    mlib_marker_agrees "2.0.3|`c(stata_version)'"
     * The decision was recorded against a file, not against a name that means
     * whatever the working directory makes it mean.
     assert `"$CSDID_ENGINE_LIBRARY"' == `"`cwd_lib'/lcsdid_v2.mlib"'
@@ -631,7 +631,7 @@ capture noisily {
     * path produced at the top of this file -- draw for draw, same seed.
     mlib_log_says using "`cwdlog'", ///
         message("belongs to a different installation of csdid") expect(1)
-    mlib_marker_agrees "2.0.2|source"
+    mlib_marker_agrees "2.0.3|source"
     assert `"$CSDID_ENGINE_LIBRARY"' == `"`cwd_trap'/lcsdid_v2.mlib"'
 
     tempname CWDATT CWDB CWDV

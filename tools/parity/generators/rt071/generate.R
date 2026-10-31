@@ -65,7 +65,7 @@ outputs <- list(
   list(path = "expected/r/refusals.csv", schema = "refusal-message", sha256 = sha(file.path(out, "expected/r/refusals.csv"))))
 manifest <- list(matrix_id = "RT071", fixture_family = "r-group-window-subunit-axis",
   normative_source = "did 2.5.1.904 compute.aggte.R:192 (additive raw-scale na.rm screen), :302 (subtractive original-unit keeper), :368-387 (named empty-cohort window refusal)",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = list(),
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt071/generate.R", path = "tools/parity/generators/rt071/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),

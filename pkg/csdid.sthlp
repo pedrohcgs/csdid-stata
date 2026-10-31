@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.2 27oct2026}{...}
+{* *! version 2.0.3 30oct2026}{...}
 {vieweralsosee "csdid postestimation" "help csdid_postestimation"}{...}
 {vieweralsosee "csdid_stats" "help csdid_stats"}{...}
 {vieweralsosee "csdid_estat" "help csdid_estat"}{...}
@@ -311,7 +311,9 @@ cross-section version of the estimator.
 {cmd:iweight}s are allowed and are treated as nonnegative sampling weights
 with positive mean. They are
 normalized internally. {cmd:aweight}s, {cmd:fweight}s, and {cmd:pweight}s are
-not accepted.
+not accepted. The time-varying-weight notice compares each unit's largest and
+smallest weights on a normalized scale over all screened observations,
+before later panel balancing or cohort and period reductions.
 
 {marker opt_model}{...}
 {dlgtab:Model}

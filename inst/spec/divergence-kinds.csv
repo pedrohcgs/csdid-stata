@@ -62,3 +62,4 @@ RT081-EXC004,stata-surface,No legacy conditional_did_pretest command or conditio
 RT081-EXC005,language-surface,R data.table expression scoping has no Mata evaluator analogue
 RT081-EXC006,stata-surface,R allow_unbalanced_panel reset messages have no matching Stata flag
 RT082-DIV001,stata-surface,Visible conservative cell refusal at a backend-dependent numerical-singularity cutoff
+RT084-DIV001,numerical-boundary,Stable relative masses for balanced default single-period weights at a subnormal boundary

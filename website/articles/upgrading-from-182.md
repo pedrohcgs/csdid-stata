@@ -276,8 +276,8 @@ method this version does not offer.
 There is no external dependency (no drdid, and nothing else). The SSC entry
 for Version 1.81 reads `Requires: Stata version 14 and drdid from SSC`, and
 Version 1.82 needs `drdid` too, while 2.0.0 needs nothing beyond Stata
-itself. It is also faster: between 11x and 34x, and never slower, on the
-fixed-size workloads in the package README, and from 11x to 304x as the
+itself. Version 2.0.3 is also faster: between 9x and 27x, and never slower, on the
+fixed-size workloads in the package README, and from 11x to 305x as the
 design's size, periods, cohorts and sampling scheme vary, on
 [their own page](speed-vs-182.html).
 

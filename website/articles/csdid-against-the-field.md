@@ -1,6 +1,5 @@
 ---
 title: "How csdid compares with other DiD Stata commands"
-benchmark_version: 2.0.1
 permalink: /articles/comparing-did-commands.html
 math: true
 ---
@@ -8,7 +7,7 @@ math: true
 
 We are living in a time where applied econometrics papers are commonly paired with Stata, R, or Python packages. On one hand, this is really great, as it substantially lowers the barrier to using modern econometric methods in concrete applications. Everything else equal, we all like fast and reliable implementations of econometrics papers. On the other hand, when multiple packages implementing related procedures are available, one may be tempted to try several of them, perhaps without going back to the original papers. This is where we enter some potentially dangerous territory. At the end of the day, do these different estimators even target the same causal parameter? Do they reflect similar notions of uncertainty to warrant comparisons in precision? These questions are very important for econometric theory and practice, as they can lead to never-ending discussions.
 
-When it comes to Difference-in-Differences (DiD), this is perhaps even more interesting and important, as DiD is arguably the most popular observational causal inference method in economics; [see here for some evidence](https://paulgp.com/econlit-pipeline/paper.html). In recent years we have seen a boom of modern DiD tools aimed at allowing for richer notions of heterogeneity than standard two-way fixed effects specifications, each paired with a companion Stata command: [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001) with `csdid` (this package), [Wooldridge (2025)](https://doi.org/10.1007/s00181-025-02807-z) with `jwdid`, [Borusyak, Jaravel, and Spiess (2024)](https://doi.org/10.1093/restud/rdae007) with `did_imputation`, de Chaisemartin and D'Haultfœuille ([2020](https://doi.org/10.1257/aer.20181169), [2026](https://doi.org/10.1162/rest_a_01414)) with `did_multiplegt_dyn`, [Dube et al. (2025)](https://doi.org/10.1002/jae.70000) with `lpdid`, [Sun and Abraham (2021)](https://doi.org/10.1016/j.jeconom.2020.09.006) with `eventstudyinteract`, and [Deb et al. (2026)](https://www.nber.org/papers/w33026) with `flexdid`, among others. For someone who has not been breathing the DiD literature every day, it is tempting to treat these packages as interchangeable ways to obtain "the" event study. But, as we discuss in this article, that is not always the case. Our main goal here is to compare what each command estimates and how it conducts inference. To that end, we use simulations that you can reproduce line by line. We focus **exclusively** on binary treatments and staggered designs here. Stata itself also ships official commands for this setting, `xthdidregress` for panels and `hdidregress` for repeated cross sections, and we include them too: they are the commands a user reaches for without installing anything, so leaving them out would misrepresent the choice actually facing an applied researcher. The refreshed comparisons use `csdid` 2.0.1 and the official commands shipped with StataNow/MP 19.5. The installed versions of the other commands are recorded with the simulation outputs and held fixed throughout the campaign. For simplicity, we assume that (conditional) parallel trends hold in all periods and across all groups, and covariates are time-invariant (but their effects can be time-varying). We note that in this setting, none of these procedures we discuss is semiparametrically efficient [Chen, Sant'Anna, Xie (2025)](https://psantanna.com/files/Efficient_DiD.pdf).
+When it comes to Difference-in-Differences (DiD), this is perhaps even more interesting and important, as DiD is arguably the most popular observational causal inference method in economics; [see here for some evidence](https://paulgp.com/econlit-pipeline/paper.html). In recent years we have seen a boom of modern DiD tools aimed at allowing for richer notions of heterogeneity than standard two-way fixed effects specifications, each paired with a companion Stata command: [Callaway and Sant'Anna (2021)](https://doi.org/10.1016/j.jeconom.2020.12.001) with `csdid` (this package), [Wooldridge (2025)](https://doi.org/10.1007/s00181-025-02807-z) with `jwdid`, [Borusyak, Jaravel, and Spiess (2024)](https://doi.org/10.1093/restud/rdae007) with `did_imputation`, de Chaisemartin and D'Haultfœuille ([2020](https://doi.org/10.1257/aer.20181169), [2026](https://doi.org/10.1162/rest_a_01414)) with `did_multiplegt_dyn`, [Dube et al. (2025)](https://doi.org/10.1002/jae.70000) with `lpdid`, [Sun and Abraham (2021)](https://doi.org/10.1016/j.jeconom.2020.09.006) with `eventstudyinteract`, and [Deb et al. (2026)](https://www.nber.org/papers/w33026) with `flexdid`, among others. For someone who has not been breathing the DiD literature every day, it is tempting to treat these packages as interchangeable ways to obtain "the" event study. But, as we discuss in this article, that is not always the case. Our main goal here is to compare what each command estimates and how it conducts inference. To that end, we use simulations that you can reproduce line by line. We focus **exclusively** on binary treatments and staggered designs here. Stata itself also ships official commands for this setting, `xthdidregress` for panels and `hdidregress` for repeated cross sections, and we include them too: they are the commands a user reaches for without installing anything, so leaving them out would misrepresent the choice actually facing an applied researcher. The statistical comparisons use `csdid` 2.0.1 and the official commands shipped with StataNow/MP 19.5. The speed comparisons use `csdid` 2.0.3, measured on 31 October 2026. Each campaign records the installed versions of the other commands and holds them fixed throughout. For simplicity, we assume that (conditional) parallel trends hold in all periods and across all groups, and covariates are time-invariant (but their effects can be time-varying). We note that in this setting, none of these procedures we discuss is semiparametrically efficient [Chen, Sant'Anna, Xie (2025)](https://psantanna.com/files/Efficient_DiD.pdf).
 
 To summarize our findings (as this is not a mystery novel), it is worth pinpointing some broader cases:
 
@@ -261,7 +260,7 @@ number of periods and cohorts grows. We report the number of units (n),
 periods (T), cohorts (G), and
 the resulting number of rows, as these levers impact speed directly. We
 separately discuss balanced panels, unbalanced panels, and repeated cross-sections.
-The timing campaign in this section completed on 23 October 2026 with StataNow/MP 19.5
+The timing campaign in this section completed on 31 October 2026 with StataNow/MP 19.5
 on Mac (Apple Silicon) with 10 processors, using a separate Stata process for each
 benchmark tier and a discarded warmup for each package and dataset.
 
@@ -276,14 +275,14 @@ To clear this bar, our first comparison is within `csdid` only. We compare speed
 | n (T=10, G=4) | rows | `csdid` | `csdid` default |
 | --- | ---: | ---: | ---: |
 | 100 | 1,000 | 0.01 | 0.06 |
-| 1,000 | 10,000 | 0.03 | 0.07 |
-| 10,000 | 100,000 | 0.15 | 0.21 |
-| 100,000 | 1,000,000 | 1.29 | 1.47 |
+| 1,000 | 10,000 | 0.02 | 0.07 |
+| 10,000 | 100,000 | 0.17 | 0.23 |
+| 100,000 | 1,000,000 | 1.31 | 1.58 |
 
 <p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call.</p>
 
-At one million rows, analytical inference takes 1.29 seconds and the
-bootstrap-based default takes 1.47 seconds. The timing cost to get uniform
+At one million rows, analytical inference takes 1.31 seconds and the
+bootstrap-based default takes 1.58 seconds. The timing cost to get uniform
 confidence bands and address concerns about multiple testing is fairly low! To
 us, this should be a no-brainer, but we are the authors of the package!
 
@@ -295,15 +294,15 @@ errors as in every other cross-package table.
 
 | n (T=10, G=4) | rows | `csdid` | `lpdid` | `jwdid` | `eventstudyinteract` | `did_imputation` | `did_multiplegt_dyn` | `xthdidregress` |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 10,000 | 0.03 | 0.22 | 0.34 | 0.28 | 0.77 | 0.98 | 0.61 |
-| 10,000 | 100,000 | 0.14 | 0.95 | 1.55 | 1.65 | 3.97 | 5.01 | 4.85 |
-| 100,000 | 1,000,000 | 1.29 | 8.57 | 12.1 | 15.4 | 44.4 | 63.2 | 68.8 |
+| 1,000 | 10,000 | 0.03 | 0.22 | 0.41 | 0.27 | 0.88 | 1.00 | 0.65 |
+| 10,000 | 100,000 | 0.16 | 0.98 | 1.69 | 1.75 | 4.27 | 5.76 | 5.25 |
+| 100,000 | 1,000,000 | 1.27 | 8.55 | 12.2 | 15.3 | 44.2 | 61.5 | 67.3 |
 
 <p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call.</p>
 
 At one million rows, `lpdid` takes about 7 times as long as `csdid`, `jwdid`
-about 9 times, `eventstudyinteract` about 12 times, and `did_imputation`
-about 34 times. Stata's own `xthdidregress` is the slowest column here, at
+about 10 times, `eventstudyinteract` about 12 times, and `did_imputation`
+about 35 times. Stata's own `xthdidregress` is the slowest column here, at
 about 53 times. Reading the two tables together: `csdid` at its shipped
 default &mdash; bootstrap, uniform bands, and all &mdash; still comes in at
 under a fifth of the next-fastest command's analytical run at this size.
@@ -320,17 +319,19 @@ is the column to look at for a common-sample comparison. `bal(pair)` balances
 each 2x2 comparison separately; this is the estimand used in Version 1.82,
 and it remains available on request. The default, `bal(full)`, retains only
 units observed in every period. We should be upfront that it is faster mainly
-because it estimates on a smaller sample, whose size is disclosed, and not
+because it estimates on a smaller sample, whose size is given below, and not
 because it uses a faster algorithm. We report it because it is the default,
-but its timing is the timing for that smaller sample.
+but its timing is the timing for that smaller sample. The rows column gives
+the input sample; `bal(full)` retains 1,870, 20,600 and 197,490 rows in the
+three designs, respectively.
 
 <p class="table-title" markdown="span">Unbalanced panel, 15% of rows deleted, seconds per run</p>
 
 | n (T=10, G=4) | rows | `csdid bal(full)` | `csdid bal(pair)` | `csdid bal(none)` | `lpdid` | `jwdid` | `eventstudyinteract` | `did_imputation` | `did_multiplegt_dyn` | `xthdidregress` |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 8,496 | 0.02 | 0.05 | 0.07 | 0.21 | 0.37 | 0.33 | 0.85 | 1.04 | 1.01 |
-| 10,000 | 85,219 | 0.11 | 0.24 | 0.41 | 0.80 | 1.61 | 1.70 | 4.34 | 5.27 | 8.03 |
-| 100,000 | 849,905 | 0.88 | 1.91 | 3.49 | 6.18 | 11.7 | 14.3 | 40.5 | 61.2 | 105.5 |
+| 1,000 | 8,496 | 0.02 | 0.04 | 0.07 | 0.19 | 0.36 | 0.30 | 0.62 | 0.98 | 0.89 |
+| 10,000 | 85,219 | 0.10 | 0.22 | 0.40 | 0.79 | 1.48 | 1.53 | 4.42 | 4.89 | 7.01 |
+| 100,000 | 849,905 | 0.86 | 1.71 | 3.23 | 6.03 | 11.1 | 13.8 | 39.2 | 60.0 | 102.5 |
 
 <p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call.</p>
 
@@ -343,21 +344,21 @@ again invoked at its own documented covariate specification.
 
 | n per period (T=10, G=4) | rows | `csdid` | `flexdid` | `jwdid` | `did_imputation` | `hdidregress` |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000 | 10,000 | 0.11 | 0.18 | 0.38 | 0.31† | 1.15 |
-| 10,000 | 100,000 | 0.70 | 0.86 | 1.77 | 1.64† | 6.27 |
-| 100,000 | 1,000,000 | 6.17 | 7.29 | 13.4 | 20.6† | 73.3 |
+| 1,000 | 10,000 | 0.09 | 0.17 | 0.33 | 0.25† | 1.00 |
+| 10,000 | 100,000 | 0.63 | 0.81 | 1.66 | 1.60† | 5.56 |
+| 100,000 | 1,000,000 | 6.17 | 6.97 | 13.0 | 20.1† | 71.4 |
 | with a covariate: | |  |  |  |  |  |
-| 1,000 | 10,000 | 0.14 | 0.28 | 0.70 | 0.32† | 1.22 |
-| 10,000 | 100,000 | 0.76 | 1.28 | 3.48 | 1.84† | 6.43 |
-| 100,000 | 1,000,000 | 7.73 | 10.6 | 26.6 | 22.2† | 76.1 |
+| 1,000 | 10,000 | 0.12 | 0.27 | 0.59 | 0.28† | 1.03 |
+| 10,000 | 100,000 | 0.78 | 1.21 | 3.13 | 1.70† | 5.69 |
+| 100,000 | 1,000,000 | 7.27 | 9.98 | 25.6 | 21.1† | 73.8 |
 
 <p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call. Entries marked † record invocation time only: autosample dropped every requested horizon, so no requested effects or inference were returned.</p>
 
 `csdid` has the shortest recorded invocation time at every size in this
-table. The margin over `flexdid` is modest: 0.70 against 0.86 seconds at
-100,000 rows, and 6.17 against 7.29 seconds at one million. With one
-covariate, the one-million-row times are 7.73 for `csdid`, 10.6 for
-`flexdid`, 26.6 for `jwdid`, and 76.1 seconds for `hdidregress`.
+table. The margin over `flexdid` is modest: 0.63 against 0.81 seconds at
+100,000 rows, and 6.17 against 6.97 seconds at one million. With one
+covariate, the one-million-row times are 7.27 for `csdid`, 9.98 for
+`flexdid`, 25.6 for `jwdid`, and 73.8 seconds for `hdidregress`.
 
 The six `did_imputation` entries require a separate qualification:
 `autosample` dropped every requested horizon, tau0 through tau5, in each
@@ -374,18 +375,19 @@ the number of periods while holding n = 10,000 fixed.
 
 | T (n=10,000, G=4) | rows | `csdid` | `lpdid` | `jwdid` | `did_imputation` | `did_multiplegt_dyn` | `eventstudyinteract` | `xthdidregress` |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 5 | 50,000 | 0.09 | 0.51 | 0.73 | 1.78 | 1.97 | 0.46 | 1.32 |
-| 10 | 100,000 | 0.16 | 1.00 | 1.79 | 4.27 | 5.46 | 1.71 | 5.45 |
-| 20 | 200,000 | 0.28 | 1.86 | 5.14 | 9.62 | 12.5 | 7.41 | 26.6 |
-| 40 | 400,000 | 0.57 | 3.85 | 18.1 | 23.5 | 35.4 | 47.4 | &mdash; |
+| 5 | 50,000 | 0.09 | 0.46 | 0.67 | 1.76 | 1.78 | 0.41 | 1.17 |
+| 10 | 100,000 | 0.14 | 0.94 | 1.55 | 3.97 | 4.88 | 1.67 | 4.76 |
+| 20 | 200,000 | 0.26 | 1.92 | 4.66 | 9.51 | 11.4 | 7.52 | 25.1 |
+| 40 | 400,000 | 0.58 | 3.77 | 17.1 | 22.5 | 34.3 | 45.1 | &mdash; |
 
-<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call. Cells with no entry were not timed &mdash; `xthdidregress` at 40: single warmup call took 124.6s.</p>
+<p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call. Cells with no entry were not timed &mdash; `xthdidregress` at 40: single warmup call took 120.6s.</p>
 
 The timing for `csdid` is approximately linear in T, whereas `jwdid` and
 `eventstudyinteract` grow faster than linearly over this range. At T=40,
-`csdid` takes 0.57 seconds, `jwdid` takes 18.1 seconds and `did_imputation`
-takes 23.5 seconds &mdash; gaps of about 32 and 41 times. `xthdidregress` has
-no entry at T=40 because its discarded warmup took 124.6 seconds, past the
+`csdid` takes 0.58 seconds, `jwdid` takes 17.1 seconds and `did_imputation`
+takes 22.5 seconds &mdash; about 29 times and about 39 times the
+`csdid` time. `xthdidregress` has
+no entry at T=40 because its discarded warmup took 120.6 seconds, past the
 harness's per-call cap. No median was recorded for that cell. These gaps
 matter when a researcher considers many specifications.
 
@@ -395,33 +397,35 @@ adds ATT(g,t) cells that some commands estimate and others do not.
 
 <p class="table-title" markdown="span">Growing the number of cohorts, seconds per run</p>
 
-| G (n=10,000, T=20) | rows | `csdid` | `lpdid` | `did_imputation` | `did_multiplegt_dyn` | `jwdid` | `xthdidregress` | `eventstudyinteract` |
+| G (n=10,000, T=20) | rows | `csdid` | `lpdid` | `did_imputation` | `jwdid` | `did_multiplegt_dyn` | `xthdidregress` | `eventstudyinteract` |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 3 | 200,000 | 0.24 | 1.93 | 10.2 | 11.7 | 3.64 | 18.2 | 4.57 |
-| 6 | 200,000 | 0.34 | 1.81 | 8.38 | 12.4 | 8.16 | 39.5 | 17.4 |
-| 12 | 200,000 | 0.53 | 1.99 | 6.82 | 13.0 | 13.1 | 82.7 | 78.2 |
-| 18 | 200,000 | 0.52 | 2.05 | 7.11 | 12.2 | 12.2 | 90.1 | 109.9 |
+| 3 | 200,000 | 0.24 | 1.87 | 9.68 | 3.58 | 11.1 | 17.4 | 4.17 |
+| 6 | 200,000 | 0.33 | 1.83 | 8.65 | 8.49 | 12.8 | 40.7 | 18.4 |
+| 12 | 200,000 | 0.46 | 2.03 | 7.33 | 12.3 | 12.9 | 82.6 | 75.0 |
+| 18 | 200,000 | 0.52 | 2.17 | 7.32 | 12.5 | 12.9 | 95.1 | 110.4 |
 
 <p class="table-note" markdown="span">Every entry is the median of the timed runs after a discarded warmup. Commands that deliver the event study in a second call &mdash; `csdid`, `jwdid`, `xthdidregress` and `hdidregress` &mdash; are charged for that call as well as the estimation call.</p>
 
-The data size is identical in every row here; only the number of adoption
-dates changes. G denotes the requested count; the final row realizes 14
-treated cohorts because treatment dates lie on the integer calendar. `csdid` goes from 0.24 to 0.52 seconds across the range, and
+The data size is identical in every row here. G denotes the requested count;
+the final row realizes 14 treated cohorts within the 20-period calendar.
+Four assigned adoption dates fall beyond that calendar, so those groups are
+untreated throughout the observed sample. The never-treated share also
+varies across these designs. `csdid` goes from 0.24 to 0.52 seconds across the range, and
 `lpdid` barely moves, because it estimates only the horizons asked for. The
 commands that estimate every underlying cell pay for the extra cohorts:
-`eventstudyinteract` goes from 4.57 to 109.9 seconds and `xthdidregress` from
-18.2 to 90.1. Reading this table next to the periods table above is the
+`eventstudyinteract` goes from 4.17 to 110.4 seconds and `xthdidregress` from
+17.4 to 95.1. Reading this table next to the periods table above is the
 clearest illustration of the point made at the top of this section &mdash;
 what a command is asked to compute matters more than how fast it computes.
 
 The tables include aggregation in the reported time. The comparison with
-`csdid` Version 1.82, where the measured speed gains range from 11x to 304x
+`csdid` Version 1.82, where the measured speed gains range from 11x to 305x
 depending on the design, is reported separately:
 [Speed against Version 1.82](speed-vs-182.html).
 
 One last timing note. The non-default option rows that appear in the
 reliability tables below are not free, either: `lpdid` with `rw` adds about
-26% to the run time, and the `jwdid` unconditional route costs roughly 1.8
+25% to the run time, and the `jwdid` unconditional route costs roughly 2.3
 times the default at 100,000 rows, as it can no longer absorb the fixed
 effects. The [four appendix timing probes](https://github.com/pedrohcgs/csdid-stata/blob/main/tools/bench/field/results/appendix-timings/metadata.json)
 retain their separate protocols and results. The repeated-cross-section

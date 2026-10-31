@@ -1,4 +1,4 @@
-*! csdid_rif 2.0.2 27oct2026
+*! csdid_rif 2.0.3 30oct2026
 * Corrects Aggregation when data is missing
 
 * v1 csdid_rif

@@ -1,7 +1,7 @@
-# R `did` 2.5.1.904 <-> Stata `csdid` crosswalk
+# R `did` 2.5.1.906 <-> Stata `csdid` crosswalk
 
 This is a complete, two-way mapping between the R package
-[`did`](https://bcallaway11.github.io/did/) 2.5.1.904 (Callaway and Sant'Anna) and
+[`did`](https://bcallaway11.github.io/did/) 2.5.1.906 (Callaway and Sant'Anna) and
 this Stata `csdid` package. Read it left to right if you are porting R code to
 Stata, and right to left if you are reading a Stata log and want to know which
 R call produced the same numbers.
@@ -9,7 +9,7 @@ R call produced the same numbers.
 The Stata side of every row was read off the `syntax` lines in
 `src/ado/*.ado` and exercised in Stata; the R side of every row was read off
 the authenticated source at commit
-`48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e` (`args(did::att_gt)`,
+`4bed75ef731cba2e6d4a28205111b311f892fab1` (`args(did::att_gt)`,
 `args(did::aggte)`, and package help).
 
 Contents:
@@ -50,7 +50,7 @@ the group-time results.
 
 ## 2. `att_gt()` arguments -> `csdid` options
 
-R signature (verified with `args(did::att_gt)` against the pinned 2.5.1.904 source):
+R signature (verified with `args(did::att_gt)` against the pinned 2.5.1.906 source):
 
 ```r
 att_gt(yname, tname, idname = NULL, gname, xformla = NULL, data,
@@ -96,6 +96,31 @@ csdid depvar [covariates] [if] [in] [iweight] , time(tvar) gvar(gvar) [options]
 | `compute_inffunc` | `TRUE` | - | always computed | No equivalent: influence functions are always computed and kept internal. `storeall` materializes them in `e()`; `saverif()` writes them to a dataset. |
 | `...` (extra args for a custom `est_method`) | - | - | - | Custom estimators are not supported. |
 | `set.seed(n)` before the call | - | `rseed(#)`, `seed(#)`, `wboot(rseed(#))`, `wboot(seed(#))` | unseeded | For the same integer, the Stata run reproduces R's multiplier draws; see [section 8](#8-worked-example-the-same-analysis-in-both-languages). |
+
+For extreme common sampling-weight scales, numerical comparisons use R's
+default `faster_mode = TRUE`. In the pinned version, its slower aggregation route can
+still overflow or quantize raw cohort weights and return different numbers.
+Stata's `fast` and `nofast` use the same stabilized aggregation code and match
+the default R reference in the common-scale fixtures. The relevant raw
+weight operations are in
+[`compute.aggte.R`](https://github.com/bcallaway11/did/blob/4bed75ef731cba2e6d4a28205111b311f892fab1/R/compute.aggte.R#L275-L335).
+
+
+A narrow numerical exception applies when a balanced panel has subnormal
+first-period weights (for example, around `1e-320`) and ordinary later weights.
+R's global observation-weight normalization and raw cohort-weight products can
+round their relative masses. csdid preserves the relative weights actually
+supplied through local normalization and stable ratios. On the recorded
+REG/DR/IPW analytical witness, maximum raw-input ATT/SE/full-IF differences
+across cells and all four aggregations are `2.60617e-4 / 1.28855e-5 / 7.59809e-4`.
+For the balanced default single-period-weight route, multiplying every weight
+in a period by one positive factor cancels mathematically. R on a separately
+period-normalized copy agrees with the original Stata outputs to roundoff
+(full-IF gap at most `1.82e-14`). RT084 retains the genuine raw-input reference
+and that distinct-input check separately. This exception does not apply to
+unbalanced or repeated-cross-section estimation, `fix_weights(varying)`,
+changed samples or refusal rules; ordinary comparisons retain their numerical
+tolerances.
 
 Stata-only options on `csdid`, with no R counterpart:
 
@@ -518,8 +543,8 @@ Both the grid and the values match; the event-time truncation agrees with R to
 
 ## 9. How to reproduce this document
 
-The reference environment is R `did` 2.5.1.904 at commit
-`48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e` with `DRDID` 1.4.0. To regenerate
+The reference environment is R `did` 2.5.1.906 at commit
+`4bed75ef731cba2e6d4a28205111b311f892fab1` with `DRDID` 1.4.0. To regenerate
 the numbers in section 8:
 
 ```bash

@@ -245,7 +245,7 @@ manifest <- list(
   matrix_id = "RT036",
   fixture_family = "dead-period-covariate-rule",
   normative_source = "R did 2.5.1.904 pre_process_did.R and pre_process_did2.R: wholly missing periods disappear before the calendar is built; comparison-group availability is rechecked after balancing",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1",
   generators = list(list(
     runtime = "R",
     command = "Rscript tools/parity/generators/rt036/generate.R",

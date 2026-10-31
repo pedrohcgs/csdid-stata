@@ -1,0 +1,5 @@
+notice_case,transformation
+constant,unchanged ordinary input
+range_eps,all units use weights 1 1+1e-8 1-1e-8 1 across periods
+balanced_away,id1 time2 weight doubled and time4 row omitted
+first_treated,id1 time2 weight doubled and cohort set to1

@@ -2,7 +2,7 @@
   "matrix_id": "RT077",
   "fixture_family": "r-weighted-feasibility-support",
   "normative_source": "did utility_functions.R overlap_check_fail, rcond_check_fail, rc_outcome_has_too_few_obs; compute.att_gt2.R normalized RC support precedence",
-  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
   "inputs": [
@@ -336,7 +336,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt077/generate.R",
       "path": "tools/parity/generators/rt077/generate.R",
-      "sha256": "31b50ac3b0b896053bd9ac0f59ffd7d02908250bd7160828a574f7ed9b9f784f"
+      "sha256": "6e627bcdd548cbe6fd0a800fd01380cfa78a0b3b1bd347005d4d0b627023c323"
     }
   ],
   "runtimes": [
@@ -344,7 +344,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1.904",
+        "did": "2.5.1.906",
         "DRDID": "1.4.0"
       }
     }

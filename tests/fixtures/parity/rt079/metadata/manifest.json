@@ -2,7 +2,7 @@
   "matrix_id": "RT079",
   "fixture_family": "r-upstream-aggregation-support",
   "normative_source": "did compute.aggte.R:165-168,316,386-405,514-550",
-  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
   "inputs": [
@@ -72,7 +72,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt079/generate.R",
       "path": "tools/parity/generators/rt079/generate.R",
-      "sha256": "8db5f5e1c6638e9019807894a9441264c80f8f4563a0b475c13acb3cfdcc09b7"
+      "sha256": "5a6e0563d5cdcad5920b67374135de07ad4f7a540b27c60355f87f3bae153d9e"
     }
   ],
   "runtimes": [
@@ -80,7 +80,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1.904",
+        "did": "2.5.1.906",
         "DRDID": "1.4.0"
       }
     }

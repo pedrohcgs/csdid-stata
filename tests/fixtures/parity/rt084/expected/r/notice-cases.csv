@@ -1,0 +1,5 @@
+"notice_case","emit","body"
+"constant",0,""
+"range_eps",1,"Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight."
+"balanced_away",1,"Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight."
+"first_treated",1,"Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight."

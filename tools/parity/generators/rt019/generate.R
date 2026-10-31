@@ -178,7 +178,7 @@ manifest <- list(
   matrix_id = "RT019",
   fixture_family = "r-modelmatrix-hoist",
   normative_source = "R did 2.5.1.904 tests/testthat/test-modelmatrix-hoist.R",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1",
   source_sha256 = source_sha,
   decision_refs = c("D001", "D003", "D004", "D014"),
   tolerance_ids = c("TOL002", "EXACT"),

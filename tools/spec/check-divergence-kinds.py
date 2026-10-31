@@ -20,10 +20,14 @@ Recognised kinds:
 
   behavioral-default    csdid computes different numbers than R because an
                         omitted-option default resolves differently. State
-                        the option and the two agree. These are the only
-                        divergences a user can observe in an estimate.
+                        the option to compare the same requested behavior.
+  numerical-boundary    Owner-approved numerical behavior at a documented
+                        finite-precision boundary. Ordinary comparisons keep
+                        their existing parity requirements and tolerances;
+                        classification does not approve another exception.
   stata-surface         The Stata command surface deliberately omits, renames
-                        or restricts something R exposes.
+                        or restricts something R exposes, including which
+                        estimates are available.
   language-surface      An R or Python language feature with no Stata
                         analogue: callables, formula bases, data.table,
                         factor internals, plotting objects.
@@ -54,6 +58,7 @@ REGISTRY = ROOT / "inst/spec/divergence-kinds.csv"
 
 KINDS = {
     "behavioral-default",
+    "numerical-boundary",
     "stata-surface",
     "language-surface",
     "internal-api",
@@ -110,11 +115,14 @@ def main() -> int:
 
     counts = Counter(classified[d] for d in live)
     behavioral = counts.get("behavioral-default", 0)
+    numerical = counts.get("numerical-boundary", 0)
     print(f"divergence kinds OK ({len(live)} divergences across {len(set(live.values()))} fixtures)")
     for kind, n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])):
         print(f"  {n:3d}  {kind}")
-    print(f"\n{behavioral} of {len(live)} are behavioural; the rest are surface, "
-          f"placement or upstream-shape differences.")
+    print(f"\nOmitted-option default differences: {behavioral}; "
+          f"documented numerical-boundary exceptions: {numerical}.")
+    print("Other kinds describe surface/API, placement or upstream differences, "
+          "including restrictions on which estimates are available.")
     return 0
 
 

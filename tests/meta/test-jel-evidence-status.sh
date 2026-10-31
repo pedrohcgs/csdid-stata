@@ -274,7 +274,7 @@ writer_summary = dict(status="pass", oracle_parity_status="pass",
 expected_report = """# Full JEL Reproduction Result
 
 Status: pass
-R 2.5.1 oracle parity status: `pass`
+R DID_VERSION oracle parity status: `pass`
 Historical artifact status: `pass`
 
 Date: 2026-09-08T00:00:00+0000
@@ -308,10 +308,10 @@ Failure markers: `0`
 - Stata batch log: ``
 
 Full reproduction is established only when both masters exit 0, failure
-markers are absent, Stata outputs pass the explicit R `did` 2.5.1
+markers are absent, Stata outputs pass the explicit R `did` DID_VERSION
 oracle audits, and all historical table/figure artifact drift is either
 hash matched, semantically matched, or dispositioned by a release owner.
-"""
+""".replace("DID_VERSION", writer.EXPECTED_DID_VERSION)
 with tempfile.TemporaryDirectory(prefix="csdid-jel-report-parent-") as scratch:
     for existing in (True, False):
         path = Path(scratch) / str(existing) / "reports/result.md"

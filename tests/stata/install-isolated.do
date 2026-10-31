@@ -15,6 +15,22 @@ clear all
 set more off
 
 local root "`c(pwd)'"
+* The distribution manifest is the package-version authority for test fixtures.
+tempname version_file
+local package_version ""
+local version_lines = 0
+file open `version_file' using "`root'/csdid.pkg", read text
+file read `version_file' version_line
+while r(eof) == 0 {
+    if substr(`"`version_line'"', 1, 11) == "d Version: " {
+        local package_version = strtrim(substr(`"`version_line'"', 12, .))
+        local version_lines = `version_lines' + 1
+    }
+    file read `version_file' version_line
+}
+file close `version_file'
+if `version_lines' != 1 | `"`package_version'"' == "" error 9
+
 do "`root'/tools/release/build-package.do"
 
 local plus "`c(tmpdir)'/csdid-plus"
@@ -92,8 +108,8 @@ assert abs(A[1,4] - 2) < 1e-12
 *
 * The loader records what it resolved in $CSDID_ENGINE_RESOLVED, whose first
 * semicolon-delimited field is the engine's own stamp. The compiled library
-* carries `2.0.2|<the Stata that built it>'; the source copy ships reading
-* `2.0.2|source' and says so. So the assertion is on the half after the bar:
+* carries `<package version>|<the Stata that built it>'; the source copy ships reading
+* `<package version>|source' and says so. So the assertion is on the half after the bar:
 * a number means the library answered, the word `source' means it did not.
 * ---------------------------------------------------------------------------
 local resolved `"$CSDID_ENGINE_RESOLVED"'
@@ -109,10 +125,10 @@ assert `bar' > 1
 local pkg_half = substr("`stamp'", 1, `bar' - 1)
 local route    = substr("`stamp'", `bar' + 1, .)
 display as text "installed-package engine stamp: `stamp'"
-assert "`pkg_half'" == "2.0.2"
+assert "`pkg_half'" == "`package_version'"
 if "`route'" == "source" {
     display as error "the installed copy fell back to compiling csdid.mata: the shipped library did not answer"
-    display as error "engine stamp was `stamp'; a library-served run stamps 2.0.2|<stata version>"
+    display as error "engine stamp was `stamp'; a library-served run stamps `package_version'|<stata version>"
     exit 9
 }
 if missing(real("`route'")) {

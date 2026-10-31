@@ -21,6 +21,22 @@ clear all
 set more off
 
 local root "`c(pwd)'"
+* The distribution manifest is the package-version authority for test fixtures.
+tempname version_file
+local package_version ""
+local version_lines = 0
+file open `version_file' using "`root'/csdid.pkg", read text
+file read `version_file' version_line
+while r(eof) == 0 {
+    if substr(`"`version_line'"', 1, 11) == "d Version: " {
+        local package_version = strtrim(substr(`"`version_line'"', 12, .))
+        local version_lines = `version_lines' + 1
+    }
+    file read `version_file' version_line
+}
+file close `version_file'
+if `version_lines' != 1 | `"`package_version'"' == "" error 9
+
 adopath ++ "`root'/src/ado"
 adopath ++ "`root'/src/mata"
 
@@ -100,10 +116,10 @@ end
 
 program define f026_assert_common_macros
     version 15
-    syntax , PANELMODE(string) [IDVAR(string) CLUSTERVAR(string)]
+    syntax , PANELMODE(string) PACKAGEVersion(string) [IDVAR(string) CLUSTERVAR(string)]
 
     assert "`e(cmd)'" == "csdid"
-    assert "`e(version)'" == "2.0.2"
+    assert "`e(version)'" == "`packageversion'"
     assert "`e(yname)'" == "y"
     assert "`e(timevar)'" == "time"
     assert "`e(gvar)'" == "g"
@@ -134,7 +150,7 @@ end
 import delimited using "`root'/tests/fixtures/parity/f026/inputs/input.csv", clear asdouble
 csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 assert `"`e(cmdline)'"' == `"csdid y, ivar(id) time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall"'
-f026_assert_common_macros, panelmode("panel") idvar("id")
+f026_assert_common_macros, packageversion("`package_version'") panelmode("panel") idvar("id")
 f026_assert_common_scalars, n(192) nunits(48)
 f026_assert_attgt_matrices, ifrows(48) unitrows(48)
 
@@ -158,7 +174,7 @@ f026_assert_attgt_matrices, ifrows(48) unitrows(48)
 import delimited using "`root'/tests/fixtures/parity/f026/inputs/input.csv", clear asdouble
 csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall
 assert `"`e(cmdline)'"' == `"csdid y, time(time) gvar(g) method(reg) analytical nevertreated base_period(varying) bal(none) storeall"'
-f026_assert_common_macros, panelmode("repeated-cross-section")
+f026_assert_common_macros, packageversion("`package_version'") panelmode("repeated-cross-section")
 f026_assert_common_scalars, n(192) nunits(192)
 f026_assert_attgt_matrices, ifrows(192) unitrows(192) ugcols(4)
 
@@ -175,7 +191,7 @@ forvalues i = 1/`=rowsof(UGRC)' {
 import delimited using "`root'/tests/fixtures/parity/f026/inputs/input.csv", clear asdouble
 csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none) storeall
 assert `"`e(cmdline)'"' == `"csdid y, ivar(id) time(time) gvar(g) method(reg) cluster(cl) analytical nevertreated base_period(varying) bal(none) storeall"'
-f026_assert_common_macros, panelmode("panel") idvar("id") clustervar("cl")
+f026_assert_common_macros, packageversion("`package_version'") panelmode("panel") idvar("id") clustervar("cl")
 f026_assert_common_scalars, n(192) nunits(48)
 assert e(N_clusters) == 8
 f026_assert_attgt_matrices, ifrows(48) unitrows(48)

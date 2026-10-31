@@ -1,4 +1,4 @@
-*! csdid 2.0.2 27oct2026
+*! csdid 2.0.3 30oct2026
 program define csdid, eclass sortpreserve
     * this guard used to sit BELOW `version 14', where it
     * could never fire - on Stata 13 the `version 14' statement itself aborts
@@ -12,7 +12,7 @@ program define csdid, eclass sortpreserve
     version 14
 
     if `"`0'"' == "version" {
-        display as text "csdid version 2.0.2"
+        display as text "csdid version 2.0.3"
         * A diagnostic, and ONLY a diagnostic: no e() (the help guarantees
         * it, and an e(cmd) stub posted here once let csdid_estat print a
         * fabricated table in a session that had estimated nothing), and no
@@ -1349,7 +1349,15 @@ program define csdid, eclass sortpreserve
             exit 198
         }
         quietly summarize `wvar' if `touse', meanonly
-        if r(mean) <= 0 | missing(r(mean)) {
+        local weight_mean = r(mean)
+        if missing(`weight_mean') & r(N) > 0 & r(max) > 0 & !missing(r(max)) {
+            * A finite positive mean can outlive an overflowing weight sum.
+            local weight_max = r(max)
+            tempname scaled_weight_mean
+            mata: st_numscalar("`scaled_weight_mean'", mean(st_data(., "`wvar'", "`touse'") / `weight_max') * `weight_max')
+            local weight_mean = scalar(`scaled_weight_mean')
+        }
+        if `weight_mean' <= 0 | missing(`weight_mean') {
             display as error "iweights must have positive mean"
             exit 198
         }
@@ -1391,7 +1399,7 @@ program define csdid, eclass sortpreserve
     quietly generate byte `bal_drop' = 0
     tempname ps_gcounts
     local want_bal = ("`ivar'" != "" & "`balance_mode'" == "full")
-    capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'")
+    capture mata: csdid__prescan("`ivar'", "`time'", "`gvar'", "`cluster'", "`touse'", `anticipation', `want_bal', "`bal_drop'", "`ps_gcounts'", 0, "`wvar'")
     local prescan_rc = _rc
     * the scan's global scalars become locals at once, so no refusal below
     * can leave them in the user's session
@@ -1524,6 +1532,11 @@ program define csdid, eclass sortpreserve
             display as error "cluster() must be time-invariant within ivar()"
             exit 459
         }
+    }
+    if "`__csdid_ps_weight_varying'" == "1" {
+        * did pre_process_did2.R:200-214 measures this before balancing or
+        * cohort/period drops. The scan normalizes only a diagnostic copy.
+        display as error "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the fix_weights() option to control this behavior; see help csdid."
     }
     * An outcome that never changes carries no information about anything, and
     * estimating it produced a table that READ like a finding: every ATT(g,t)
@@ -2005,7 +2018,7 @@ program define csdid, eclass sortpreserve
     * if/in (including e(sample)) has already been resolved into touse, and
     * every input to the engine and poster is a local, temporary or cache value.
     ereturn clear
-    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `reqsize', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'", `prebalance_mode')
+    capture noisily mata: csdid_basic_attgt("`yname'", "`time'", "`gvar'", "`ivar'", "`xvars_expanded'", "`wvar'", "`method'", "`touse'", "`cluster'", "`notyet'", "`base_period'", "`balance_mode'", "`fix_weights'", `anticipation', `pscoretrim', `reqsize', `fast_allowed', "`fast_used'", "`panel_balanced'", "`panel_ntime'", `store_large', "`attgt'", "`inffunc'", "`group_prob'", "`unit_group'", "`cache_token'", "`use_mark'", `prebalance_mode', 1)
     local csdid_rc = _rc
     if `csdid_rc' {
         ereturn clear
@@ -2739,7 +2752,7 @@ program define csdid, eclass sortpreserve
     * produces a message that names the reason.
     ereturn local marginsnotok "_ALL"
     ereturn local cmdline `"`cmdline'"'
-    ereturn local version "2.0.2"
+    ereturn local version "2.0.3"
     * the conventional Stata estimation macros were all empty,
     * which is what estout/etable/esttab read to label a column and its standard
     * errors. didregress sets e(depvar), e(vce), e(vcetype) and e(predict); set

@@ -4,6 +4,25 @@ title: News
 
 # csdid news
 
+## csdid 2.0.3
+
+**Sampling-weight units and aggregation inference.** Very large or small
+common sampling-weight scales could change aggregate standard errors or make
+them missing while leaving ATT(g,t) unchanged. Version 2.0.3 corrects that
+arithmetic for simple, group, calendar and dynamic aggregations, including
+their overall summaries and results loaded from saved influence-function
+files. Recompute affected aggregations after updating. Existing saved
+influence-function files can be reused, except files written before Version
+2.0.3 for unbalanced panels with time-varying weights at extremely small
+scales (for example, `1e-320`). Re-estimate those results and save a new file:
+averaging the original weights can already have lost precision.
+
+**Time-varying-weight diagnostics.** The notice uses each unit's full range
+on the normalized screened sample, before panel balancing and cohort or
+period reductions. It includes variation confined to units later removed
+and identifies the balanced- and unbalanced-panel weight rules. This changes
+the notice, not the estimates.
+
 ## csdid 2.0.2
 
 **Anticipation and inference.** Comparisons in the anticipation window use

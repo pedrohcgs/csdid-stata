@@ -6,7 +6,7 @@ title: csdid
 # `csdid`
 
 <p class="tagline" markdown="span">**A Stata package for difference-in-differences with multiple periods.**</p>
-<p class="meta-line">version 2.0.2</p>
+<p class="meta-line">version 2.0.3</p>
 
 </div>
 
@@ -21,11 +21,11 @@ averages, or one overall summary. Effects may differ across cohorts and over
 time. Inference uses a multiplier bootstrap with simultaneous confidence bands
 by default; analytical and clustered inference are also available.
 
-See [what changed in version 2.0.2](news.html#csdid-202).
+See [what changed in version 2.0.3](news.html#csdid-203).
 
 ## How to install
 
-Version 2.0.2 installs from GitHub. It replaces an earlier `csdid` under the
+Version 2.0.3 installs from GitHub. It replaces an earlier `csdid` under the
 same command name, so uninstall first and then install:
 
 <!-- norun -->
@@ -37,7 +37,7 @@ net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata
 
 If your current copy came from SSC, `ssc uninstall csdid` is the first line
 instead. Uninstalling first is what keeps Stata tracking one `csdid` rather
-than two. Run `csdid version` afterwards to confirm version 2.0.2.
+than two. Run `csdid version` afterwards to confirm version 2.0.3.
 
 SSC currently distributes csdid **Version 1.81**, the previous generation of
 the package. It needs `drdid` as well, so if that is what you want, it is two
@@ -69,16 +69,16 @@ coincide, when they differ, and how the comparison depends on the design.
 
 ## Speed
 
-Version 2.0.1 takes advantage of the shared structure across cohort-period
+Version 2.0.3 takes advantage of the shared structure across cohort-period
 comparisons. In the published comparisons with Version 1.82, the speedup ranges
-from 11x to 304x as the design's size, periods, and cohorts vary. See
+from 11x to 305x as the design's size, periods, and cohorts vary. See
 [Speed against Version 1.82](articles/speed-vs-182.html) for the timings,
 machine, matched settings, and runnable code. The
 [comparison with other commands](articles/csdid-against-the-field.html)
 reports both runtime and differences in what each command estimates.
 
-These published timings describe version 2.0.1. Version 2.0.2 has not been
-remeasured for these comparisons.
+These timings were measured with version 2.0.3 on 31 October 2026, using
+StataNow/MP 19.5 with 10 processors.
 
 ## Also in R and Python
 
@@ -132,7 +132,7 @@ We ask that you cite *both* the method and the software when you use our `csdid`
 @misc{CRS2026_csdidStata,
   author = {Callaway, Brantly and Rios-Avila, Fernando and Sant'Anna, Pedro H. C.},
   title  = {csdid: Difference-in-Differences with Multiple Time Periods in Stata},
-  note   = {Stata module, version 2.0.2},
+  note   = {Stata module, version 2.0.3},
   year   = {2026},
   url    = {https://github.com/pedrohcgs/csdid-stata}
 }

@@ -34,16 +34,18 @@ Version 1.82 balanced each comparison separately instead; that is available only
 `bal()` settings below.
 
 Two omitted-option defaults deliberately differ from both R `did` 2.5.1 and
-Stata `csdid` Version 1.82; they are the only two on which csdid and R
-disagree when both are left at their defaults:
+Stata `csdid` Version 1.82:
 
 | | csdid 2.0.0 | R `did` and Version 1.82 | To reproduce those |
 | --- | --- | --- | --- |
 | comparison group | not-yet-treated | never-treated | `nevertreated` |
 | base period | universal | varying | `base_period(varying)` |
 
-State both options explicitly and csdid and R agree to machine precision. Both
-are documented divergences.
+Both are documented divergences. Stating both options aligns the comparison
+group and base period. The
+[crosswalk](r-did-crosswalk.md) describes the remaining numerical boundary
+cases, including the balanced-panel default single-period-weight case with
+subnormal first-period weights and ordinary later weights.
 
 The remaining defaults follow R: the method is `dr`, the confidence level is 95,
 omitted inference is the multiplier bootstrap with simultaneous confidence

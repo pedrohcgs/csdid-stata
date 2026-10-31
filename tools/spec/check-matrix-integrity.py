@@ -35,11 +35,13 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
-from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_file_location
 
-classifier = SourceFileLoader(
+classifier_spec = spec_from_file_location(
     "classify_numeric_parity", os.path.join(HERE, "classify-numeric-parity.py")
-).load_module()
+)
+classifier = module_from_spec(classifier_spec)
+classifier_spec.loader.exec_module(classifier)
 
 MATRIX = os.path.join(ROOT, "inst", "spec", "feature-matrix.csv")
 STRUCTURAL_SCOPES = {"contract", "release"}

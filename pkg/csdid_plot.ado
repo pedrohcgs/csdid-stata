@@ -1,4 +1,4 @@
-*! csdid_plot 2.0.2 27oct2026
+*! csdid_plot 2.0.3 30oct2026
 program define csdid_plot
     version 14
     if "`e(cmd)'" != "csdid" {

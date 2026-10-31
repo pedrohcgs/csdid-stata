@@ -30,13 +30,17 @@ net install csdid, from("https://raw.githubusercontent.com/pedrohcgs/csdid-stata
 ```
 
 `Stata module` |
-`version 2.0.2` |
+`version 2.0.3` |
 [Getting started](#getting-started) |
 [Install](#install) |
 [A short example](#a-short-example) |
 [Unbalanced panels](#unbalanced-panels) |
 [Repeated cross sections](#repeated-cross-sections) |
 [Cite](#how-to-cite)
+
+Version 2.0.3 corrects aggregation standard errors with very large or small
+common sampling-weight scales, including results loaded from saved
+influence-function files. See [the release notes](NEWS.md#csdid-203).
 
 ## Getting started
 
@@ -76,7 +80,7 @@ but installing over a package Stata still tracks leaves two csdid entries
 behind, and a later `ado uninstall csdid` then refuses (the name matches two
 entries) or removes the wrong one.
 
-Confirm that the installed version is 2.0.2 with:
+Confirm that the installed version is 2.0.3 with:
 
 ```stata
 csdid version
@@ -219,42 +223,46 @@ restore
 
 ## Speed
 
-The following measurements describe version 2.0.1.
+The following measurements describe version 2.0.3.
 
 Measured against **csdid Version 1.82** &mdash; the last revision of the 1.8x
-line, November 2025 &mdash; on 22 October 2026, on the same machine and data, with seven timed
-trials per workload after one discarded warmup, on StataNow/MP 19.5 using 10 processors.
+line, November 2025 &mdash; on 30 October 2026, on the same machine and data, with seven timed
+trials per workload after one discarded warmup, on Stata/MP 17 using 10 processors.
 
-| Workload | Version 1.82 | 2.0.1 | |
+| Workload | Version 1.82 | 2.0.3 | |
 | --- | ---: | ---: | ---: |
-| ATT(g,t), outcome regression, analytical | 2.06s | 0.07s | **30x** |
-| ATT(g,t), doubly robust with covariates | 2.58s | 0.10s | **25x** |
-| ATT(g,t), IPW with weights | 2.56s | 0.08s | **34x** |
-| ATT(g,t), clustered | 2.24s | 0.07s | **30x** |
-| Bootstrap, outcome regression | 3.21s | 0.15s | **21x** |
-| Bootstrap, doubly robust with covariates | 3.63s | 0.19s | **18x** |
-| Bootstrap, IPW with weights | 3.44s | 0.17s | **21x** |
-| Bootstrap, clustered | 3.03s | 0.10s | **29x** |
-| Unbalanced panel, weighted DR | 2.81s | 0.16s | **18x** |
-| Unbalanced panel, bootstrap | 3.35s | 0.24s | **14x** |
-| Event study, analytical | 2.14s | 0.07s | **29x** |
-| Event study, bootstrap | 3.65s | 0.27s | **13x** |
-| Event study, simultaneous bands | 3.72s | 0.34s | **11x** |
-| Event study, clustered + bands | 3.62s | 0.16s | **22x** |
-| Large panel, weighted DR | 11.21s | 0.49s | **22x** |
+| ATT(g,t), outcome regression, analytical | 1.75s | 0.07s | **27x** |
+| ATT(g,t), doubly robust with covariates | 2.17s | 0.12s | **17x** |
+| ATT(g,t), IPW with weights | 2.08s | 0.09s | **24x** |
+| ATT(g,t), clustered | 1.80s | 0.08s | **23x** |
+| Bootstrap, outcome regression | 2.57s | 0.15s | **17x** |
+| Bootstrap, doubly robust with covariates | 3.02s | 0.21s | **15x** |
+| Bootstrap, IPW with weights | 2.91s | 0.17s | **17x** |
+| Bootstrap, clustered | 2.55s | 0.10s | **26x** |
+| Unbalanced panel, weighted DR | 2.02s | 0.20s | **10x** |
+| Unbalanced panel, bootstrap | 2.85s | 0.28s | **10x** |
+| Event study, analytical | 1.73s | 0.08s | **22x** |
+| Event study, bootstrap | 3.17s | 0.27s | **12x** |
+| Event study, simultaneous bands | 3.22s | 0.34s | **9x** |
+| Event study, clustered + bands | 3.20s | 0.16s | **20x** |
+| Large panel, weighted DR | 10.34s | 0.56s | **18x** |
 
-Between **11x and 34x** across these fifteen fixed-size workloads, each run
+Memory figures summarize the peak process RSS sampled for each trial. The
+8% allowance below limits increases in memory use; reductions can be larger.
+
+Between **9x and 27x** across these fifteen fixed-size workloads, each run
 with the same options on both versions, and never slower. That is a different
 measurement from the scaling comparison below, which varies the size of the
 design on purpose. Peak memory is within 8% of Version 1.82 on every
-workload. On the large panel above, peak memory is 152MB
-against 248MB. The paired-trial memory ratio is above one
-in 7 of these 15 workloads. The memory comparison uses paired
+workload. On the large panel above, peak memory is 190MB
+against 270MB. The paired-trial memory ratio is above one
+in 1 of these 15 workloads. The memory comparison uses paired
 trials on the same Stata interpreter.
 
 Those are fixed-size workloads. The gap widens with the number of periods and
-cohorts, which is what drives the number of ATT(g,t) cells: **up to 304x** on
-a forty-period panel in the 23 October 2026 scaling comparison. See
+cohorts, which is what drives the number of ATT(g,t) cells: **up to 305x** on
+a forty-period panel in the 31 October 2026 scaling comparison, measured
+separately on StataNow/MP 19.5 using 10 processors. See
 [Speed against Version 1.82](https://psantanna.com/csdid/articles/speed-vs-182.html)
 for that comparison, and
 [How csdid compares](https://psantanna.com/csdid/articles/csdid-against-the-field.html)
@@ -399,7 +407,7 @@ For the software, cite the version you actually ran (report it with
 @misc{csdidStata,
   author = {Callaway, Brantly and Rios-Avila, Fernando and Sant'Anna, Pedro H. C.},
   title  = {csdid: Difference-in-Differences with Multiple Time Periods in Stata},
-  note   = {Stata module, version 2.0.2},
+  note   = {Stata module, version 2.0.3},
   year   = {2026},
   url    = {https://github.com/pedrohcgs/csdid-stata}
 }

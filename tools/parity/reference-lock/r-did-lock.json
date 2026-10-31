@@ -65,16 +65,16 @@
     "record_output_hashes": true
   },
   "current_oracle_snapshot": {
-    "did_version": "2.5.1.904",
-    "did_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+    "did_version": "2.5.1.906",
+    "did_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
     "DRDID_version": "1.4.0",
-    "observed_on": "2026-10-26",
-    "tree": "13c6295e1bfa24c5e16c7fa8c22ecbb291afce3c",
-    "description_sha256": "b1341908477e1508d46d8e3d0f3d90271e12c13469935492842b14cd0e2f6cd5",
+    "observed_on": "2026-10-29",
+    "tree": "a801da17e9e1e641f0d2edbeba323511724c0b62",
+    "description_sha256": "b7b76cc33e776e5a55344eb08a2c91b626221e3c58ab839ae53ab7cacfb8d1a0",
     "namespace_sha256": "dd0ca6151c06a4d3d9967349a2b71522584a444f42b1825befd715ad79f4a58d",
     "code_digest": "a7b476372d499d0d",
-    "full_code_digest": "268b4fd6ab540f53ef1f198cc6747e1d48aa02f68e9dfc37da338fe983a699aa",
-    "test_blocks": 364,
+    "full_code_digest": "53592d61eab8cb5e3eb0fe7d41a7565a7426ce11cc9bd8feda6514573ed2f727",
+    "test_blocks": 368,
     "load_command": "CSDID_DID_UPSTREAM=<clean pinned checkout>; pkgload::load_all(..., export_all=FALSE)",
     "dependency_floor": {
       "BMisc": ">= 1.4.8",

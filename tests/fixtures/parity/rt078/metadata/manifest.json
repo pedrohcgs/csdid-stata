@@ -2,7 +2,7 @@
   "matrix_id": "RT078",
   "fixture_family": "r-upstream-inference-units",
   "normative_source": "did att_gt.R:600-750; mboot.R:143-196; anticipation-window and outcome-unit regressions",
-  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
   "inputs": [
@@ -42,7 +42,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt078/generate.R",
       "path": "tools/parity/generators/rt078/generate.R",
-      "sha256": "d2403ffcbba8cc2cb54731d953db1a72d3378ab2413cb20b4272695cdbf6d527"
+      "sha256": "929eebc26b98ae84128776b2791c2f2a5e203f132345d25cdd9e162eb93e442a"
     }
   ],
   "runtimes": [
@@ -50,7 +50,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1.904",
+        "did": "2.5.1.906",
         "DRDID": "1.4.0"
       }
     }

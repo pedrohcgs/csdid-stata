@@ -1,0 +1,340 @@
+{
+  "reference_label": "raw-input",
+  "supplied_input_is_original_raw": true,
+  "input_transformation": "none",
+  "options": {
+    "panel": true,
+    "allow_unbalanced_panel": false,
+    "fix_weights": null,
+    "control_group": "notyettreated",
+    "base_period": "universal",
+    "faster_mode": true,
+    "xformla": "~x"
+  },
+  "calls": {
+    "ordinary-reg-0": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": [],
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "ordinary-dr-0": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": [],
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "ordinary-ipw-0": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": [],
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "first_subnormal-reg-0": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n",
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "first_subnormal-dr-0": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n",
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "first_subnormal-ipw-0": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n",
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "ordinary-reg-1": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": [],
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "ordinary-dr-1": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": [],
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "ordinary-ipw-1": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": [],
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "first_subnormal-reg-1": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n",
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "first_subnormal-dr-1": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n",
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    },
+    "first_subnormal-ipw-1": {
+      "supplied_input_is_original_raw": true,
+      "original_raw_sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "original_raw_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "supplied_input_column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"],
+      "normalization_factors": null,
+      "warnings": [],
+      "messages": "Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the 'fix_weights' argument to control this behavior. See ?att_gt for details.\n",
+      "aggregations": {
+        "dynamic": {
+          "warnings": [],
+          "messages": []
+        },
+        "group": {
+          "warnings": [],
+          "messages": []
+        },
+        "calendar": {
+          "warnings": [],
+          "messages": []
+        },
+        "simple": {
+          "warnings": [],
+          "messages": []
+        }
+      }
+    }
+  }
+}

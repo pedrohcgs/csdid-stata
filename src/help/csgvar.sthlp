@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.0.2 27oct2026}{...}
+{* *! version 2.0.3 30oct2026}{...}
 {vieweralsosee "csdid" "help csdid"}{...}
 {vieweralsosee "csdid legacy utilities" "help csdid_legacy"}{...}
 {vieweralsosee "" "--"}{...}

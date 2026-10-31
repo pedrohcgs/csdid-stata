@@ -76,6 +76,8 @@ local({
 ATTEOF
 cp -R tools/parity "$scratch/tools/parity"
 # read-only inputs some generators consume from the repo root
+[ -f csdid.pkg ] || { echo "R oracle regeneration requires root csdid.pkg" >&2; exit 1; }
+cp csdid.pkg "$scratch/csdid.pkg" || { echo "R oracle regeneration could not copy root csdid.pkg" >&2; exit 1; }
 [ -d inst ] && cp -R inst "$scratch/inst"
 if [ -d examples/data ]; then
   mkdir -p "$scratch/examples"

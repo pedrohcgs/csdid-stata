@@ -2,7 +2,7 @@
   "matrix_id": "RT071",
   "fixture_family": "r-group-window-subunit-axis",
   "normative_source": "did 2.5.1.904 compute.aggte.R:192 (additive raw-scale na.rm screen), :302 (subtractive original-unit keeper), :368-387 (named empty-cohort window refusal)",
-  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
   "decision_refs": [],
   "tolerance_ids": ["EXACT", "TOL001"],
   "inputs": [
@@ -24,7 +24,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt071/generate.R",
       "path": "tools/parity/generators/rt071/generate.R",
-      "sha256": "dd443d1665ea36158920fa66c175b1cbb781ca18020d78085309d0075a13daca"
+      "sha256": "278760d3526e9213aaac00b29da21d3f81c4e91675095d5b0fdabd873943b90f"
     }
   ],
   "runtimes": [
@@ -32,7 +32,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1.904",
+        "did": "2.5.1.906",
         "DRDID": "1.4.0"
       }
     }

@@ -116,10 +116,11 @@ esac
     assert '†' not in tables.build_table(tiny_cells,tiny_meta,'B_rcs','RCS','n','')
     assert len(tables.ratio_facts(tiny_cells,'B_rcs')) == 1
 
-    # Preserve the actual two collection phases across the log-discovery repair.
+    # Preserve the October 23 phases independently of later timing campaigns.
+    phase_fixture = root/'tests/fixtures/website-speed/collection-phases-2026-10-23'
     phase_csv = work/'phase-results.csv'
-    phase_csv.write_bytes((root/'tools/bench/field/results/scalebench-results.csv').read_bytes())
-    phase_meta = json.loads((root/'tools/bench/field/results/metadata.json').read_text())
+    phase_csv.write_bytes((phase_fixture/'scalebench-results.csv').read_bytes())
+    phase_meta = json.loads((phase_fixture/'metadata.json').read_text())
     checker.verify_collection_phases(phase_meta,phase_csv)
     phase_cases = []
     changed = copy.deepcopy(phase_meta); changed.pop('collection_phases'); phase_cases.append(changed)

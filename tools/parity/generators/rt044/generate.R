@@ -76,7 +76,7 @@ inputs[[length(inputs) + 1L]] <- list(path = "inputs/scenarios.csv", sha256 = sh
 outputs <- list(list(path = "expected/r/attgt.csv", schema = "attgt", sha256 = sha(file.path(out, "expected/r/attgt.csv"))))
 manifest <- list(matrix_id = "RT044", fixture_family = "r-single-fold-before-balance",
   normative_source = "did 2.5.1.904 pre_process_did2.R: as-if-never folding and latest-cohort fallback precede balancing; post-balancing checks preserve a comparison cohort that survives",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = list(),
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt044/generate.R", path = "tools/parity/generators/rt044/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),

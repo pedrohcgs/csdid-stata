@@ -29,15 +29,13 @@
   <main class="content">
 {% if page.benchmark_version %}
     <div class="note benchmark-scope">
-      <p>The results on this page were collected with <code>csdid {{ page.benchmark_version }}</code>.
-      <a href="{{ '/news.html#csdid-202' | relative_url }}">Version 2.0.2</a> is available;
-      its performance has not been remeasured for these comparisons.</p>
+      <p>The results on this page were collected with <code>csdid {{ page.benchmark_version }}</code>.</p>
     </div>
 {% endif %}
     {{ content }}
   </main>
   <footer class="site-footer">
-    <p>csdid 2.0.2 &middot; Callaway &amp; Sant'Anna (2021) in Stata &middot;
+    <p>csdid 2.0.3 &middot; Callaway &amp; Sant'Anna (2021) in Stata &middot;
     verified against the R <code>did</code> package &middot;
     <a href="https://github.com/pedrohcgs/csdid-stata">source and issues</a></p>
   </footer>

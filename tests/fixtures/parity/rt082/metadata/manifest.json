@@ -2,7 +2,7 @@
   "matrix_id": "RT082",
   "fixture_family": "r-conditioning-backend-boundary",
   "normative_source": "did 2.5.1.904 utility_functions.R rcond_check_fail; backend-dependent conditioning cutoff",
-  "source_commit": "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
   "decision_refs": [],
   "tolerance_ids": "EXACT",
   "inputs": [
@@ -18,7 +18,7 @@
       "runtime": "R",
       "command": "Rscript tools/parity/generators/rt082/generate.R",
       "path": "tools/parity/generators/rt082/generate.R",
-      "sha256": "0b4793a52652ec709f4edbea949f4b32c227a7c8c618a7db715f00a81cf98274"
+      "sha256": "ead34fe77aecc42dec39ddcd775313c295d789a2e5c686d2486da4d2df95f088"
     }
   ],
   "runtimes": [
@@ -26,7 +26,7 @@
       "name": "R",
       "version": "4.6.0",
       "package_versions": {
-        "did": "2.5.1.904",
+        "did": "2.5.1.906",
         "DRDID": "1.4.0",
         "fastglm": "0.1.1"
       },

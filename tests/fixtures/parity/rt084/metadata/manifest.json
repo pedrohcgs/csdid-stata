@@ -1,0 +1,268 @@
+{
+  "matrix_id": "RT084",
+  "fixture_family": "approved-stable-period-weight-scale-boundary",
+  "normative_source": "Genuine did raw-input results and explicitly DISTINCT normalized-input diagnostic; D029 supplies only the approved Stata boundary contract.",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
+  "decision_refs": "D029",
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002"],
+  "inputs": [
+    {
+      "case": "ordinary",
+      "path": "inputs/ordinary.dta",
+      "sha256": "ee3d313cbae90062e56c5bcc4389d6e7e290c11ece6cd7d912c602783b97eff1",
+      "rows": 640,
+      "columns": 6,
+      "column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "34c5fefee251ea9e5cdd6239d334ecab7104c9c2a9206fe71f80d0301efdba26", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"]
+    },
+    {
+      "case": "first_subnormal",
+      "path": "inputs/first_subnormal.dta",
+      "sha256": "3525c95aa6a8811176956f1ac16b7a7cc52ba3474eca407e04d3df6c77de7348",
+      "rows": 640,
+      "columns": 6,
+      "column_double_sha256": ["5af8d132a36cb47929f0e999f70f58eb3b1c67aac6fe85895b13c5c237322621", "3ae3123cc266f1dfd297dd57a90b5d8a288d581430a979252901482378763687", "c61cdee97f9878e90797eb8a711a937b49f12147b60cf4213715c7a06252a40f", "e71989afa525f96f6c2fe9f62dd1da17268bed637a1625619f5ea98737f1c482", "3aa9256b8fd05e23a173fb4b6295d2110e8f18166b6ecdedb6bf6c3cb142ce3f", "cc176851cbc7369f0250e0d4ecde4450e229a8f8576b1402520105450ba56c28"]
+    },
+    {
+      "path": "inputs/input-lock.json",
+      "sha256": "ecd8505a50af055f9e420d72a97e867782dff792ec043d7e00331ad1c2aaf15d",
+      "schema": "read-only-input-lock-or-witness"
+    },
+    {
+      "path": "inputs/notice-specs.csv",
+      "sha256": "30f648bd2d37f9b5ef24bd05a4fa493df842a1c52373e8d2a978de3e6cd03c37",
+      "schema": "read-only-input-lock-or-witness"
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt084/generate.R",
+      "path": "tools/parity/generators/rt084/generate.R",
+      "sha256": "ae74f7a02680928dc9bbbe2c565016bc073324ca419dc7dd253e294fe06a3b04"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.906",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "Mersenne-Twister",
+    "seed": 20261030,
+    "biters": 99,
+    "bootstrap_draws_exported": false,
+    "bootstrap_comparison_scope": "Fixed shared stream summaries: reported cell and aggregation SEs, critical values, Wald diagnostics and full influence functions; raw bootstrap draws are not exported or certified."
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/DISTINCT-input-ordinary.csv",
+      "sha256": "ac86f00e556d7403aedb2c01aac474b7c7ecbc29c5dd094d0c3c7bf6bb72bc1e",
+      "rows": 640,
+      "columns": 6,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/DISTINCT-input-first_subnormal.csv",
+      "sha256": "4815adb68309d9785de3aafaf74eec82e12d6a31dba5ea9088f2303b79c4f543",
+      "rows": 640,
+      "columns": 6,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/contract/stata/scenarios.csv",
+      "sha256": "76d8b62b0626d3a077a39dd9dcd87b49eb954d386223d14dd1f4db0ee26d4811",
+      "rows": 12,
+      "columns": 4,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/r/raw-input/cells.csv",
+      "sha256": "32d8de70df0105c20decb9b971fc0569652ddd4c16a542d035f564a773fb1736",
+      "rows": 144,
+      "columns": 6,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/raw-input/ifs.csv",
+      "sha256": "e3eda2a82491c434d3da76b87afad64a5d594be040f13a0118ed442da7d1bb59",
+      "rows": 1920,
+      "columns": 24,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/raw-input/aggs.csv",
+      "sha256": "e241bbd15c2e80622ea847c526375d8945c43a23470a708bd0b84a8993ce153c",
+      "rows": 156,
+      "columns": 24,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/raw-input/aggifs.csv",
+      "sha256": "3cfbec45f71b8de56694540a92448a8844065876601777df5e49512731e0c9e6",
+      "rows": 7680,
+      "columns": 24,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/raw-input/criticals.csv",
+      "sha256": "8a7ab9a234cd81b782d764ba5a2caf4d2f4402bf169ffb417963687e237e9015",
+      "rows": 48,
+      "columns": 4,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/raw-input/diagnostics.csv",
+      "sha256": "079bfb87979e5385b67f317257c10021be83ea60e6a7892be6ba1f9ef8607438",
+      "rows": 12,
+      "columns": 5,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/raw-input/reference-metadata.json",
+      "sha256": "e0e57957650638fc496ad3672d7b19ccbbf1837652bdbeba23618eecc8628c21",
+      "schema": "R-reference-provenance"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/cells.csv",
+      "sha256": "0d0bee8047eadd135437758e36e097f16e49bfa7bfbe800b80518885355fb957",
+      "rows": 144,
+      "columns": 6,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/ifs.csv",
+      "sha256": "3e486c2705df351da9bbb958f5942acefa8eae5ffe6be320393981380cf71a86",
+      "rows": 1920,
+      "columns": 24,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/aggs.csv",
+      "sha256": "8aac5b35dea24d7c7f0730862e6a0e5f863ba98612d16f259b450c34e849fcf7",
+      "rows": 156,
+      "columns": 24,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/aggifs.csv",
+      "sha256": "231aae4971f0565cfa888194a16eabc91c8e218bc745199e0164cbec266e0f59",
+      "rows": 7680,
+      "columns": 24,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/criticals.csv",
+      "sha256": "dbf6cfe4ca0daabc41c17e34fda9dc0b5714fdd13ce9b45d43c6b9d0f6d694c7",
+      "rows": 48,
+      "columns": 4,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/diagnostics.csv",
+      "sha256": "1b11f0e37524030b7fa02bdc88b33e45baf16faf92d3e9f6e07bc410d781b334",
+      "rows": 12,
+      "columns": 5,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/period-normalized-input-diagnostic/reference-metadata.json",
+      "sha256": "2a58af8100e42af5f984867374bee6b1b4894810f86d11139950c26e851e5481",
+      "schema": "R-reference-provenance"
+    },
+    {
+      "path": "expected/contract/stata/cells.csv",
+      "sha256": "0d4b6cf96ca3de4ea3cb30211557eca9e65c5f4104e69c1eb64ca4475724f9ea",
+      "rows": 144,
+      "columns": 6,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/stata/ifs.csv",
+      "sha256": "e3a42b107b2afe7236b8e4f0702d79c2937bf40d097978df038b95bac4485664",
+      "rows": 1920,
+      "columns": 24,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/stata/aggs.csv",
+      "sha256": "acbdd5effe2b26954addd9b8bafe90e6ab7b596a7d615b911d0907d3176d82a6",
+      "rows": 156,
+      "columns": 24,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/stata/aggifs.csv",
+      "sha256": "8b7c6d4e65f94540cbc70c500e4d1fae0ca3281602664079164665245c751879",
+      "rows": 7680,
+      "columns": 24,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/stata/criticals.csv",
+      "sha256": "c31218ae57c28d36c19be0af849a6202cacc5ec2bfc13d5d7c61c6f08509c2d3",
+      "rows": 48,
+      "columns": 4,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/stata/diagnostics.csv",
+      "sha256": "076a08a036b53ab5394c3b4f1970396fb82254813e2a431ab337a7219164ba5e",
+      "rows": 12,
+      "columns": 5,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/approved-divergence.csv",
+      "sha256": "b5301d49f60d08221a0fd6b64dd1f890a7446481cc9782578d6f49bf5a2cc43c",
+      "rows": 1,
+      "columns": 5,
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/contract/approved-divergence.json",
+      "sha256": "be3402493fe29a68eac33e1936ecf938507e816b0d1c17f6e327df733ee5caec",
+      "schema": "approved-Stata-contract"
+    },
+    {
+      "path": "expected/r/notice-cases.csv",
+      "sha256": "3cf1e5871781b51bd59f4856883642b93b8d0e2f57818895e187a1819c63c831",
+      "rows": 4,
+      "columns": 3,
+      "schema": "genuine-R-output"
+    },
+    {
+      "path": "expected/r/notice-metadata.json",
+      "sha256": "d058102347bbb8d1fbc056492c1b6486d0ebcfa8801c80dedca47dc1d4085faa",
+      "schema": "R-reference-provenance"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Ordinary controls against raw R; approved balanced boundary against clearly distinct-input R contract: cell ATT/SE, all four aggregation point estimates/SE, critical values, Wald and p-value diagnostics, including actual analytical saved-RIF and fixed-shared-stream bootstrap summaries",
+      "expected": "expected/contract/stata",
+      "tolerance_id": "TOL001"
+    },
+    {
+      "actual": "Complete keyed cell and all-four-aggregation influence-function matrices",
+      "expected": "expected/contract/stata",
+      "tolerance_id": "TOL002"
+    },
+    {
+      "actual": "Full-screened normalized per-unit-range warning count and body",
+      "expected": "expected/r/notice-cases.csv",
+      "tolerance_id": "EXACT"
+    }
+  ],
+  "approved_divergence": {
+    "status": "approved-divergence",
+    "id": "RT084-DIV001",
+    "decision_ref": "D029",
+    "path": "expected/contract/approved-divergence.csv"
+  },
+  "scope_note": "Original two locked Stata12 DTA inputs. Separate raw R and DISTINCT per-period-normalized R values are never substituted or relabeled. Twelve configurations cross REG/DR/IPW, ordinary/boundary and analytical/bootstrap99; runtime coverage is claimed only after actual Stata reader execution. Notice cases are not covered by the numerical exception."
+}

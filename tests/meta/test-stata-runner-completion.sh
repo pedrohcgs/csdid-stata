@@ -187,7 +187,7 @@ Path(Path(sys.argv[3]).stem + '.log').write_text(text)
             stata.chmod(0o755)
             commands = case / "commands.txt"
             oracle_digest = "a" * 64
-            oracle_message = f"oracle gate: did 2.5.1 / DRDID 1.4.0 content-verified (fixture; all 118 R functions {oracle_digest}) at fixture"
+            oracle_message = f"oracle gate: did {jel.EXPECTED_DID_VERSION} / DRDID {jel.EXPECTED_DRDID_VERSION} content-verified (fixture; all 118 R functions {oracle_digest}) at fixture"
             (case / "inst/spec").mkdir(parents=True)
             (case / "inst/spec/r-oracle-full-code-digest.txt").write_text(oracle_digest + "\n")
             env = dict(os.environ, STATA_CMD=str(stata), CSDID_JEL_RSCRIPT=str(rscript),
@@ -213,7 +213,7 @@ Path(Path(sys.argv[3]).stem + '.log').write_text(text)
                         (tree / "scripts/R").mkdir(parents=True)
                         master = tree / "scripts/R/00_master_did_jel.R"
                         master.write_text('renv::restore(prompt = FALSE)\ncat("ANALYSIS\\n")\n')
-                        (tree / "renv.lock").write_text(json.dumps({"Packages": {"did": {"Version": "2.5.1"}, "DRDID": {"Version": "1.4.0"}}}))
+                        (tree / "renv.lock").write_text(json.dumps({"Packages": {"did": {"Version": jel.EXPECTED_DID_VERSION}, "DRDID": {"Version": jel.EXPECTED_DRDID_VERSION}}}))
                         (tree / "run-stata-master.log").write_text("end of do-file\n")
                         summary = job / "outputs/summary.json"
                         summary.parent.mkdir()

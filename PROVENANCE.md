@@ -7,7 +7,7 @@ follow from them.
 
 | Reference | What it was used for | Version |
 | --- | --- | --- |
-| `bcallaway11/did` | the reference implementation: estimators, samples, inference, aggregation and plot data are checked against it | 2.5.1.904, commit `48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e` |
+| `bcallaway11/did` | the reference implementation: estimators, samples, inference, aggregation and plot data are checked against it | 2.5.1.906, commit `4bed75ef731cba2e6d4a28205111b311f892fab1` |
 | `pedrohcgs/DRDID` | the two-period estimators called by `did` | 1.4.0, commit `eaac3b49cd225d0d7706c633858555a5f204e21e` |
 | `DrSquare/csdid`, a fork of the Python package `d2cml-ai/csdid` | additional test cases | commit `555f28bc12fcafa9c099e6e5503a30a4c22fc89f` |
 | `pedrohcgs/csdid-stata` | Stata `csdid` Version 1.82, for the migration comparisons and speed benchmarks | commit `fdbae25521a941314af8d84ec0c93fb0596daa8e` |
@@ -40,8 +40,8 @@ package; other platforms use the Mata implementation.
 
 ## Licenses
 
-- csdid 2.0.2 is released under the MIT license; see `LICENSE`.
-- R `did` 2.5.1.904 reports `License: GPL-3` in its `DESCRIPTION`.
+- csdid 2.0.3 is released under the MIT license; see `LICENSE`.
+- R `did` 2.5.1.906 reports `License: GPL-3` in its `DESCRIPTION`.
 - Python `csdid` ships an MIT `LICENSE` file, and its `setup.py` declares
   `license="MIT"`.
 - Stata `csdid` Version 1.82 carried no top-level license file.

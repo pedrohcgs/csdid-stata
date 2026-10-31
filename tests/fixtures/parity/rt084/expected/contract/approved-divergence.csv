@@ -1,0 +1,2 @@
+"divergence_id","decision_ref","status","owner_decision","scope"
+"RT084-DIV001","D029","approved-divergence","Stable relative-weight computation at the balanced-panel default single-period-weight subnormal boundary","Balanced panel with the default single-period weight vector: preserve stable relative weight masses when R global normalization leaves selected period weights subnormal. Genuine raw R is retained separately; the explicit DISTINCT per-period-normalized R input supports the stable Stata contract. No RC or unbalanced-varying generalization."

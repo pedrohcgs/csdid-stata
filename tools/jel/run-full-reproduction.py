@@ -24,10 +24,29 @@ from pathlib import Path
 
 
 EXPECTED_JEL_COMMIT = "50f4f183783d2344f85bc4f39bcbcc1b7eba6466"
-EXPECTED_DID_VERSION = "2.5.1"
-EXPECTED_DID_COMMIT = "9aba07d054a798558ac9b551887f5cb592d8db10"
 EXPECTED_DRDID_VERSION = "1.4.0"
 EXPECTED_DRDID_COMMIT = "eaac3b49cd225d0d7706c633858555a5f204e21e"
+
+
+def read_oracle_reference(path: Path) -> dict[str, str]:
+    try:
+        reference = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(f"JEL R oracle reference cannot be read: {path}") from exc
+    if (not isinstance(reference, dict)
+            or not isinstance(reference.get("did_version"), str)
+            or not re.fullmatch(r"[0-9]+(?:[.-][0-9]+)+", reference["did_version"])
+            or not isinstance(reference.get("did_commit"), str)
+            or not re.fullmatch(r"[0-9a-f]{40}", reference["did_commit"])
+            or reference.get("DRDID_version") != EXPECTED_DRDID_VERSION):
+        raise RuntimeError(f"JEL R oracle reference has an invalid or unsupported pin: {path}")
+    return reference
+
+
+_ORACLE_REFERENCE = read_oracle_reference(
+    Path(__file__).resolve().parents[2] / "inst/spec/r-oracle-reference.json")
+EXPECTED_DID_VERSION = _ORACLE_REFERENCE["did_version"]
+EXPECTED_DID_COMMIT = _ORACLE_REFERENCE["did_commit"]
 # Home-relative, and overridable: an absolute path here only worked on one
 # machine and hardcoded the maintainer's layout into a public repository.
 # Same order as the R generators under tools/parity/generators: env var, then
@@ -707,7 +726,7 @@ def patch_jel_r_oracle_lock(worktree: Path, summary: dict[str, object]) -> None:
 
     The upstream JEL repository intentionally remains frozen.  The release gate
     runs from a copied worktree and must certify the Stata package against the
-    current package oracle, R did 2.5.1, not the historical JEL lock.
+    current package oracle in inst/spec/r-oracle-reference.json.
     """
 
     lockfile = worktree / "renv.lock"
@@ -733,11 +752,11 @@ def patch_jel_r_oracle_lock(worktree: Path, summary: dict[str, object]) -> None:
         "Encoding": "UTF-8",
         "LazyData": "true",
         "Imports": [
-            "BMisc (>= 1.4.4)",
+            "BMisc (>= 1.4.8)",
             "Matrix",
             "pbapply",
             "ggplot2",
-            "DRDID (>= 1.3.0)",
+            "DRDID (>= 1.4.0)",
             "generics",
             "methods",
             "tidyr",
@@ -838,6 +857,19 @@ local({{
     else:
         text = text.replace(anchor, anchor + check, 1)
     master.write_text(text, encoding="utf-8")
+
+
+def validate_restored_r_oracle(r_log: Path, port_root: Path) -> str:
+    oracle_digest = (port_root / "inst/spec/r-oracle-full-code-digest.txt").read_text().strip()
+    authenticated = re.compile(
+        r"oracle gate: did " + re.escape(EXPECTED_DID_VERSION)
+        + r" / DRDID " + re.escape(EXPECTED_DRDID_VERSION)
+        + r" content-verified \([^\n]* R functions "
+        + re.escape(oracle_digest) + r"\) at ")
+    if (not re.fullmatch(r"[0-9a-f]{64}", oracle_digest)
+            or not authenticated.search(r_log.read_text())):
+        raise RuntimeError("R master did not authenticate the restored did/DRDID code")
+    return oracle_digest
 
 
 def copy_jel_repo(source: Path, dest: Path) -> None:
@@ -1674,7 +1706,7 @@ def write_markdown_report(
         "# Full JEL Reproduction Result",
         "",
         f"Status: {summary['status']}",
-        f"R 2.5.1 oracle parity status: `{summary.get('oracle_parity_status', 'not-audited')}`",
+        f"R {EXPECTED_DID_VERSION} oracle parity status: `{summary.get('oracle_parity_status', 'not-audited')}`",
         f"Historical artifact status: `{summary.get('historical_artifact_status', 'not-audited')}`",
         "",
         f"Date: {summary['finished_at']}",
@@ -1723,7 +1755,7 @@ def write_markdown_report(
                 "",
                 "## Historical R Artifact Drift",
                 "",
-                "These rows compare regenerated R `did` 2.5.1 outputs to the R artifacts",
+                f"These rows compare regenerated R `did` {EXPECTED_DID_VERSION} outputs to the R artifacts",
                 "frozen in the JEL repository. They are R against R: nothing csdid does",
                 "affects them, and they are not Stata-vs-R oracle failures.",
                 "",
@@ -1750,7 +1782,7 @@ def write_markdown_report(
                 "",
                 "These regenerated Stata artifacts intentionally differ from the",
                 "historical committed JEL outputs, and are governed by explicit",
-                "R `did` 2.5.1 oracle audits rather than raw hash identity.",
+                f"R `did` {EXPECTED_DID_VERSION} oracle audits rather than raw hash identity.",
                 "",
                 "| Artifact | Detail |",
                 "| --- | --- |",
@@ -1814,7 +1846,7 @@ def write_markdown_report(
                 "",
                 "## R vs Stata Table 7 Display Audit",
                 "",
-                "Table 7 is audited directly against the regenerated R `did` 2.5.1",
+                f"Table 7 is audited directly against the regenerated R `did` {EXPECTED_DID_VERSION}",
                 "table. The historical upstream JEL Stata script used external `drdid`,",
                 "so the release harness adds a csdid-native reconstruction for this",
                 "display audit.",
@@ -1901,7 +1933,7 @@ def write_markdown_report(
             f"- Stata batch log: `{summary.get('stata_batch_log', '')}`",
             "",
             "Full reproduction is established only when both masters exit 0, failure",
-            "markers are absent, Stata outputs pass the explicit R `did` 2.5.1",
+            f"markers are absent, Stata outputs pass the explicit R `did` {EXPECTED_DID_VERSION}",
             "oracle audits, and all historical table/figure artifact drift is either",
             "hash matched, semantically matched, or dispositioned by a release owner.",
         ]
@@ -2044,14 +2076,8 @@ def main() -> int:
             if "r_log" in previous_summary:
                 summary["r_log"] = previous_summary["r_log"]
 
-        oracle_digest = (port_root / "inst/spec/r-oracle-full-code-digest.txt").read_text().strip()
         r_log = Path(summary.get("r_log", logs_dir / "r-master.log"))
-        authenticated = re.compile(
-            r"oracle gate: did 2\.5\.1 / DRDID 1\.4\.0 content-verified \([^\n]*"
-            r" R functions " + re.escape(oracle_digest) + r"\) at ")
-        if not re.fullmatch(r"[0-9a-f]{64}", oracle_digest) or not authenticated.search(r_log.read_text()):
-            raise RuntimeError("R master did not authenticate the restored did/DRDID code")
-        summary["r_oracle_code_digest"] = oracle_digest
+        summary["r_oracle_code_digest"] = validate_restored_r_oracle(r_log, port_root)
 
         stata_batch_log = worktree / "run-stata-master.log"
         if not args.skip_stata:

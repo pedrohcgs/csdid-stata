@@ -80,9 +80,24 @@ with tempfile.TemporaryDirectory(prefix='csdid-historical-publication-') as temp
     disclosure = work / 'disclosure'
     pages = ('website/articles/csdid-against-the-field.md',
              'website/articles/speed-vs-182.md', 'website/code-appendix.md')
-    for relative in (*pages, 'website/_layouts/default.html', 'website/index.md',
-                     'pkg/csdid.ado', 'src/ado/csdid.ado'):
-        put(disclosure, relative, (root / relative).read_text())
+    # This fixture describes historical publication independently of the
+    # current release's version or whether its benchmarks have been refreshed.
+    current_version = '2.0.9'
+    for relative in pages:
+        put(disclosure, relative,
+            '---\nbenchmark_version: 2.0.1\n---\n\n# Historical measurements\n')
+    put(disclosure, 'website/_layouts/default.html',
+        '{% if page.benchmark_version %}\n'
+        '<div class="benchmark-scope"><p>'
+        'Measured with {{ page.benchmark_version }}. '
+        f'Version {current_version} has not been remeasured.'
+        '</p></div>\n{% endif %}\n')
+    put(disclosure, 'website/index.md',
+        '# Synthetic release\n\n## Speed\n\n'
+        f'Version 2.0.1 measurements; Version {current_version} has not been '
+        'remeasured.\n\n## Other material\n')
+    for relative in ('pkg/csdid.ado', 'src/ado/csdid.ado'):
+        put(disclosure, relative, f'*! csdid {current_version} synthetic fixture\n')
     checker.validate_disclosure(disclosure)
     for relative in pages:
         path = disclosure / relative
@@ -101,7 +116,7 @@ with tempfile.TemporaryDirectory(prefix='csdid-historical-publication-') as temp
     layout = disclosure / 'website/_layouts/default.html'
     original = layout.read_text()
     for token in ('page.benchmark_version', 'benchmark-scope', 'has not been remeasured',
-                  'Version 2.0.2'):
+                  f'Version {current_version}'):
         assert token in original, token
         layout.write_text(original.replace(token, 'removed scope'))
         refused(lambda: checker.validate_disclosure(disclosure), 'missing layout ' + token)

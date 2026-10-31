@@ -139,7 +139,7 @@ stopifnot(all(is.na(cluster_expected$se[c(1,2,4)])),is.finite(cluster_expected$s
 write17(cluster_expected,"expected/r/cluster-se.csv")
 manifest <- list(matrix_id="RT078",fixture_family="r-upstream-inference-units",
   normative_source="did att_gt.R:600-750; mboot.R:143-196; anticipation-window and outcome-unit regressions",
-  source_commit="48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
+  source_commit="4bed75ef731cba2e6d4a28205111b311f892fab1",decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
   generators=list(list(runtime="R",command="Rscript tools/parity/generators/rt078/generate.R",path="tools/parity/generators/rt078/generate.R",sha256=sha(script_path))),
   runtimes=list(list(name="R",version=as.character(getRversion()),package_versions=list(did=as.character(packageVersion("did")),DRDID=as.character(packageVersion("DRDID"))))),
   rng=list(kind="Mersenne-Twister",seed=20261026,biters=199),expected_outputs=outputs,

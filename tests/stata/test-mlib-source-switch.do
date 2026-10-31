@@ -11,6 +11,22 @@ clear all
 set more off
 args selected_arm
 local root "`c(pwd)'"
+* The distribution manifest is the package-version authority for test fixtures.
+tempname version_file
+local package_version ""
+local version_lines = 0
+file open `version_file' using "`root'/csdid.pkg", read text
+file read `version_file' version_line
+while r(eof) == 0 {
+    if substr(`"`version_line'"', 1, 11) == "d Version: " {
+        local package_version = strtrim(substr(`"`version_line'"', 12, .))
+        local version_lines = `version_lines' + 1
+    }
+    file read `version_file' version_line
+}
+file close `version_file'
+if `version_lines' != 1 | `"`package_version'"' == "" error 9
+
 local arms "adopath cwd reset"
 if "`selected_arm'" != "" local arms "`selected_arm'"
 
@@ -30,7 +46,7 @@ mata: real scalar source_switch_user_function() return(41)
 
 program define source_switch_write
     version 15
-    args directory value
+    args directory value package_version
     tempname fh
     file open `fh' using "`directory'/csdid.ado", write replace text
     file write `fh' "* source-switch fixture" _n
@@ -38,7 +54,7 @@ program define source_switch_write
     file open `fh' using "`directory'/csdid.mata", write replace text
     file write `fh' "version 14" _n "mata:" _n
     file write `fh' "real matrix csdid__mean(real matrix x) return(mean(x))" _n
-    file write `fh' `"string scalar csdid_mlib_version() return("2.0.2|source")"' _n
+    file write `fh' `"string scalar csdid_mlib_version() return("`package_version'|source")"' _n
     file write `fh' "real scalar csdid__source_switch_witness() return(`value')" _n
     file write `fh' "end" _n
     file close `fh'
@@ -46,13 +62,13 @@ end
 
 program define source_switch_run
     version 15
-    args scratch arm
+    args scratch arm package_version
     capture mata: mata drop CSDID_*
     capture mata: mata drop csdid_*
     capture mata: mata drop csdid_*()
     capture macro drop CSDID_*
-    source_switch_write "`scratch'/a" 1
-    source_switch_write "`scratch'/b" 2
+    source_switch_write "`scratch'/a" 1 "`package_version'"
+    source_switch_write "`scratch'/b" 2 "`package_version'"
     cd "`scratch'"
     capture findfile lcsdid_v2.mlib
     assert _rc == 601
@@ -82,7 +98,7 @@ program define source_switch_run
     else if "`arm'" == "cwd" cd "`scratch'/b"
     else if "`arm'" == "reset" {
         * Only reset promises to reread a file replaced at an unchanged path.
-        source_switch_write "`scratch'/a" 2
+        source_switch_write "`scratch'/a" 2 "`package_version'"
         csdid reset
     }
     else error 198
@@ -101,7 +117,7 @@ end
 
 local test_rc 0
 foreach arm of local arms {
-    capture noisily source_switch_run "`scratch'" "`arm'"
+    capture noisily source_switch_run "`scratch'" "`arm'" "`package_version'"
     if _rc {
         local test_rc = _rc
         continue, break

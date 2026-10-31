@@ -15,6 +15,12 @@ suppressPackageStartupMessages(library(jsonlite))
 root <- normalizePath(file.path(dirname(script_path), "../../../.."), mustWork = FALSE)
 if (!dir.exists(file.path(root, "tests"))) root <- normalizePath(getwd(), mustWork = TRUE)
 
+# Package identity is editorial metadata, independent of the estimator oracle.
+version_line <- grep("^d Version: ", readLines(file.path(root, "csdid.pkg"), warn = FALSE), value = TRUE)
+if (length(version_line) != 1L) stop("csdid.pkg must declare exactly one package version")
+package_version <- trimws(sub("^d Version: ", "", version_line))
+if (!nzchar(package_version)) stop("csdid.pkg declares an empty package version")
+
 fixture <- file.path(root, "tests/fixtures/parity/f026")
 dir.create(file.path(fixture, "inputs"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(fixture, "expected/new-stata"), recursive = TRUE, showWarnings = FALSE)
@@ -64,7 +70,7 @@ attgt_surface <- function(cmdline, panel_mode, idvar, clustervar = "", n_units,
     macros = list(
       cmd = "csdid",
       cmdline = cmdline,
-      version = "2.0.2",
+      version = package_version,
       yname = "y",
       timevar = "time",
       gvar = "g",

@@ -139,7 +139,7 @@ write.csv(do.call(rbind,warnings),file.path(out,"expected/r/warnings.csv"),row.n
 outputs <- lapply(c("fits.csv","inffunc.csv","warnings.csv","wide-warnings.csv","wide-attgt.csv"),function(n)list(path=paste0("expected/r/",n),schema="rt076",sha256=sha(file.path(out,"expected/r",n))))
 manifest <- list(matrix_id="RT076",fixture_family="r-undersized-glm-designs",
  normative_source="DRDID 1.4.0 fastglm_fit.R:19-21; did compute.att_gt/compute.att_gt2 normalized RC outcome support before overlap and pooled rank",
- source_commit="48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
+ source_commit="4bed75ef731cba2e6d4a28205111b311f892fab1", decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
  generators=list(list(runtime="R",command="Rscript tools/parity/generators/rt076/generate.R",path="tools/parity/generators/rt076/generate.R",sha256=sha(script_path))),
  runtimes=list(list(name="R",version=as.character(getRversion()),package_versions=list(did=as.character(packageVersion("did")),DRDID=as.character(packageVersion("DRDID"))))),rng=NULL,expected_outputs=outputs,
  comparison_plan=list(list(actual="all kernel ATT/SE/influence values or missing refusals after did preliminary feasibility guards",expected="expected/r/fits.csv and inffunc.csv",tolerance_id="TOL002",key_columns=c("scenario","method","id")),

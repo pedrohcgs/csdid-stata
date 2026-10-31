@@ -236,7 +236,7 @@ manifest <- list(
   matrix_id = "RT011",
   fixture_family = "r-error-handling",
   normative_source = "R did 2.5.1.904 tests/testthat/test-error-handling.R",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1",
   decision_refs = c("D003", "D004", "D010", "D014", "D015"),
   tolerance_ids = c("EXACT", "TOL002"),
   inputs = list(

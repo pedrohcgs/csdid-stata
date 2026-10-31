@@ -123,7 +123,7 @@ inputs[[length(inputs) + 1L]] <- list(path = "inputs/scenarios.csv", sha256 = sh
 expected <- lapply(names(outputs), function(nm) list(path = paste0("expected/r/", nm, ".csv"), schema = nm, rows = nrow(do.call(rbind, outputs[[nm]])), sha256 = sha(file.path(out, "expected/r", paste0(nm, ".csv")))))
 manifest <- list(matrix_id = "RT040", fixture_family = "r-grid-before-full-balance",
   normative_source = "did 2.5.1.904 pre_process_did.R and pre_process_did2.R: whole-unit balancing then cohort/control reconciliation",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = c("D026"), tolerance_ids = c("EXACT", "TOL001", "TOL002"),
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1", decision_refs = c("D026"), tolerance_ids = c("EXACT", "TOL001", "TOL002"),
   inputs = inputs, expected_outputs = expected,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt040/generate.R", path = "tools/parity/generators/rt040/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))), rng = NULL,

@@ -1,4 +1,4 @@
-*! csdid 2.0.2 27oct2026
+*! csdid 2.0.3 30oct2026
 version 14
 mata:
 // matastrict is deliberately NOT set here. This file is do-ed at runtime on
@@ -150,7 +150,8 @@ real scalar csdid__mean_ordered(real colvector x)
     // correction. Mata mean() uses quadcross instead. The distinction is
     // observable when stacked pre/post IFs cancel: positive roundoff-scale
     // variances survive the reference's no-absolute-cutoff rule (RT074).
-    // Only the exact-zero folded-IF retry enters these row loops.
+    // Ordinary cells keep their existing mean arithmetic; these row loops
+    // serve the exact-zero folded-IF retry and overflowing finite weight sums.
     n = rows(x)
     if (n == 0 | hasmissing(x)) return(.)
     center = 0
@@ -192,7 +193,7 @@ real scalar csdid__mean_ordered(real colvector x)
 // ---------------------------------------------------------------------------
 string scalar csdid_mlib_version()
 {
-    return("2.0.2|source")
+    return("2.0.3|source")
 }
 
 
@@ -785,6 +786,10 @@ real colvector csdid__normalize_weights(real colvector w)
     real scalar mw
 
     mw = mean(w)
+    // R mean() remains finite when a valid sampling-weight sum overflows.
+    if (mw >= .) {
+        if (!hasmissing(w) & min(w) >= 0) mw = csdid__mean_ordered(w)
+    }
     if (mw <= 0 | mw >= .) return(J(rows(w), 1, .))
     return(w / mw)
 }
@@ -1054,6 +1059,9 @@ real scalar csdid__overlap_status(real matrix x, real colvector d,
     // design and its memo unchanged; zero/underflow support takes a subset.
     if (args() >= 3 & (args() < 4 | has_weights)) {
         weight_mean = mean(wraw)
+        if (weight_mean >= .) {
+            if (!hasmissing(wraw) & min(wraw) >= 0) weight_mean = csdid__mean_ordered(wraw)
+        }
         if (!(min(wraw) / weight_mean > 0 & weight_mean < . & weight_mean > 0)) {
             supported = (wraw / weight_mean :> 0) :& (wraw / weight_mean :< .)
             if (!any(supported)) return(1)
@@ -2104,8 +2112,9 @@ real colvector csdid__dr_rc_fit(
 
 // ---------------------------------------------------------------------------
 // One-pass pre-estimation scan. Reads time, gvar and (when panel) id and the
-// cluster variable once, and returns everything the driver needs to size the
-// problem, announce the sample and settle bal(full). Pure bookkeeping: every
+// cluster variable once, plus optional weights for their notice, and returns
+// everything the driver needs to size the problem and settle bal(full).
+// Pure bookkeeping: every
 // output feeds a guard, a message or a local; nothing here touches estimate
 // arithmetic.
 //
@@ -2140,19 +2149,22 @@ void csdid__prescan(
     real scalar want_balance,
     string scalar dropmarkname,
     string scalar gcountname,
-    | real scalar keep_fold)
+    | real scalar keep_fold,
+    string scalar wname)
 {
     external class csdid__Engine scalar CSDID_ENGINE
     real colvector tv, gv, idv, clv, rowsel, runlen, runstart, runheads, gsmall
     real colvector tlev, glev, gcnt, ord, badunit, okrow, csum
-    real colvector sid, stime, sg, scl, same, ordf, d_id, within, fpsel, keep
+    real colvector sid, stime, sg, scl, same, ordf, d_id, within, fpsel, keep, sw
+    real matrix weight_panel
     real scalar n, i, r0, nrun, tmin, tmax, gmin, gmax, nt, cutoff
     real scalar nt_bal, unit_bal, bal_units, bal_obs
     real scalar never_ct, firstper_ct, firstper_units, n_units, inc_units, inc_obs, grouped
-    real scalar hascl, sorted_it, sh_nunit, sh_gvary, sh_cvary, sh_dup
+    real scalar hascl, sorted_it, sh_nunit, sh_gvary, sh_cvary, sh_dup, weight_varying, weight_tolerance
     string scalar tlist, glist
 
     csdid__engine_ensure()
+    st_local("__csdid_ps_weight_varying", "0")
 
     rowsel = csdid__selidx(st_data(., tousename) :!= 0)
     n = rows(rowsel)
@@ -2327,6 +2339,35 @@ void csdid__prescan(
             sh_gvary = any(same :& (sg[2::n] :!= sg[1::(n - 1)]))
             if (hascl) sh_cvary = any(same :& (scl[2::n] :!= scl[1::(n - 1)]))
             sh_dup = any(same :& (stime[2::n] :== stime[1::(n - 1)]))
+            if (args() >= 11) {
+                if (wname != "") {
+                    // did pre_process_did2.R:195-214: the notice tests normalized
+                    // weights on all screened rows, before period/unit drops.
+                    // Normalize a separate copy; estimation keeps its raw input.
+                    weight_tolerance = 1.4901161193847656e-08  // sqrt(.Machine$double.eps)
+                    sw = csdid__normalize_weights(st_data(rowsel, wname))
+                    if (!sorted_it) sw = sw[ordf]
+                    runstart = 1 \ (csdid__selidx(!same) :+ 1)
+                    nrun = rows(runstart)
+                    if (nrun > 1) runlen = (runstart[|2 \ nrun|] \ (n + 1)) :- runstart
+                    else runlen = n
+                    weight_varying = 0
+                    if (min(runlen) == max(runlen)) {
+                        weight_panel = rowshape(sw, nrun)
+                        weight_varying = any((rowmax(weight_panel) :- rowmin(weight_panel)) :> weight_tolerance)
+                    }
+                    else {
+                        for (i = 1; i <= nrun; i++) {
+                            r0 = runstart[i]
+                            if (max(sw[|r0 \ r0 + runlen[i] - 1|]) - min(sw[|r0 \ r0 + runlen[i] - 1|]) > weight_tolerance) {
+                                weight_varying = 1
+                                break
+                            }
+                        }
+                    }
+                    if (weight_varying) st_local("__csdid_ps_weight_varying", "1")
+                }
+            }
         }
     }
     st_numscalar("__csdid_ps_shape_nunit", sh_nunit)
@@ -3305,12 +3346,13 @@ void csdid__build_layout(
     real colvector first_weight,
     real colvector row_unit_index,
     real scalar sorted_unit_scan,
-    real scalar balanced_panel)
+    real scalar balanced_panel,
+    real scalar notice_handled)
 {
     real colvector use_rows, id_use, tt_use, uid_vec, unit_weight_ref, unit_raw_group
     real colvector time_rows, time_uids
     real matrix id_panel, tt_panel, gg_panel, cl_panel, uid_info
-    real scalar sorted_balanced_layout, nt, weight_varying, j, k, r, rowpos, xstart, xend
+    real scalar sorted_balanced_layout, nt, weight_varying, has_w_notice, j, k, r, rowpos, xstart, xend
 
     sorted_unit_scan = 0
     sorted_balanced_layout = 0
@@ -3388,6 +3430,7 @@ void csdid__build_layout(
     row_unit_index = J(rows(id), 1, .)
 
     weight_varying = 0
+    has_w_notice = (has_w & notice_handled == 0)
     k = 0
     // PERF: this run-length unit scan needs only a sorted id column, not an
     // ivar(). It used to be gated on idname != "", which excluded repeated
@@ -3435,7 +3478,6 @@ void csdid__build_layout(
             wsum_vec = w_panel * J(nt, 1, 1)
             wcount_vec = J(n_units, 1, nt)
             first_weight = w_panel[., 1]
-            unit_weight_ref = first_weight
             // R's own tolerance, not a tighter one: pre_process_did.R tests
             // (mx - mn) > .Machine$double.eps^0.5 = 1.4901161193847656e-08.
             // At 1e-12 csdid announced time-varying weights on panels R treats
@@ -3443,8 +3485,11 @@ void csdid__build_layout(
             // 1e-10 in one period printed the notice here and nothing in R,
             // sending the user to fix_weights() over floating-point residue.
             // The flag drives the MESSAGE only; no estimate depends on it.
-            if (max(abs(w_panel :- unit_weight_ref)) > 1.4901161193847656e-08) {
-                weight_varying = 1
+            if (has_w_notice) {
+                unit_weight_ref = first_weight
+                if (max(abs(w_panel :- unit_weight_ref)) > 1.4901161193847656e-08) {
+                    weight_varying = 1
+                }
             }
         }
         else {
@@ -3478,9 +3523,11 @@ void csdid__build_layout(
 
         wsum_vec = panelsum(ww[use_rows], uid_info)
         wcount_vec = uid_info[., 2] :- uid_info[., 1] :+ 1
-        unit_weight_ref = ww[unit_first_row]
-        if (has_w & max(abs(ww[use_rows] :- unit_weight_ref[uid_vec])) > 1.4901161193847656e-08) {
-            weight_varying = 1
+        if (has_w_notice) {
+            unit_weight_ref = ww[unit_first_row]
+            if (max(abs(ww[use_rows] :- unit_weight_ref[uid_vec])) > 1.4901161193847656e-08) {
+                weight_varying = 1
+            }
         }
         if (has_cluster) {
             unit_cluster = cl[unit_first_row]
@@ -3547,7 +3594,7 @@ void csdid__build_layout(
             }
             wsum_vec[k] = wsum_vec[k] + ww[r]
             wcount_vec[k] = wcount_vec[k] + 1
-            if (has_w & idname != "") {
+            if (has_w_notice & idname != "") {
                 if (unit_weight_ref[k] >= .) {
                     unit_weight_ref[k] = ww[r]
                 }
@@ -3575,7 +3622,7 @@ void csdid__build_layout(
             }
         }
     }
-    if (has_w & idname != "" & weight_varying) {
+    if (has_w_notice & idname != "" & weight_varying) {
         // EUX-008: R's own text ends "Use the 'fix_weights' argument ... See
         // ?att_gt for details.", which points a Stata user at R help syntax and
         // at an R argument. The leading sentences (which tests and the frozen
@@ -3584,7 +3631,7 @@ void csdid__build_layout(
         // errprintf, not printf: it announces which of two weights the
         // estimate used, so it has to survive `quietly' (channel note at
         // csdid__empty_cell_warning).
-        errprintf("Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells). Use the fix_weights() option to control this behavior; see help csdid.\n")
+        errprintf("Time-varying weights detected. For balanced panel data, the default behavior uses the weight from the earlier of the two time periods in each 2x2 comparison (the base period for post-treatment cells); for unbalanced panel data, each observation carries its own period-specific weight. Use the fix_weights() option to control this behavior; see help csdid.\n")
     }
 
     // The layout is complete, so `balanced_panel' can stop being the
@@ -3618,12 +3665,13 @@ void csdid__group_probs(
     real colvector first_weight,
     real matrix row_index,
     real colvector tt,
+    real colvector ww,
     real colvector unit_weight,
     real matrix group_prob_mat,
     real matrix unit_group_mat)
 {
-    real colvector wpos, unit_p1, p1_present  // F-001/F-022: first-appearance period sweep
-    real scalar never_rows, i, j, g
+    real colvector wpos, unit_p1, p1_present, weight_rows, weights  // F-001/F-022: first-appearance period sweep
+    real scalar never_rows, i, j, g, u, weight_mean, double_min, subnormal_mass
     string scalar notyet
 
     notyet = eng->notyet
@@ -3641,6 +3689,21 @@ void csdid__group_probs(
     else {
         wpos = csdid__selidx(wcount_vec :> 0)
         if (rows(wpos) > 0) unit_weight[wpos] = wsum_vec[wpos] :/ wcount_vec[wpos]
+        // Unbalanced units retain their mean sampling weight. The raw sum
+        // may overflow although every observation and the mean are finite.
+        if (idname != "") {
+            if (hasmissing(unit_weight)) {
+                wpos = csdid__selidx((unit_weight :>= .) :& (wcount_vec :> 0))
+                for (i = 1; i <= rows(wpos); i++) {
+                    u = wpos[i]
+                    weight_rows = select(row_index[u, .]', row_index[u, .]' :< .)
+                    weights = ww[weight_rows]
+                    if (!hasmissing(weights) & min(weights) >= 0) {
+                        unit_weight[u] = csdid__mean_ordered(weights)
+                    }
+                }
+            }
+        }
     }
     unit_weight = editmissing(unit_weight, 1)
     // The same refusal the driver raises before it gets here, with the same
@@ -3676,6 +3739,53 @@ void csdid__group_probs(
     for (i = 1; i <= cols(glevels); i++) {
         g = glevels[i]
         group_prob_mat[i, .] = (g, sum(unit_weight :* (unit_group :== g)) / n_units, n_units)
+        if (group_prob_mat[i, 2] >= .) {
+            if (!hasmissing(unit_weight) & min(unit_weight) >= 0) {
+                group_prob_mat[i, 2] = csdid__mean_ordered(unit_weight :* (unit_group :== g))
+            }
+        }
+    }
+    // did pre_process_did2.R:196 normalizes observation weights before unit
+    // averaging. Subnormal raw means lose relative mass if cohorts or units
+    // are averaged first; recompute from the original observation weights.
+    // For balanced panels with tiny first-period weights, that global
+    // normalization can itself round supplied relative weights before cohort
+    // averaging. RT084 retains raw and distinct period-normalized references.
+    double_min = 2.2250738585072014e-308
+    subnormal_mass = any((group_prob_mat[., 2] :> 0) :& (group_prob_mat[., 2] :< double_min))
+    if (all(group_prob_mat[., 2] :== 0)) {
+        wpos = J(n_units, 1, 0)
+        for (i = 1; i <= cols(glevels); i++) wpos = wpos :| (unit_group :== glevels[i])
+        wpos = csdid__selidx(wpos)
+        if (idname != "" & !balanced_panel) {
+            weight_rows = vec(row_index[wpos, .])
+            weight_rows = select(weight_rows, weight_rows :< .)
+            subnormal_mass = any((ww[weight_rows] :> 0) :& (ww[weight_rows] :< .))
+        }
+        else subnormal_mass = any((unit_weight[wpos] :> 0) :& (unit_weight[wpos] :< .))
+    }
+    if (subnormal_mass) {
+        weights = unit_weight
+        if (idname != "" & !balanced_panel) {
+            weight_rows = select(vec(row_index), vec(row_index) :< .)
+            weights = ww[weight_rows]
+        }
+        weight_mean = mean(weights)
+        if (weight_mean >= .) {
+            if (!hasmissing(weights) & min(weights) >= 0) weight_mean = csdid__mean_ordered(weights)
+        }
+        if (weight_mean > 0 & weight_mean < . & !hasmissing(weights) & min(weights) >= 0) {
+            if (idname != "" & !balanced_panel) {
+                for (u = 1; u <= n_units; u++) {
+                    weight_rows = select(row_index[u, .]', row_index[u, .]' :< .)
+                    unit_weight[u] = mean(ww[weight_rows] / weight_mean)
+                }
+            }
+            else unit_weight = unit_weight / weight_mean
+            for (i = 1; i <= cols(glevels); i++) {
+                group_prob_mat[i, 2] = sum(unit_weight :* (unit_group :== glevels[i])) / n_units
+            }
+        }
     }
     // Column 4 of the unit/group map is THE PERIOD KEY R DRAWS UNITS IN, and
     // it is cached here, at estimation time, because it is the one part of
@@ -5064,7 +5174,8 @@ void csdid_basic_attgt(
     string scalar unitgroupname,
     string scalar cachetokenname,
     string scalar usemarkname,
-    | real scalar use_prebalance_grid)
+    | real scalar use_prebalance_grid,
+    real scalar notice_handled)
 {
     external class csdid__Engine scalar CSDID_ENGINE
     pointer(class csdid__Engine scalar) scalar eng
@@ -5133,7 +5244,8 @@ void csdid_basic_attgt(
         first_t, has_x, has_w, has_cluster,
         idlevels, n_units, kx, row_index, y_panel, w_panel, x_panel,
         unit_group, unit_first_row, unit_cluster, wsum_vec, wcount_vec,
-        first_weight, row_unit_index, sorted_unit_scan, balanced_panel)
+        first_weight, row_unit_index, sorted_unit_scan, balanced_panel,
+        (args() >= 29 ? notice_handled : 0))
 
     pair_mode = (balance_mode == "pair" & idname != "")
     fast_used = (fast_flag != 0)
@@ -5165,7 +5277,7 @@ void csdid_basic_attgt(
     uid_seq = (1::n_units)
     csdid__group_probs(eng, idname, balanced_panel, n_units, reqsize, tlevels,
         glevels, idlevels, unit_group, wsum_vec, wcount_vec, first_weight,
-        row_index, tt, unit_weight, group_prob_mat, unit_group_mat)
+        row_index, tt, ww, unit_weight, group_prob_mat, unit_group_mat)
     max_cells = cols(glevels) * cols(tlevels)
     cell_ix = 0
     // Column 10 (base_time) carries the reference period pret this cell was
@@ -7938,6 +8050,7 @@ void csdid__Agg::load()
     external class csdid__Engine scalar CSDID_ENGINE
     real colvector notmiss
     real rowvector keep_notmiss
+    real scalar weight_mean, double_min, i, subnormal_mass
 
     csdid__engine_ensure()
 
@@ -8032,6 +8145,28 @@ void csdid__Agg::load()
     else {
         unit_weight = J(rows(unit_map), 1, 1)
     }
+    // Old saved-RIF files retain raw unit weights. Their signature and mass
+    // metadata have already been checked by the ado loader; rebuild cohort
+    // means after normalization instead of rescaling quantized probabilities.
+    double_min = 2.2250738585072014e-308
+    subnormal_mass = any((group_prob[., 2] :> 0) :& (group_prob[., 2] :< double_min))
+    if (all(group_prob[., 2] :== 0)) {
+        for (i = 1; i <= rows(group_prob); i++) {
+            if (any((unit_group :== group_prob[i, 1]) :& (unit_weight :> 0) :& (unit_weight :< .))) {
+                subnormal_mass = 1
+                break
+            }
+        }
+    }
+    if (subnormal_mass) {
+        weight_mean = mean(unit_weight)
+        if (weight_mean > 0 & weight_mean < . & !hasmissing(unit_weight) & min(unit_weight) >= 0) {
+            unit_weight = unit_weight / weight_mean
+            for (i = 1; i <= rows(group_prob); i++) {
+                group_prob[i, 2] = sum(unit_weight :* (unit_group :== group_prob[i, 1])) / rows(unit_weight)
+            }
+        }
+    }
     glist = group_prob[., 1]
     pgg = group_prob[., 2]
     cell_probs()
@@ -8099,17 +8234,30 @@ real colvector csdid__Agg::take(real rowvector keep)
     return(out)
 }
 
-// The kept cells' p(g) weights, normalised to sum to one.
+// The kept cells' p(g) weights, normalised before multiplying effects.
+// For balanced subnormal first-period weights, shares preserve the supplied
+// relative mass before raw ATT*p(g) products can round it; RT084 retains both
+// raw-reference and distinct period-normalized input comparisons.
 real colvector csdid__Agg::cell_weights(real rowvector keep)
 {
     real colvector weights
-    real scalar kk, spg
+    real scalar kk, spg, mass_scale
 
     weights = J(cols(keep), 1, .)
     spg = 0
     for (kk = 1; kk <= cols(keep); kk++) {
         weights[kk] = pg[keep[kk]]
         spg = spg + weights[kk]
+    }
+    // A simple aggregation repeats each cohort mass across its post cells.
+    // Normalize their ratio before a finite common weight scale overflows
+    // the sum; the reference's default preprocessing removes that scale.
+    if (spg >= .) {
+        if (!hasmissing(weights) & min(weights) >= 0 & max(weights) > 0) {
+            mass_scale = max(weights)
+            weights = weights / mass_scale
+            return(weights / sum(weights))
+        }
     }
     return(weights / spg)
 }
@@ -8132,22 +8280,54 @@ real matrix csdid__Agg::weight_if(
     real colvector cell_group)
 {
     real matrix centered
-    real colvector row_sum
-    real scalar n, k, kk, spg
+    real colvector row_sum, selected_pg, denominator_weights, shares
+    real scalar n, k, kk, spg, spg2, valid_mass, double_min
+    real scalar mass_scale, scaled_sum
 
     n = rows(unit_group)
     k = cols(keep)
     if (k == 0) return(J(n, 0, .))
     spg = 0
     for (kk = 1; kk <= k; kk++) spg = spg + pgv[keep[kk]]
+    selected_pg = pgv[keep]
 
     centered = J(n, k, .)
     for (kk = 1; kk <= k; kk++) {
         centered[., kk] = unit_weight :* (unit_group :== cell_group[keep[kk]]) :- pgv[keep[kk]]
     }
-    row_sum = rowsum(centered)
-    for (kk = 1; kk <= k; kk++) {
-        centered[., kk] = centered[., kk] / spg :- row_sum * (pgv[keep[kk]] / (spg ^ 2))
+    // did compute.aggte.R:828-858: preserve ordinary arithmetic, but a
+    // common sampling-weight scale must not corrupt the estimated-weight IF
+    // when its squared mass or denominator weights become subnormal.
+    double_min = 2.2250738585072014e-308  // .Machine$double.xmin
+    spg2 = spg ^ 2
+    denominator_weights = selected_pg / spg2
+    valid_mass = !hasmissing(selected_pg) & min(selected_pg) >= 0 & max(selected_pg) > 0
+    if (valid_mass & (spg2 >= . | spg2 < double_min |
+        hasmissing(denominator_weights) |
+        any((denominator_weights :< double_min) :& (selected_pg :> 0)))) {
+        if (spg < .) {
+            centered = centered / spg
+            shares = selected_pg / spg
+        }
+        else {
+            // Repeated cohort masses can overflow their sum while each
+            // selected mass remains finite. Scale before summing them.
+            mass_scale = max(selected_pg)
+            shares = selected_pg / mass_scale
+            scaled_sum = sum(shares)
+            centered = (centered / mass_scale) / scaled_sum
+            shares = shares / scaled_sum
+        }
+        row_sum = rowsum(centered)
+        for (kk = 1; kk <= k; kk++) {
+            centered[., kk] = centered[., kk] :- row_sum * shares[kk]
+        }
+    }
+    else {
+        row_sum = rowsum(centered)
+        for (kk = 1; kk <= k; kk++) {
+            centered[., kk] = centered[., kk] / spg :- row_sum * denominator_weights[kk]
+        }
     }
     return(centered)
 }

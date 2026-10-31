@@ -79,7 +79,7 @@ write17(do.call(rbind,results),"expected/r/aggregates.csv")
 write17(do.call(rbind,statuses),"expected/r/status.csv")
 write17(do.call(rbind,influences),"expected/r/inffunc.csv")
 manifest <- list(matrix_id="RT079",fixture_family="r-upstream-aggregation-support",normative_source="did compute.aggte.R:165-168,316,386-405,514-550",
-  source_commit="48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
+  source_commit="4bed75ef731cba2e6d4a28205111b311f892fab1",decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
   generators=list(list(runtime="R",command="Rscript tools/parity/generators/rt079/generate.R",path="tools/parity/generators/rt079/generate.R",sha256=sha(script_path))),
   runtimes=list(list(name="R",version=as.character(getRversion()),package_versions=list(did=as.character(packageVersion("did")),DRDID=as.character(packageVersion("DRDID"))))),rng=NULL,expected_outputs=outputs,
   comparison_plan=list(list(actual="all dynamic/simple/group aggregate cells and IFs or named window/support refusals",expected="expected/r",tolerance_id="TOL002",key_columns=c("scenario","event","unit"))),

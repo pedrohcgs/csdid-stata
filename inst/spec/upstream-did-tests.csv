@@ -1,5 +1,9 @@
-# did 2.5.1.904 @ 48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e
+# did 2.5.1.906 @ 4bed75ef731cba2e6d4a28205111b311f892fab1
 source_file,source_sha256,source_test
+tests/testthat/test-aggregation-weight-scale.R,b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88,weight influence functions match ratio derivatives at extreme scales
+tests/testthat/test-aggregation-weight-scale.R,b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88,weight influence functions preserve ordinary arithmetic and invalid inputs
+tests/testthat/test-aggregation-weight-scale.R,b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88,weight influence functions handle overflow of repeated selected masses
+tests/testthat/test-aggregation-weight-scale.R,b47890c0b025a4399a6ec0da7de1c34517deddbcdecc5d39346bb5fda23aaa88,all public aggregations preserve full influence functions across weight scales
 tests/testthat/test-aggte-clustervars-override.R,6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6,inherited clustering and same-variable override are honored without warning
 tests/testthat/test-aggte-clustervars-override.R,6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6,aggte warns and falls back to i.i.d. when att_gt was not clustered (analytic)
 tests/testthat/test-aggte-clustervars-override.R,6af533e96b6847b7a988d1c617ba89ea1dd0c22c6e8b451bf4c5520d984c99d6,aggte bootstrap override warns and falls back instead of erroring

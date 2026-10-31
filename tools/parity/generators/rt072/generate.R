@@ -70,7 +70,7 @@ outputs <- list(
   list(path = "expected/r/refusals.csv", schema = "refusal-message", sha256 = sha(file.path(out, "expected/r/refusals.csv"))))
 manifest <- list(matrix_id = "RT072", fixture_family = "r-dynamic-empty-window-one-cell",
   normative_source = "did compute.aggte.R:514-550 (complete original support, then display-window restriction)",
-  source_commit = "48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs = list(),
+  source_commit = "4bed75ef731cba2e6d4a28205111b311f892fab1", decision_refs = list(),
   tolerance_ids = c("EXACT", "TOL001"), inputs = inputs,
   generators = list(list(runtime = "R", command = "Rscript tools/parity/generators/rt072/generate.R", path = "tools/parity/generators/rt072/generate.R", sha256 = sha(script_path))),
   runtimes = list(list(name = "R", version = as.character(getRversion()), package_versions = list(did = as.character(packageVersion("did")), DRDID = as.character(packageVersion("DRDID"))))),

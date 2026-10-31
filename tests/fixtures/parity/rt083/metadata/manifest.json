@@ -1,0 +1,288 @@
+{
+  "matrix_id": "RT083",
+  "fixture_family": "r-aggregation-weight-scale",
+  "normative_source": "did wif.R; PR280 test-aggregation-weight-scale.R",
+  "source_commit": "4bed75ef731cba2e6d4a28205111b311f892fab1",
+  "decision_refs": [],
+  "tolerance_ids": ["EXACT", "TOL001", "TOL002", "TOL003"],
+  "inputs": [
+    {
+      "path": "inputs/ratio-units.csv",
+      "sha256": "23d6b030768eaf162415ef112a23e79bf3c2ed3d94b077d6a9528748adb3b9c4",
+      "rows": 16,
+      "columns": 3
+    },
+    {
+      "path": "inputs/ratio-cells.csv",
+      "sha256": "3d8bed1d5c663aa295680ee675165087d2356c1f08117b32df813c676fdba887",
+      "rows": 5,
+      "columns": 3
+    },
+    {
+      "path": "inputs/ordinary-units.csv",
+      "sha256": "8a962b33db5406709884b2adf07650c8b8edd20930eca1d01edfd7f6f77966e4",
+      "rows": 12,
+      "columns": 3
+    },
+    {
+      "path": "inputs/overflow-units.csv",
+      "sha256": "373c023460ec0710d30cd041f31181407114d0261c73883e8b1bbb1fb0782c6a",
+      "rows": 24,
+      "columns": 2
+    },
+    {
+      "path": "inputs/panel.csv",
+      "sha256": "062aaa4bee0464870163f1d488041c910c25fc509d8eb6b01ede397dce408671",
+      "rows": 640,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc.csv",
+      "sha256": "e396c199123f232fcf3677c342f0b8efb55c085ab73e5e68c504d839100930c6",
+      "rows": 640,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced.csv",
+      "sha256": "08e8e9d9adc547d18c957800e97aa46151d6957b5f2e41cb8c0411e191a937d3",
+      "rows": 618,
+      "columns": 6
+    },
+    {
+      "path": "inputs/panel-subnormal.csv",
+      "sha256": "c253cef2f30d70e729ecf5e95da36a8d20339dec4e6687e085f28361b9a26292",
+      "rows": 640,
+      "columns": 6
+    },
+    {
+      "path": "inputs/rc-subnormal.csv",
+      "sha256": "33f8ca3f98cad152ea94f3b8a34e5a9959ed9590361635ef3437a13d013ae48f",
+      "rows": 640,
+      "columns": 6
+    },
+    {
+      "path": "inputs/unbalanced-subnormal.csv",
+      "sha256": "444fd97ff52447c3df479ce00464fb8f52be159231ed1f6e427668b523dc8479",
+      "rows": 618,
+      "columns": 6
+    },
+    {
+      "path": "inputs/scenarios.csv",
+      "sha256": "88582df964aa74d3bb283cc977a1b473a17a08e7551a30106356a58a029d7c22",
+      "rows": 86,
+      "columns": 6
+    },
+    {
+      "path": "inputs/repeated-public.csv",
+      "sha256": "bfc98700d456430b66eb3c5d740b7fddff7e5bba214302c73893d6de2e002fd1",
+      "rows": 4800,
+      "columns": 5
+    }
+  ],
+  "generators": [
+    {
+      "runtime": "R",
+      "command": "Rscript tools/parity/generators/rt083/generate.R",
+      "path": "tools/parity/generators/rt083/generate.R",
+      "sha256": "990b7d3ca44bd5b4321294df08977dd9877e5442b782e8253851ca5db94acee2"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "R",
+      "version": "4.6.0",
+      "package_versions": {
+        "did": "2.5.1.906",
+        "DRDID": "1.4.0"
+      }
+    }
+  ],
+  "rng": {
+    "kind": "Mersenne-Twister",
+    "seed": 20261029,
+    "biters": 99
+  },
+  "expected_outputs": [
+    {
+      "path": "expected/r/ratio-derivatives.csv",
+      "sha256": "c7fd06082c007a22d2c3017a7880113597e9ce77fa35c1beb78eae8939ea122c",
+      "rows": 16,
+      "columns": 9,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ratio-1.csv",
+      "sha256": "922dc6e277bd94f977d66f41b389d380bd004270c896650c89c8050e0c5c8a3c",
+      "rows": 16,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ratio-2.csv",
+      "sha256": "db96ab890ea1f82c1c57a44e05c6f2a9daf88badcd3265d9db094485f11386ab",
+      "rows": 16,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ratio-3.csv",
+      "sha256": "7440e51c635df81f55cf6a5a7007b0c4fd50bc7b463a88b36657950824eaead6",
+      "rows": 16,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ratio-4.csv",
+      "sha256": "302b55a193e23b12696ea1ea47f288d8b687b486587f43e9f19f29d94ea05d5f",
+      "rows": 16,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ratio-5.csv",
+      "sha256": "3ae0cdd1b21146f1dbbfb2599bb53b74de6d2efcf5f75d06e2c7f076103265cb",
+      "rows": 16,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ratio-6.csv",
+      "sha256": "83ef85b7d8ecf6de07eb7212de1b0fc56e4cd7b76a6caffaa9d49289ed9bc9af",
+      "rows": 16,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ordinary-1.csv",
+      "sha256": "49e58f75f81c4697a0f6385acb544365af8177375a1eecf4607cda25467b5329",
+      "rows": 12,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ordinary-2.csv",
+      "sha256": "3c72b2a6a6af1408154b74c5b368bb5548247cde98e437efe0ce18354f0a94da",
+      "rows": 12,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ordinary-3.csv",
+      "sha256": "f19c7327b110d2050c35aa9b2100d23e9b1a2dce426797351949f1d88e8feded",
+      "rows": 12,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/invalid-1.csv",
+      "sha256": "c1710fd57bdfc62af9f2bac0a4999e87f49208f34c12b12f99a92e791fa2aedf",
+      "rows": 12,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/invalid-2.csv",
+      "sha256": "c1710fd57bdfc62af9f2bac0a4999e87f49208f34c12b12f99a92e791fa2aedf",
+      "rows": 12,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/invalid-3.csv",
+      "sha256": "c1710fd57bdfc62af9f2bac0a4999e87f49208f34c12b12f99a92e791fa2aedf",
+      "rows": 12,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/repeated-mass-overflow.csv",
+      "sha256": "659226aaf2f04ebd54f22c9f45bddd154f65d07ee2addf2a2ea07aa0bbf4a933",
+      "rows": 24,
+      "columns": 81,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/cells.csv",
+      "sha256": "cf043688409a83626e199dd02419e9b4698c232098dbc2702267170940f33c15",
+      "rows": 1032,
+      "columns": 5,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/ifs.csv",
+      "sha256": "ea8093d96e6f8f8aeac7661bcb846f08f008f01591f2edc167f3d1bcef66ae2b",
+      "rows": 33920,
+      "columns": 23,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/aggs.csv",
+      "sha256": "7782356aae4f44c6667959d432a9f0034ba793a1f7703e7261ca11ece816cd91",
+      "rows": 1118,
+      "columns": 23,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/aggifs.csv",
+      "sha256": "2bd2a2610275554c8f56fcfde3ebd3c84c95652158907bd1ac7df1e8e145011c",
+      "rows": 135680,
+      "columns": 23,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/criticals.csv",
+      "sha256": "7e6b54a10204bdd1370f3c050a464aec9240c8eaca2a3a785fa53fe8e672988c",
+      "rows": 344,
+      "columns": 3,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/diagnostics.csv",
+      "sha256": "20707877ecc07118436b32e9ea187fcde5a8a3f27703a368cc261d82770bb64c",
+      "rows": 86,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/repeated-public-cells.csv",
+      "sha256": "9cbeb225e2d1619635033d351a007942d4958ed44b25b123c3729ed5205029d5",
+      "rows": 252,
+      "columns": 6,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/repeated-public-aggregate.csv",
+      "sha256": "d7dc95c750b6d47325c1578071177a02bf4bd35445c186206e84c3ab31e3e092",
+      "rows": 4,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/r/repeated-public-inffunc.csv",
+      "sha256": "f2615028e0eb1594ff9b920eddcc17fa6255343f44b35c687c0f39182a372cdc",
+      "rows": 480,
+      "columns": 4,
+      "schema": "rt083"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.csv",
+      "schema": "source-test-map",
+      "sha256": "2b6165af6c6e95d72c801bd90b751f8c72e33d1ced6d8847251d30c213da941a"
+    },
+    {
+      "path": "expected/contract/upstream-test-map.json",
+      "schema": "source-test-map",
+      "sha256": "01763557f336520f2ab035f375af1cc22246a9d2e4e0a00643d9ef9ce1cb2cfb"
+    }
+  ],
+  "comparison_plan": [
+    {
+      "actual": "Full weight/cell/aggregate IFs, ATT/SE, critical values and pretests on direct and saved analytical routes and direct seeded bootstrap",
+      "expected": "expected/r",
+      "tolerance_id": "TOL002",
+      "key_columns": ["scenario", "type", "unit"]
+    }
+  ],
+  "approved_divergence": null,
+  "scope_note": "All four PR280 source tests inherited. Seven public scales include 1e-320, 1e-200, 1e-160, 1, 1e160, 1e200 and 1e307. 84 public fits cross panel/RC, dr/ipw/reg and analytical/bootstrap; two additional unbalanced varying-weight REG fits guard subnormal per-unit means. Every such fit compares all four aggregation types and complete influence functions. Subnormal raw weights are serialized once and supplied directly to both consumers. A test helper reconstructs balanced legacy raw-unit weight fields before the unchanged production writer signs them, separately exercising valid older saved-RIF files. This does not recover row-level precision absent from older unbalanced artifacts. Two separate 120-unit panels with 23/40 periods compare direct and saved simple aggregation at scales 1/1e307 when 43/77 selected cohort masses overflow the raw sum. The 23-period reference agrees in both R implementations; the 40-period reference follows R default fast mode because its slow mode overflows raw cohort sums. Saved-RIF aggregation retains its documented analytical inference. Direct ratio derivatives, ordinary arithmetic, invalid masses, and 80 repeated selected masses cover the numerical fallback boundaries."
+}

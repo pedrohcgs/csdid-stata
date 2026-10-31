@@ -1,0 +1,13 @@
+"scenario","case","method","bootstrap"
+"ordinary-reg-0","ordinary","reg",0
+"ordinary-dr-0","ordinary","dr",0
+"ordinary-ipw-0","ordinary","ipw",0
+"first_subnormal-reg-0","first_subnormal","reg",0
+"first_subnormal-dr-0","first_subnormal","dr",0
+"first_subnormal-ipw-0","first_subnormal","ipw",0
+"ordinary-reg-1","ordinary","reg",1
+"ordinary-dr-1","ordinary","dr",1
+"ordinary-ipw-1","ordinary","ipw",1
+"first_subnormal-reg-1","first_subnormal","reg",1
+"first_subnormal-dr-1","first_subnormal","dr",1
+"first_subnormal-ipw-1","first_subnormal","ipw",1

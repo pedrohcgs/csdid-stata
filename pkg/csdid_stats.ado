@@ -1,4 +1,4 @@
-*! csdid_stats 2.0.2 27oct2026
+*! csdid_stats 2.0.3 30oct2026
 program define csdid_stats, eclass
     version 14
     * The saved-RIF route is TRANSACTIONAL. Its loader replaces e() wholesale
@@ -1690,8 +1690,16 @@ program define _csdid_stats_load_rif, eclass
     foreach g of local treated_groups {
         quietly summarize _csdid_rif_weight if group == `g', meanonly
         local g_weight = r(sum)
+        local g_prob = `g_weight' / `n_rows'
+        if missing(`g_prob') & r(N) > 0 & r(min) >= 0 & r(max) > 0 & !missing(r(max)) {
+            * Rebuild the same cohort mean when its raw sum overflows.
+            local weight_max = r(max)
+            tempname scaled_group_prob
+            mata: st_numscalar("`scaled_group_prob'", mean((st_data(., "_csdid_rif_weight") / `weight_max') :* (st_data(., "group") :== `g')) * `weight_max')
+            local g_prob = scalar(`scaled_group_prob')
+        }
         matrix `GP'[`i', 1] = `g'
-        matrix `GP'[`i', 2] = `g_weight' / `n_rows'
+        matrix `GP'[`i', 2] = `g_prob'
         matrix `GP'[`i', 3] = `n_rows'
         local ++i
     }
@@ -1791,7 +1799,7 @@ program define _csdid_stats_load_rif, eclass
     ereturn local marginsnotok "_ALL"
     ereturn local rif_file `"`using'"'
     ereturn local cmdline `"`cmdline'"'
-    ereturn local version "2.0.2"
+    ereturn local version "2.0.3"
     ereturn local panel_mode "`panel_mode'"
     ereturn local control_group "`control_group'"
     ereturn local method "`method'"

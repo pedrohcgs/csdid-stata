@@ -1,12 +1,12 @@
 ---
 title: Code appendix
-benchmark_version: 2.0.1
 ---
 
 # Code appendix
 
-The scripts below reproduce the simulation and timing designs for
-`csdid` 2.0.1. The [design inventory](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/website-simulation-designs.json)
+The statistical simulation results use `csdid` 2.0.1. The timing results
+use `csdid` 2.0.3, measured on 31 October 2026. The scripts below reproduce
+their respective designs. The [design inventory](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/website-simulation-designs.json)
 records each statistical driver's sample size, replication count, arguments
 and seed convention. The [results record](https://github.com/pedrohcgs/csdid-stata/blob/v2.0.1/tools/bench/field/results/website-statistics.json)
 identifies the software, raw outputs, usable draws and diagnostic evidence.
@@ -39,11 +39,19 @@ The main simulation protocol is:
   versions actually used. The benchmark harness pins the candidate engine
   and records its loaded library, Stata runtime and processor setting.
   Timing experiments run separately on a quiet machine, with their own
-  trial counts and caps.
+  trial counts and caps. The main field tables use ten timed trials after a
+  discarded warmup; the Version 1.82 ladder uses seven candidate trials and
+  the stated legacy trial schedule. The option-cost probe uses five trials,
+  while the separate repeated-cross-section probe reports the best of three
+  calls. That probe records invocation completion and elapsed time only; it
+  does not check finite requested effects or inference, and does not establish
+  usable repeated-cross-section estimates for its BJS or DCDH invocations.
 
-Use the complete [version 2.0.1 package checkout](https://github.com/pedrohcgs/csdid-stata/tree/v2.0.1)
+For the statistical simulations, use the complete [version 2.0.1 package checkout](https://github.com/pedrohcgs/csdid-stata/tree/v2.0.1)
 so that the replication folder can find `../src` and `../pkg`. This pins the
-estimator to the version used for the published results. Parameterized Monte Carlo drivers accept a unit
+estimator to the version used for the published statistical results. For the
+timing experiments, use the complete [version 2.0.3 package checkout](https://github.com/pedrohcgs/csdid-stata/tree/v2.0.3)
+with the same folder structure. Parameterized Monte Carlo drivers accept a unit
 count, replication count and output filename; fixed diagnostics and timing
 scripts use the invocation shown in their headers. The Version 1.82
 comparison additionally needs the archive at `../csdid-182` (commit
@@ -4019,6 +4027,13 @@ end
 </code></pre>
 </details>
 
+<p>The cold-versus-warm timings quoted in the <code>time.do</code> comments
+are historical illustrations of the warmup rule. The version 2.0.3 timings
+are the results recorded in the current CSV and published tables. The separate
+option-cost and repeated-cross-section probes retain their own protocols in the
+<a href="https://github.com/pedrohcgs/csdid-stata/blob/v2.0.3/tools/bench/field/results/appendix-timings/metadata.json">appendix timing record</a>; their invocation times do not establish the availability
+of finite requested effects or inference.</p>
+
 <details class="code-fold">
 <summary><code>time.do</code> &mdash; the timing wrapper: one discarded warmup per package per dataset, then N trials, reported as the median</summary>
 <pre><code>* Run from the bench/ folder of the replication package. Not run on its
@@ -4123,6 +4138,11 @@ program define bench_time, rclass
 end
 </code></pre>
 </details>
+
+<p>The current campaign's <code>min</code> and <code>max</code> values in
+<code>scalebench-results.csv</code> describe variation across the timed trials.
+Some large-design ranges exceed a second; the script's comment about a few
+hundredths describes its earlier measurements.</p>
 
 <details class="code-fold">
 <summary><code>scalebench.do</code> &mdash; the five-tier scaling grid: unbalanced ladder, repeated-cross-section ladder, periods scan, cohorts scan, and the cost of the default inference</summary>

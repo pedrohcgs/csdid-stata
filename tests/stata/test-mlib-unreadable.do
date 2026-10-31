@@ -19,6 +19,22 @@ clear all
 set more off
 
 local root "`c(pwd)'"
+* The distribution manifest is the package-version authority for test fixtures.
+tempname version_file
+local package_version ""
+local version_lines = 0
+file open `version_file' using "`root'/csdid.pkg", read text
+file read `version_file' version_line
+while r(eof) == 0 {
+    if substr(`"`version_line'"', 1, 11) == "d Version: " {
+        local package_version = strtrim(substr(`"`version_line'"', 12, .))
+        local version_lines = `version_lines' + 1
+    }
+    file read `version_file' version_line
+}
+file close `version_file'
+if `version_lines' != 1 | `"`package_version'"' == "" error 9
+
 confirm file "`root'/src/ado/_csdid_engine_load.ado"
 confirm file "`root'/src/mata/csdid.mata"
 
@@ -54,7 +70,7 @@ log close unreadarm
 * The fall-back must succeed and the session must be running the source.
 assert `load_rc' == 0
 local marker `"$CSDID_ENGINE_RESOLVED"'
-assert strpos(`"`marker'"', "2.0.2|source;") == 1
+assert strpos(`"`marker'"', "`package_version'|source;") == 1
 
 * The note: names the file it could not read, says the results are the same,
 * and asks for nothing -- "re-install csdid" is the OTHER refusal's remedy

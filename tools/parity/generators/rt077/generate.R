@@ -88,7 +88,7 @@ outputs <- lapply(c("attgt.csv","inffunc.csv","warnings.csv","support.csv"),func
   list(path=paste0("expected/r/",n),schema="rt077",sha256=sha(file.path(out,"expected/r",n))))
 manifest <- list(matrix_id="RT077",fixture_family="r-weighted-feasibility-support",
   normative_source="did utility_functions.R overlap_check_fail, rcond_check_fail, rc_outcome_has_too_few_obs; compute.att_gt2.R normalized RC support precedence",
-  source_commit="48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e",decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
+  source_commit="4bed75ef731cba2e6d4a28205111b311f892fab1",decision_refs=list(),tolerance_ids=c("EXACT","TOL001","TOL002"),inputs=inputs,
   generators=list(list(runtime="R",command="Rscript tools/parity/generators/rt077/generate.R",path="tools/parity/generators/rt077/generate.R",sha256=sha(script_path))),
   runtimes=list(list(name="R",version=as.character(getRversion()),package_versions=list(did=as.character(packageVersion("did")),DRDID=as.character(packageVersion("DRDID"))))),rng=NULL,
   expected_outputs=outputs,comparison_plan=list(

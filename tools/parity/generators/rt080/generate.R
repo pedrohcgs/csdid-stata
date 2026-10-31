@@ -49,7 +49,7 @@ write.csv(do.call(rbind, errors), file.path(out, "expected/r/refusals.csv"), row
 paths <- c("expected/r/attgt.csv", "expected/r/inffunc.csv", "expected/r/refusals.csv")
 manifest <- list(matrix_id="RT080", fixture_family="r-upstream-settling-and-rc-identity",
   normative_source="did pre_process_did2.R observation-ID validation; att_gt panel/RC/unbalanced routes",
-  source_commit="48863b646e657f2aaa5cc9e9d2e7b9d764a6a44e", decision_refs=list(), tolerance_ids=c("EXACT","TOL002"),
+  source_commit="4bed75ef731cba2e6d4a28205111b311f892fab1", decision_refs=list(), tolerance_ids=c("EXACT","TOL002"),
   inputs=list(list(path="inputs/panel.csv", sha256=sha(file.path(out,"inputs/panel.csv")))),
   expected_outputs=lapply(paths, function(p) list(path=p, schema="keyed-reference", sha256=sha(file.path(out,p)))),
   generators=list(list(runtime="R", command="Rscript tools/parity/generators/rt080/generate.R", path="tools/parity/generators/rt080/generate.R", sha256=sha(script_path))),
